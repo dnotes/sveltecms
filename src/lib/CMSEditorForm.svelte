@@ -1,0 +1,57 @@
+<script lang="ts">
+import SvelteCMSConfig from './index';
+import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
+
+import type { SvelteCMSConfigSetting } from './global';
+
+  export let conf:SvelteCMSConfigSetting = undefined
+  export let contentType:string
+
+  let cms = new SvelteCMSConfig(conf)
+
+  let t = cms.types[contentType]
+
+  export let initialValues = undefined
+  export let values = {}
+
+</script>
+
+<div class="SvelteCMSEditorForm">
+  <h2>
+    {#if initialValues}
+      Edit
+    {:else}
+      New
+    {/if}
+    {t?.title}
+  </h2>
+
+  <form class="SvelteCMSEditor">
+    {#each Object.entries(t.fields) as [id,f]}
+
+      <div
+        class="field"
+        class:multiple="{f.multiple}"
+        class:disabled="{f.disabled}"
+        class:required="{f.required}"
+        >
+        {#await f.widget}
+          loading...
+        {:then component}
+          <svelte:component
+            this={component}
+            bind:value={values[id]}
+            conf={f}
+            {id}
+            />
+        {:catch error}
+          <CmsWidgetUndefined conf={f} {contentType} {id} />
+        {/await}
+      </div>
+
+    {:else}
+      nothing to edit.
+    {/each}
+
+  </form>
+</div>

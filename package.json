@@ -1,0 +1,53 @@
+{
+  "name": "sveltecms",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "svelte-kit dev",
+    "build": "svelte-kit build",
+    "preview": "svelte-kit preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@sveltejs/kit": "next",
+    "@types/config": "^0.0.40",
+    "svelte": "^3.42.6",
+    "svelte-check": "^2.2.6",
+    "svelte-preprocess": "^4.9.4",
+    "svelte2tsx": "^0.4.8",
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.4"
+  },
+  "type": "module",
+  "description": "Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);",
+  "main": "index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/null/sveltecms.git"
+  },
+  "keywords": [
+    "svelte",
+    "sveltekit",
+    "kit",
+    "cms",
+    "markdown",
+    "content",
+    "management",
+    "static",
+    "site",
+    "generator",
+    "serverless",
+    "docker",
+    "container"
+  ],
+  "author": "David Hunt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/null/sveltecms/issues"
+  },
+  "homepage": "https://github.com/null/sveltecms#readme",
+  "dependencies": {
+    "config": "^3.3.6",
+    "transliteration": "^2.2.0"
+  }
+}
