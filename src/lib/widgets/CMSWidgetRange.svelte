@@ -3,7 +3,6 @@ import type { SvelteCMSContentField } from "$lib";
 
   export let conf:SvelteCMSContentField
   export let id
-
   export let disabled=(conf?.disabled ? true : false)
   export let required=(conf?.required ? true : false)
 
@@ -15,11 +14,13 @@ import type { SvelteCMSContentField } from "$lib";
   <slot>{conf.title}</slot>
   <input
     {id}
-    name={id}
+    name="{id}"
     title={conf.description}
-    type="text"
+    type="range"
     bind:value
-    placeholder="{conf.options.placeholder ?? ''}"
+    min="{conf.options.min}"
+    max="{conf.options.max}"
+    step="{conf.options.step || 1}"
     {disabled}
     {required}
   />

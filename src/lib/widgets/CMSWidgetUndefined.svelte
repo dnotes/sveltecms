@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { SvelteCMSContentFieldConfig } from "$lib"
+import type { SvelteCMSContentField } from "$lib"
 
-  export let conf:SvelteCMSContentFieldConfig
+  export let conf:SvelteCMSContentField
 
   export let contentType
   export let id
