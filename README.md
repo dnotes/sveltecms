@@ -1,38 +1,39 @@
-# create-svelte
+## Functions of a CMS
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);
+[ ] Allow external users to create and edit content
 
-## Creating a project
+    At the moment, most small SvelteKit sites either use Markdown files that live in the repository
+    or else collect content maintained in other systems. The content is contributed by the developer.
+    Svelte CMS provides configurable tools for users--not developers--to create and edit content, and
+    easy pluggable integrations for saving content to a database, external API, git repository, etc.
 
-If you're seeing this, you've probably already done this step. Congrats!
+[ ] Rebuild the site when necessary
 
-```bash
-# create a new project in the current directory
-npm init svelte@next
+    The site build must either be triggered by the developer or be automated by an external service.
+    Svelte CMS plans to provide configurable, pluggable integrations for triggering automated build
+    processes, either as content is added or according to a schedule.
 
-# create a new project in my-app
-npm init svelte@next my-app
-```
+[ ] Sanitize user-submitted content for display in browsers
 
-> Note: the `@next` is temporary
+    Since most content for small SvelteKit sites is contributed by the developer, content security is
+    not really a consideration. Svelte CMS provides configurable tools for sanitizing user-submitted
+    content.
 
-## Developing
+[ ] Manage content authorship and role-based editing permissions
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+    Svelte CMS configuration should be able to work with any authentication system to manage content
+    authorship and simple role-based permissions.
 
-```bash
-npm run dev
+[ ] Manage users as content
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+    Svelte CMS can also manage a small user base, like an editing team, providing authentication with
+    serverless functions or containerized endpoints.
 
-## Building
+[ ] Manage content based on data structure and configuration
 
-Before creating a production version of your app, install an [adapter](https://kit.svelte.dev/docs#adapters) for your target environment. Then:
 
-```bash
-npm run build
-```
 
-> You can preview the built app with `npm run preview`, regardless of whether you installed an adapter. This should _not_ be used to serve your app in production.
+[ ] Allow users to configure the CMS
+
+    Because it uses declarative configuration, Svelte CMS can provide a web front-end for configuration,
+    allowing privileged users to configure the CMS without accessing the git repository.
