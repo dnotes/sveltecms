@@ -1,8 +1,8 @@
 <script lang="ts">
 import SvelteCMSConfig from './index';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
-
 import type { SvelteCMSConfigSetting } from './global';
+import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
 
   export let conf:SvelteCMSConfigSetting = undefined
   export let contentType:string
@@ -11,8 +11,14 @@ import type { SvelteCMSConfigSetting } from './global';
 
   let t = cms.types[contentType]
 
-  export let initialValues = undefined
   export let values = {}
+
+  export let initialValues = undefined
+  let pageTitle = `New ${t.title}`
+  if (initialValues) {
+    values = {...initialValues}
+    pageTitle = `Edit ${t.title}`
+  }
 
 </script>
 
@@ -34,16 +40,28 @@ import type { SvelteCMSConfigSetting } from './global';
         class:multiple="{f.multiple}"
         class:disabled="{f.disabled}"
         class:required="{f.required}"
-        >
+      >
         {#await f.widget}
           loading...
         {:then component}
-          <svelte:component
-            this={component}
-            bind:value={values[id]}
-            conf={f}
-            {id}
+          {#if f.multiple}
+
+            <CmsWidgetMultiple
+              bind:value={values[id]}
+              {component}
+              conf={f}
+              {id}
             />
+
+          {:else}
+
+            <svelte:component
+              this={component}
+              bind:value={values[id]}
+              conf={f}
+              {id}
+            />
+          {/if}
         {:catch error}
           <CmsWidgetUndefined conf={f} {contentType} {id} />
         {/await}
