@@ -1,13 +1,13 @@
 <script lang="ts">
 import type { SvelteCMSContentField } from "..";
 
-  export let conf:SvelteCMSContentField
+  export let field:SvelteCMSContentField
   export let id:string
-  export let component
 
-  export let value = [conf.default]
+  export let value = [field.default]
 
-  function addValue() { value = [...value, conf.default] }
+  function addValue() { value = [...value, field.default] }
+
 </script>
 
 <fieldset>
@@ -15,9 +15,9 @@ import type { SvelteCMSContentField } from "..";
 {#each value as v,i}
   <div>
     <svelte:component
-      this={component}
+      this={field.widget.widget}
       bind:value={v}
-      {conf}
+      {field}
       id="{id}[{i}]"
     />
   </div>

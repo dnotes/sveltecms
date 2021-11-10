@@ -3,52 +3,37 @@ import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
 import type { SvelteCMSContentField } from '$lib';
 
-  export let conf:SvelteCMSContentField
-  export let contentType:string
-
+  let parentField:SvelteCMSContentField
   let parentID = ''
-  export { parentID as id }
-  // export let disabled=(conf?.disabled ? true : false)
-  // export let required=(conf?.required ? true : false)
+  export { parentField as field, parentID as id }
 
   export let value = {}
+  export let errors = {}
 
 </script>
 
 <fieldset class="collection">
-  {#each Object.entries(conf.fields) as [id,f]}
+  {#each Object.entries(parentField.fields) as [id,field]}
 
-    <div
-      class="field"
-      class:multiple="{f.multiple}"
-      class:disabled="{f.disabled}"
-      class:required="{f.required}"
-    >
-      {#await f.widget}
-        loading...
-      {:then component}
-        {#if f.multiple}
-
-          <CmsWidgetMultiple
-            bind:value={value[id]}
-            {component}
-            conf={f}
-            id="{parentID}[{id}]"
-          />
-
-        {:else}
-
-          <svelte:component
-            this={component}
-            bind:value={value[id]}
-            conf={f}
-            id="{parentID}[{id}]"
-          />
-        {/if}
-      {:catch error}
-        <CmsWidgetUndefined conf={f} {contentType} {id} />
-      {/await}
-    </div>
+  <div class="field">
+    {#if !field.widget.widget}
+      <CmsWidgetUndefined {field} id="{parentID}[{id}]" />
+    {:else if field.multiple && !field.widget.handlesMultiple}
+      <CmsWidgetMultiple
+        {field}
+        id="{parentID}[{id}]"
+        bind:value={value[id]}
+      />
+    {:else}
+      <svelte:component
+        this={field.widget.widget}
+        {field}
+        id="{parentID}[{id}]"
+        bind:value={value[id]}
+        bind:errors={errors[id]}
+      />
+    {/if}
+  </div>
 
   {/each}
 

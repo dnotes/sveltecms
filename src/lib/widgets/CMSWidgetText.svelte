@@ -1,26 +1,27 @@
 <script lang="ts">
 import type { SvelteCMSContentField } from "$lib";
 
-  export let conf:SvelteCMSContentField
-  export let id
+  export let field:SvelteCMSContentField
+  export let id:string
 
-  export let disabled=(conf?.disabled ? true : false)
-  export let required=(conf?.required ? true : false)
+  export let value = field.default
 
-  export let value = conf.default
+  //@ts-ignore
+  let opts:{placeholder?:string} = field.options
 
 </script>
 
-<label for="{id}">
-  <slot>{conf.title}</slot>
+<label>
+  <span>
+    <slot>{field.title}</slot>
+  </span>
   <input
-    {id}
     name={id}
-    title={conf.description}
+    title={field.description}
     type="text"
     bind:value
-    placeholder="{conf.options.placeholder ?? ''}"
-    {disabled}
-    {required}
+    placeholder="{opts?.placeholder ?? ''}"
+    disabled={field.disabled}
+    required={field.required}
   />
 </label>
