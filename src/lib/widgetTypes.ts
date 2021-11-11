@@ -1,11 +1,12 @@
-import CMSWidgetCollection from '../widgets/CMSWidgetCollection.svelte'
-import CMSWidgetMultiple from '../widgets/CMSWidgetMultiple.svelte'
-import CMSWidgetNumber from '../widgets/CMSWidgetNumber.svelte'
-import CMSWidgetRange from '../widgets/CMSWidgetRange.svelte'
-import CMSWidgetText from '../widgets/CMSWidgetText.svelte'
-import CMSWidgetUndefined from '../widgets/CMSWidgetUndefined.svelte'
+import CMSWidgetCollection from './widgets/CMSWidgetCollection.svelte'
+import CMSWidgetMultiple from './widgets/CMSWidgetMultiple.svelte'
+import CMSWidgetNumber from './widgets/CMSWidgetNumber.svelte'
+import CMSWidgetRange from './widgets/CMSWidgetRange.svelte'
+import CMSWidgetText from './widgets/CMSWidgetText.svelte'
+import CMSWidgetUndefined from './widgets/CMSWidgetUndefined.svelte'
+import CMSWidgetDate from './widgets/CMSWidgetDate.svelte'
 
-import type { SvelteCMSWidgetType } from '../global'
+import type { SvelteCMSWidgetType } from './global'
 
 const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
   undefined: {
@@ -85,10 +86,21 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
   //   id: 'textarea',
   //   fieldTypes: 'text,date,number,html,markdown',
   // },
-  // {
-  //   id: 'date',
-  //   fieldTypes: 'text,date',
-  // },
+  date: {
+    id: 'date',
+    fieldTypes: ['text','date'],
+    widget: CMSWidgetDate,
+    optionFields: {
+      min: {
+        type: 'date',
+        default: undefined,
+      },
+      max: {
+        type: 'date',
+        default: undefined,
+      },
+    }
+  },
   // {
   //   id: './widgets/CMSWidgetImage',
   //   fieldTypes: 'image',

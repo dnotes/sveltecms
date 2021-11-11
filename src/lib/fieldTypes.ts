@@ -1,4 +1,4 @@
-import type { SvelteCMSFieldType } from '../global'
+import type { SvelteCMSFieldType } from './global'
 
 const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
   text: {

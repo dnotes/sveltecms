@@ -1,4 +1,4 @@
-import type { SvelteCMSFieldTransformer } from '../global'
+import type { SvelteCMSFieldTransformer } from './global'
 
 const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
   toString: {
