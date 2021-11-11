@@ -60,7 +60,7 @@ export type SvelteCMSContentFieldConfigSetting = {
 }
 
 export type SvelteCMSConfigFieldConfigSetting = SvelteCMSContentFieldConfigSetting & {
-  type: 'text'|'number'|'boolean'|'choice'|'collection'|'tags'|'cmsfield'
+  type: 'text'|'number'|'boolean'|'date'|'choice'|'collection'|'tags'|'cmsfield'
   default: any
   fields?: {[key:string]:SvelteCMSConfigFieldConfigSetting}
 }
