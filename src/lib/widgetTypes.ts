@@ -5,6 +5,7 @@ import CMSWidgetRange from './widgets/CMSWidgetRange.svelte'
 import CMSWidgetText from './widgets/CMSWidgetText.svelte'
 import CMSWidgetUndefined from './widgets/CMSWidgetUndefined.svelte'
 import CMSWidgetDate from './widgets/CMSWidgetDate.svelte'
+import CMSWidgetTextarea from './widgets/CMSWidgetTextarea.svelte'
 
 import type { SvelteCMSWidgetType } from './global'
 
@@ -99,6 +100,28 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
         type: 'date',
         default: undefined,
       },
+    }
+  },
+  textarea: {
+    id: 'textarea',
+    fieldTypes: ['html','text','tags'],
+    widget: CMSWidgetTextarea,
+    optionFields: {
+      placeholder: {
+        type: 'text',
+        default: '',
+      },
+      rows: {
+        type: 'number',
+        default: undefined,
+        widgetOptions: {
+          min: 0,
+        }
+      },
+      cols: {
+        type: 'number',
+        default: 20,
+      }
     }
   },
   // {
