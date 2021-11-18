@@ -58,6 +58,7 @@ export type SvelteCMSContentFieldConfigSetting = {
   validator?: Rules
   preSave?: string|SvelteCMSFieldFunctionSetting|(string|SvelteCMSFieldFunctionSetting)[]
   preMount?: string|SvelteCMSFieldFunctionSetting|(string|SvelteCMSFieldFunctionSetting)[]
+  class?: string
 }
 
 export type SvelteCMSConfigFieldConfigSetting = SvelteCMSContentFieldConfigSetting & {

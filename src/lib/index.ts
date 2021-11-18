@@ -208,6 +208,7 @@ export class SvelteCMSContentField {
   widget:SvelteCMSWidget
   preSave?:(string|SvelteCMSFieldFunctionSetting)[]
   preMount?:(string|SvelteCMSFieldFunctionSetting)[]
+  class:string = ''
   constructor(id, conf:string|SvelteCMSContentFieldConfigSetting, cms:SvelteCMS) {
 
     // Set the field's id. This identifies the instance, not the field type;
@@ -244,6 +245,7 @@ export class SvelteCMSContentField {
       this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.defaultPreSave
       this.preMount = conf.preMount ? ( isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.defaultPreMount
+      this.class = conf.class || ''
       if (conf.fields) {
         this.fields = {}
         Object.entries(conf.fields).forEach(([id, conf]) => {

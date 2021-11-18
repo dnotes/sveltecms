@@ -18,7 +18,7 @@ import type { SvelteCMSContentField } from '$lib';
 <fieldset class="collection" class:oneline={opts?.oneline}>
   {#each Object.entries(parentField.fields) as [id,field]}
 
-  <div class="field">
+  <div class="field {field?.class || ''}">
     {#if !field.widget.widget}
       <CmsWidgetUndefined {field} id="{parentID}[{id}]" />
     {:else if field.multiple && !field.widget.handlesMultiple}

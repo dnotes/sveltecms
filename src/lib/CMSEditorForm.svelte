@@ -52,7 +52,7 @@ import { cloneDeep } from 'lodash'
   >
     {#each Object.entries(contentType.fields) as [id,field]}
 
-      <div class="field">
+      <div class="field {field?.class || ''}">
         {#if !field.widget.widget}
           <CmsWidgetUndefined {field} {id} />
         {:else if field.multiple && !field.widget.handlesMultiple}
