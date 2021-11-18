@@ -6,6 +6,7 @@ import CMSWidgetText from './widgets/CMSWidgetText.svelte'
 import CMSWidgetUndefined from './widgets/CMSWidgetUndefined.svelte'
 import CMSWidgetDate from './widgets/CMSWidgetDate.svelte'
 import CMSWidgetTextarea from './widgets/CMSWidgetTextarea.svelte'
+import CMSWidgetCheckbox from './widgets/CMSWidgetCheckbox.svelte'
 
 import type { SvelteCMSWidgetType } from './global'
 
@@ -127,10 +128,11 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
       },
     }
   },
-  // {
-  //   id: './widgets/CMSWidgetImage',
-  //   fieldTypes: 'image',
-  // },
+  checkbox: {
+    id: 'checkbox',
+    fieldTypes: ['boolean'],
+    widget: CMSWidgetCheckbox,
+  },
   // {
   //   id: './widgets/CMSWidgetCollection',
   //   fieldTypes: 'collection',
