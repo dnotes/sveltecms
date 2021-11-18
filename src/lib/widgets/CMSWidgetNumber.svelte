@@ -7,7 +7,7 @@ import type { SvelteCMSContentField } from "$lib";
   export let value = field.default
 
   //@ts-ignore
-  let opts:{min?:number,max?:number,step?:number} = field.options
+  let opts:{min?:number,max?:number,step?:number} = field.widget.options
 
 </script>
 

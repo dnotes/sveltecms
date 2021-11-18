@@ -38,10 +38,9 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
     fieldTypes: ['collection'],
     widget: CMSWidgetCollection,
     optionFields: {
-      fields: {
-        type: 'cmsfield',
-        multiple: true,
-        default: {}
+      oneline: {
+        type: 'boolean',
+        default: false,
       }
     }
   },
@@ -83,10 +82,6 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
       },
     }
   },
-  // {
-  //   id: 'textarea',
-  //   fieldTypes: 'text,date,number,html,markdown',
-  // },
   date: {
     id: 'date',
     fieldTypes: ['text','date'],
@@ -121,7 +116,15 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
       cols: {
         type: 'number',
         default: 20,
-      }
+      },
+      autogrow: {
+        type: 'boolean',
+        default: false,
+      },
+      maxheight: {
+        type: 'text',
+        default: ''
+      },
     }
   },
   // {

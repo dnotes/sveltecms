@@ -7,12 +7,15 @@ import type { SvelteCMSContentField } from '$lib';
   let parentID = ''
   export { parentField as field, parentID as id }
 
+  let opts:{oneline?:boolean} = parentField.widget.options
+  // let titleList = Object.keys(parentField.fields).map(k => parentField.fields[k].title)
+
   export let value = {}
   export let errors = {}
 
 </script>
 
-<fieldset class="collection">
+<fieldset class="collection" class:oneline={opts?.oneline}>
   {#each Object.entries(parentField.fields) as [id,field]}
 
   <div class="field">

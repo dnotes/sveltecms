@@ -14,6 +14,7 @@ import type {
   SvelteCMSConfigFieldConfigSetting,
   ConfigSetting,
   SvelteCMSWidgetTypeConfigSetting,
+  SvelteCMSPluginBuilder,
 } from "./global"
 import type { OptionsSlugify, OptionsTransliterate } from "transliteration/dist/node/src/types"
 import getLabelFromID from "./utils/getLabelFromID"
@@ -53,9 +54,11 @@ export default class SvelteCMS {
 
   }
 
-  use(plugin:SvelteCMSPlugin) {
+  use(plugin:SvelteCMSPlugin|SvelteCMSPluginBuilder, config?:any) {
+    // TODO: allow function that returns plugin
+
     ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists'].forEach(k => {
-      plugin?.[k].forEach(conf => {
+      plugin?.[k]?.forEach(conf => {
         this[k][conf.id] = conf
       })
     })

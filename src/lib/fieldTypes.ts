@@ -42,12 +42,6 @@ const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
     defaultWidget: 'text',
     defaultPreSave: ['parseFloat'],
   },
-  markdown: {
-    id: 'markdown',
-    defaultValue: '',
-    defaultWidget: 'markdown',
-    defaultPreSave: ['toString'],
-  },
   boolean: {
     id: 'boolean',
     defaultValue: null,
@@ -58,7 +52,6 @@ const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
     id: 'choice',
     defaultValue: null,
     defaultWidget: 'select',
-    defaultPreMount: ['html']
   },
   cmsfield: {
     id: 'cmsfield',

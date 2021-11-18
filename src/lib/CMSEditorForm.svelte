@@ -25,7 +25,7 @@ import { cloneDeep } from 'lodash'
 
   export let submit = async ()=>{
     try {
-      let result = await cms.save(contentTypeID, values)
+      // let result = await cms.save(contentTypeID, values)
       // TODO: determine save api, check for errors in results
     }
     catch(e) {

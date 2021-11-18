@@ -1,6 +1,5 @@
 /// <reference types="@sveltejs/kit" />
 
-import type { SvelteCMSFieldTransformer, SvelteCMSFieldTransformFunction, SvelteCMSWidget } from "$lib"
 import type { SvelteComponent, SvelteComponentDev } from "svelte/internal"
 import type { OptionsSlugify, OptionsTransliterate } from "transliteration/dist/node/src/types"
 import type { Rules } from 'validatorjs'
@@ -18,6 +17,8 @@ export type SvelteCMSPlugin = {
   mediaStores?: SvelteCMSMediaStore[]
   lists?: SvelteCMSListConfig
 }
+
+export type SvelteCMSPluginBuilder = (config:any) => SvelteCMSPlugin
 
 export type SvelteCMSListConfig = {[key:string]: Array<string|number|{id:string|number,value:any}>}
 
@@ -142,6 +143,7 @@ export type SvelteCMSFieldTransformer = {
   optionFields?:{[key:string]:SvelteCMSConfigFieldConfigSetting}
   noBrowser?:boolean
   noServer?:boolean
+  [key:string]:any
 }
 
 // export type SvelteCMSFieldValidator = {

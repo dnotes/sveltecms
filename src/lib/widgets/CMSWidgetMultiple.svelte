@@ -4,16 +4,15 @@ import type { SvelteCMSContentField } from "..";
   export let field:SvelteCMSContentField
   export let id:string
 
-  export let value = [field.default]
-
-  function addValue() { value = [...value, field.default] }
+  // For multiple collections, it is necessary to set the value to {}, otherwise SSR causes infinite loop
+  export let value = [field.fields ? {} : field.default]
 
 </script>
 
-<fieldset>
-
+<fieldset class="cms-multiple">
 {#each value as v,i}
-  <div>
+  <div class="cms-multiple-item">
+    <button class="cms-multiple-item-delete" aria-label="Remove {field.title} item" on:click={() => { value = value.splice(i,1); value=value; }}>✖️</button>
     <svelte:component
       this={field.widget.widget}
       bind:value={v}
@@ -21,8 +20,7 @@ import type { SvelteCMSContentField } from "..";
       id="{id}[{i}]"
     />
   </div>
-  <button on:click={() => { value = value.splice(i,1); value=value; }}>x</button>
 {/each}
-<button on:click|preventDefault={addValue}>+ new</button>
+<button class="cms-multiple-item-add" aria-label="Add {field.title} item" on:click|preventDefault={() => { value = [...value, field.default]}}>+ add {field.title.toLowerCase()} item</button>
 
 </fieldset>
