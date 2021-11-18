@@ -7,6 +7,8 @@ import CMSWidgetUndefined from './widgets/CMSWidgetUndefined.svelte'
 import CMSWidgetDate from './widgets/CMSWidgetDate.svelte'
 import CMSWidgetTextarea from './widgets/CMSWidgetTextarea.svelte'
 import CMSWidgetCheckbox from './widgets/CMSWidgetCheckbox.svelte'
+import CMSWidgetImage from './widgets/CMSWidgetImage.svelte'
+import CMSWidgetFile from './widgets/CMSWidgetFile.svelte'
 
 import type { SvelteCMSWidgetType } from './global'
 
@@ -132,6 +134,32 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
     id: 'checkbox',
     fieldTypes: ['boolean'],
     widget: CMSWidgetCheckbox,
+  },
+  image: {
+    id: 'image',
+    fieldTypes: ['image'],
+    widget: CMSWidgetImage,
+    handlesMultiple: true,
+    optionFields: {
+      accept: {
+        type: 'text',
+        default: 'image/*',
+        description: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+      },
+    },
+  },
+  file: {
+    id: 'file',
+    fieldTypes: ['image'],
+    widget: CMSWidgetFile,
+    handlesMultiple: true,
+    optionFields: {
+      accept: {
+        type: 'text',
+        default: undefined,
+        description: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+      }
+    }
   },
   // {
   //   id: './widgets/CMSWidgetCollection',

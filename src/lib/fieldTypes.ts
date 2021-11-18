@@ -16,8 +16,13 @@ const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
   },
   image: {
     id: 'image',
-    defaultValue: null,
+    defaultValue: [],
     defaultWidget: 'image',
+  },
+  file: {
+    id: 'file',
+    defaultValue: [],
+    defaultWidget: 'file',
   },
   html: {
     id: 'html',
