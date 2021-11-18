@@ -10,7 +10,8 @@ import type { SvelteCMSContentField } from "..";
 </script>
 
 <fieldset class="cms-multiple">
-{#each value as v,i}
+  <label for="{id}[0]">{field.title}<label>
+  {#each value as v,i}
   <div class="cms-multiple-item">
     <button class="cms-multiple-item-delete" aria-label="Remove {field.title} item" on:click={() => { value = value.splice(i,1); value=value; }}>✖️</button>
     <svelte:component
