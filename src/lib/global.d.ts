@@ -7,7 +7,7 @@ import type { Rules } from 'validatorjs'
 /**
  * All "Setting" types must fit the pattern of ConfigSetting
  */
-export type ConfigSetting = {[key:string]: string|number|boolean|ConfigSetting|Array<string|number>}
+export type ConfigSetting = {[key:string]: string|number|boolean|ConfigSetting|Array<string|number|ConfigSetting>}
 
 export type SvelteCMSPlugin = {
   fieldTypes?: SvelteCMSFieldType[]
