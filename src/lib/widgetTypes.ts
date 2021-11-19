@@ -151,6 +151,34 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
         default: 'image/*',
         description: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       },
+      altField: {
+        type: 'boolean',
+        default: true,
+        description: 'Show a field for the "alt" attribute'
+      },
+      altRequired: {
+        type: 'boolean',
+        default: false,
+        description: 'Require "alt" attribute'
+      },
+      titleField: {
+        type: 'boolean',
+        default: false,
+        description: 'Show a field for the "title" attribute'
+      },
+      createThumbnail: {
+        type: 'boolean',
+        default: false,
+        description: 'Create a thumbnail from the image when saving, and allow editor to set the crop coordinates'
+      },
+      thumbnailHeight: {
+        type: 'number',
+        default: 200,
+      },
+      thumbnailWidth: {
+        type: 'number',
+        default: 200,
+      },
     },
   },
   file: {
