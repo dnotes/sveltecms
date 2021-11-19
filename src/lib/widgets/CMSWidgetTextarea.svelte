@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { SvelteCMSContentField } from "$lib";
+import { onMount } from "svelte";
 
   export let field:SvelteCMSContentField
   export let id:string
@@ -7,7 +8,30 @@ import type { SvelteCMSContentField } from "$lib";
   export let value = field.default
 
   //@ts-ignore
-  let opts:{placeholder?:string,rows?:number,cols?:number} = field.widget.options
+  let opts:{
+    placeholder?:string,
+    rows?:number,
+    cols?:number,
+    resize?:'none'|'both'|'horizontal'|'vertical',
+    autosize?:boolean
+  } = field.widget.options
+
+  let styles = [
+    'height:auto'
+  ]
+  if (opts.autosize) styles.push('overflow:hidden')
+  if (opts.resize) styles.push(`resize:${opts.resize}`)
+
+  let el
+  onMount(() => {
+    autosize()
+  })
+  function autosize() {
+    if (opts.autosize) {
+      el.style.height="auto"
+      el.style.height=(el.scrollHeight + 2) + 'px'
+    }
+  }
 
 </script>
 
@@ -19,10 +43,13 @@ import type { SvelteCMSContentField } from "$lib";
     name={id}
     title={field.description}
     bind:value
+    bind:this={el}
+    on:input={autosize}
     rows="{opts?.rows ?? undefined}"
     cols="{opts?.cols ?? undefined}"
     placeholder="{opts?.placeholder ?? ''}"
     disabled={field.disabled}
     required={field.required}
+    style="{styles.join(';')}"
   />
 </label>

@@ -120,13 +120,17 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
         type: 'number',
         default: 20,
       },
-      autogrow: {
+      resize: {
+        type: 'text',
+        default: undefined,
+        widget: 'select',
+        widgetOptions: {
+          options: ['none','both','horizontal','vertical']
+        }
+      },
+      autosize: {
         type: 'boolean',
         default: false,
-      },
-      maxheight: {
-        type: 'text',
-        default: ''
       },
     }
   },
