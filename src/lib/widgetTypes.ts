@@ -9,6 +9,7 @@ import CMSWidgetTextarea from './widgets/CMSWidgetTextarea.svelte'
 import CMSWidgetCheckbox from './widgets/CMSWidgetCheckbox.svelte'
 import CMSWidgetImage from './widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from './widgets/CMSWidgetFile.svelte'
+import CMSWidgetSelect from './widgets/CMSWidgetSelect.svelte'
 
 import type { SvelteCMSWidgetType } from './global'
 
@@ -165,6 +166,38 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
       }
     }
   },
+  select: {
+    id: 'select',
+    fieldTypes: ['text','number','date'],
+    widget: CMSWidgetSelect,
+    handlesMultiple: true,
+    optionFields: {
+      size: {
+        type: 'number',
+        widget: 'text',
+        default: 0,
+      },
+      options: {
+        type: 'collection',
+        multiple: true,
+        default: {},
+        widgetOptions: {
+          oneline: true,
+        },
+        fields: {
+          label: {
+            type: 'text',
+            required: true,
+            default: '',
+          },
+          value: {
+            type: 'text',
+            default: '',
+          }
+        }
+      },
+    }
+  }
   // {
   //   id: './widgets/CMSWidgetCollection',
   //   fieldTypes: 'collection',
