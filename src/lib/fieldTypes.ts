@@ -53,11 +53,6 @@ const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
     defaultWidget: 'checkbox',
     defaultPreSave: ['boolean'],
   },
-  choice: {
-    id: 'choice',
-    defaultValue: null,
-    defaultWidget: 'select',
-  },
   cmsfield: {
     id: 'cmsfield',
     defaultValue: null,
