@@ -67,46 +67,50 @@ export default class SvelteCMS {
 
   preMount(contentTypeOrField:string|SvelteCMSContentField, values:Object) {
     let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField
+    let res = {}
     Object.entries(container.fields).forEach(([id,field]) => {
       try {
         if (field?.fields && values[id]) {
           if (Array.isArray(values[id])) {
+            res[id] = []
             for (let i=0;i<values[id].length;i++) {
-              values[id][i] = this.preMount(field, values[id][i])
+              res[id][i] = this.preMount(field, values[id][i])
             }
           }
-          else values[id] = this.preMount(field, values?.[id])
+          else res[id] = this.preMount(field, values?.[id])
         }
-        else values[id] = this.doTransforms('preMount', field, this.doTransforms('preSave', field, values?.[id]))
+        else res[id] = this.doTransforms('preMount', field, this.doTransforms('preSave', field, values?.[id]))
       }
       catch(e) {
         e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
         throw e
       }
     })
-    return values
+    return res
   }
 
   preSave(contentTypeOrField:string|SvelteCMSContentField, values:Object) {
     let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField
+    let res = {}
     Object.entries(container.fields).forEach(([id,field]) => {
       try {
         if (field?.fields && values[id]) {
+          res[id] = []
           if (Array.isArray(values[id])) {
             for (let i=0;i<values[id].length;i++) {
-              values[id][i] = this.preSave(field, values[id][i])
+              res[id][i] = this.preSave(field, values[id][i])
             }
           }
-          else values[id] = this.preSave(field, values?.[id])
+          else res[id] = this.preSave(field, values?.[id])
         }
-        else values[id] = this.doTransforms('preSave', field, values?.[id])
+        else res[id] = this.doTransforms('preSave', field, values?.[id])
       }
       catch(e) {
         e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
         throw e
       }
     })
-    return values
+    return res
   }
 
   doTransforms(op:'preSave'|'preMount', field:SvelteCMSContentField, value:any) {
