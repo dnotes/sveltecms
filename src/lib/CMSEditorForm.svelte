@@ -2,7 +2,8 @@
 import type SvelteCMS from './index';
 import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
-import { cloneDeep } from 'lodash'
+import lodash from 'lodash'
+const { cloneDeep } = lodash
 
   export let cms:SvelteCMS
   export let contentTypeID:string

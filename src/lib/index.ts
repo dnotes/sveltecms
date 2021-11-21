@@ -21,7 +21,8 @@ import getLabelFromID from "./utils/getLabelFromID"
 import transformers from './transformers'
 import fieldTypes from './fieldTypes'
 import widgetTypes from './widgetTypes'
-import { mergeWith, cloneDeep, isArray } from 'lodash'
+import pkg from 'lodash'
+const { cloneDeep, mergeWith } = pkg
 
 import { default as Validator, Rules } from 'validatorjs'
 
@@ -67,34 +68,64 @@ export default class SvelteCMS {
   preMount(contentTypeOrField:string|SvelteCMSContentField, values:Object) {
     let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField
     Object.entries(container.fields).forEach(([id,field]) => {
-      if (field?.fields) {
-        Object.entries(field.fields).forEach(([fid,subfield]) => {
-          values[id][fid] = this.doTransforms('preMount', subfield, this.doTransforms('preSave', subfield, values[id][fid]))
-        })
+      try {
+        if (field?.fields && values[id]) {
+          if (Array.isArray(values[id])) {
+            for (let i=0;i<values[id].length;i++) {
+              values[id][i] = this.preMount(field, values[id][i])
+            }
+          }
+          else values[id] = this.preMount(field, values?.[id])
+        }
+        else values[id] = this.doTransforms('preMount', field, this.doTransforms('preSave', field, values?.[id]))
       }
-      values[id] = this.doTransforms('preMount', field, this.doTransforms('preSave', field, values[id]))
+      catch(e) {
+        e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
+        throw e
+      }
     })
+    return values
   }
 
   preSave(contentTypeOrField:string|SvelteCMSContentField, values:Object) {
     let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField
     Object.entries(container.fields).forEach(([id,field]) => {
-      if (field?.fields) {
-        Object.entries(field.fields).forEach(([fid,subfield]) => {
-          values[id][fid] = this.doTransforms('preSave', subfield, values[id][fid])
-        })
+      try {
+        if (field?.fields && values[id]) {
+          if (Array.isArray(values[id])) {
+            for (let i=0;i<values[id].length;i++) {
+              values[id][i] = this.preMount(field, values[id][i])
+            }
+          }
+          else values[id] = this.preSave(field, values?.[id])
+        }
+        else values[id] = this.doTransforms('preSave', field, values?.[id])
       }
-      values[id] = this.doTransforms('preSave', field, values[id])
+      catch(e) {
+        e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
+        throw e
+      }
     })
+    return values
   }
 
   doTransforms(op:'preSave'|'preMount', field:SvelteCMSContentField, value:any) {
-    field[op].forEach((functionConfig:SvelteCMSFieldFunctionSetting) => {
-      if (isArray(value)) {
-        value = value.map(v => this.runFunction('transformer', functionConfig, v))
+    try {
+      if (field[op] && field[op].length && value !== undefined && value !== null) {
+        field[op].forEach((functionConfig:SvelteCMSFieldFunctionSetting) => {
+          if (Array.isArray(value)) {
+            value = value.map(v => this.runFunction('transformers', functionConfig, v))
+          }
+          value = this.runFunction('transformers', functionConfig, value)
+          console.log(`after: (${typeof value}) ${value}`)
+        })
       }
-      value = this.runFunction('transformer', functionConfig, value)
-    })
+      return value
+    }
+    catch(e) {
+      e.message = `value: ${JSON.stringify(value, null, 2)}\n${field.id}/${op} : ${e.message}`
+      throw e
+    }
   }
 
   async save(contentType:string, content:any) {
@@ -105,17 +136,25 @@ export default class SvelteCMS {
 
   }
 
-  runFunction(functionType:'transformer'|'contentStorage'|'mediaStorage', conf:string|SvelteCMSFieldFunctionSetting, value) {
+  runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|SvelteCMSFieldFunctionSetting, value) {
     let id = typeof conf === 'string' ? conf : conf.id
     let func = this[functionType][id]
+    if (!func) throw new Error(`${functionType}.${id} does not exist!`)
     let fn = func.fn
+    if (!fn) throw new Error(`${functionType}.${id}.fn does not exist!`)
     let opts
-    if (func?.optionFields) {
-      opts = this.getConfigOptionsFromFields(func.optionFields)
-      // @ts-ignore
-      if (conf?.options) opts = this.mergeConfigOptions(opts, conf.options)
+    try {
+      if (func?.optionFields) {
+        opts = this.getConfigOptionsFromFields(func.optionFields)
+        // @ts-ignore
+        if (conf?.options) opts = this.mergeConfigOptions(opts, conf.options)
+      }
+      return fn(value, opts)
     }
-    return fn(value, opts)
+    catch(e) {
+      e.message = `${id} : ${e.message}`
+      throw e
+    }
   }
 
   getConfigOptionValue(value) {
@@ -137,7 +176,7 @@ export default class SvelteCMS {
     mergeWith(options, options2, (a,b) => {
       let valueA = this.getConfigOptionValue(a)
       let valueB = this.getConfigOptionValue(b)
-      if (isArray(valueA) || isArray(valueB)) return valueB
+      if (Array.isArray(valueA) || Array.isArray(valueB)) return valueB
     })
     return options
   }
@@ -243,8 +282,8 @@ export class SvelteCMSContentField {
       this.widget = new SvelteCMSWidget(conf.widget || fieldType.defaultWidget, cms)
       if (conf?.widgetOptions) this.widget.options = cms.mergeConfigOptions(this.widget.options, conf.widgetOptions)
       this.validator = conf.validator ?? fieldType.defaultValidator
-      this.preSave = conf.preSave ? ( isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.defaultPreSave
-      this.preMount = conf.preMount ? ( isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.defaultPreMount
+      this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.defaultPreSave
+      this.preMount = conf.preMount ? ( Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.defaultPreMount
       this.class = conf.class || ''
       if (conf.fields) {
         this.fields = {}

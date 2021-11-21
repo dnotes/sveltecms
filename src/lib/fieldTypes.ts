@@ -6,13 +6,11 @@ const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
     defaultValue: '',
     defaultWidget: 'text',
     defaultPreSave: ['toString'],
-    defaultPreMount: ['html'],
   },
   date: {
     id: 'date',
     defaultValue: new Date(),
     defaultWidget: 'date',
-    defaultPreSave: ['date'],
   },
   image: {
     id: 'image',
