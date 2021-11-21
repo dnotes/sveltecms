@@ -93,7 +93,6 @@ import type { SvelteCMSContentField } from "$lib";
   }
 
   function deleteImage(previewIndex) {
-    console.log(value)
     // For fields that are not multiple, we can just delete the database object
     if (!multiple) {
       if (isString) value = ''
