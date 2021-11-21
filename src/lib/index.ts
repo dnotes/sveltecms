@@ -94,7 +94,7 @@ export default class SvelteCMS {
         if (field?.fields && values[id]) {
           if (Array.isArray(values[id])) {
             for (let i=0;i<values[id].length;i++) {
-              values[id][i] = this.preMount(field, values[id][i])
+              values[id][i] = this.preSave(field, values[id][i])
             }
           }
           else values[id] = this.preSave(field, values?.[id])
@@ -117,7 +117,7 @@ export default class SvelteCMS {
             value = value.map(v => this.runFunction('transformers', functionConfig, v))
           }
           value = this.runFunction('transformers', functionConfig, value)
-          console.log(`after: (${typeof value}) ${value}`)
+          // console.log(`after: (${typeof value}) ${value}`)
         })
       }
       return value
