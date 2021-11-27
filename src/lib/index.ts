@@ -8,21 +8,21 @@ import type {
   SvelteCMSFieldTransformer,
   SvelteCMSPlugin,
   SvelteCMSListConfig,
-  SvelteCMSContentStore,
-  SvelteCMSMediaStore,
+  SvelteCMSContentStoreType,
+  SvelteCMSMediaStoreType,
   SvelteCMSFieldFunctionSetting,
   SvelteCMSConfigFieldConfigSetting,
   ConfigSetting,
   SvelteCMSWidgetTypeConfigSetting,
   SvelteCMSPluginBuilder,
+  SvelteCMSStoreConfigSetting,
 } from "./global"
-import type { OptionsSlugify, OptionsTransliterate } from "transliteration/dist/node/src/types"
 import getLabelFromID from "./utils/getLabelFromID"
 import transformers from './transformers'
 import fieldTypes from './fieldTypes'
 import widgetTypes from './widgetTypes'
-import pkg from 'lodash'
-const { cloneDeep, mergeWith } = pkg
+import * as lodash from 'lodash'
+const { cloneDeep, mergeWith } = lodash
 
 import { default as Validator, Rules } from 'validatorjs'
 
@@ -33,8 +33,8 @@ export default class SvelteCMS {
   fieldTypes:{[key:string]:SvelteCMSFieldType} = fieldTypes
   widgetTypes:{[key:string]:SvelteCMSWidgetType} = widgetTypes
   transformers:{[key:string]:SvelteCMSFieldTransformer} = transformers
-  contentStores:{[key:string]:SvelteCMSContentStore} = {}
-  mediaStores:{[key:string]:SvelteCMSMediaStore} = {}
+  contentStores:{[key:string]:SvelteCMSContentStoreType} = {}
+  mediaStores:{[key:string]:SvelteCMSMediaStoreType} = {}
   types:{[key:string]:SvelteCMSContentType} = {}
   lists:SvelteCMSListConfig = {}
   constructor(conf:SvelteCMSConfigSetting, plugins:SvelteCMSPlugin[] = []) {
@@ -46,21 +46,39 @@ export default class SvelteCMS {
     Object.entries(conf?.lists).forEach(([key,list]) => {
       if (typeof list === 'string') this.lists[key] = list.split(splitter)
       else this.lists[key] = list
-    })
+    });
+
+    ['contentStores', 'mediaStores', 'widgetTypes', 'transformers'].forEach(objectType => {
+      if (conf?.[objectType]) {
+        Object.entries(conf[objectType]).forEach(([k,settings]) => {
+          const type = conf[objectType][k].type
+          if (this[objectType][k]) { Object.assign(this[objectType][k], settings) }
+          else if (this[objectType][type]) {
+            this[objectType][k] = Object.assign(cloneDeep(this[objectType][type]), { id:k }, settings)
+          }
+        })
+      }
+    });
 
     // Build out config for the content types
     Object.entries(conf?.types).forEach(([id,conf]) => {
       this.types[id] = new SvelteCMSContentType(id, conf, this)
-    })
+    });
 
   }
 
-  use(plugin:SvelteCMSPlugin|SvelteCMSPluginBuilder, config?:any) {
+  use(plugin:SvelteCMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
     ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists'].forEach(k => {
       plugin?.[k]?.forEach(conf => {
-        this[k][conf.id] = conf
+        try {
+          this[k][conf.id] = conf
+        }
+        catch(e) {
+          console.log(this)
+          throw e
+        }
       })
     })
   }
@@ -132,11 +150,54 @@ export default class SvelteCMS {
     }
   }
 
-  async save(contentType:string, content:any) {
+  getContentType(contentType:string):SvelteCMSContentType {
+    if (!this.types[contentType]) throw new Error (`Content type not found: ${contentType}`)
+    return this.types[contentType]
+  }
+
+  getContentStore(contentType:string) {
+    const type = this.getContentType(contentType)
+    return type.contentStore
+  }
+
+  /**
+   * Gets an individual piece of content or all content of a content type
+   * @param contentType string
+   * The id of the content type
+   * @param slug string
+   * The text slug for an individual piece of content (optional)
+   * If null or omitted, then all content of the type will be returned
+   * @param options object
+   * @returns object|object[]
+   */
+  async getContent(contentType:string, slug?:string|number|null, options:{[key:string]:any} = {}) {
+    const type = this.getContentType(contentType)
+    const db = this.getContentStore(contentType)
+    Object.assign(db.options, options)
+    const rawContent = await db.getContent(type, db.options, slug)
+    if (options.getRaw) return rawContent
+    return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
+  }
+
+  async saveContent(contentType:string, content:any, options:{[key:string]:any} = {}) {
+    const type = this.getContentType(contentType)
+    const db = this.getContentStore(contentType)
+    Object.assign(db.options, options)
+    return db.saveContent(this.preSave(contentType, content), type, db.options)
+  }
+
+  async deleteContent(contentType:string, content:any, options:{[key:string]:any} = {}) {
+    const type = this.getContentType(contentType)
+    const db = this.getContentStore(contentType)
+    Object.assign(db.options, options)
+    return db.deleteContent(this.preSave(contentType, content), type, db.options)
+  }
+
+  async saveMedia(contentType:string, media:any) {
 
   }
 
-  async load(contentType:string, id?:string|number) {
+  async deleteMedia(contentType:string, media:any) {
 
   }
 
@@ -175,12 +236,14 @@ export default class SvelteCMS {
     return options
   }
 
-  mergeConfigOptions(options1:ConfigSetting, options2:ConfigSetting):ConfigSetting {
+  mergeConfigOptions(options1:ConfigSetting, ...optionsAll:ConfigSetting[]):ConfigSetting {
     let options = cloneDeep(options1)
-    mergeWith(options, options2, (a,b) => {
-      let valueA = this.getConfigOptionValue(a)
-      let valueB = this.getConfigOptionValue(b)
-      if (Array.isArray(valueA) || Array.isArray(valueB)) return valueB
+    optionsAll.forEach(options2 => {
+      mergeWith(options, options2, (a,b) => {
+        let valueA = this.getConfigOptionValue(a)
+        let valueB = this.getConfigOptionValue(b)
+        if (Array.isArray(valueA) || Array.isArray(valueB)) return valueB
+      })
     })
     return options
   }
@@ -203,32 +266,47 @@ export default class SvelteCMS {
 
 }
 
-export class SvelteCMSSlugConfig {
-  fields:string[]
-  slugify:boolean|OptionsSlugify = {}
-  transliterate:boolean|OptionsTransliterate = {}
-  constructor(conf:string|SvelteCMSSlugConfigSetting) {
-    if (!conf) {
-      this.fields = []
-    }
-    else if (typeof conf === 'string') {
-      this.fields = conf.split(splitter)
-    }
-    else {
-      this.fields = typeof conf.fields === 'string' ? conf.fields.split(splitter) : conf.fields
-    }
-  }
-}
+// export class SvelteCMSSlugConfig {
+//   fields:string[]
+//   slugify:boolean|ConfigSetting = {}
+//   transliterate:boolean|ConfigSetting = {}
+//   constructor(conf:string|SvelteCMSSlugConfigSetting) {
+//     if (!conf) {
+//       this.fields = ['slug']
+//     }
+//     else if (typeof conf === 'string') {
+//       this.fields = conf.split(splitter)
+//     }
+//     else {
+//       this.fields = typeof conf.fields === 'string' ? conf.fields.split(splitter) : conf.fields
+//       this.slugify = conf.slugify
+//       this.transliterate = conf.transliterate
+//     }
+//     return this
+//   }
+//   fn(content:{[key:string]:any}) {
+//     if (this.fields && this.fields.length) {
+//       let slugtext = this.fields.reduce((t,v) => {
+//         return t + v.toString()
+//       }, '')
 
-export class SvelteCMSContentType{
+//     }
+//   }
+// }
+
+export class SvelteCMSContentType {
   id:string
   title:string = ''
-  slug:SvelteCMSSlugConfig
+  // slug:SvelteCMSSlugConfig
+  contentStore?:SvelteCMSContentStore
   fields:{[key:string]:SvelteCMSContentField} = {}
   constructor(id, conf:SvelteCMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
     this.title = conf.title
-    this.slug = new SvelteCMSSlugConfig(this.slug)
+    // this.slug = new SvelteCMSSlugConfig(this.slug)
+
+    this.contentStore = new SvelteCMSContentStore(conf?.contentStore, cms)
+
     Object.entries(conf.fields).forEach(([id,conf]) => {
       this.fields[id] = new SvelteCMSContentField(id, conf, cms)
     })
@@ -312,5 +390,50 @@ export class SvelteCMSWidget {
     if (widgetType?.optionFields) {
       this.options = cms.getConfigOptionsFromFields(widgetType.optionFields)
     }
+  }
+}
+
+const noStore = async () => {
+  // @ts-ignore
+  console.error(`Store not found: (${this?.['id'] || ''})`)
+}
+
+export class SvelteCMSContentStore {
+  id:string
+  getContent:(contentType:SvelteCMSContentType, opts:ConfigSetting, slug?:string|number)=>Promise<any>
+  saveContent:(content:any, contentType:SvelteCMSContentType, opts:ConfigSetting)=>Promise<any>
+  deleteContent:(content:any, contentType:SvelteCMSContentType, opts:ConfigSetting)=>Promise<any>
+  options: ConfigSetting
+  constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS) {
+    let store = typeof conf === 'string' ? cms.contentStores[conf] : cms.contentStores[conf?.id]
+    if (!store) store = Object.values(cms.contentStores)[0]
+    this.id = store?.id
+    this.getContent = store?.getContent || noStore
+    this.saveContent = store?.saveContent || noStore
+    this.deleteContent = store?.deleteContent || noStore
+    this.options = cms.mergeConfigOptions(
+      cms.getConfigOptionsFromFields(store?.optionFields || {}),
+      store?.options || {},
+      conf?.['options'] || {},
+    )
+  }
+}
+
+export class SvelteCMSMediaStore {
+  id:string
+  saveMedia:(files:any, contentType:SvelteCMSContentType, field:SvelteCMSContentField) => Promise<any>
+  deleteMedia:(files:any, contentType:SvelteCMSContentType, field:SvelteCMSContentField) => Promise<any>
+  options: ConfigSetting
+  constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS) {
+    let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf.id]
+    if (!store) store = Object.values(cms.mediaStores)[0]
+    this.id = store?.id
+    this.saveMedia = store?.saveMedia || noStore
+    this.deleteMedia = store?.deleteMedia || noStore
+    this.options = cms.mergeConfigOptions(
+      cms.getConfigOptionsFromFields(store?.optionFields || {}),
+      store?.options || {},
+      conf?.['options'] || {}
+    )
   }
 }

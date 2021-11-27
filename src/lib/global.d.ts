@@ -1,7 +1,7 @@
 /// <reference types="@sveltejs/kit" />
 
+import type { SvelteCMSContentField, SvelteCMSContentType } from "$lib"
 import type { SvelteComponent, SvelteComponentDev } from "svelte/internal"
-import type { OptionsSlugify, OptionsTransliterate } from "transliteration/dist/node/src/types"
 import type { Rules } from 'validatorjs'
 
 /**
@@ -16,6 +16,7 @@ export type SvelteCMSPlugin = {
   contentStores?: SvelteCMSContentStore[]
   mediaStores?: SvelteCMSMediaStore[]
   lists?: SvelteCMSListConfig
+  optionFields?:{[key:string]:SvelteCMSConfigFieldConfigSetting}
 }
 
 export type SvelteCMSPluginBuilder = (config:any) => SvelteCMSPlugin
@@ -31,15 +32,25 @@ export type SvelteCMSFieldFunctionConfig = SvelteCMSFieldFunctionSetting & {
   module:string,
 }
 
+export type SvelteCMSStoreConfigSetting = ConfigSetting & {
+  id:string
+}
+
 export type SvelteCMSConfigSetting = {
   types?: {[key:string]: SvelteCMSContentTypeConfigSetting}
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
+  contentStores?: {[key:string]: SvelteCMSContentStoreConfigSetting}
+  mediaStores?: {[key:string]: SvelteCMSMediaStoreConfigSetting}
+  widgetTypes?: {[key:string]: SvelteCMSWidgetTypeConfigSetting}
+  transformers?: {[key:string]: SvelteCMSFieldFunctionSetting}
 }
 
 export type SvelteCMSContentTypeConfigSetting = {
   title: string
   slug?: string|string[]|SvelteCMSSlugConfigSetting
   fields: {[key:string]:string|SvelteCMSContentFieldConfigSetting}
+  contentStore: string|SvelteCMSStoreConfigSetting
+  mediaStore: string|SvelteCMSStoreConfigSetting
 }
 
 export type SvelteCMSContentFieldConfigSetting = {
@@ -79,16 +90,21 @@ export type SvelteCMSMedia = {
   title?:string,
 }
 
-export type SvelteCMSContentStore = {
-  id:string,
-  fn:(content:any,opts:ConfigSetting,fieldType:SvelteCMSFieldType) => any
-  optionFields?: {[key:string]:string|SvelteCMSConfigFieldConfigSetting}
+export type SvelteCMSContentStoreType = {
+  id:string
+  getContent?:(contentType:SvelteCMSContentType, opts:ConfigSetting, slug?:string|number) => Promise<any>
+  saveContent?:(content:any, contentType:SvelteCMSContentType, opts:ConfigSetting) => Promise<any>
+  deleteContent?:(content:any, contentType:SvelteCMSContentType, opts:ConfigSetting) => Promise<any>
+  optionFields?: {[key:string]:SvelteCMSConfigFieldConfigSetting}
+  options?: ConfigSetting
 }
 
-export type SvelteCMSMediaStore = {
-  id:string,
-  fn:(content:any,opts:ConfigSetting,fieldType:SvelteCMSFieldType) => any
-  optionFields?: {[key:string]:string|SvelteCMSConfigFieldConfigSetting}
+export type SvelteCMSMediaStoreType = {
+  id:string
+  saveMedia:(files:any, contentType:SvelteCMSContentType, field:SvelteCMSContentField) => Promise<any>
+  deleteMedia:(files:any, contentType:SvelteCMSContentType, field:SvelteCMSContentField) => Promise<any>
+  optionFields?: {[key:string]:SvelteCMSConfigFieldConfigSetting}
+  options?: ConfigSetting
 }
 
 export class SvelteCMSFieldType {
