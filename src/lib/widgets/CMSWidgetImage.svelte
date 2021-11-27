@@ -40,10 +40,13 @@ import type { SvelteCMSContentField } from "$lib";
   export let value:string|CMSImage|string[]|CMSImage[]|{} = field.multiple ? [] : (isString ? '' : {})
 
   // The "files" variable holds the uploaded file objects
-  let files
+  export let files = undefined
+
+  // The "previews" variable holds the preview images
+  export let previews = undefined
 
   // The "input" variable holds the form upload element
-  let input
+  export let input = undefined
 
   // The "objectUrls" variable holds the image created by URL.createObjectURL() for each uploaded file
   let objectUrls:{[filename:string]:string} = {}
@@ -53,7 +56,7 @@ import type { SvelteCMSContentField } from "$lib";
   $: previews = Array.isArray(value) ? value.map(getPreview).filter(v => v?.length || v?.src) : [getPreview(value)].filter(v => v?.length || v?.src)
 
   // Gets a CMSPreviewImage from a CMSImage (or url string)
-  function getPreview(f:string|CMSImage):CMSPreviewImage {
+  export let getPreview = (f:string|CMSImage):CMSPreviewImage => {
     let src = typeof f === 'string' ? f : f?.src
     return {
       src: objectUrls?.[src] || src,
@@ -63,7 +66,7 @@ import type { SvelteCMSContentField } from "$lib";
   }
 
   // Handles uploads to the file field
-  function handleUpload() {
+  export let handleUpload = () => {
 
     // For ease of processing, get an array of all src attributes
     let srcs = previews.map(img => img.title); // The filename/url is always the title of a CMSPreviewImage
@@ -92,7 +95,7 @@ import type { SvelteCMSContentField } from "$lib";
 
   }
 
-  function deleteImage(previewIndex) {
+  export let deleteImage = (previewIndex) => {
     // For fields that are not multiple, we can just delete the database object
     if (!multiple) {
       if (isString) value = ''
