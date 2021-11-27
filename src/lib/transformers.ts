@@ -1,5 +1,6 @@
 import type { SvelteCMSFieldTransformer } from './global'
 import sanitizeHtml from 'sanitize-html'
+import slugify from '@sindresorhus/slugify'
 
 const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
   toString: {
@@ -53,20 +54,68 @@ const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
   tags: {
     id: 'tags',
     fn: function parseTags(v,opts) {
-      let regex = opts.allowSpaces ? new RegExp(`\s*${opts.delimiter}\s*`,'g') : new RegExp(`(?:\s|${opts.delimiter})+`, 'g')
-      return v?.toString()?.split(regex) || v
+      let regex = opts.splitOnSpaces ? new RegExp(`(?:\s|${opts.delimiter})+`, 'g') : new RegExp(`${opts.delimiter}`, 'g')
+      let items = v?.toString()?.split(regex) || v
+      if (Array.isArray(items) && opts.trimItems) items = items.map(i => i.trim())
+      return items
     },
     optionFields: {
       delimiter: {
         type: 'text',
         default: ','
       },
-      allowSpaces: {
+      splitOnSpaces: {
         type: 'boolean',
-        default: true,
+        default: false,
+      },
+      trimItems: {
+        type: 'boolean',
+        default: true
       },
     },
   },
+  slugify: {
+    id: 'slugify',
+    fn: (v,opts) => {
+      if (Array.isArray(opts?.customReplacements) && opts.customReplacements.length) {
+        // @ts-ignore
+        opts.customReplacements = opts.customReplacements.map(pair => {
+          if (typeof pair === 'string') {
+            return pair.split(':').map(i => i ?? '')
+          }
+          return ['','']
+        })
+      }
+      return slugify(v, opts)
+    },
+    optionFields: {
+      separator: {
+        type: "text",
+        default: '-',
+      },
+      lowercase: {
+        type: 'boolean',
+        default: true,
+      },
+      decamelize: {
+        type: 'boolean',
+        default: true,
+      },
+      customReplacements: {
+        type: 'tags',
+        default: [],
+        description: `the format is "from:to,from2:to2". To remove a character, use "from:". To separate the word, use e.g. "@: at " (with spaces).`
+      },
+      preserveLeadingUnderscore: {
+        type: 'boolean',
+        default: false,
+      },
+      preserveTrailingDash: {
+        type: 'boolean',
+        default: false,
+      },
+    }
+  }
 }
 
 export default transformers
