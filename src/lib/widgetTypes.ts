@@ -145,6 +145,7 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
     fieldTypes: ['image'],
     widget: CMSWidgetImage,
     handlesMultiple: true,
+    handlesMedia: true,
     optionFields: {
       accept: {
         type: 'text',
@@ -186,6 +187,7 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
     fieldTypes: ['image'],
     widget: CMSWidgetFile,
     handlesMultiple: true,
+    handlesMedia: true,
     optionFields: {
       accept: {
         type: 'text',

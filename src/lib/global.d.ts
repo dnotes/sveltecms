@@ -140,6 +140,7 @@ export type SvelteCMSWidgetType = {
   widget:Object
   fieldTypes:string[]
   handlesMultiple?:boolean
+  handlesMedia?:boolean
   optionFields?:{[key:string]:SvelteCMSConfigFieldConfigSetting}
   hidden?:boolean
 }

@@ -48,8 +48,8 @@ import type { SvelteCMSContentField } from "$lib";
   // The "input" variable holds the form upload element
   export let input = undefined
 
-  // The "objectUrls" variable holds the image created by URL.createObjectURL() for each uploaded file
-  let objectUrls:{[filename:string]:string} = {}
+  // The "previewUrls" variable holds the image created by uploading or running URL.createObjectURL() for each uploaded file
+  let previewUrls:{[filename:string]:string} = {}
 
   // The "previews" variable is a computed array of all "value" images, in the correct format for previewing
   // @ts-ignore
@@ -59,7 +59,7 @@ import type { SvelteCMSContentField } from "$lib";
   export let getPreview = (f:string|CMSImage):CMSPreviewImage => {
     let src = typeof f === 'string' ? f : f?.src
     return {
-      src: objectUrls?.[src] || src,
+      src: previewUrls?.[src] || src,
       alt: f?.['alt'] || src,
       title: src
     }
@@ -68,15 +68,33 @@ import type { SvelteCMSContentField } from "$lib";
   // Handles uploads to the file field
   export let handleUpload = () => {
 
+    // ensure that there is a mediastore
+    if (!field?.['mediaStore']) throw new Error(`There is no media store for field ${field.id}`)
+
     // For ease of processing, get an array of all src attributes
     let srcs = previews.map(img => img.title); // The filename/url is always the title of a CMSPreviewImage
 
     // Check each of the uploaded files
-    [...files].forEach(file => {
-      // If it does not have an objectUrl (i.e. it has not been parsed yet)
-      if (!objectUrls[file.name]) {
-        // Create an objectUrl
-        objectUrls[file.name] = URL.createObjectURL(file)
+    [...files].forEach(async file => {
+
+      // If it does not have a previewUrl (i.e. it has not been parsed yet)
+      if (!previewUrls.hasOwnProperty(file.name)) {
+
+        // FOR IMMEDIATELY UPLOADED PREVIEWS
+        if (true) { // TODO: make this an option in the widget
+
+          previewUrls[file.name] = ''
+          let url = await field.mediaStore.save(file)
+          previewUrls[file.name] = url
+
+        }
+
+        // FOR BLOB PREVIEWS (TODO)
+        // else {
+        //   // Create an objectUrl
+        //   previewUrls[file.name] = URL.createObjectURL(file)
+        // }
+
         // Create newValue to add to or replace the "value" variable
         let newValue = isString ? file.name : { src:file.name }
         // Add to or replace "value"
@@ -87,7 +105,9 @@ import type { SvelteCMSContentField } from "$lib";
         else {
           value = newValue
         }
+
       }
+
     })
 
     // Finally, release any unused objectUrl entries
@@ -107,8 +127,11 @@ import type { SvelteCMSContentField } from "$lib";
   }
 
   function releaseObjectUrls() {
-    Object.entries(objectUrls).forEach(([src,url]) => {
-      if (!previews.find(p => p.title === src)) URL.revokeObjectURL(url)
+    Object.entries(previewUrls).forEach(([src,url]) => {
+      if (!previews.find(p => p.title === src)) {
+        if (url.startsWith('blob')) URL.revokeObjectURL(url)
+        delete previewUrls[src]
+      }
     })
   }
 

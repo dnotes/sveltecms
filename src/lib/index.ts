@@ -193,14 +193,6 @@ export default class SvelteCMS {
     return db.deleteContent(this.preSave(contentType, content), type, db.options)
   }
 
-  async saveMedia(contentType:string, media:any) {
-
-  }
-
-  async deleteMedia(contentType:string, media:any) {
-
-  }
-
   runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|SvelteCMSFieldFunctionSetting, value) {
     let id = typeof conf === 'string' ? conf : conf.id
     let func = this[functionType][id]
@@ -299,6 +291,7 @@ export class SvelteCMSContentType {
   title:string = ''
   // slug:SvelteCMSSlugConfig
   contentStore?:SvelteCMSContentStore
+  mediaStore?:SvelteCMSStore
   fields:{[key:string]:SvelteCMSContentField} = {}
   constructor(id, conf:SvelteCMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
@@ -306,9 +299,10 @@ export class SvelteCMSContentType {
     // this.slug = new SvelteCMSSlugConfig(this.slug)
 
     this.contentStore = new SvelteCMSContentStore(conf?.contentStore, cms)
+    this.mediaStore = new SvelteCMSStore('media', conf?.mediaStore, cms, this)
 
     Object.entries(conf.fields).forEach(([id,conf]) => {
-      this.fields[id] = new SvelteCMSContentField(id, conf, cms)
+      this.fields[id] = new SvelteCMSContentField(id, conf, cms, this)
     })
   }
 }
@@ -330,7 +324,8 @@ export class SvelteCMSContentField {
   preSave?:(string|SvelteCMSFieldFunctionSetting)[]
   preMount?:(string|SvelteCMSFieldFunctionSetting)[]
   class:string = ''
-  constructor(id, conf:string|SvelteCMSContentFieldConfigSetting, cms:SvelteCMS) {
+  mediaStore?:SvelteCMSStore
+  constructor(id, conf:string|SvelteCMSContentFieldConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
 
     // Set the field's id. This identifies the instance, not the field type;
     // in values objects, the key would be this id, e.g. values[id] = 'whatever'
@@ -370,9 +365,12 @@ export class SvelteCMSContentField {
       if (conf.fields) {
         this.fields = {}
         Object.entries(conf.fields).forEach(([id, conf]) => {
-          this.fields[id] = new SvelteCMSContentField(id, conf, cms)
+          this.fields[id] = new SvelteCMSContentField(id, conf, cms, contentType)
         })
       }
+    }
+    if (this.widget.handlesMedia) {
+      this.mediaStore = new SvelteCMSStore('media', conf?.['mediaStore'], cms, contentType)
     }
   }
 }
@@ -381,12 +379,14 @@ export class SvelteCMSWidget {
   type: string
   widget: Object
   handlesMultiple: boolean
+  handlesMedia: boolean
   options?: ConfigSetting
   constructor(conf:string|SvelteCMSWidgetTypeConfigSetting, cms:SvelteCMS) {
     let widgetType = typeof conf === 'string' ? cms.widgetTypes[conf] : cms.widgetTypes[conf.id]
     this.type = widgetType?.id
     this.widget = widgetType?.widget
     this.handlesMultiple = widgetType?.handlesMultiple || false
+    this.handlesMedia = widgetType?.handlesMedia || false
     if (widgetType?.optionFields) {
       this.options = cms.getConfigOptionsFromFields(widgetType.optionFields)
     }
@@ -400,10 +400,10 @@ const noStore = async () => {
 
 export class SvelteCMSContentStore {
   id:string
-  getContent:(contentType:SvelteCMSContentType, opts:ConfigSetting, slug?:string|number)=>Promise<any>
-  saveContent:(content:any, contentType:SvelteCMSContentType, opts:ConfigSetting)=>Promise<any>
-  deleteContent:(content:any, contentType:SvelteCMSContentType, opts:ConfigSetting)=>Promise<any>
-  options: ConfigSetting
+  getContent:(contentType:SvelteCMSContentType, options:ConfigSetting, slug?:string|number)=>Promise<any>
+  saveContent:(content:any, contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any>
+  deleteContent:(content:any, contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any>
+  options:ConfigSetting
   constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS) {
     let store = typeof conf === 'string' ? cms.contentStores[conf] : cms.contentStores[conf?.id]
     if (!store) store = Object.values(cms.contentStores)[0]
@@ -419,21 +419,29 @@ export class SvelteCMSContentStore {
   }
 }
 
-export class SvelteCMSMediaStore {
+export class SvelteCMSStore {
   id:string
-  saveMedia:(files:any, contentType:SvelteCMSContentType, field:SvelteCMSContentField) => Promise<any>
-  deleteMedia:(files:any, contentType:SvelteCMSContentType, field:SvelteCMSContentField) => Promise<any>
-  options: ConfigSetting
-  constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS) {
-    let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf.id]
-    if (!store) store = Object.values(cms.mediaStores)[0]
-    this.id = store?.id
-    this.saveMedia = store?.saveMedia || noStore
-    this.deleteMedia = store?.deleteMedia || noStore
+  list:(options?:ConfigSetting)=>Promise<string[]>
+  get:(slug?:string|number|null, options?:ConfigSetting)=>Promise<string|string[]>
+  save:(file:any, options?:ConfigSetting)=>Promise<any>
+  delete:(file:any, options?:ConfigSetting)=>Promise<any>
+  options:ConfigSetting
+  constructor(storeType:'content'|'media', conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
+    let id = typeof conf === 'string' ? conf : conf?.id
+    let stores = `${storeType}Stores`
+    let store
+    if (id) store = contentType?.[stores]?.[id] || cms?.[stores]?.[id]
+    if (!store) store = contentType?.[stores] ? Object.values(contentType?.[stores])[0] : Object.values(cms[stores])[0]
+
+    this.id = store?.id || id
+    this.list = store?.list ? store.list.bind(this) : async () => { console.error(store?.id ? `No function 'list' for store '${id}'` : `Store ${id} not found`)}
+    this.get = store?.get ? store.get.bind(this) : async () => { console.error(store?.id ? `No function 'get' for store '${id}'` : `Store ${id} not found`)}
+    this.save = store?.save ? store.save.bind(this) : async () => { console.error(store?.id ? `No function 'save' for store '${id}'` : `Store ${id} not found`)}
+    this.delete = store?.delete ? store.delete.bind(this)  : async () => { console.error(store?.id ? `No function 'delete' for store '${id}'` : `Store ${id} not found`)}
     this.options = cms.mergeConfigOptions(
       cms.getConfigOptionsFromFields(store?.optionFields || {}),
       store?.options || {},
-      conf?.['options'] || {}
+      conf?.['options'] || {},
     )
   }
 }
