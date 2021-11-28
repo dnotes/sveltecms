@@ -1,6 +1,6 @@
 import type { SvelteCMSFieldTransformer } from './global'
 import sanitizeHtml from 'sanitize-html'
-import slugify from '@sindresorhus/slugify'
+// import slugify from '@sindresorhus/slugify'
 
 const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
   toString: {
@@ -74,48 +74,48 @@ const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
       },
     },
   },
-  slugify: {
-    id: 'slugify',
-    fn: (v,opts) => {
-      if (Array.isArray(opts?.customReplacements) && opts.customReplacements.length) {
-        // @ts-ignore
-        opts.customReplacements = opts.customReplacements.map(pair => {
-          if (typeof pair === 'string') {
-            return pair.split(':').map(i => i ?? '')
-          }
-          return ['','']
-        })
-      }
-      return slugify(v, opts)
-    },
-    optionFields: {
-      separator: {
-        type: "text",
-        default: '-',
-      },
-      lowercase: {
-        type: 'boolean',
-        default: true,
-      },
-      decamelize: {
-        type: 'boolean',
-        default: true,
-      },
-      customReplacements: {
-        type: 'tags',
-        default: [],
-        description: `the format is "from:to,from2:to2". To remove a character, use "from:". To separate the word, use e.g. "@: at " (with spaces).`
-      },
-      preserveLeadingUnderscore: {
-        type: 'boolean',
-        default: false,
-      },
-      preserveTrailingDash: {
-        type: 'boolean',
-        default: false,
-      },
-    }
-  }
+  // slugify: {
+  //   id: 'slugify',
+  //   fn: (v,opts) => {
+  //     if (Array.isArray(opts?.customReplacements) && opts.customReplacements.length) {
+  //       // @ts-ignore
+  //       opts.customReplacements = opts.customReplacements.map(pair => {
+  //         if (typeof pair === 'string') {
+  //           return pair.split(':').map(i => i ?? '')
+  //         }
+  //         return ['','']
+  //       })
+  //     }
+  //     return slugify(v, opts)
+  //   },
+  //   optionFields: {
+  //     separator: {
+  //       type: "text",
+  //       default: '-',
+  //     },
+  //     lowercase: {
+  //       type: 'boolean',
+  //       default: true,
+  //     },
+  //     decamelize: {
+  //       type: 'boolean',
+  //       default: true,
+  //     },
+  //     customReplacements: {
+  //       type: 'tags',
+  //       default: [],
+  //       description: `the format is "from:to,from2:to2". To remove a character, use "from:". To separate the word, use e.g. "@: at " (with spaces).`
+  //     },
+  //     preserveLeadingUnderscore: {
+  //       type: 'boolean',
+  //       default: false,
+  //     },
+  //     preserveTrailingDash: {
+  //       type: 'boolean',
+  //       default: false,
+  //     },
+  //   }
+  // }
 }
 
 export default transformers
