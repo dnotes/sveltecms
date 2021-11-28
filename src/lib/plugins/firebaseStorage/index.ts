@@ -77,9 +77,6 @@ const storageBuilder:SvelteCMSPluginBuilder = (options: {firebaseConfig: {
             console.error(e)
           }
         },
-        async delete(file, field, opts = {}) {
-
-        },
         optionFields,
       }
     ],
