@@ -6,11 +6,13 @@ import type {
   SvelteCMSFieldType,
   SvelteCMSWidgetType,
   SvelteCMSFieldTransformer,
+  SvelteCMSFieldTransformerSetting,
   SvelteCMSPlugin,
   SvelteCMSListConfig,
   SvelteCMSContentStoreType,
   SvelteCMSMediaStoreType,
-  SvelteCMSFieldFunctionSetting,
+  SvelteCMSFieldFunctionType,
+  SvelteCMSFieldFunctionConfigSetting,
   SvelteCMSConfigFieldConfigSetting,
   ConfigSetting,
   SvelteCMSWidgetTypeConfigSetting,
@@ -21,15 +23,23 @@ import getLabelFromID from "./utils/getLabelFromID"
 import transformers from './transformers'
 import fieldTypes from './fieldTypes'
 import widgetTypes from './widgetTypes'
-import * as lodash from 'lodash'
-const { cloneDeep, mergeWith } = lodash
+import { functions, parseFieldFunctionScript, SvelteCMSFieldFunctionConfig } from './fieldFunctions'
+import { cloneDeep, mergeWith, get as getProp, has as hasProp } from 'lodash-es'
 
 import { default as Validator, Rules } from 'validatorjs'
 
 const splitter = /\s*,\s*/g
 
+export const SvelteCMSContentFieldPropsAllowFunctions = [
+  'label', 'tooltip', 'required', 'disabled',
+  'hidden', 'class', 'default', 'value',
+  'collapsible', 'collapsed',
+  'multiple', 'multipleLabel', 'multipleMin', 'multipleMax',
+]
+
 export default class SvelteCMS {
 
+  fieldFunctions:{[key:string]:SvelteCMSFieldFunctionType} = functions
   fieldTypes:{[key:string]:SvelteCMSFieldType} = fieldTypes
   widgetTypes:{[key:string]:SvelteCMSWidgetType} = widgetTypes
   transformers:{[key:string]:SvelteCMSFieldTransformer} = transformers
@@ -48,14 +58,28 @@ export default class SvelteCMS {
       else this.lists[key] = list
     });
 
+    // Initialize all of the stores, widgets, and transformers specified in config
     ['contentStores', 'mediaStores', 'widgetTypes', 'transformers'].forEach(objectType => {
       if (conf?.[objectType]) {
         Object.entries(conf[objectType]).forEach(([k,settings]) => {
-          const type = conf[objectType][k].type
-          if (this[objectType][k]) { Object.assign(this[objectType][k], settings) }
-          else if (this[objectType][type]) {
-            this[objectType][k] = Object.assign(cloneDeep(this[objectType][type]), { id:k }, settings)
-          }
+
+          // config can:
+          // - create a new item (`conf.widgetTypes.newItem = ...`)
+          // - modify an existing item (`conf.widgetTypes.text = ...`)
+          // - create a new item based on an existing item (`conf.widgetTypes.longtext = { type:"text", ... })
+          const type = conf[objectType][k].type || k
+
+          // we merge all of the following
+          this[objectType][type] = this.mergeConfigOptions(
+            // the base item of this type
+            cloneDeep(this[objectType][type] || {}),
+            // the config item
+            // @ts-ignore
+            settings,
+            // the config item, as a set of options (for shorthand)
+            { options: settings }
+          )
+
         })
       }
     });
@@ -76,7 +100,7 @@ export default class SvelteCMS {
           this[k][conf.id] = conf
         }
         catch(e) {
-          console.log(this)
+          console.error(this)
           throw e
         }
       })
@@ -88,7 +112,7 @@ export default class SvelteCMS {
     let res = {}
     Object.entries(container.fields).forEach(([id,field]) => {
       try {
-        if (field?.fields && values[id]) {
+        if (field?.fields && values?.[id]) {
           if (Array.isArray(values[id])) {
             res[id] = []
             for (let i=0;i<values[id].length;i++) {
@@ -134,12 +158,11 @@ export default class SvelteCMS {
   doTransforms(op:'preSave'|'preMount', field:SvelteCMSContentField, value:any) {
     try {
       if (field[op] && field[op].length && value !== undefined && value !== null) {
-        field[op].forEach((functionConfig:SvelteCMSFieldFunctionSetting) => {
+        field[op].forEach((functionConfig:SvelteCMSFieldTransformerSetting) => {
           if (Array.isArray(value)) {
             value = value.map(v => this.runFunction('transformers', functionConfig, v))
           }
           value = this.runFunction('transformers', functionConfig, value)
-          // console.log(`after: (${typeof value}) ${value}`)
         })
       }
       return value
@@ -155,9 +178,28 @@ export default class SvelteCMS {
     return this.types[contentType]
   }
 
+  getCollection(contentType:string, valuePath:string):SvelteCMSContentField {
+    if (!this.types[contentType]) throw new Error (`Content type not found: ${contentType}`)
+    let type = this.types[contentType]
+    let configPath = getConfigPathFromValuePath(valuePath)
+    let field = <SvelteCMSContentField> getProp(type, configPath)
+    if (!field || !(field?.type === 'collection') || !(field?.fields)) throw new Error (`${contentType}.${configPath} is not a valid collection`)
+    return field
+  }
+
   getContentStore(contentType:string) {
     const type = this.getContentType(contentType)
     return type.contentStore
+  }
+
+  async listContent(contentType:string, options:{[key:string]:any} = {}) {
+    const type = this.getContentType(contentType)
+    const db = this.getContentStore(contentType)
+    Object.assign(db.options, options)
+    const rawContent = await db.listContent(type, db.options)
+    if (!rawContent) return
+    if (options.getRaw) return rawContent
+    return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
 
   /**
@@ -175,6 +217,7 @@ export default class SvelteCMS {
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
     const rawContent = await db.getContent(type, db.options, slug)
+    if (!rawContent) return
     if (options.getRaw) return rawContent
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
@@ -193,7 +236,7 @@ export default class SvelteCMS {
     return db.deleteContent(this.preSave(contentType, content), type, db.options)
   }
 
-  runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|SvelteCMSFieldFunctionSetting, value) {
+  runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|SvelteCMSFieldTransformerSetting, value) {
     let id = typeof conf === 'string' ? conf : conf.id
     let func = this[functionType][id]
     if (!func) throw new Error(`${functionType}.${id} does not exist!`)
@@ -246,6 +289,81 @@ export default class SvelteCMS {
     return new Validator(values, conf)
   }
 
+  getWidgetFields(
+    collection:SvelteCMSContentType|SvelteCMSContentField,
+    vars:{ values:any, errors:any, touched:any, id?:string }
+  ):SvelteCMSWidgetFieldCollection {
+    let c = cloneDeep(collection)
+    // @ts-ignore
+    c.eventListeners = []
+    Object.keys(c.fields).forEach(id => {
+      this.initializeContentField(c.fields[id], {...vars, id})
+      // @ts-ignore
+      c.fields[id].events?.forEach(e => c.eventListeners.push(e))
+    })
+    // @ts-ignore
+    return c
+  }
+
+  initializeContentField(field:SvelteCMSContentField, vars:{ values:any, errors:any, touched:any, id?:string }) {
+    field.values = vars?.values || {}
+    field.errors = vars?.errors || {}
+    field.touched = vars?.touched || {}
+    SvelteCMSContentFieldPropsAllowFunctions.forEach(prop => {
+      let func = getProp(field, prop)
+      if (func?.function && typeof func.function === 'string') {
+        this.initializeFunction(field, prop, {...vars, field})
+      }
+    })
+    // @ts-ignore
+    field.events = field?.events?.map(e => { return {
+      on: e.on,
+      id: vars.id,
+      function: new SvelteCMSFieldFunction(e.function, {...vars, field}, this)
+    }})
+
+    if (field.widget.options) this.initializeConfigOptions(field.widget.options, {...vars, field})
+  }
+
+  /**
+   * Converts an object property (e.g. on a SvelteCMSContentField or an options object) into a getter which runs
+   * one of the available functions.
+   * @param obj The object on which the property is to be defined
+   * @param prop The name of the property
+   * @param vars The vars object for the defined function
+   */
+  initializeFunction(obj:{[key:string]:any}, prop:string, vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }) {
+    let conf = cloneDeep(getProp(obj, prop))
+    // console.log({name:'preInitializeFunction', obj, prop, conf:cloneDeep(conf)}) // debug functions
+    let func = new SvelteCMSFieldFunction(conf, vars, this)
+    // special case for the function that only runs once
+    let parentPath = prop.replace(/(?:(?:^|\.)[^\.]+|\[[^\]]\])$/, '')
+    let propPath = prop.replace(/^.+\./, '')
+    let parent = parentPath.length ? getProp(obj, parentPath) : obj
+    if (func.id === 'once') {
+      parent[propPath] = func.fn(vars, func.options)
+    }
+    else {
+      Object.defineProperty(parent, propPath, {
+        get: () => {
+          let result = func.fn(vars, func.options)
+          // console.log({ name:'run', result, vars, func }) // debug functions
+          return result
+        }
+      })
+    }
+    // console.log({name:'postInitializeFunction',obj,conf:cloneDeep(conf),func,parentPath,propPath,parent,vars}) // debug functions
+  }
+
+  initializeConfigOptions(options, vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }) {
+    // console.log({name:'initializeConfigOptions', count:Object.keys(options).length, options:cloneDeep(options)}) // debug functions
+    Object.keys(options).forEach(k => {
+      if (options[k]?.function && typeof options[k]?.function === 'string') {
+        this.initializeFunction(options, k, vars)
+      }
+    })
+  }
+
   getValidatorConfig(fieldset:{[id:string]:SvelteCMSContentField}):Rules {
     let configValues = {}
     Object.keys(fieldset).forEach(k => {
@@ -288,18 +406,16 @@ export default class SvelteCMS {
 
 export class SvelteCMSContentType {
   id:string
-  title:string = ''
+  label:string = ''
   // slug:SvelteCMSSlugConfig
   contentStore?:SvelteCMSContentStore
-  mediaStore?:SvelteCMSStore
   fields:{[key:string]:SvelteCMSContentField} = {}
   constructor(id, conf:SvelteCMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
-    this.title = conf.title
+    this.label = conf.label || getLabelFromID(this.id)
     // this.slug = new SvelteCMSSlugConfig(this.slug)
 
     this.contentStore = new SvelteCMSContentStore(conf?.contentStore, cms)
-    this.mediaStore = new SvelteCMSStore('media', conf?.mediaStore, cms, this)
 
     Object.entries(conf.fields).forEach(([id,conf]) => {
       this.fields[id] = new SvelteCMSContentField(id, conf, cms, this)
@@ -307,24 +423,58 @@ export class SvelteCMSContentType {
   }
 }
 
+export type SvelteCMSWidgetField = SvelteCMSContentField & {
+  required:boolean,
+  disabled:boolean,
+  hidden:boolean,
+  collapsible:boolean,
+  collapsed:boolean,
+  multiple:boolean,
+}
+
+export type SvelteCMSWidgetFieldCollection = {
+  fields: {[id:string]: SvelteCMSWidgetField}
+  [key:string]:any
+}
+
 export class SvelteCMSContentField {
   id: string
   type: string
-  title: string
+
+  // should be implemented by every widget
+  label: string|SvelteCMSFieldFunctionConfig
+  tooltip?: string|SvelteCMSFieldFunctionConfig = ''
+  required?: boolean|SvelteCMSFieldFunctionConfig
+  disabled?: boolean|SvelteCMSFieldFunctionConfig
+
+  // should be implemented by the CMS
+  hidden?: boolean|SvelteCMSFieldFunctionConfig
+  class:string|SvelteCMSFieldFunctionConfig = ''
   default?: any
-  description?: string = ''
-  required?: boolean
-  disabled?: boolean
-  multiple?: boolean
-  minValues?: number
-  maxValues?: number
+  value?: any
+  events?:{on:string,function:SvelteCMSFieldFunctionConfig}[]
+
+  // implemented only in Multiple and Collection widgets
+  // implement as needed in custom widgets
+  collapsible?:boolean|SvelteCMSFieldFunctionConfig
+  collapsed?:boolean|SvelteCMSFieldFunctionConfig
+  multiple?: boolean|SvelteCMSFieldFunctionConfig
+  multipleLabel?:boolean|SvelteCMSFieldFunctionConfig
+  multipleMin?:number|SvelteCMSFieldFunctionConfig
+  multipleMax?:number|SvelteCMSFieldFunctionConfig
+
+  // not implemented in widgets
   validator?: Rules
   fields?:{[key:string]:SvelteCMSContentField}
   widget:SvelteCMSWidget
-  preSave?:(string|SvelteCMSFieldFunctionSetting)[]
-  preMount?:(string|SvelteCMSFieldFunctionSetting)[]
-  class:string = ''
-  mediaStore?:SvelteCMSStore
+  preSave?:(string|SvelteCMSFieldTransformerSetting)[]
+  preMount?:(string|SvelteCMSFieldTransformerSetting)[]
+  mediaStore?:SvelteCMSMediaStore
+
+  // Items that are only used when initialized for an entry form
+  values:{[key:string]:any} = {} // all form values
+  errors:{[key:string]:any} = {} // all form errors
+  touched:{[key:string]:any} = {} // all touched form elements
   constructor(id, conf:string|SvelteCMSContentFieldConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
 
     // Set the field's id. This identifies the instance, not the field type;
@@ -338,7 +488,7 @@ export class SvelteCMSContentField {
 
     if (typeof conf === 'string') {
       this.type = conf // the fieldType.id
-      this.title = getLabelFromID(id) // capitalized sanely
+      this.label = getLabelFromID(id) // capitalized sanely
       this.default = fieldType?.defaultValue
 
       this.widget = new SvelteCMSWidget(fieldType.defaultWidget, cms)
@@ -349,19 +499,39 @@ export class SvelteCMSContentField {
     }
     else {
       this.type = conf.type
-      this.title = conf.title || getLabelFromID(id) // text is required
-      this.description = conf.description || ''
-      this.multiple = conf.multiple ?? undefined
-      this.minValues = conf.minValues ?? undefined
-      this.maxValues = conf.maxValues ?? undefined
-      this.required = conf.required ? true : false
-      this.disabled = conf.disabled ? true : false
+      this.label = parseFieldFunctionScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
+      this.value = parseFieldFunctionScript(conf.value) ?? conf.value
+      this.tooltip = parseFieldFunctionScript(conf.value) ?? (typeof conf.tooltip === 'string' ? conf.tooltip : '')
+
+      if (conf.multiple) {
+        if (hasProp(conf.multiple, 'label') || hasProp(conf.multiple, 'max') || hasProp(conf.multiple, 'min')) {
+          this.multiple = true
+          this.multipleLabel = conf.multiple?.['label']
+          this.multipleMin = conf.multiple?.['min']
+          this.multipleMax = conf.multiple?.['max']
+        }
+        else this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false)
+      }
+
+      if (conf.events) {
+        if (!Array.isArray(conf.events)) conf.events = [conf.events]
+        this.events = conf.events.map(e => {
+          return { on: e.on, function: parseFieldFunctionScript(e.function) }
+        }).filter(e => e.on && e.function)
+      }
+
+      this.default = parseFieldFunctionScript(conf.default) ?? conf.default ?? fieldType.defaultValue
+      this.required = parseFieldFunctionScript(conf.required) ?? (typeof conf.required === 'boolean' ? conf.required : false)
+      this.disabled = parseFieldFunctionScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
+      this.hidden = parseFieldFunctionScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
+      this.collapsible = parseFieldFunctionScript(conf.collapsible) ?? (typeof conf.collapsible === 'boolean' ? conf.collapsible : false)
+      this.collapsed = parseFieldFunctionScript(conf.collapsed) ?? (typeof conf.collapsed === 'boolean' ? conf.collapsed : false)
       this.widget = new SvelteCMSWidget(conf.widget || fieldType.defaultWidget, cms)
       if (conf?.widgetOptions) this.widget.options = cms.mergeConfigOptions(this.widget.options, conf.widgetOptions)
       this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.defaultPreSave
       this.preMount = conf.preMount ? ( Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.defaultPreMount
-      this.class = conf.class || ''
+      this.class = parseFieldFunctionScript(conf.class) ?? (typeof conf.class === 'string' ? conf.class : '')
       if (conf.fields) {
         this.fields = {}
         Object.entries(conf.fields).forEach(([id, conf]) => {
@@ -370,7 +540,7 @@ export class SvelteCMSContentField {
       }
     }
     if (this.widget.handlesMedia) {
-      this.mediaStore = new SvelteCMSStore('media', conf?.['mediaStore'], cms, contentType)
+      this.mediaStore = new SvelteCMSMediaStore(conf?.['mediaStore'], cms, contentType)
     }
   }
 }
@@ -400,6 +570,7 @@ const noStore = async () => {
 
 export class SvelteCMSContentStore {
   id:string
+  listContent:(contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any[]>
   getContent:(contentType:SvelteCMSContentType, options:ConfigSetting, slug?:string|number)=>Promise<any>
   saveContent:(content:any, contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any>
   deleteContent:(content:any, contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any>
@@ -408,6 +579,7 @@ export class SvelteCMSContentStore {
     let store = typeof conf === 'string' ? cms.contentStores[conf] : cms.contentStores[conf?.id]
     if (!store) store = Object.values(cms.contentStores)[0]
     this.id = store?.id
+    this.listContent = store?.listContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return []; })
     this.getContent = store?.getContent || noStore
     this.saveContent = store?.saveContent || noStore
     this.deleteContent = store?.deleteContent || noStore
@@ -419,29 +591,78 @@ export class SvelteCMSContentStore {
   }
 }
 
-export class SvelteCMSStore {
+export class SvelteCMSMediaStore {
   id:string
-  list:(options?:ConfigSetting)=>Promise<string[]>
-  get:(slug?:string|number|null, options?:ConfigSetting)=>Promise<string|string[]>
-  save:(file:any, options?:ConfigSetting)=>Promise<any>
-  delete:(file:any, options?:ConfigSetting)=>Promise<any>
+  listMedia:(path?:string|null, options?:ConfigSetting)=>Promise<string[]>
+  getMedia:(filename?:string|number|null, options?:ConfigSetting)=>Promise<string|string[]>
+  saveMedia:(file:File, options?:ConfigSetting)=>Promise<any>
+  deleteMedia:(filename:string, options?:ConfigSetting)=>Promise<any>
   options:ConfigSetting
-  constructor(storeType:'content'|'media', conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
-    let id = typeof conf === 'string' ? conf : conf?.id
-    let stores = `${storeType}Stores`
-    let store
-    if (id) store = contentType?.[stores]?.[id] || cms?.[stores]?.[id]
-    if (!store) store = contentType?.[stores] ? Object.values(contentType?.[stores])[0] : Object.values(cms[stores])[0]
-
-    this.id = store?.id || id
-    this.list = store?.list ? store.list.bind(this) : async () => { console.error(store?.id ? `No function 'list' for store '${id}'` : `Store ${id} not found`)}
-    this.get = store?.get ? store.get.bind(this) : async () => { console.error(store?.id ? `No function 'get' for store '${id}'` : `Store ${id} not found`)}
-    this.save = store?.save ? store.save.bind(this) : async () => { console.error(store?.id ? `No function 'save' for store '${id}'` : `Store ${id} not found`)}
-    this.delete = store?.delete ? store.delete.bind(this)  : async () => { console.error(store?.id ? `No function 'delete' for store '${id}'` : `Store ${id} not found`)}
+  constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
+    let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf?.id]
+    if (!store) store = Object.values(cms.mediaStores)[0]
+    this.id = store?.id
+    this.listMedia = store?.listMedia ? store.listMedia.bind(this) : async () => { console.error(store?.id ? `No function 'list' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.getMedia = store?.getMedia ? store.getMedia.bind(this) : async () => { console.error(store?.id ? `No function 'get' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.saveMedia = store?.saveMedia ? store.saveMedia.bind(this) : async () => { console.error(store?.id ? `No function 'save' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.deleteMedia = store?.deleteMedia ? store.deleteMedia.bind(this)  : async () => { console.error(store?.id ? `No function 'delete' for store '${this.id}'` : `Store ${this.id} not found`)}
     this.options = cms.mergeConfigOptions(
       cms.getConfigOptionsFromFields(store?.optionFields || {}),
       store?.options || {},
       conf?.['options'] || {},
     )
   }
+}
+
+export class SvelteCMSFieldFunction {
+  id: string
+  fn: (vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
+  vars: { field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string}
+  options: {[key:string]:string|number|boolean|null|undefined|SvelteCMSFieldTransformer & {options?:any}|(string|number|boolean|null|undefined)[]}
+  constructor(conf:string|SvelteCMSFieldFunctionConfig, vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
+    if (typeof conf === 'string') conf = parseFieldFunctionScript(conf) // this should be rare, but just in case...
+    let func:SvelteCMSFieldFunctionType = cms.fieldFunctions[conf.function]
+    if (!func) throw `field function not found for ${conf}` // this will also happen if the config is bad
+    this.id = func.id
+    this.vars = vars
+    this.fn = func.fn
+    // @ts-ignore
+    this.options = cms.getConfigOptionsFromFields(func?.optionFields || {})
+    if (Array.isArray(conf.params)) {
+      let params = cloneDeep(conf.params)
+      let lastKey
+      Object.keys(func?.optionFields || {}).forEach((k,i) => {
+        // @ts-ignore
+        if (params.length) this.options[k] = params.shift()
+        lastKey = k
+      })
+      // for functions where the last param is an array
+      if (func?.optionFields[lastKey].multiple) {
+        // @ts-ignore
+        if (!Array.isArray(this.options[lastKey])) this.options[lastKey] = [this.options[lastKey]]
+        while (params.length) {
+          // @ts-ignore
+          this.options[lastKey].push(params.shift())
+        }
+      }
+    }
+    // }
+    cms.initializeConfigOptions(this.options, vars)
+    // for transformers
+    if (this.id === 'transform') {
+      this.options.transformer = cms.transformers[this.options?.transformer?.toString()]
+      if (this.options.transformer) this.options.transformer.options = cms.getConfigOptionsFromFields(this.options.transformer)
+    }
+  }
+  run() {
+    this.fn(this.vars, this.options)
+  }
+}
+
+/**
+ * Converts e.g. "points[0].title" to "fields.points.fields.title"
+ * @param path string
+ */
+export function getConfigPathFromValuePath(path:string):string {
+  return 'fields.' + path.replace(/\[\d+\]/g,'').replace(/\./g, '.fields.')
 }

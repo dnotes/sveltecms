@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { SvelteCMSContentField } from "$lib";
+import type { SvelteCMSContentField } from "..";
 
   export let field:SvelteCMSContentField
   export let id:string
@@ -8,17 +8,18 @@ import type { SvelteCMSContentField } from "$lib";
 
   //@ts-ignore
   let opts:{size:number} = field.widget.options
+  // @TODO: <option>s
 
 </script>
 
 {#if field.multiple}
   <label>
     <span>
-      <slot>{field.title}</slot>
+      <slot>{field.label}</slot>
     </span>
     <select
       name={id}
-      title={field.description}
+      title={field.tooltip}
       bind:value
       size={opts?.size || 0}
       multiple
@@ -29,11 +30,11 @@ import type { SvelteCMSContentField } from "$lib";
 {:else}
   <label>
     <span>
-      <slot>{field.title}</slot>
+      <slot>{field.label}</slot>
     </span>
     <select
       name={id}
-      title={field.description}
+      title={field.tooltip}
       bind:value
       size={opts.size || 0}
       disabled={field.disabled}

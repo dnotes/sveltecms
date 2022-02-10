@@ -11,6 +11,7 @@ const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
     id: 'date',
     defaultValue: new Date(),
     defaultWidget: 'date',
+    defaultPreSave: ['date'],
   },
   image: {
     id: 'image',

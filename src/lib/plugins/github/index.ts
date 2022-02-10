@@ -1,4 +1,4 @@
-import type { SvelteCMSPlugin } from "$lib/global"
+import type { SvelteCMSPlugin } from "sveltecms/global"
 
 export const githubContent = {
   id: 'github-content',

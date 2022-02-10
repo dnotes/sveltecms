@@ -17,7 +17,9 @@
 </script>
 
 <script lang="ts">
-import type { SvelteCMSContentField } from "$lib";
+import type { SvelteCMSContentField } from "..";
+import DisplayResult from "../components/DisplayResult.svelte";
+let result
 
   export let field:SvelteCMSContentField
   export let id:string
@@ -43,13 +45,21 @@ import type { SvelteCMSContentField } from "$lib";
   export let files = undefined
 
   // The "previews" variable holds the preview images
+  // It is always an array
   export let previews = undefined
 
   // The "input" variable holds the form upload element
   export let input = undefined
 
   // The "previewUrls" variable holds the image created by uploading or running URL.createObjectURL() for each uploaded file
-  let previewUrls:{[filename:string]:string} = {}
+  let previewUrls:{[filename:string]:{
+    url?:string,
+    blob?:string,
+  }} = {}
+
+  // In case an upload errors out, we display the result for a moment
+  let displayResult
+  $: if (displayResult) setTimeout(() => { displayResult = undefined }, 4000)
 
   // The "previews" variable is a computed array of all "value" images, in the correct format for previewing
   // @ts-ignore
@@ -59,7 +69,7 @@ import type { SvelteCMSContentField } from "$lib";
   export let getPreview = (f:string|CMSImage):CMSPreviewImage => {
     let src = typeof f === 'string' ? f : f?.src
     return {
-      src: previewUrls?.[src] || src,
+      src: previewUrls?.[src]?.url || previewUrls?.[src]?.blob || src,
       alt: f?.['alt'] || src,
       title: src
     }
@@ -83,9 +93,15 @@ import type { SvelteCMSContentField } from "$lib";
         // FOR IMMEDIATELY UPLOADED PREVIEWS
         if (true) { // TODO: make this an option in the widget
 
-          previewUrls[file.name] = ''
-          let url = await field.mediaStore.save(file)
-          previewUrls[file.name] = url
+          previewUrls[file.name] = {}
+          let url
+          try {
+            url = await field.mediaStore.saveMedia(file, field.mediaStore.options)
+            previewUrls[file.name] = { url }
+          }
+          catch(e) {
+            result = e
+          }
 
         }
 
@@ -96,7 +112,9 @@ import type { SvelteCMSContentField } from "$lib";
         // }
 
         // Create newValue to add to or replace the "value" variable
-        let newValue = isString ? file.name : { src:file.name }
+        let newSrc = previewUrls[file.name].url || file.name || ''
+        let newValue = isString ? newSrc : { src:newSrc }
+
         // Add to or replace "value"
         if (field.multiple) {
           if (Array.isArray(value)) value = [...value, newValue]
@@ -116,20 +134,28 @@ import type { SvelteCMSContentField } from "$lib";
   }
 
   export let deleteImage = (previewIndex) => {
-    // For fields that are not multiple, we can just delete the database object
-    if (!multiple) {
-      if (isString) value = ''
-      else value = {}
-    }
+    // For deleting an image, we just remove it from the value.
+    // It will then be removed from previews automatically
+    // (see the line `$: previews =` above)
+    if (!multiple) value = undefined
     else {
       let { title:url } = previews[previewIndex]
+      if (Array.isArray(value)) {
+        let valueIndex = value.findIndex(v => v === url || v?.['src'] === url)
+        if (valueIndex > -1) value.splice(valueIndex, 1)
+        value = value
+      }
+      else {
+        if (value === url || value?.['src'] === url) value = []
+      }
     }
+    releaseObjectUrls()
   }
 
   function releaseObjectUrls() {
-    Object.entries(previewUrls).forEach(([src,url]) => {
+    Object.entries(previewUrls).forEach(([src,obj]) => {
       if (!previews.find(p => p.title === src)) {
-        if (url.startsWith('blob')) URL.revokeObjectURL(url)
+        if (obj?.blob) URL.revokeObjectURL(obj.blob)
         delete previewUrls[src]
       }
     })
@@ -141,11 +167,11 @@ import type { SvelteCMSContentField } from "$lib";
 
   <label>
     <span style="display:inline-block;">
-      <slot>{field.title}</slot>
+      <slot>{field.label}</slot>
     </span>
     <input
       name="{id}[files]"
-      title={field.description}
+      title={field.tooltip}
       type="file"
       bind:files
       bind:this={input}
@@ -155,95 +181,95 @@ import type { SvelteCMSContentField } from "$lib";
       on:change={handleUpload}
       style="display:none"
     />
-    <button style="display:inline-block;" on:click={()=>{input.click()}}>Upload</button>
+    <button type="button" style="display:inline-block;" on:click={()=>{input.click()}}>Upload</button>
   </label>
 
-  <div class="cms-image-preview">
-    {#if Array.isArray(value)}
-      {#each previews as preview, i}
-        <div>
-          <button class="cms-image-delete" aria-label="delete {field.title} image" on:click="{() => {deleteImage(i)}}">✖️</button>
-          <img
-            src="{preview.src}"
-            alt="{preview.alt || ''}"
-            title="{preview.title}" />
+  {#if value && value !== {} && value !== []}
+    <div class="cms-image-preview">
+      {#if Array.isArray(value)}
+        {#each previews as preview, i}
+          <div>
+            <img
+              src="{preview.src}"
+              alt="{preview.alt || ''}"
+              title="{preview.title}" />
 
-          <input
-            type="hidden"
-            name="{id}[{i}]"
-            value="{typeof value[i] === 'string' ? value[i] : value[i]?.['src']}"
-          >
-
-          {#if opts.altField}
-            <input
-              type="text"
-              name="{id}[{i}][alt]"
-              bind:value={value[i]['alt']}
-              placeholder="alt"
-              required={opts.altRequired}
-            >
-          {/if}
-
-          {#if opts.titleField}
-            <input
-              type="text"
-              name="{id}[{i}][title]"
-              bind:value={value[i]['title']}
-              placeholder="title"
-            >
-          {/if}
-
-        </div>
-      {/each}
-    {:else}
-      {#each previews as preview, i}
-        <div>
-          <button class="cms-image-delete" aria-label="delete {field.title} image" on:click="{() => {deleteImage(i)}}">✖️</button>
-          <img
-            src="{preview.src}"
-            alt="{preview.alt || ''}"
-            title="{preview.title}" />
-
-          {#if typeof value === 'string'}
             <input
               type="hidden"
               name="{id}[{i}]"
-              bind:value={value}
+              value="{typeof value[i] === 'string' ? value[i] : value[i]?.['src']}"
             >
-          {:else}
-            <input
-              type="hidden"
-              name="{id}[{i}][src]"
-              bind:value={value['src']}
-            >
-          {/if}
 
-          {#if opts.altField}
-            <input
-              type="text"
-              name="{id}[{i}][alt]"
-              bind:value={value['alt']}
-              placeholder="alt"
-              required={opts.altRequired}
-            >
-          {/if}
+            {#if opts.altField}
+              <input
+                type="text"
+                name="{id}[{i}][alt]"
+                bind:value={value[i]['alt']}
+                placeholder="alt"
+                required={opts.altRequired}
+              >
+            {/if}
 
-          {#if opts.titleField}
-            <input
-              type="text"
-              name="{id}[{i}][title]"
-              bind:value={value['title']}
-              placeholder="title"
-            >
-          {/if}
+            {#if opts.titleField}
+              <input
+                type="text"
+                name="{id}[{i}][title]"
+                bind:value={value[i]['title']}
+                placeholder="title"
+              >
+            {/if}
 
-        </div>
-      {/each}
-    {/if}
-  </div>
+            <button type="button" class="cms-image-delete" aria-label="delete {field.label} image" on:click="{() => {deleteImage(i)}}">✖️</button>
+          </div>
+        {/each}
+      {:else}
+        {#each previews as preview, i}
+          <div>
+            <img
+              src="{preview.src}"
+              alt="{preview.alt || ''}"
+              title="{preview.title}" />
+
+            {#if typeof value === 'string'}
+              <input
+                type="hidden"
+                name="{id}[{i}]"
+                bind:value={value}
+              >
+            {:else}
+              <input
+                type="hidden"
+                name="{id}[{i}][src]"
+                bind:value={value['src']}
+              >
+            {/if}
+
+            {#if opts.altField}
+              <input
+                type="text"
+                name="{id}[{i}][alt]"
+                bind:value={value['alt']}
+                placeholder="alt"
+                required={opts.altRequired}
+              >
+            {/if}
+
+            {#if opts.titleField}
+              <input
+                type="text"
+                name="{id}[{i}][title]"
+                bind:value={value['title']}
+                placeholder="title"
+              >
+            {/if}
+
+            <button type="button" class="cms-image-delete" aria-label="delete {field.label} image" on:click="{() => {deleteImage(i)}}">✖️</button>
+          </div>
+        {/each}
+      {/if}
+    </div>
+  {/if}
+
+  <DisplayResult bind:result />
 
 </fieldset>
-
-<style>
-
-</style>

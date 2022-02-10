@@ -1,30 +1,42 @@
-import type { SvelteCMSStore } from '$lib'
-import type { SvelteCMSConfigFieldConfigSetting, SvelteCMSMediaStoreType, SvelteCMSPlugin, SvelteCMSPluginBuilder } from '$lib/global'
+import type { SvelteCMSConfigFieldConfigSetting, SvelteCMSMediaStoreType, SvelteCMSPluginBuilder } from 'sveltecms/global'
 import { initializeApp } from 'firebase/app'
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getStorage, connectStorageEmulator, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { merge } from 'lodash-es'
 
-const storageBuilder:SvelteCMSPluginBuilder = (options: {firebaseConfig: {
-  apiKey:string
-  authDomain:string
-  projectId:string
-  storageBucket:string
-  messagingSenderId:string
-  appId:string
-}}):SvelteCMSPlugin => {
+type PluginOptions = {
+  firebaseConfig: {
+    apiKey:string
+    authDomain:string
+    projectId:string
+    storageBucket:string
+    messagingSenderId:string
+    appId:string
+  },
+  useEmulators: boolean,
+}
 
-  const firebaseConfig = Object.assign({
+const defaultOptions = {
+  firebaseConfig: {
     apiKey:"",
     authDomain:"",
     projectId:"",
     storageBucket:"",
     messagingSenderId:"",
     appId:"",
-  }, options?.firebaseConfig ?? {})
+  },
+  path: "",
+  useEmulators: false,
+}
+
+
+const storageBuilder:SvelteCMSPluginBuilder = (options:PluginOptions):{mediaStores:SvelteCMSMediaStoreType[]} => {
+
+  const opts = merge({}, defaultOptions, options)
 
   const optionFields:{[key:string]:SvelteCMSConfigFieldConfigSetting} = {
     path: {
       type: 'text',
-      default: '',
+      default: opts?.path ?? "",
     },
     firebaseConfig: {
       type: "collection",
@@ -32,50 +44,56 @@ const storageBuilder:SvelteCMSPluginBuilder = (options: {firebaseConfig: {
       fields: {
         apiKey: {
           type: "text",
-          default: firebaseConfig?.apiKey ?? "",
+          default: opts?.firebaseConfig?.apiKey ?? "",
         },
         authDomain: {
           type: "text",
-          default: firebaseConfig?.authDomain ?? "",
+          default: opts?.firebaseConfig?.authDomain ?? "",
         },
         projectId: {
           type: "text",
-          default: firebaseConfig?.projectId ?? "",
+          default: opts?.firebaseConfig?.projectId ?? "",
         },
         storageBucket: {
           type: "text",
-          default: firebaseConfig?.storageBucket ?? "",
+          default: opts?.firebaseConfig?.storageBucket ?? "",
         },
         messagingSenderId: {
           type: "text",
-          default: firebaseConfig?.messagingSenderId ?? "",
+          default: opts?.firebaseConfig?.messagingSenderId ?? "",
         },
         appId: {
           type: "text",
-          default: firebaseConfig?.appId ?? "",
+          default: opts?.firebaseConfig?.appId ?? "",
         },
       }
     },
+  }
+
+  function getFirebaseStorage() {
+    const app = initializeApp(opts.firebaseConfig)
+    const storage = getStorage(app)
+    if (opts.useEmulators) { // We use only the global useEmulators here. This should not be accessible per field/contentType.
+      console.log('firebaseStorage: using emulators')
+      connectStorageEmulator(storage, 'localhost', 9199)
+    }
+    return storage
   }
 
   return {
     mediaStores: [
       {
         id: 'firebaseStorage',
-        async save(file, field, options = {}):Promise<string> {
-          let opts = Object.assign({}, this.options || {}, options)
-          try {
-            // @ts-ignore
-            const app = initializeApp(opts.firebaseConfig)
-            const storage = getStorage(app)
-            const fileRef = ref(storage, `${opts.path}/${file.name}`.replace(/\/+/g,'/'))
-            return uploadBytes(fileRef, file).then(snap => {
-              return getDownloadURL(fileRef)
-            })
-          }
-          catch(e) {
-            console.error(e)
-          }
+        async getMedia(filename, opts):Promise<string> {
+          const storage = getFirebaseStorage()
+          const fileRef = ref(storage, `${opts.path ?? this.opts.path ?? ''}/${filename}`.replace(/\/+/g,'/'))
+          return getDownloadURL(fileRef)
+        },
+        async saveMedia(file, opts):Promise<string> {
+          const storage = getFirebaseStorage()
+          const fileRef = ref(storage, `${opts.path ?? this.opts.path ?? ''}/${file.name}`.replace(/\/+/g,'/'))
+          const snap = await uploadBytes(fileRef, file)
+          return getDownloadURL(fileRef)
         },
         optionFields,
       }

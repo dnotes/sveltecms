@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { SvelteCMSContentField } from "$lib";
+import type { SvelteCMSContentField } from "..";
 
   export let field:SvelteCMSContentField
   export let id:string
@@ -13,12 +13,12 @@ import type { SvelteCMSContentField } from "$lib";
 
 <label>
   <span>
-    <slot>{field.title}</slot>
+    <slot>{field.label}</slot>
   </span>
   <input
     name="{id}"
     type="range"
-    title="{field.description}"
+    title="{field.tooltip}"
     bind:value
     min="{opts.min}"
     max="{opts.max}"

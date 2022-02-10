@@ -126,6 +126,7 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
         default: undefined,
         widget: 'select',
         widgetOptions: {
+          // @ts-ignore
           options: ['none','both','horizontal','vertical']
         }
       },
@@ -139,6 +140,13 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
     id: 'checkbox',
     fieldTypes: ['boolean'],
     widget: CMSWidgetCheckbox,
+    optionFields: {
+      labelBeforeCheckbox: {
+        type: 'boolean',
+        default: false,
+        tooltip: 'Render the text label before the checkbox element in HTML markup.',
+      }
+    }
   },
   image: {
     id: 'image',
@@ -150,27 +158,27 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
       accept: {
         type: 'text',
         default: 'image/*',
-        description: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       },
       altField: {
         type: 'boolean',
         default: true,
-        description: 'Show a field for the "alt" attribute'
+        tooltip: 'Show a field for the "alt" attribute'
       },
       altRequired: {
         type: 'boolean',
         default: false,
-        description: 'Require "alt" attribute'
+        tooltip: 'Require "alt" attribute'
       },
       titleField: {
         type: 'boolean',
         default: false,
-        description: 'Show a field for the "title" attribute'
+        tooltip: 'Show a field for the "title" attribute'
       },
       createThumbnail: {
         type: 'boolean',
         default: false,
-        description: 'Create a thumbnail from the image when saving, and allow editor to set the crop coordinates'
+        tooltip: 'Create a thumbnail from the image when saving, and allow editor to set the crop coordinates'
       },
       thumbnailHeight: {
         type: 'number',
@@ -192,7 +200,7 @@ const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
       accept: {
         type: 'text',
         default: undefined,
-        description: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       }
     }
   },

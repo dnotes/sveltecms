@@ -1,15 +1,36 @@
-import type { SvelteCMSPlugin, SvelteCMSPluginBuilder, SvelteCMSConfigFieldConfigSetting } from "$lib/global"
-import * as lodash from 'lodash'
-const { isNull } = lodash
+import type { SvelteCMSPlugin, SvelteCMSPluginBuilder, SvelteCMSConfigFieldConfigSetting } from "sveltecms/global"
 
-const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
-  apiKey:string
-  authDomain:string
-  projectId:string
-  storageBucket:string
-  messagingSenderId:string
-  appId:string
-}}):SvelteCMSPlugin => {
+const defaultOptions = {
+  firebaseConfig: {
+    apiKey:"",
+    authDomain:"",
+    projectId:"",
+    storageBucket:"",
+    messagingSenderId:"",
+    appId:"",
+  },
+  collection:"",
+  listFields:[],
+  listQuery: [],
+  useEmulators: false,
+  server: "",
+}
+
+const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
+  firebaseConfig: {
+    apiKey:string
+    authDomain:string
+    projectId:string
+    storageBucket:string
+    messagingSenderId:string
+    appId:string
+  },
+  collection:string,
+  listFields: [],
+  listQuery: {field,op,value}[],
+  useEmulators?: boolean,
+  server?: string,
+}):SvelteCMSPlugin => {
   const firebaseConfig = Object.assign({
     apiKey:"",
     authDomain:"",
@@ -23,6 +44,56 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
     collection: {
       type: "text",
       default: ''
+    },
+    server: {
+      type: "text",
+      default: '',
+    },
+    listFields: {
+      type: "text",
+      default: [],
+      multiple: true,
+      widget: "tags",
+    },
+    listQuery: {
+      type: "collection",
+      multiple: true,
+      default: [],
+      fields: {
+        field: {
+          type: "text",
+          default: "",
+          required: true,
+        },
+        op: {
+          type: "text",
+          default: "",
+          required: true,
+          widget: "select",
+          widgetOptions: {
+            options: operators
+          }
+        },
+        valueType: {
+          type: "text",
+          default: "stringValue",
+          required: true,
+          widget: "select",
+          widgetOptions: {
+            stringValue: "string",
+            nullValue: "null",
+            booleanValue: "boolean",
+            integerValue: "integer",
+            doubleValue: "double",
+            timestampValue: "timestamp",
+          }
+        },
+        value: {
+          type: "text",
+          default: "",
+          required: true,
+        },
+      }
     },
     firebaseConfig: {
       type: "collection",
@@ -56,6 +127,16 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
     }
   }
 
+  function getUrl(firebaseConfig, collection, path = '', database = '(default)') {
+    let base = 'https://firestore.googleapis.com'
+    if (options.useEmulators) {
+      console.log('firebaseFirestore: using emulator')
+      base = 'http://localhost:8080'
+    }
+    else if (options?.server) base = options.server.replace(/\/+$/, '')
+    return `${base}/v1/projects/${firebaseConfig.projectId}/databases/${database}/documents/${collection}/${path}?key=${firebaseConfig.apiKey}`.replace(/\/+\?/, '?')
+  }
+
   return {
 
     optionFields,
@@ -69,10 +150,28 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
           // Set auth token if provided
           if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.token}`
 
-          const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id), { headers })
+          let body:string = JSON.stringify({ structuredQuery: {
+            from: [{
+              collectionId: opts.collection || contentType.id,
+            }],
+            select: parseListFields(opts.listFields),
+            orderBy: opts.orderBy || undefined,
+            offset: opts.offset || undefined,
+            limit: opts.limit || undefined,
+            where: parseListQuery(opts.listQuery),
+          }}, null, 2)
+
+          let url = getUrl(opts.firebaseConfig, 'runQuery').replace('/runQuery', ':runQuery')
+
+          const res = await fetch(url, { method:'POST', headers, body })
+          if (!res.ok) {
+            console.error(body)
+            return resError(res)
+          }
+
           const json = await res.json()
 
-          return json.documents.map(decode)
+          return json.map(document => decode(document.document) )
 
         },
 
@@ -81,9 +180,11 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
           let headers = {}
 
           // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.token}`
+          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
 
           const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug), { headers })
+          if (!res.ok) return resError(res)
+
           const json = await res.json()
 
           return (Array.isArray(json.documents)) ? json.documents.map(decode) : decode(json)
@@ -95,20 +196,17 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
           let headers = {}
 
           // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.token}`
+          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
 
-          try {
-            let body = JSON.stringify(jsonToDocument(content).mapValue,null,2)
-            let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), (opts.slug || content.slug || '')), { method: 'PATCH', headers, body })
-            if (!res.ok) {
-              let err = await(res.json())
-              console.error(err)
-              throw new Error(res.statusText)
-            }
+          let body = JSON.stringify(jsonToDocument(content).mapValue,null,2)
+          if (!body || !body.length) throw new Error(`Bad conversion to Firestore Document format.`)
+          let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), (opts.slug || content.slug || '')), { method: 'PATCH', headers, body })
+          if (!res.ok) {
+            console.error(body)
+            return resError(res)
           }
-          catch(e) {
-            console.error(e)
-          }
+
+          return res
 
         },
 
@@ -117,9 +215,11 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
           let headers = {}
 
           // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.token}`
+          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
 
-          return fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, content.slug), { method: 'DELETE', headers })
+          let res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, content.slug), { method: 'DELETE', headers })
+          if (!res.ok) return resError(res)
+          return res
 
         },
 
@@ -131,9 +231,84 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{ firebaseConfig: {
   }
 }
 
+function parseListFields(fields:string|string[]) {
+  if (typeof fields === 'string') fields = fields.split(/\s*,\s*/g)
+  return {
+    fields: fields.map(fieldPath => {
+      return { fieldPath }
+    })
+  }
+}
 
-function getUrl(firebaseConfig, collection, path = '', database = '(default)') {
-  return `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${database}/documents/${collection}/${path}?key=${firebaseConfig.apiKey}`
+function parseListQueryValue(item) {
+  let value = item.value
+  switch (item.op) {
+    case "ARRAY_CONTAINS_ANY":
+    case "IN":
+    case "NOT_IN":
+      value = value.trim().split(/\s*,\s*/g)
+    default:
+      switch (item.valueType) {
+        case "stringValue":
+        case "string":
+        case "text":
+          return value
+        case "integerValue":
+        case "integer":
+        case "number":
+          return Array.isArray(value) ? value.map(parseInt) : parseInt(value)
+        default:
+          return Array.isArray(value) ? value.map(parseDocumentValueType) : parseDocumentValueType(value)
+      }
+  }
+}
+
+function parseDocumentValueType(value) {
+
+  if (typeof value === 'number') {
+    if (Number.isInteger(value)) return { integerValue: value } // integers
+    return { doubleValue: value } // decimals
+  }
+
+  // deepcode ignore UseNumberIsNan: <isNaN functions as desired in this instance.>
+  if (value instanceof Date && !isNaN(value.valueOf())) return { timestampValue: value }
+
+  if (value === 'null' || value === null) return { nullValue: null }
+
+  if (value === 'true') value = true
+  else if (value === 'false') value = false
+  if (typeof value === 'boolean') return { booleanValue: value }
+
+  else if (value.match(/^\d+$/)) return { integerValue: parseInt(value) }
+  else if (value.match(/^\d+\.\d+$/)) return { doubleValue: parseFloat(value) }
+
+  return { stringValue: value }
+
+}
+
+export function parseListQuery(listQuery, useClientSDK:boolean = false) {
+  return {
+    compositeFilter: {
+      op: "AND",
+      filters: listQuery.map(item => {
+        return {
+          fieldFilter: {
+            field: {
+              fieldPath: item.field,
+            },
+            op: useClientSDK ? operators[item.op] : item.op,
+            value: parseListQueryValue(item)
+          },
+        }
+      })
+    }
+  }
+}
+
+async function resError(res) {
+  console.log(res)
+  let err = await(res.json())
+  throw err.error
 }
 
 function decode(json) {
@@ -149,17 +324,18 @@ function decode(json) {
 
 // from https://stackoverflow.com/questions/62246410/how-to-convert-a-firestore-document-to-plain-json-and-vice-versa, modified
 let jsonToDocument = function (value) {
-  if (isNull(value)) {
+  if (value === null) {
     return { 'nullValue': null };
   } else if (typeof value == 'string') {
     return { 'stringValue': value };
-  } else if (!isNaN(value)) {
+  } else if (typeof value === 'number') {
     if (value.toString().indexOf('.') != -1)
       return { 'doubleValue': value };
     else
       return { 'integerValue': value };
   } else if (value === 'true' || value === 'false' || typeof value == 'boolean') {
     return { 'booleanValue': value };
+  // deepcode ignore UseNumberIsNan: <isNaN functions as desired in this instance.>
   } else if (value instanceof Date && !isNaN(value.valueOf())) {
     return { 'timestampValue': value };
   } else if (Array.isArray(value)) {
@@ -191,10 +367,32 @@ let documentToJson = function (fields) {
         return !!list ? list.map(l => documentToJson(l)) : [];
       }
     } else {
-      result[key] = documentToJson(value)
+      if (key !== '__proto__') result[key] = documentToJson(value)
     }
   }
   return result;
+}
+
+const operators = {
+  "LESS_THAN": "<",
+  "LESS_THAN_OR_EQUAL": "<=",
+  "GREATER_THAN": ">",
+  "GREATER_THAN_OR_EQUAL": ">=",
+  "EQUAL": "==",
+  "NOT_EQUAL": "!=",
+  "ARRAY_CONTAINS": "array-contains",
+  "ARRAY_CONTAINS_ANY": "array-contains-any",
+  "IN": "in",
+  "NOT_IN": "not-in",
+}
+
+const valueTypes = {
+  stringValue: "string",
+  integerValue: "number",
+  nullValue: "null",
+  booleanValue: "boolean",
+  doubleValue: "double (number)",
+  timestampValue: "timestamp",
 }
 
 export default firestoreBuilder

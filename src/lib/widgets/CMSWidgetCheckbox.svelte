@@ -1,23 +1,32 @@
 <script lang="ts">
-import type { SvelteCMSContentField } from "$lib";
+import type { SvelteCMSContentField } from "..";
 
   export let field:SvelteCMSContentField
   export let id:string
 
   export let value = field.default
 
+  let opts:{labelBeforeCheckbox?:boolean} = field.widget.options
+
 </script>
 
 <label>
-  <span>
-    <slot>{field.title}</slot>
-  </span>
+  {#if opts?.labelBeforeCheckbox}
+    <span>
+      <slot>{field.label}</slot>
+    </span>
+  {/if}
   <input
     name={id}
-    title={field.description}
+    title={field.tooltip}
     type="checkbox"
     bind:checked={value}
     disabled={field.disabled}
     required={field.required}
   />
+  {#if !opts?.labelBeforeCheckbox}
+    <span>
+      <slot>{field.label}</slot>
+    </span>
+  {/if}
 </label>

@@ -1,40 +1,62 @@
 <script lang="ts">
 import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
-import type { SvelteCMSContentField } from '$lib';
+import type { SvelteCMSWidgetField } from "..";
+import type SvelteCMS from '..';
 
-  let parentField:SvelteCMSContentField
+  let parentField:SvelteCMSWidgetField
   let parentID = ''
   export { parentField as field, parentID as id }
 
+  export let cms:SvelteCMS
+  export let contentTypeID:string
+
   let opts:{oneline?:boolean} = parentField.widget.options
-  // let titleList = Object.keys(parentField.fields).map(k => parentField.fields[k].title)
+
+  let collection = cms.getWidgetFields(cms.getCollection(contentTypeID, parentID), {
+    values: parentField.values,
+    errors: parentField.errors,
+    touched: parentField.touched,
+    id: parentID
+  })
 
   export let value = {}
-  export let errors = {}
+
+  $: if (parentField.values || parentField.errors || parentField.touched) collection = collection
 
 </script>
 
 <fieldset class="collection" class:oneline={opts?.oneline}>
-  {#each Object.entries(parentField.fields) as [id,field]}
+  {#each Object.entries(collection.fields) as [id, field] }
 
   <div class="field {field?.class || ''}">
-    {#if !field.widget.widget}
-      <CmsWidgetUndefined {field} id="{parentID}[{id}]" />
-    {:else if field.multiple && !field.widget.handlesMultiple}
-      <CmsWidgetMultiple
-        {field}
-        id="{parentID}[{id}]"
-        bind:value={value[id]}
-      />
-    {:else}
-      <svelte:component
-        this={field.widget.widget}
-        {field}
-        id="{parentID}[{id}]"
-        bind:value={value[id]}
-        bind:errors={errors[id]}
-      />
+    {#if !field.hidden}
+      {#if !field.widget.widget}
+        <CmsWidgetUndefined {field} id={`${parentID}.${id}`} />
+      {:else if field.multiple && !field.widget.handlesMultiple}
+        <CmsWidgetMultiple
+          {field}
+          id={`${parentID}.${id}`}
+          bind:value={value[id]}
+          {cms}
+          {contentTypeID}
+        />
+      {:else if field.widget.type === 'collection'}
+        <svelte:self
+          {field}
+          id={`${parentID}.${id}`}
+          bind:value={value[id]}
+          {cms}
+          {contentTypeID}
+        />
+      {:else}
+        <svelte:component
+          this={field.widget.widget}
+          {field}
+          id={`${parentID}.${id}`}
+          bind:value={value[id]}
+        />
+      {/if}
     {/if}
   </div>
 
