@@ -11,7 +11,7 @@ import { onDestroy, onMount } from 'svelte';
   export let contentTypeID:string
   export let previewComponent = undefined
 
-  export let result
+  export let result = undefined
   export let values = {}
   export let errors = {}
   export let touched = {}
@@ -55,7 +55,7 @@ import { onDestroy, onMount } from 'svelte';
   })
   onDestroy(() => {
     collection.eventListeners?.forEach(conf => {
-      form.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.removeEventListener(conf.on, (event) => {
+      form?.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.removeEventListener(conf.on, (event) => {
         conf.function.fn(conf.function.vars, conf.function.options, event, el)
       }))
     })
