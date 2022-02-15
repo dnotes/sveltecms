@@ -1,6 +1,6 @@
-import type { SvelteCMSFieldType } from './global'
+import type { CMSFieldType } from './global'
 
-const fieldTypes:{[key:string]:SvelteCMSFieldType} = {
+const fieldTypes:{[key:string]:CMSFieldType} = {
   text: {
     id: 'text',
     defaultValue: '',

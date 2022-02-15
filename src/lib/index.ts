@@ -1,36 +1,15 @@
-import type {
-  SvelteCMSConfigSetting,
-  SvelteCMSContentTypeConfigSetting,
-  SvelteCMSContentFieldConfigSetting,
-  SvelteCMSSlugConfigSetting,
-  SvelteCMSFieldType,
-  SvelteCMSWidgetType,
-  SvelteCMSFieldTransformer,
-  SvelteCMSFieldTransformerSetting,
-  SvelteCMSPlugin,
-  SvelteCMSListConfig,
-  SvelteCMSContentStoreType,
-  SvelteCMSMediaStoreType,
-  SvelteCMSFieldFunctionType,
-  SvelteCMSFieldFunctionConfigSetting,
-  SvelteCMSConfigFieldConfigSetting,
-  ConfigSetting,
-  SvelteCMSWidgetTypeConfigSetting,
-  SvelteCMSPluginBuilder,
-  SvelteCMSStoreConfigSetting,
-} from "./global"
 import getLabelFromID from "./utils/getLabelFromID"
 import transformers from './transformers'
 import fieldTypes from './fieldTypes'
 import widgetTypes from './widgetTypes'
-import { functions, parseFieldFunctionScript, SvelteCMSFieldFunctionConfig } from './fieldFunctions'
+import { functions, parseFieldFunctionScript, CMSFieldFunctionConfig } from './fieldFunctions'
 import { cloneDeep, mergeWith, get as getProp, has as hasProp } from 'lodash-es'
 
 import { default as Validator, Rules } from 'validatorjs'
 
 const splitter = /\s*,\s*/g
 
-export const SvelteCMSContentFieldPropsAllowFunctions = [
+export const CMSContentFieldPropsAllowFunctions = [
   'label', 'tooltip', 'required', 'disabled',
   'hidden', 'class', 'default', 'value',
   'collapsible', 'collapsed',
@@ -39,15 +18,15 @@ export const SvelteCMSContentFieldPropsAllowFunctions = [
 
 export default class SvelteCMS {
 
-  fieldFunctions:{[key:string]:SvelteCMSFieldFunctionType} = functions
-  fieldTypes:{[key:string]:SvelteCMSFieldType} = fieldTypes
-  widgetTypes:{[key:string]:SvelteCMSWidgetType} = widgetTypes
-  transformers:{[key:string]:SvelteCMSFieldTransformer} = transformers
-  contentStores:{[key:string]:SvelteCMSContentStoreType} = {}
-  mediaStores:{[key:string]:SvelteCMSMediaStoreType} = {}
-  types:{[key:string]:SvelteCMSContentType} = {}
-  lists:SvelteCMSListConfig = {}
-  constructor(conf:SvelteCMSConfigSetting, plugins:SvelteCMSPlugin[] = []) {
+  fieldFunctions:{[key:string]:CMSFieldFunctionType} = functions
+  fieldTypes:{[key:string]:CMSFieldType} = fieldTypes
+  widgetTypes:{[key:string]:CMSWidgetType} = widgetTypes
+  transformers:{[key:string]:CMSFieldTransformer} = transformers
+  contentStores:{[key:string]:CMSContentStoreType} = {}
+  mediaStores:{[key:string]:CMSMediaStoreType} = {}
+  types:{[key:string]:CMSContentType} = {}
+  lists:CMSListConfig = {}
+  constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
     plugins.forEach(p => this.use(p))
 
@@ -86,12 +65,12 @@ export default class SvelteCMS {
 
     // Build out config for the content types
     Object.entries(conf?.types).forEach(([id,conf]) => {
-      this.types[id] = new SvelteCMSContentType(id, conf, this)
+      this.types[id] = new CMSContentType(id, conf, this)
     });
 
   }
 
-  use(plugin:SvelteCMSPlugin, config?:any) {
+  use(plugin:CMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
     ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists'].forEach(k => {
@@ -107,7 +86,7 @@ export default class SvelteCMS {
     })
   }
 
-  preMount(contentTypeOrField:string|SvelteCMSContentField, values:Object) {
+  preMount(contentTypeOrField:string|CMSContentField, values:Object) {
     let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField
     let res = {}
     Object.entries(container.fields).forEach(([id,field]) => {
@@ -131,7 +110,7 @@ export default class SvelteCMS {
     return res
   }
 
-  preSave(contentTypeOrField:string|SvelteCMSContentField, values:Object) {
+  preSave(contentTypeOrField:string|CMSContentField, values:Object) {
     let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField
     let res = {}
     Object.entries(container.fields).forEach(([id,field]) => {
@@ -155,10 +134,10 @@ export default class SvelteCMS {
     return res
   }
 
-  doTransforms(op:'preSave'|'preMount', field:SvelteCMSContentField, value:any) {
+  doTransforms(op:'preSave'|'preMount', field:CMSContentField, value:any) {
     try {
       if (field[op] && field[op].length && value !== undefined && value !== null) {
-        field[op].forEach((functionConfig:SvelteCMSFieldTransformerSetting) => {
+        field[op].forEach((functionConfig:CMSFieldTransformerSetting) => {
           if (Array.isArray(value)) {
             value = value.map(v => this.runFunction('transformers', functionConfig, v))
           }
@@ -173,16 +152,16 @@ export default class SvelteCMS {
     }
   }
 
-  getContentType(contentType:string):SvelteCMSContentType {
+  getContentType(contentType:string):CMSContentType {
     if (!this.types[contentType]) throw new Error (`Content type not found: ${contentType}`)
     return this.types[contentType]
   }
 
-  getCollection(contentType:string, valuePath:string):SvelteCMSContentField {
+  getCollection(contentType:string, valuePath:string):CMSContentField {
     if (!this.types[contentType]) throw new Error (`Content type not found: ${contentType}`)
     let type = this.types[contentType]
     let configPath = getConfigPathFromValuePath(valuePath)
-    let field = <SvelteCMSContentField> getProp(type, configPath)
+    let field = <CMSContentField> getProp(type, configPath)
     if (!field || !(field?.type === 'collection') || !(field?.fields)) throw new Error (`${contentType}.${configPath} is not a valid collection`)
     return field
   }
@@ -236,7 +215,7 @@ export default class SvelteCMS {
     return db.deleteContent(this.preSave(contentType, content), type, db.options)
   }
 
-  runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|SvelteCMSFieldTransformerSetting, value) {
+  runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|CMSFieldTransformerSetting, value) {
     let id = typeof conf === 'string' ? conf : conf.id
     let func = this[functionType][id]
     if (!func) throw new Error(`${functionType}.${id} does not exist!`)
@@ -263,7 +242,7 @@ export default class SvelteCMS {
     return this.lists[listID]
   }
 
-  getConfigOptionsFromFields(optionFields:{[id:string]:SvelteCMSConfigFieldConfigSetting}):ConfigSetting {
+  getConfigOptionsFromFields(optionFields:{[id:string]:CMSConfigFieldConfigSetting}):ConfigSetting {
     let options:ConfigSetting = Object.assign({}, Object.fromEntries(Object.entries(optionFields).map(([id,optionFieldConf]) => {
       if (optionFieldConf.fields) return [id, this.getConfigOptionsFromFields(optionFieldConf.fields)]
       return [id, this.getConfigOptionValue(optionFieldConf.default)]
@@ -290,9 +269,9 @@ export default class SvelteCMS {
   }
 
   getWidgetFields(
-    collection:SvelteCMSContentType|SvelteCMSContentField,
+    collection:CMSContentType|CMSContentField,
     vars:{ values:any, errors:any, touched:any, id?:string }
-  ):SvelteCMSWidgetFieldCollection {
+  ):CMSWidgetFieldCollection {
     let c = cloneDeep(collection)
     // @ts-ignore
     c.eventListeners = []
@@ -305,11 +284,11 @@ export default class SvelteCMS {
     return c
   }
 
-  initializeContentField(field:SvelteCMSContentField, vars:{ values:any, errors:any, touched:any, id?:string }) {
+  initializeContentField(field:CMSContentField, vars:{ values:any, errors:any, touched:any, id?:string }) {
     field.values = vars?.values || {}
     field.errors = vars?.errors || {}
     field.touched = vars?.touched || {}
-    SvelteCMSContentFieldPropsAllowFunctions.forEach(prop => {
+    CMSContentFieldPropsAllowFunctions.forEach(prop => {
       let func = getProp(field, prop)
       if (func?.function && typeof func.function === 'string') {
         this.initializeFunction(field, prop, {...vars, field})
@@ -319,23 +298,23 @@ export default class SvelteCMS {
     field.events = field?.events?.map(e => { return {
       on: e.on,
       id: vars.id,
-      function: new SvelteCMSFieldFunction(e.function, {...vars, field}, this)
+      function: new CMSFieldFunction(e.function, {...vars, field}, this)
     }})
 
     if (field.widget.options) this.initializeConfigOptions(field.widget.options, {...vars, field})
   }
 
   /**
-   * Converts an object property (e.g. on a SvelteCMSContentField or an options object) into a getter which runs
+   * Converts an object property (e.g. on a CMSContentField or an options object) into a getter which runs
    * one of the available functions.
    * @param obj The object on which the property is to be defined
    * @param prop The name of the property
    * @param vars The vars object for the defined function
    */
-  initializeFunction(obj:{[key:string]:any}, prop:string, vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }) {
+  initializeFunction(obj:{[key:string]:any}, prop:string, vars:{ field:CMSContentField, values:any, errors:any, touched:any, id?:string }) {
     let conf = cloneDeep(getProp(obj, prop))
     // console.log({name:'preInitializeFunction', obj, prop, conf:cloneDeep(conf)}) // debug functions
-    let func = new SvelteCMSFieldFunction(conf, vars, this)
+    let func = new CMSFieldFunction(conf, vars, this)
     // special case for the function that only runs once
     let parentPath = prop.replace(/(?:(?:^|\.)[^\.]+|\[[^\]]\])$/, '')
     let propPath = prop.replace(/^.+\./, '')
@@ -355,7 +334,7 @@ export default class SvelteCMS {
     // console.log({name:'postInitializeFunction',obj,conf:cloneDeep(conf),func,parentPath,propPath,parent,vars}) // debug functions
   }
 
-  initializeConfigOptions(options, vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }) {
+  initializeConfigOptions(options, vars:{ field:CMSContentField, values:any, errors:any, touched:any, id?:string }) {
     // console.log({name:'initializeConfigOptions', count:Object.keys(options).length, options:cloneDeep(options)}) // debug functions
     Object.keys(options).forEach(k => {
       if (options[k]?.function && typeof options[k]?.function === 'string') {
@@ -364,7 +343,7 @@ export default class SvelteCMS {
     })
   }
 
-  getValidatorConfig(fieldset:{[id:string]:SvelteCMSContentField}):Rules {
+  getValidatorConfig(fieldset:{[id:string]:CMSContentField}):Rules {
     let configValues = {}
     Object.keys(fieldset).forEach(k => {
       if (fieldset[k]?.fields) configValues[k] = this.getValidatorConfig(fieldset[k].fields)
@@ -376,11 +355,11 @@ export default class SvelteCMS {
 
 }
 
-// export class SvelteCMSSlugConfig {
+// export class CMSSlugConfig {
 //   fields:string[]
 //   slugify:boolean|ConfigSetting = {}
 //   transliterate:boolean|ConfigSetting = {}
-//   constructor(conf:string|SvelteCMSSlugConfigSetting) {
+//   constructor(conf:string|CMSSlugConfigSetting) {
 //     if (!conf) {
 //       this.fields = ['slug']
 //     }
@@ -404,78 +383,83 @@ export default class SvelteCMS {
 //   }
 // }
 
-export class SvelteCMSContentType {
+export class CMSContentType {
   id:string
   label:string = ''
-  // slug:SvelteCMSSlugConfig
-  contentStore?:SvelteCMSContentStore
-  fields:{[key:string]:SvelteCMSContentField} = {}
-  constructor(id, conf:SvelteCMSContentTypeConfigSetting, cms:SvelteCMS) {
+  // slug:CMSSlugConfig
+  contentStore?:CMSContentStore
+  fields:{[key:string]:CMSContentField} = {}
+  constructor(id, conf:CMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
     this.label = conf.label || getLabelFromID(this.id)
-    // this.slug = new SvelteCMSSlugConfig(this.slug)
+    // this.slug = new CMSSlugConfig(this.slug)
 
-    this.contentStore = new SvelteCMSContentStore(conf?.contentStore, cms)
+    this.contentStore = new CMSContentStore(conf?.contentStore, cms)
 
     Object.entries(conf.fields).forEach(([id,conf]) => {
-      this.fields[id] = new SvelteCMSContentField(id, conf, cms, this)
+      this.fields[id] = new CMSContentField(id, conf, cms, this)
     })
   }
 }
 
-export type SvelteCMSWidgetField = SvelteCMSContentField & {
-  required:boolean,
-  disabled:boolean,
-  hidden:boolean,
-  collapsible:boolean,
-  collapsed:boolean,
-  multiple:boolean,
+export type CMSWidgetField = CMSContentField & {
+  label:string
+  tooltip?:string
+  required?:boolean,
+  disabled?:boolean,
+  hidden?:boolean,
+  class:string,
+  collapsible?:boolean,
+  collapsed?:boolean,
+  multiple?:boolean,
+  multipleLabel?:boolean,
+  multipleMin?:number
+  multipleMax?:number
 }
 
-export type SvelteCMSWidgetFieldCollection = {
-  fields: {[id:string]: SvelteCMSWidgetField}
+export type CMSWidgetFieldCollection = {
+  fields: {[id:string]: CMSWidgetField}
   [key:string]:any
 }
-
-export class SvelteCMSContentField {
+export class CMSContentField {
   id: string
   type: string
 
   // should be implemented by every widget
-  label: string|SvelteCMSFieldFunctionConfig
-  tooltip?: string|SvelteCMSFieldFunctionConfig = ''
-  required?: boolean|SvelteCMSFieldFunctionConfig
-  disabled?: boolean|SvelteCMSFieldFunctionConfig
+  label: string|CMSFieldFunctionConfig
+  tooltip?: string|CMSFieldFunctionConfig = ''
+  required?: boolean|CMSFieldFunctionConfig
+  disabled?: boolean|CMSFieldFunctionConfig
 
   // should be implemented by the CMS
-  hidden?: boolean|SvelteCMSFieldFunctionConfig
-  class:string|SvelteCMSFieldFunctionConfig = ''
+  hidden?: boolean|CMSFieldFunctionConfig
+  class:string|CMSFieldFunctionConfig = ''
   default?: any
   value?: any
-  events?:{on:string,function:SvelteCMSFieldFunctionConfig}[]
+  events?:{on:string,function:CMSFieldFunctionConfig}[]
 
   // implemented only in Multiple and Collection widgets
   // implement as needed in custom widgets
-  collapsible?:boolean|SvelteCMSFieldFunctionConfig
-  collapsed?:boolean|SvelteCMSFieldFunctionConfig
-  multiple?: boolean|SvelteCMSFieldFunctionConfig
-  multipleLabel?:boolean|SvelteCMSFieldFunctionConfig
-  multipleMin?:number|SvelteCMSFieldFunctionConfig
-  multipleMax?:number|SvelteCMSFieldFunctionConfig
+  collapsible?:boolean|CMSFieldFunctionConfig
+  collapsed?:boolean|CMSFieldFunctionConfig
+  multiple?: boolean|CMSFieldFunctionConfig
+  multipleLabel?:boolean|CMSFieldFunctionConfig
+  multipleMin?:number|CMSFieldFunctionConfig
+  multipleMax?:number|CMSFieldFunctionConfig
 
   // not implemented in widgets
   validator?: Rules
-  fields?:{[key:string]:SvelteCMSContentField}
-  widget:SvelteCMSWidget
-  preSave?:(string|SvelteCMSFieldTransformerSetting)[]
-  preMount?:(string|SvelteCMSFieldTransformerSetting)[]
-  mediaStore?:SvelteCMSMediaStore
+  fields?:{[key:string]:CMSContentField}
+  widget:CMSWidget
+  preSave?:(string|CMSFieldTransformerSetting)[]
+  preMount?:(string|CMSFieldTransformerSetting)[]
+  mediaStore?:CMSMediaStore
 
   // Items that are only used when initialized for an entry form
   values:{[key:string]:any} = {} // all form values
   errors:{[key:string]:any} = {} // all form errors
   touched:{[key:string]:any} = {} // all touched form elements
-  constructor(id, conf:string|SvelteCMSContentFieldConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
+  constructor(id, conf:string|CMSContentFieldConfigSetting, cms:SvelteCMS, contentType:CMSContentType) {
 
     // Set the field's id. This identifies the instance, not the field type;
     // in values objects, the key would be this id, e.g. values[id] = 'whatever'
@@ -491,7 +475,7 @@ export class SvelteCMSContentField {
       this.label = getLabelFromID(id) // capitalized sanely
       this.default = fieldType?.defaultValue
 
-      this.widget = new SvelteCMSWidget(fieldType.defaultWidget, cms)
+      this.widget = new CMSWidget(fieldType.defaultWidget, cms)
 
       this.validator = fieldType?.defaultValidator
       this.preSave = fieldType?.defaultPreSave
@@ -526,7 +510,7 @@ export class SvelteCMSContentField {
       this.hidden = parseFieldFunctionScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.collapsible = parseFieldFunctionScript(conf.collapsible) ?? (typeof conf.collapsible === 'boolean' ? conf.collapsible : false)
       this.collapsed = parseFieldFunctionScript(conf.collapsed) ?? (typeof conf.collapsed === 'boolean' ? conf.collapsed : false)
-      this.widget = new SvelteCMSWidget(conf.widget || fieldType.defaultWidget, cms)
+      this.widget = new CMSWidget(conf.widget || fieldType.defaultWidget, cms)
       if (conf?.widgetOptions) this.widget.options = cms.mergeConfigOptions(this.widget.options, conf.widgetOptions)
       this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.defaultPreSave
@@ -535,23 +519,23 @@ export class SvelteCMSContentField {
       if (conf.fields) {
         this.fields = {}
         Object.entries(conf.fields).forEach(([id, conf]) => {
-          this.fields[id] = new SvelteCMSContentField(id, conf, cms, contentType)
+          this.fields[id] = new CMSContentField(id, conf, cms, contentType)
         })
       }
     }
     if (this.widget.handlesMedia) {
-      this.mediaStore = new SvelteCMSMediaStore(conf?.['mediaStore'], cms, contentType)
+      this.mediaStore = new CMSMediaStore(conf?.['mediaStore'], cms, contentType)
     }
   }
 }
 
-export class SvelteCMSWidget {
+export class CMSWidget {
   type: string
   widget: Object
   handlesMultiple: boolean
   handlesMedia: boolean
   options?: ConfigSetting
-  constructor(conf:string|SvelteCMSWidgetTypeConfigSetting, cms:SvelteCMS) {
+  constructor(conf:string|CMSWidgetTypeConfigSetting, cms:SvelteCMS) {
     let widgetType = typeof conf === 'string' ? cms.widgetTypes[conf] : cms.widgetTypes[conf.id]
     this.type = widgetType?.id
     this.widget = widgetType?.widget
@@ -568,14 +552,14 @@ const noStore = async () => {
   console.error(`Store not found: (${this?.['id'] || ''})`)
 }
 
-export class SvelteCMSContentStore {
+export class CMSContentStore {
   id:string
-  listContent:(contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any[]>
-  getContent:(contentType:SvelteCMSContentType, options:ConfigSetting, slug?:string|number)=>Promise<any>
-  saveContent:(content:any, contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any>
-  deleteContent:(content:any, contentType:SvelteCMSContentType, options:ConfigSetting)=>Promise<any>
+  listContent:(contentType:CMSContentType, options:ConfigSetting)=>Promise<any[]>
+  getContent:(contentType:CMSContentType, options:ConfigSetting, slug?:string|number)=>Promise<any|any[]>
+  saveContent:(content:any, contentType:CMSContentType, options:ConfigSetting)=>Promise<any>
+  deleteContent:(content:any, contentType:CMSContentType, options:ConfigSetting)=>Promise<any>
   options:ConfigSetting
-  constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS) {
+  constructor(conf:string|CMSStoreConfigSetting, cms:SvelteCMS) {
     let store = typeof conf === 'string' ? cms.contentStores[conf] : cms.contentStores[conf?.id]
     if (!store) store = Object.values(cms.contentStores)[0]
     this.id = store?.id
@@ -591,14 +575,14 @@ export class SvelteCMSContentStore {
   }
 }
 
-export class SvelteCMSMediaStore {
+export class CMSMediaStore {
   id:string
   listMedia:(path?:string|null, options?:ConfigSetting)=>Promise<string[]>
   getMedia:(filename?:string|number|null, options?:ConfigSetting)=>Promise<string|string[]>
-  saveMedia:(file:File, options?:ConfigSetting)=>Promise<any>
+  saveMedia:(file:File, options?:ConfigSetting)=>Promise<string>
   deleteMedia:(filename:string, options?:ConfigSetting)=>Promise<any>
-  options:ConfigSetting
-  constructor(conf:string|SvelteCMSStoreConfigSetting, cms:SvelteCMS, contentType:SvelteCMSContentType) {
+  options?:ConfigSetting
+  constructor(conf:string|CMSStoreConfigSetting, cms:SvelteCMS, contentType:CMSContentType) {
     let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf?.id]
     if (!store) store = Object.values(cms.mediaStores)[0]
     this.id = store?.id
@@ -614,14 +598,14 @@ export class SvelteCMSMediaStore {
   }
 }
 
-export class SvelteCMSFieldFunction {
+export class CMSFieldFunction {
   id: string
-  fn: (vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
-  vars: { field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string}
-  options: {[key:string]:string|number|boolean|null|undefined|SvelteCMSFieldTransformer & {options?:any}|(string|number|boolean|null|undefined)[]}
-  constructor(conf:string|SvelteCMSFieldFunctionConfig, vars:{ field:SvelteCMSContentField, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
+  fn: (vars:{ field:CMSContentField, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
+  vars: { field:CMSContentField, values:any, errors:any, touched:any, id?:string}
+  options: {[key:string]:string|number|boolean|null|undefined|CMSFieldTransformer & {options?:any}|(string|number|boolean|null|undefined)[]}
+  constructor(conf:string|CMSFieldFunctionConfig, vars:{ field:CMSContentField, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
     if (typeof conf === 'string') conf = parseFieldFunctionScript(conf) // this should be rare, but just in case...
-    let func:SvelteCMSFieldFunctionType = cms.fieldFunctions[conf.function]
+    let func:CMSFieldFunctionType = cms.fieldFunctions[conf.function]
     if (!func) throw `field function not found for ${conf}` // this will also happen if the config is bad
     this.id = func.id
     this.vars = vars
@@ -666,3 +650,186 @@ export class SvelteCMSFieldFunction {
 export function getConfigPathFromValuePath(path:string):string {
   return 'fields.' + path.replace(/\[\d+\]/g,'').replace(/\./g, '.fields.')
 }
+
+/**
+ * All "Setting" types must fit the pattern of ConfigSetting
+ */
+export type ConfigSetting = {[key:string]: string|number|boolean|null|undefined|ConfigSetting|Array<ConfigSetting>}
+
+export type CMSPlugin = {
+  fieldTypes?: CMSFieldType[]
+  widgetTypes?: CMSWidgetType[]
+  transformers?: CMSFieldTransformer[]
+  contentStores?: CMSContentStoreType[]
+  mediaStores?: CMSMediaStoreType[]
+  lists?: CMSListConfig
+  optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
+}
+
+export type CMSPluginBuilder = (config:any) => CMSPlugin
+
+export type CMSListConfig = {[key:string]: Array<string|number|{id:string|number,value:any}>}
+
+export type CMSFieldFunctionType = {
+  id:string,
+  // TODO: integrate event and el into field functions. See CMSEditorForm.svelte.
+  fn:(vars:{ field:CMSContentField, values:any, errors:any, touched:any, id?:string }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
+  optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
+}
+
+export type CMSFieldFunctionConfigParam = (string|number|boolean|null|CMSFieldFunctionConfigSetting)[]
+export type CMSFieldFunctionConfigSetting = string | {
+  function?: string
+  fn?: string
+  params: (string|number|boolean|null|CMSFieldFunctionConfigSetting)[]
+}
+
+export type CMSStoreConfigSetting = ConfigSetting & {
+  id:string
+}
+
+export type CMSConfigSetting = {
+  types?: {[key:string]: CMSContentTypeConfigSetting}
+  lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
+  contentStores?: {[key:string]: CMSStoreConfigSetting}
+  mediaStores?: {[key:string]: CMSStoreConfigSetting}
+  widgetTypes?: {[key:string]: CMSWidgetTypeConfigSetting}
+  transformers?: {[key:string]: CMSFieldTransformerSetting}
+}
+
+export type CMSContentTypeConfigSetting = {
+  label: string
+  fields: {[key:string]:string|CMSContentFieldConfigSetting}
+  contentStore: string|CMSStoreConfigSetting
+  mediaStore: string|CMSStoreConfigSetting
+}
+
+export type CMSContentFieldConfigSetting = {
+  type: string
+  label?: string
+  default?: any
+  value?: any
+  tooltip?: string
+  required?: boolean|CMSFieldFunctionConfigSetting
+  disabled?: boolean|CMSFieldFunctionConfigSetting
+  hidden?: boolean|CMSFieldFunctionConfigSetting
+  collapsible?:boolean|CMSFieldFunctionConfigSetting
+  collapsed?:boolean|CMSFieldFunctionConfigSetting
+  multiple?: boolean|CMSFieldFunctionConfigSetting|{
+    label?:boolean|CMSFieldFunctionConfigSetting
+    min?: number|CMSFieldFunctionConfigSetting
+    max?: number|CMSFieldFunctionConfigSetting
+  }
+  multipleLabel?: string|CMSFieldFunctionConfigSetting
+  multipleMin?: number|CMSFieldFunctionConfigSetting
+  multipleMax?: number|CMSFieldFunctionConfigSetting
+  fields?: {[key:string]:string|CMSContentFieldConfigSetting}
+  widget?: string|CMSWidgetTypeConfigSetting
+  widgetOptions?: ConfigSetting
+  validator?: Rules
+  preSave?: string|CMSFieldTransformerSetting|(string|CMSFieldTransformerSetting)[]
+  preMount?: string|CMSFieldTransformerSetting|(string|CMSFieldTransformerSetting)[]
+  class?: string
+  events?: {on:string,function:CMSFieldFunctionConfigSetting}|{on:string,function:CMSFieldFunctionConfigSetting}[]
+}
+
+export type CMSConfigFieldConfigSetting = CMSContentFieldConfigSetting & {
+  type: 'text'|'number'|'boolean'|'date'|'collection'|'tags'|'cmsField'|'cmsTransformer'|'cmsFunction'
+  default: any
+  fields?: {[key:string]:CMSConfigFieldConfigSetting}
+}
+
+export type CMSMedia = {
+  src:string,
+  alt?:string,
+  title?:string,
+}
+
+export type CMSContentStoreType = {
+  id:string
+  listContent?:(contentType:CMSContentType, opts:ConfigSetting) => Promise<any[]>
+  getContent?:(contentType:CMSContentType, opts:ConfigSetting, slug?:string|number) => Promise<any|any[]>
+  saveContent?:(content:any, contentType:CMSContentType, opts:ConfigSetting) => Promise<any>
+  deleteContent?:(content:any, contentType:CMSContentType, opts:ConfigSetting) => Promise<any>
+  optionFields?: {[key:string]:CMSConfigFieldConfigSetting}
+  options?: ConfigSetting
+}
+
+export type CMSMediaStoreType = {
+  id:string
+  listMedia?:(path:string|null, opts:ConfigSetting) => Promise<string[]>
+  getMedia?:(filename:string|number|null, opts:ConfigSetting) => Promise<string|string[]>
+  saveMedia?:(file:File, opts:ConfigSetting) => Promise<string>
+  deleteMedia?:(filename:string, opts:ConfigSetting) => Promise<any>
+  optionFields?: {[key:string]:CMSConfigFieldConfigSetting}
+  options?: ConfigSetting
+}
+
+export class CMSFieldType {
+  id:string
+  defaultValue:any
+  defaultWidget:string|CMSWidgetTypeConfigSetting
+  defaultValidator?:Rules
+  defaultPreSave?:Array<string|CMSFieldTransformerSetting>
+  defaultPreMount?:Array<string|CMSFieldTransformerSetting>
+  hidden?:boolean
+  // constructor(id,conf:CMSFieldTypeConfig) {
+  //   this.id = id
+  //   this.defaultValue = conf.defaultValue
+  //   this.defaultWidget = conf.defaultWidget
+  //   // @ts-ignore
+  //   if (conf?.defaultTransform) this.defaultTransform = conf.defaultTransform
+  // }
+  // merge(conf:CMSFieldTypeConfigMerge):void {
+  //   if (conf.hasOwnProperty('defaultValue')) this.defaultValue = conf.defaultValue
+  //   if (conf.hasOwnProperty('defaultWidget')) this.defaultWidget = conf.defaultWidget
+  // }
+}
+
+export type CMSFieldTypeMerge = {
+  id:string
+  defaultValue?:any
+  defaultWidget?:string
+
+}
+
+export type CMSWidgetType = {
+  id:string
+  widget:Object
+  fieldTypes:string[]
+  handlesMultiple?:boolean
+  handlesMedia?:boolean
+  optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
+  hidden?:boolean
+}
+
+export type CMSWidgetTypeMerge = {
+  id:string
+  fieldTypes?:string[]
+}
+
+export type CMSWidgetTypeConfigSetting = {
+  id:string
+  options:ConfigSetting
+}
+
+export type CMSFieldTransformer = {
+  id:string,
+  fn:(value:any,opts:ConfigSetting,fieldConf:CMSFieldType) => any
+  optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
+  [key:string]:any
+}
+export type CMSFieldTransformerSetting = {
+  id: string,
+  options: ConfigSetting
+}
+
+
+
+// export type CMSFieldValidator = {
+//   id:string
+//   fn:(value:any,opts:ConfigSetting,fieldConf:CMSFieldInstance) => string|Error|void
+//   optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
+//   noBrowser?:boolean
+//   noServer?:boolean
+// }

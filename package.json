@@ -16,6 +16,7 @@
     "@sveltejs/kit": "next",
     "@types/jest": "^27.0.3",
     "@types/lodash-es": "^4.17.5",
+    "fast-glob": "^3.2.11",
     "firebase": "^9.5.0",
     "firebase-admin": "^10.0.0",
     "firebase-functions": "^3.16.0",
@@ -24,6 +25,7 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
+    "markdown-it": "^12.3.2",
     "sanitize-html": "^2.5.3",
     "svelte": "^3.42.6",
     "svelte-check": "^2.2.6",
@@ -40,10 +42,10 @@
   "main": "./package/index.js",
   "exports": {
     ".": "./package/index.js",
-    "./utils": "./package/utils/index.js",
-    "./plugins/firebaseFirestore": "./package/plugins/firebaseFirestore/index.js",
-    "./plugins/firebaseStorage": "./package/plugins/firebaseStorage/index.js",
-    "./plugins/markdown": "./package/plugins/markdown/index.js"
+    "./firebaseFirestore": "./package/plugins/firebaseFirestore/index.js",
+    "./firebaseStorage": "./package/plugins/firebaseStorage/index.js",
+    "./markdown": "./package/plugins/markdown/index.js",
+    "./utils": "./package/utils/index.js"
   },
   "repository": {
     "type": "git",

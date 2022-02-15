@@ -1,4 +1,4 @@
-import type { SvelteCMSConfigFieldConfigSetting, SvelteCMSMediaStoreType, SvelteCMSPluginBuilder } from 'sveltecms/global'
+import type { CMSConfigFieldConfigSetting, CMSMediaStoreType, CMSPluginBuilder } from '$lib'
 import { initializeApp } from 'firebase/app'
 import { getStorage, connectStorageEmulator, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { merge } from 'lodash-es'
@@ -29,11 +29,11 @@ const defaultOptions = {
 }
 
 
-const storageBuilder:SvelteCMSPluginBuilder = (options:PluginOptions):{mediaStores:SvelteCMSMediaStoreType[]} => {
+const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:CMSMediaStoreType[]} => {
 
   const opts = merge({}, defaultOptions, options)
 
-  const optionFields:{[key:string]:SvelteCMSConfigFieldConfigSetting} = {
+  const optionFields:{[key:string]:CMSConfigFieldConfigSetting} = {
     path: {
       type: 'text',
       default: opts?.path ?? "",

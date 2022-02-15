@@ -1,4 +1,4 @@
-import type { SvelteCMSPlugin, SvelteCMSPluginBuilder, SvelteCMSConfigFieldConfigSetting } from "sveltecms/global"
+import type { CMSPlugin, CMSPluginBuilder, CMSConfigFieldConfigSetting, ConfigSetting } from "$lib"
 
 const defaultOptions = {
   firebaseConfig: {
@@ -16,7 +16,7 @@ const defaultOptions = {
   server: "",
 }
 
-const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
+const firestoreBuilder:CMSPluginBuilder = (options:{
   firebaseConfig: {
     apiKey:string
     authDomain:string
@@ -30,7 +30,7 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
   listQuery: {field,op,value}[],
   useEmulators?: boolean,
   server?: string,
-}):SvelteCMSPlugin => {
+}):CMSPlugin => {
   const firebaseConfig = Object.assign({
     apiKey:"",
     authDomain:"",
@@ -40,7 +40,7 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
     appId:"",
   }, options?.firebaseConfig ?? {})
 
-  const optionFields:{[key:string]:SvelteCMSConfigFieldConfigSetting} = {
+  const optionFields:{[key:string]:CMSConfigFieldConfigSetting} = {
     collection: {
       type: "text",
       default: ''
@@ -143,7 +143,8 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
     contentStores: [
       {
         id: 'firebaseFirestore',
-        listContent: async(contentType, opts) => {
+        optionFields,
+        listContent: async(contentType, opts:ConfigSetting & { listFields:string|string[]}) => {
 
           let headers = {}
 
@@ -182,7 +183,7 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
           // Set auth token if provided
           if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
 
-          const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug), { headers })
+          const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug.toString()), { headers })
           if (!res.ok) return resError(res)
 
           const json = await res.json()
@@ -191,7 +192,7 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
 
         },
 
-        saveContent: async (content, contentType, opts) => {
+        saveContent: async (content, contentType, opts):Promise<Response|void> => {
 
           let headers = {}
 
@@ -210,7 +211,7 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
 
         },
 
-        deleteContent: async (content, contentType, opts) => {
+        deleteContent: async (content, contentType, opts):Promise<Response|void> => {
 
           let headers = {}
 
@@ -222,9 +223,6 @@ const firestoreBuilder:SvelteCMSPluginBuilder = (options:{
           return res
 
         },
-
-        optionFields,
-
       }
     ],
 

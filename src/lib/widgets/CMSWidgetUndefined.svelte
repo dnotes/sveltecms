@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { SvelteCMSContentField } from ".."
+import type { CMSWidgetField } from ".."
 
-  export let field:SvelteCMSContentField
+  export let field:CMSWidgetField
   export let id
 
 </script>

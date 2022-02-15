@@ -1,5 +1,5 @@
 import { get, has, isEqual, set } from 'lodash-es'
-import type { SvelteCMSFieldFunctionType,SvelteCMSFieldFunctionConfigSetting } from "./global"
+import type { CMSFieldFunctionType,CMSFieldFunctionConfigSetting } from "."
 
 function getFullPath(path, id) {
   if (!path) return id
@@ -7,7 +7,7 @@ function getFullPath(path, id) {
   return `${path}.${id}`
 }
 
-export const functions:{[id:string]:SvelteCMSFieldFunctionType} = {
+export const functions:{[id:string]:CMSFieldFunctionType} = {
   now: {
     id: 'now',
     fn: () => {
@@ -311,10 +311,10 @@ export const functions:{[id:string]:SvelteCMSFieldFunctionType} = {
   },
 }
 
-export class SvelteCMSFieldFunctionConfig {
+export class CMSFieldFunctionConfig {
   function:string = ''
-  params:(string|number|boolean|null|SvelteCMSFieldFunctionConfig)[] = []
-  constructor(conf?:SvelteCMSFieldFunctionConfig) {
+  params:(string|number|boolean|null|CMSFieldFunctionConfig)[] = []
+  constructor(conf?:CMSFieldFunctionConfig) {
     this.setFunction(conf?.function || '')
     this.params = conf?.params || []
   }
@@ -339,7 +339,7 @@ export class SvelteCMSFieldFunctionConfig {
     else if (name.match(/^touched$/)) this.function = 'isTouched'
     else this.function = name
   }
-  push(param:string|number|boolean|null|SvelteCMSFieldFunctionConfig) {
+  push(param:string|number|boolean|null|CMSFieldFunctionConfig) {
     this.params.push(param)
   }
   toString() {
@@ -361,7 +361,7 @@ const valueRegex = /^\$(field|values?|errors?|touched)\b/
 const propRegex = /^\.([a-zA-Z0-9\.\[\]]+)/ // TODO: evaluate allowed characters restrictions - could we just use [^\n\s\),]?
 const endScriptRegex = /^[\n\s]*$/
 
-export function parseFieldFunctionScript(config:any, functionNames:string[] = Object.keys(functions)):SvelteCMSFieldFunctionConfig|undefined {
+export function parseFieldFunctionScript(config:any, functionNames:string[] = Object.keys(functions)):CMSFieldFunctionConfig|undefined {
 
   // PRE-FLIGHT
   if (!config) return
@@ -369,7 +369,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
   // (note: no errors yet, as this function will be used to test if a string will parse as a script)
   // In case we are passed a valid config setting
   if (functionNames.includes(config?.['function']) && (!config?.['params'] || Array.isArray(config?.['params']))) {
-    return new SvelteCMSFieldFunctionConfig(config)
+    return new CMSFieldFunctionConfig(config)
   }
 
   // If it is not a string, exit
@@ -393,7 +393,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
   // initialize variables
   let tail:string,
       i:number = 0,
-      stack:SvelteCMSFieldFunctionConfig[] = [],
+      stack:CMSFieldFunctionConfig[] = [],
       match,
       textParam = '',
       parsing:string = 'base' // 'base'|'params'|'command'|'function'|'value'|'text'|'vars'|'endValue'|'endParams'
@@ -458,8 +458,9 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
 
         // Begin Command (if parsing is "base" or "params")
         if (tail[0] === '$') {
-          // Initialize new SvelteCMSFieldFunctionConfigSetting
-          stack.push(new SvelteCMSFieldFunctionConfig)
+          // Initialize new CMSFieldFunctionConfig
+          // deepcode ignore MissingArgument: <this works, and I don't understand what's missing>
+          stack.push(new CMSFieldFunctionConfig)
           // Set parsing (but don't advance, as the $ is part of the command syntax)
           parsing = 'command'
         }

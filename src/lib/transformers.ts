@@ -1,7 +1,7 @@
-import type { SvelteCMSFieldTransformer } from './global'
+import type { CMSFieldTransformer } from '.'
 import slugify from '@sindresorhus/slugify'
 
-const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
+const transformers:{[id:string]:CMSFieldTransformer} = {
   toString: {
     id: 'toString',
     fn: (v) => v?.toString()
@@ -10,30 +10,30 @@ const transformers:{[id:string]:SvelteCMSFieldTransformer} = {
     id: 'date',
     fn: (v) => new Date(v)
   },
-  dateFormat: {
-    id: 'dateFormat',
-    fn: (v,opts) => {
-      v = new Date(v)
-      return v.toLocaleDateString(opts.locale, opts.dateFormatOptions)
-    },
-    optionFields: {
-      locale: {
-        type: 'text',
-        default: '',
-        tooltip: "The locale to display the date, e.g. 'en-US', or empty to display in client's locale."
-      },
-      dateFormatOptions: {
-        type: 'collection',
-        default: {},
-        fields: {
-          timeZone: {
-            type: 'text',
-            default: '',
-          },
-        }
-      }
-    }
-  },
+  // dateFormat: {
+  //   id: 'dateFormat',
+  //   fn: (v,opts) => {
+  //     v = new Date(v)
+  //     return v.toLocaleDateString(opts.locale, opts.dateFormatOptions)
+  //   },
+  //   optionFields: {
+  //     locale: {
+  //       type: 'text',
+  //       default: '',
+  //       tooltip: "The locale to display the date, e.g. 'en-US', or empty to display in client's locale."
+  //     },
+  //     dateFormatOptions: {
+  //       type: 'collection',
+  //       default: {},
+  //       fields: {
+  //         timeZone: {
+  //           type: 'text',
+  //           default: '',
+  //         },
+  //       }
+  //     }
+  //   }
+  // },
   boolean: {
     id: 'boolean',
     fn: (v) => Boolean(v)

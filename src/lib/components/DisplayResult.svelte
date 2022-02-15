@@ -11,7 +11,7 @@ import { fade } from 'svelte/transition'
 </script>
 
 {#if result}
-<div out:fade={fadeOptions} class="SvelteCMSSubmitResult {error ? "error" : "status"}">
+<div out:fade={fadeOptions} class="CMSSubmitResult {error ? "error" : "status"}">
   {#if error}
     <slot name="error">
       There was an error!<br>

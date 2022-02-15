@@ -17,11 +17,11 @@
 </script>
 
 <script lang="ts">
-import type { SvelteCMSContentField } from "..";
+import type { CMSWidgetField } from "..";
 import DisplayResult from "../components/DisplayResult.svelte";
 let result
 
-  export let field:SvelteCMSContentField
+  export let field:CMSWidgetField
   export let id:string
 
   //@ts-ignore

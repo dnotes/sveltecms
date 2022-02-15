@@ -1,11 +1,11 @@
-import type { SvelteCMSPluginBuilder, SvelteCMSPlugin } from '../../global'
+import type { CMSPluginBuilder, CMSPlugin } from '../..'
 // import CMSWidgetMarkdown from './CMSWidgetMarkdown.svelte'
 import MarkdownIT from 'markdown-it'
 import type { Options as MarkdownITOptions } from 'markdown-it'
 
 let md:MarkdownIT
 
-const pluginBuilder:SvelteCMSPluginBuilder = (config:{
+const pluginBuilder:CMSPluginBuilder = (config:{
   md?:MarkdownIT,
   commonmark?:boolean,
   opts?:MarkdownITOptions
@@ -20,7 +20,7 @@ const pluginBuilder:SvelteCMSPluginBuilder = (config:{
     md = new MarkdownIT(config.commonmark ? 'commonmark' : 'default')
   }
 
-  const plugin:SvelteCMSPlugin = {
+  const plugin:CMSPlugin = {
     transformers: [
       {
         id: 'markdown',

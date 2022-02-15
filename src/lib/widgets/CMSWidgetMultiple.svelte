@@ -1,10 +1,10 @@
 <script lang="ts">
 import { tick } from "svelte";
 import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
-import type { SvelteCMSContentField } from "..";
+import type { CMSWidgetField } from "..";
 import type SvelteCMS from "..";
 
-  export let field:SvelteCMSContentField
+  export let field:CMSWidgetField
   export let id:string
 
   export let cms:SvelteCMS

@@ -11,9 +11,9 @@ import CMSWidgetImage from './widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from './widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from './widgets/CMSWidgetSelect.svelte'
 
-import type { SvelteCMSWidgetType } from './global'
+import type { CMSWidgetType } from './global'
 
-const widgetTypes:{[key:string]:SvelteCMSWidgetType} = {
+const widgetTypes:{[key:string]:CMSWidgetType} = {
   undefined: {
     id: 'undefined',
     fieldTypes: [],

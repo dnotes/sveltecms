@@ -1,10 +1,10 @@
 <script lang="ts">
 import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
-import type { SvelteCMSWidgetField } from "..";
+import type { CMSWidgetField } from "..";
 import type SvelteCMS from '..';
 
-  let parentField:SvelteCMSWidgetField
+  let parentField:CMSWidgetField
   let parentID = ''
   export { parentField as field, parentID as id }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { SvelteCMSContentField } from "..";
+import type { CMSWidgetField } from "..";
 
-  export let field:SvelteCMSContentField
+  export let field:CMSWidgetField
   export let id:string
 
   export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '')

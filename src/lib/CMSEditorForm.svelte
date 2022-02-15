@@ -67,8 +67,8 @@ import { onDestroy, onMount } from 'svelte';
 </script>
 
 <div>
-  <div class="SvelteCMSEditor">
-    <div class="SvelteCMSEditorForm">
+  <div class="CMSEditor">
+    <div class="CMSEditorForm">
       <slot name="header">
         <h2>
           {#if initialValues === {}}
@@ -128,7 +128,7 @@ import { onDestroy, onMount } from 'svelte';
       </form>
     </div>
     {#if previewComponent}
-      <div class="SvelteCMSEditorPreview">
+      <div class="CMSEditorPreview">
         <svelte:component this={previewComponent} item={cms.preMount(contentTypeID, values)} ></svelte:component>
       </div>
     {/if}
