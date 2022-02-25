@@ -4,6 +4,7 @@
     src:string
     alt?:string
     title?:string
+    attribution?:string
     cropCoorinatesXY?:{
       leftTop:string
       rightBottom:string
@@ -30,6 +31,8 @@ let result
     altField:boolean
     altRequired:boolean
     titleField:boolean
+    attributionField:boolean
+    attributionRequired:boolean
     createThumbnail:boolean
     thumbnailHeight:number
     thumbnailWidth:number
@@ -216,6 +219,16 @@ let result
                 name="{id}[{i}][title]"
                 bind:value={value[i]['title']}
                 placeholder="title"
+              >
+            {/if}
+
+            {#if opts.attributionField}
+              <input
+                type="text"
+                name="{id}[{i}][attribution]"
+                bind:value={value[i]['attribution']}
+                placeholder="license/attribution"
+                required={opts.attributionRequired}
               >
             {/if}
 

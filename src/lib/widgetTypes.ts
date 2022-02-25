@@ -11,7 +11,7 @@ import CMSWidgetImage from './widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from './widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from './widgets/CMSWidgetSelect.svelte'
 
-import type { CMSWidgetType } from './global'
+import type { CMSWidgetType } from '.'
 
 const widgetTypes:{[key:string]:CMSWidgetType} = {
   undefined: {
@@ -174,6 +174,16 @@ const widgetTypes:{[key:string]:CMSWidgetType} = {
         type: 'boolean',
         default: false,
         tooltip: 'Show a field for the "title" attribute'
+      },
+      attributionField: {
+        type: 'boolean',
+        default: false,
+        tooltip: 'Show a field for license or attribution of the image'
+      },
+      attributionRequired: {
+        type: 'boolean',
+        default: false,
+        tooltip: 'Require the attribution field',
       },
       createThumbnail: {
         type: 'boolean',
