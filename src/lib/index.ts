@@ -32,7 +32,7 @@ export default class SvelteCMS {
 
     // Build out config for the lists
     // This must happen before the content types and fields are built, as fields may have values in $lists
-    Object.entries(conf?.lists).forEach(([key,list]) => {
+    Object.entries(conf?.lists || []).forEach(([key,list]) => {
       if (typeof list === 'string') this.lists[key] = list.split(splitter)
       else this.lists[key] = list
     });
@@ -621,7 +621,7 @@ export class CMSFieldFunction {
         lastKey = k
       })
       // for functions where the last param is an array
-      if (func?.optionFields[lastKey].multiple) {
+      if (func?.optionFields?.[lastKey]?.multiple) {
         // @ts-ignore
         if (!Array.isArray(this.options[lastKey])) this.options[lastKey] = [this.options[lastKey]]
         while (params.length) {
