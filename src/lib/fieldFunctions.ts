@@ -309,6 +309,20 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
       }
     }
   },
+  concat: {
+    id: 'concat',
+    fn: (vars, opts) => {
+      return Array.isArray(opts.strings) ? opts.strings.join('') : opts.strings
+    },
+    optionFields: {
+      strings: {
+        type: 'text',
+        multiple: true,
+        default: '',
+        tooltip: 'List of strings to concatenate',
+      }
+    }
+  }
 }
 
 export class CMSFieldFunctionConfig {
