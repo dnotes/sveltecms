@@ -171,12 +171,31 @@ export default class SvelteCMS {
     return type.contentStore
   }
 
+  slugifyContent(content:any, contentType:string, force?:boolean) {
+    const type = this.getContentType(contentType)
+    if (Array.isArray(content)) {
+      content.forEach(c => {
+        if (force || !c._slug) {
+          let newSlug = type.slug.fields.map(id => { return getProp(c,id) }).filter(Boolean).join(type.slug.separator)
+          c._slug = this.runFunction('transformers', type.slug.slugify, newSlug)
+        }
+      })
+    }
+    else {
+      if (force || !content._slug) {
+        let newSlug = type.slug.fields.map(id => { return getProp(content,id) }).filter(Boolean).join(type.slug.separator)
+        content._slug = this.runFunction('transformers', type.slug.slugify, newSlug)
+      }
+    }
+  }
+
   async listContent(contentType:string, options:{[key:string]:any} = {}) {
     const type = this.getContentType(contentType)
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
     const rawContent = await db.listContent(type, db.options)
     if (!rawContent) return
+    this.slugifyContent(rawContent, contentType)
     if (options.getRaw) return rawContent
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
@@ -197,6 +216,7 @@ export default class SvelteCMS {
     Object.assign(db.options, options)
     const rawContent = await db.getContent(type, db.options, slug)
     if (!rawContent) return
+    this.slugifyContent(rawContent, contentType)
     if (options.getRaw) return rawContent
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
@@ -205,6 +225,7 @@ export default class SvelteCMS {
     const type = this.getContentType(contentType)
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
+    this.slugifyContent(content, contentType)
     return db.saveContent(this.preSave(contentType, content), type, db.options)
   }
 
@@ -212,6 +233,7 @@ export default class SvelteCMS {
     const type = this.getContentType(contentType)
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
+    this.slugifyContent(content, contentType)
     return db.deleteContent(this.preSave(contentType, content), type, db.options)
   }
 
@@ -355,50 +377,50 @@ export default class SvelteCMS {
 
 }
 
-// export class CMSSlugConfig {
-//   fields:string[]
-//   slugify:boolean|ConfigSetting = {}
-//   transliterate:boolean|ConfigSetting = {}
-//   constructor(conf:string|CMSSlugConfigSetting) {
-//     if (!conf) {
-//       this.fields = ['slug']
-//     }
-//     else if (typeof conf === 'string') {
-//       this.fields = conf.split(splitter)
-//     }
-//     else {
-//       this.fields = typeof conf.fields === 'string' ? conf.fields.split(splitter) : conf.fields
-//       this.slugify = conf.slugify
-//       this.transliterate = conf.transliterate
-//     }
-//     return this
-//   }
-//   fn(content:{[key:string]:any}) {
-//     if (this.fields && this.fields.length) {
-//       let slugtext = this.fields.reduce((t,v) => {
-//         return t + v.toString()
-//       }, '')
+export type CMSSlugConfigSetting = {
+  fields: string|string[]
+  separator?: string
+  slugify?: string|CMSFieldTransformerSetting
+}
 
-//     }
-//   }
-// }
+export class CMSSlugConfig {
+  fields:string[]
+  separator: string = '-'
+  slugify: string|CMSFieldTransformerSetting = 'slugify'
+  constructor(conf:string|string[]|CMSSlugConfigSetting, cms:SvelteCMS) {
+    if (typeof conf === 'string') {
+      this.fields = conf.split(splitter)
+    }
+    else if (Array.isArray(conf)) {
+      this.fields = conf
+    }
+    else {
+      this.fields = typeof conf.fields === 'string' ? conf.fields.split(splitter) : conf.fields
+      if (conf.slugify) this.slugify = conf.slugify
+    }
+    return this
+  }
+}
 
 export class CMSContentType {
   id:string
   label:string = ''
-  // slug:CMSSlugConfig
+  slug:CMSSlugConfig
   contentStore?:CMSContentStore
   fields:{[key:string]:CMSContentField} = {}
   constructor(id, conf:CMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
     this.label = conf.label || getLabelFromID(this.id)
-    // this.slug = new CMSSlugConfig(this.slug)
 
     this.contentStore = new CMSContentStore(conf?.contentStore, cms)
 
     Object.entries(conf.fields).forEach(([id,conf]) => {
       this.fields[id] = new CMSContentField(id, conf, cms, this)
     })
+
+    let slugConf = conf.slug || Object.keys(conf.fields)?.[0] || ''
+    this.slug = new CMSSlugConfig(slugConf, cms)
+
   }
 }
 
@@ -702,6 +724,7 @@ export type CMSContentTypeConfigSetting = {
   fields: {[key:string]:string|CMSContentFieldConfigSetting}
   contentStore: string|CMSStoreConfigSetting
   mediaStore: string|CMSStoreConfigSetting
+  slug: string|string[]
 }
 
 export type CMSContentFieldConfigSetting = {
@@ -801,6 +824,7 @@ export type CMSWidgetType = {
   handlesMedia?:boolean
   optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
   hidden?:boolean
+  // formDataHandler?:(path:string, data:{[key:string]:any})=>any
 }
 
 export type CMSWidgetTypeMerge = {
