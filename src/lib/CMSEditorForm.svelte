@@ -18,6 +18,9 @@ import { onDestroy, onMount } from 'svelte';
   export let disabled = false
   export let submitOptions = {}
 
+  export let action = ''
+  export let method = 'POST'
+
   export let contentType = undefined // in case someone wants to log / debug
 
   contentType = cms.getContentType(contentTypeID)
@@ -33,14 +36,18 @@ import { onDestroy, onMount } from 'svelte';
   // }
 
   export let submit = async (event)=>{
-    event.preventDefault()
-    try {
-      let res = await cms.saveContent(contentTypeID, values, submitOptions)
-      result = { ...(res || {}), ok:true }
+    if (action) {
     }
-    catch(e) {
-      console.error(e)
-      result = e
+    else {
+      event.preventDefault()
+      try {
+        let res = await cms.saveContent(contentTypeID, values, submitOptions)
+        result = { ...(res || {}), ok:true }
+      }
+      catch(e) {
+        console.error(e)
+        result = e
+      }
     }
   }
 
@@ -79,7 +86,7 @@ import { onDestroy, onMount } from 'svelte';
           {collection?.label}
         </h2>
       </slot>
-      <form on:submit="{submit}" bind:this={form}>
+      <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
         {#each Object.entries(collection.fields) as [id,field]}
           {#if !field.hidden}
             <div class="field {field?.class || ''}">
