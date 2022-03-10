@@ -44,6 +44,7 @@
     ".": "./package/index.js",
     "./firebaseFirestore": "./package/plugins/firebaseFirestore/index.js",
     "./firebaseStorage": "./package/plugins/firebaseStorage/index.js",
+    "./staticFiles": "./package/plugins/staticFiles/index.js",
     "./markdown": "./package/plugins/markdown/index.js",
     "./utils": "./package/utils/index.js"
   },
