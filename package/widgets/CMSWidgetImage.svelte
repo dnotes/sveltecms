@@ -7,7 +7,7 @@ export let id;
 //@ts-ignore
 let opts = field.widget.options;
 let multiple = field.multiple;
-let isString = !opts.altField && !opts.titleField && !opts.createThumbnail;
+let isString = !opts.altField && !opts.titleField;
 // The "value" variable is where we store the url strings or CMSImage objects for the database
 export let value = field.multiple ? [] : (isString ? '' : {});
 // The "files" variable holds the uploaded file objects
@@ -233,3 +233,28 @@ function releaseObjectUrls() {
   <DisplayResult bind:result />
 
 </fieldset>
+
+<style>
+
+.cms-image-preview {
+  overflow-x: scroll;
+}
+.cms-image-preview>div {
+  position: relative;
+  width: 144px;
+  height: 144px;
+}
+.cms-image-preview img {
+  width: 144px;
+  height: 112px;
+  object-fit:cover;
+  object-position:center;
+}
+.cms-image-preview button.cms-image-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 5px 1px 0 0;
+}
+
+</style>

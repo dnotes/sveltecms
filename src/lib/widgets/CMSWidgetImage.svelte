@@ -283,3 +283,28 @@ let result
   <DisplayResult bind:result />
 
 </fieldset>
+
+<style>
+
+.cms-image-preview {
+  overflow-x: scroll;
+}
+.cms-image-preview>div {
+  position: relative;
+  width: 144px;
+  height: 144px;
+}
+.cms-image-preview img {
+  width: 144px;
+  height: 112px;
+  object-fit:cover;
+  object-position:center;
+}
+.cms-image-preview button.cms-image-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 5px 1px 0 0;
+}
+
+</style>

@@ -182,19 +182,6 @@ const widgetTypes = {
                 default: false,
                 tooltip: 'Require the attribution field',
             },
-            createThumbnail: {
-                type: 'boolean',
-                default: false,
-                tooltip: 'Create a thumbnail from the image when saving, and allow editor to set the crop coordinates'
-            },
-            thumbnailHeight: {
-                type: 'number',
-                default: 200,
-            },
-            thumbnailWidth: {
-                type: 'number',
-                default: 200,
-            },
         },
     },
     file: {
