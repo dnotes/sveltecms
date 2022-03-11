@@ -33,13 +33,10 @@ let result
     titleField:boolean
     attributionField:boolean
     attributionRequired:boolean
-    createThumbnail:boolean
-    thumbnailHeight:number
-    thumbnailWidth:number
   } = field.widget.options
 
   let multiple = field.multiple
-  let isString = !opts.altField && !opts.titleField && !opts.createThumbnail
+  let isString = !opts.altField && !opts.titleField
 
   // The "value" variable is where we store the url strings or CMSImage objects for the database
   export let value:string|CMSImage|string[]|CMSImage[]|{} = field.multiple ? [] : (isString ? '' : {})
