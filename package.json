@@ -39,15 +39,7 @@
   },
   "type": "module",
   "description": "A content manager built with sveltekit, for sveltekit projects. Sensible and extensible, with declarative configuration.",
-  "main": "./package/index.js",
-  "exports": {
-    ".": "./package/index.js",
-    "./firebaseFirestore": "./package/plugins/firebaseFirestore/index.js",
-    "./firebaseStorage": "./package/plugins/firebaseStorage/index.js",
-    "./staticFiles": "./package/plugins/staticFiles/index.js",
-    "./markdown": "./package/plugins/markdown/index.js",
-    "./utils": "./package/utils/index.js"
-  },
+  "main": "./src/lib/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dnotes/sveltecms.git"
