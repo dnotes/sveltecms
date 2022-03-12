@@ -138,10 +138,8 @@ export default class SvelteCMS {
     try {
       if (field[op] && field[op].length && value !== undefined && value !== null) {
         field[op].forEach((functionConfig:CMSFieldTransformerSetting) => {
-          if (Array.isArray(value)) {
-            value = value.map(v => this.runFunction('transformers', functionConfig, v))
-          }
-          value = this.runFunction('transformers', functionConfig, value)
+          if (Array.isArray(value)) value = value.map(v => this.runFunction('transformers', functionConfig, v))
+          else value = this.runFunction('transformers', functionConfig, value)
         })
       }
       return value
