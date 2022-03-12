@@ -125,10 +125,10 @@ export default class SvelteCMS {
         try {
             if (field[op] && field[op].length && value !== undefined && value !== null) {
                 field[op].forEach((functionConfig) => {
-                    if (Array.isArray(value)) {
+                    if (Array.isArray(value))
                         value = value.map(v => this.runFunction('transformers', functionConfig, v));
-                    }
-                    value = this.runFunction('transformers', functionConfig, value);
+                    else
+                        value = this.runFunction('transformers', functionConfig, value);
                 });
             }
             return value;
