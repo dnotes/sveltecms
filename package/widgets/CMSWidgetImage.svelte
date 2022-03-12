@@ -236,9 +236,6 @@ function releaseObjectUrls() {
 
 <style>
 
-.cms-image-preview {
-  overflow-x: scroll;
-}
 .cms-image-preview>div {
   position: relative;
   width: 144px;
