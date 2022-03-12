@@ -7,8 +7,9 @@ import type { CMSWidgetField } from "..";
   export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '')
 
   //@ts-ignore
-  let opts:{size:number} = field.widget.options
-  // @TODO: <option>s
+  let opts:{size:number, options:string[]|{[key:string|number]:string}} = field.widget.options
+
+  $: options = Array.isArray(opts.options) ? Object.fromEntries(opts.options.map(o => { return [o,o] })) : opts.options
 
 </script>
 
@@ -25,7 +26,11 @@ import type { CMSWidgetField } from "..";
       multiple
       disabled={field.disabled}
       required={field.required}
-    />
+    >
+      {#each Object.entries(options || {}) as [value,title]}
+        <option {value}>{title}</option>
+      {/each}
+    </select>
   </label>
 {:else}
   <label>
@@ -39,6 +44,10 @@ import type { CMSWidgetField } from "..";
       size={opts.size || 0}
       disabled={field.disabled}
       required={field.required}
-    />
+    >
+      {#each Object.entries(options || {}) as [value,title]}
+        <option {value}>{title}</option>
+      {/each}
+    </select>
   </label>
 {/if}

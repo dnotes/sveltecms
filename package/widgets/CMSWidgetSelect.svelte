@@ -3,7 +3,7 @@ export let id;
 export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '');
 //@ts-ignore
 let opts = field.widget.options;
-// @TODO: <option>s
+$: options = Array.isArray(opts.options) ? Object.fromEntries(opts.options.map(o => { return [o, o]; })) : opts.options;
 </script>
 
 {#if field.multiple}
@@ -19,7 +19,11 @@ let opts = field.widget.options;
       multiple
       disabled={field.disabled}
       required={field.required}
-    />
+    >
+      {#each Object.entries(options || {}) as [value,title]}
+        <option {value}>{title}</option>
+      {/each}
+    </select>
   </label>
 {:else}
   <label>
@@ -33,6 +37,10 @@ let opts = field.widget.options;
       size={opts.size || 0}
       disabled={field.disabled}
       required={field.required}
-    />
+    >
+      {#each Object.entries(options || {}) as [value,title]}
+        <option {value}>{title}</option>
+      {/each}
+    </select>
   </label>
 {/if}
