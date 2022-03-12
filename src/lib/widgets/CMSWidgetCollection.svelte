@@ -29,7 +29,7 @@ import type SvelteCMS from '..';
 <fieldset class="collection" class:oneline={opts?.oneline}>
   {#each Object.entries(collection.fields) as [id, field] }
 
-  <div class="field {field?.class || ''}">
+  <div class="field field-{field.id} {field?.class || ''}">
     {#if !field.hidden}
       {#if !field.widget.widget}
         <CmsWidgetUndefined {field} id={`${parentID}.${id}`} />

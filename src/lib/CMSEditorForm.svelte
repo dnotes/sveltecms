@@ -89,7 +89,7 @@ import { onDestroy, onMount } from 'svelte';
       <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
         {#each Object.entries(collection.fields) as [id,field]}
           {#if !field.hidden}
-            <div class="field {field?.class || ''}">
+            <div class="field field-{field.id} {field?.class || ''}">
               {#if !field.widget.widget}
                 <CmsWidgetUndefined {field} {id} />
               {:else if field.multiple && !field.widget.handlesMultiple}
