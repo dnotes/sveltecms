@@ -61,8 +61,8 @@ $: if (values || errors || touched)
 </script>
 
 <div>
-  <div class="CMSEditor">
-    <div class="CMSEditorForm">
+  <div class="cms-editor">
+    <div class="cms-editor-form">
       <slot name="header">
         <h2>
           {#if initialValues === {}}
@@ -122,7 +122,7 @@ $: if (values || errors || touched)
       </form>
     </div>
     {#if previewComponent}
-      <div class="CMSEditorPreview">
+      <div class="cms-editor-preview">
         <svelte:component this={previewComponent} item={cms.preMount(contentTypeID, values)} ></svelte:component>
       </div>
     {/if}
