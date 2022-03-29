@@ -470,6 +470,9 @@ export class CMSWidget {
         this.widget = widgetType?.widget;
         this.handlesMultiple = widgetType?.handlesMultiple || false;
         this.handlesMedia = widgetType?.handlesMedia || false;
+        if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
+            this.formDataHandler = widgetType.formDataHandler;
+        }
         if (widgetType?.optionFields) {
             this.options = cms.getConfigOptionsFromFields(widgetType.optionFields);
         }

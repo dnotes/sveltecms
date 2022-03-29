@@ -2,6 +2,7 @@
   "name": "sveltecms",
   "version": "0.0.1",
   "devDependencies": {
+    "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
     "@sveltejs/adapter-static": "^1.0.0-next.21",
     "@sveltejs/kit": "next",
@@ -11,6 +12,7 @@
     "firebase": "^9.5.0",
     "firebase-admin": "^10.0.0",
     "firebase-functions": "^3.16.0",
+    "isomorphic-git": "^1.17.0",
     "jest": "^27.4.5",
     "jest-each": "^27.4.2",
     "js-yaml": "^4.1.0",
@@ -65,7 +67,6 @@
     ".": "./index.js",
     "./plugins/firebaseFirestore": "./plugins/firebaseFirestore/index.js",
     "./plugins/firebaseStorage": "./plugins/firebaseStorage/index.js",
-    "./plugins/github": "./plugins/github/index.js",
     "./plugins/markdown": "./plugins/markdown/index.js",
     "./plugins/staticFiles": "./plugins/staticFiles/index.js",
     "./transformers": "./transformers.js",

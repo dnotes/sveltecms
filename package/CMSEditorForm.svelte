@@ -25,7 +25,7 @@ const initialValues = cloneDeep(values);
 //   errors = validator.errors.all()
 // }
 export let submit = async (event) => {
-    if (action) {
+    if (method) {
     }
     else {
         event.preventDefault();

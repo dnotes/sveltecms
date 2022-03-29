@@ -151,6 +151,17 @@ const widgetTypes = {
         widget: CMSWidgetImage,
         handlesMultiple: true,
         handlesMedia: true,
+        formDataHandler: async (value, cms, contentType, field) => {
+            let files = value.files;
+            console.log(JSON.stringify(files));
+            let data = [];
+            Object.entries(value).forEach(([i, obj]) => {
+                if (i.match(/^\d+$/)) {
+                    data.push(obj);
+                }
+            });
+            return data;
+        },
         optionFields: {
             accept: {
                 type: 'text',

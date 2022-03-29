@@ -188,6 +188,7 @@ export declare class CMSWidget {
     handlesMultiple: boolean;
     handlesMedia: boolean;
     options?: ConfigSetting;
+    formDataHandler?: FormDataHandler;
     constructor(conf: string | CMSWidgetTypeConfigSetting, cms: SvelteCMS);
 }
 export declare class CMSContentStore {
@@ -409,6 +410,9 @@ export declare type CMSFieldTypeMerge = {
     defaultValue?: any;
     defaultWidget?: string;
 };
+export declare type FormDataHandler = (value: {
+    [key: string]: any;
+}, cms: SvelteCMS, contentType: CMSContentType, field: CMSContentField) => Promise<any>;
 export declare type CMSWidgetType = {
     id: string;
     widget: Object;
@@ -419,6 +423,7 @@ export declare type CMSWidgetType = {
         [key: string]: CMSConfigFieldConfigSetting;
     };
     hidden?: boolean;
+    formDataHandler?: FormDataHandler;
 };
 export declare type CMSWidgetTypeMerge = {
     id: string;
