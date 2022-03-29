@@ -36,7 +36,7 @@ import { onDestroy, onMount } from 'svelte';
   // }
 
   export let submit = async (event)=>{
-    if (action) {
+    if (method) {
     }
     else {
       event.preventDefault()
