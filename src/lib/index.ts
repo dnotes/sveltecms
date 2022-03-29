@@ -555,12 +555,16 @@ export class CMSWidget {
   handlesMultiple: boolean
   handlesMedia: boolean
   options?: ConfigSetting
+  formDataHandler?:FormDataHandler
   constructor(conf:string|CMSWidgetTypeConfigSetting, cms:SvelteCMS) {
     let widgetType = typeof conf === 'string' ? cms.widgetTypes[conf] : cms.widgetTypes[conf.id]
     this.type = widgetType?.id
     this.widget = widgetType?.widget
     this.handlesMultiple = widgetType?.handlesMultiple || false
     this.handlesMedia = widgetType?.handlesMedia || false
+    if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
+      this.formDataHandler = widgetType.formDataHandler
+    }
     if (widgetType?.optionFields) {
       this.options = cms.getConfigOptionsFromFields(widgetType.optionFields)
     }
@@ -814,6 +818,8 @@ export type CMSFieldTypeMerge = {
 
 }
 
+export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:CMSContentType, field:CMSContentField)=>Promise<any>
+
 export type CMSWidgetType = {
   id:string
   widget:Object
@@ -822,7 +828,7 @@ export type CMSWidgetType = {
   handlesMedia?:boolean
   optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
   hidden?:boolean
-  // formDataHandler?:(path:string, data:{[key:string]:any})=>any
+  formDataHandler?:FormDataHandler
 }
 
 export type CMSWidgetTypeMerge = {

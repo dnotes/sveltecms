@@ -1,10 +1,31 @@
-import type { default as SvelteCMS, CMSPlugin, ConfigSetting, CMSConfigFieldConfigSetting } from '../..';
-import fs from 'fs'
-import path from 'path'
+import type { default as SvelteCMS, CMSPlugin, ConfigSetting, CMSConfigFieldConfigSetting, CMSContentField, CMSContentType } from '../..';
 import type { RequestEvent } from '@sveltejs/kit'
+import type FS from '@isomorphic-git/lightning-fs'
+import { get, set } from 'lodash-es'
+
+
+function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
+function isBrowser() { return typeof window !== 'undefined' }
+function getBasedir() { return isBrowser() ? '' : import.meta.url }
+async function getFs(dbName):Promise<FS> {
+  if (isBrowser()) {
+    const FS = await import('@isomorphic-git/lightning-fs')
+    const fs = new FS(dbName)
+    return fs
+  }
+  const fs = await import('fs')
+  return fs
+}
 
 export const fileStoresContentOptionFields:{[key:string]:CMSConfigFieldConfigSetting} = {
-  directory: {
+  databaseName: {
+    type: 'text',
+    default: '',
+    tooltip: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
+      'It should be globally unique and generally should be the same across one site or app; your site url might be a good choice. ' +
+      'At the moment, if you are using something like isomorphic-git, you must import content into the browser filesystem yourself.',
+  },
+  contentDirectory: {
     type: 'text',
     default: 'content',
     tooltip: 'The directory for local content files relative to the project root',
@@ -22,7 +43,7 @@ export const fileStoresContentOptionFields:{[key:string]:CMSConfigFieldConfigSet
     default: 'directory',
     tooltip: 'Include the content type id as part of the path',
   },
-  saveAsExtension: {
+  fileExtension: {
     type: 'text',
     widget: 'select',
     default: 'md',
@@ -42,28 +63,127 @@ export const fileStoresContentOptionFields:{[key:string]:CMSConfigFieldConfigSet
     default: 'body',
     tooltip: 'Which field should be used as the body of the Markdown file',
   },
-  listExtensions: {
-    type: 'tags',
-    default: ['md'],
-    tooltip: 'Extensions to include when getting content',
-  },
 }
 
-export async function parseFormData(cms:SvelteCMS, contentType:string, formData:FormData) {
+async function collapseFormItem(cms:SvelteCMS, contentType:CMSContentType, fields:{[id:string]:CMSContentField}, data:any, prefix?:string):Promise<any> {
+
+  let promises = Object.entries(fields).map(async ([id,field]) => {
+
+    let formPath = [prefix,id].filter(Boolean).join('.')
+    let item = get(data, formPath)
+    let value
+
+    let itemIsArray = Object.keys(value).reduce((cur:number|boolean,v) => {
+      if (cur === false) return cur
+      return (typeof cur === 'number' && v == cur.toString()) ? cur + 1 : false
+    }, 0)
+
+    // Collection fields must be collapsed recursively
+    if (field.type === 'collection') {
+      if (field.multiple && itemIsArray) {
+        let promises = Object.entries(item).map(async ([i,item]) => {
+          return collapseFormItem(cms, contentType, field.fields, item, formPath)
+        })
+        value = await Promise.all(promises)
+      }
+      else {
+        value = await collapseFormItem(cms, contentType, field.fields, item['0'], formPath)
+      }
+    }
+
+    // multiple fields must either handle multiple values or be an array - otherwise it's definitely an error
+    else if (field.multiple && !itemIsArray && !(field.widget.handlesMultiple && field.widget.formDataHandler)) {
+      throw new Error(`Multiple field must either be an array or use a widget with handlesMultiple and formDataHandler: ${formPath}.`)
+    }
+
+    // if it is a valid multiple field
+    else if (field.multiple || field.widget.handlesMultiple) {
+
+      // Make the item an array if necessary
+      value = itemIsArray ? Object.entries(item).map(([i,val]) => val) : item
+
+      // Use a formDataHandler if provided
+      if (field.widget.formDataHandler) {
+        if (field.widget.handlesMultiple) {
+          value = await field.widget.formDataHandler(value, cms, contentType, field)
+        }
+        else {
+          let promises = Object.entries(item).map(async ([i,item]) => {
+            return field.widget.formDataHandler(item, cms, contentType, field)
+          })
+          value = await Promise.all(promises)
+        }
+      }
+
+      // For singular fields that use a widget with handlesMultiple, return the first value
+      if (!field.multiple && Array.isArray(value)) value = value[0]
+
+    }
+
+    else {
+      value = item['0']
+    }
+
+    return [id, value]
+  })
+
+  return Object.fromEntries(await Promise.all(promises))
+}
+
+/**
+ * Converts FormData into an object to be saved to a content store.
+ * @param cms SvelteCMS
+ * @param contentType CMSContentType
+ * @param formdata FormData
+ */
+export async function formDataHandler(cms:SvelteCMS, contentTypeID:string, formdata:FormData) {
+
+  let rawdata = {}
+  // @ts-ignore -- why does this not have a proper FormData object?!?!!
+  for (let k of formdata.keys()) {
+    rawdata[k] = formdata.getAll(k)
+  }
+
+  const contentType = cms.getContentType(contentTypeID)
+
+  return collapseFormItem(cms, contentType, contentType.fields, rawdata)
 
 }
 
-export async function saveContentEndpoint(cms:SvelteCMS, contentType:string, event:RequestEvent) {
-  let req = event.request
-
+export async function saveContentEndpoint(cms:SvelteCMS, contentTypeID:string, request:Request, options={}) {
+  let formdata = await request.formData()
+  let data = await formDataHandler(cms, contentTypeID, formdata)
+  try {
+    let response = await cms.saveContent(contentTypeID, data, options)
+    return response
+  }
+  catch(error) {
+    return {
+      status: 500,
+      error,
+      data,
+    }
+  }
 }
 
-export async function deleteContentEndpoint(cms:SvelteCMS, contentType:string, event:RequestEvent) {
-
+export async function deleteContentEndpoint(cms:SvelteCMS, contentTypeID:string, request:Request, options={}) {
+  let formdata = await request.formData()
+  let data = await formDataHandler(cms, contentTypeID, formdata)
+  try {
+    let response = await cms.deleteContent(contentTypeID, data, options)
+    return response
+  }
+  catch(error) {
+    return {
+      status: 500,
+      error,
+      data,
+    }
+  }
 }
 
 export async function parseFileStoreContentItem(_filepath, content, opts) {
-  let ext = path.extname(_filepath)
+  let ext = extname(_filepath)
   if (ext === '.json') return { ...JSON.parse(content), _filepath }
   else {
     const yaml = await import('js-yaml')
@@ -87,61 +207,55 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
 const plugin:CMSPlugin = {
   contentStores: [
     {
-      id: 'fileStore',
+      id: 'staticFiles',
       optionFields: fileStoresContentOptionFields,
-      listContent: async (contentType, opts:ConfigSetting & { fileExtensions:string[], glob?:string }) => {
-        const base = import.meta.url
-        const glob = opts.glob || `${base}/${opts.directory}/` + // base dir
+      listContent: async (contentType, opts:ConfigSetting & { fileExtension:string, glob?:string }) => {
+        const fs = await getFs(opts.databaseName)
+        let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
+          `${getBasedir()}/${opts.contentDirectory}/` + // base dir
           `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
             contentType.id + ( opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-          `${opts.prependText || ''}` +             // prependText value
-          `${opts.recursive ? '**/' : ''}` +        // recursive
-          `.(${opts?.fileExtensions?.join('|')})`   // file extensions
+          `*.(${opts.fileExtension})`   // file extensions
+        glob = glob.replace(/\/+/g, '/')
         const fg = await import('fast-glob')
-        return fg.sync(glob).map(f => {
+        return fg.sync(glob, {fs}).map(f => {
           let item = fs.readFileSync(f, { encoding: 'utf8' })
           return parseFileStoreContentItem(f, item, opts)
         })
       },
 
-      getContent: async (contentType, opts:ConfigSetting & { fileExtensions:string[], glob?:string }, slug = '') => {
-        const base = import.meta.url
-        const glob = opts.glob || `${base}/${opts.directory}/` + // base dir
-        `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
-          contentType.id + ( opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-        `${opts.prependText || ''}` +             // prependText value
-        `${opts.recursive ? '**/' : ''}` +        // recursive
-          `${slug || '*'}` +                        // one or all?
-          `.(${opts?.fileExtensions?.join('|')})`   // file extensions
-
+      getContent: async (contentType, opts:ConfigSetting & { fileExtension:string, glob?:string }, slug = '') => {
+        const fs = await getFs(opts.databaseName)
+        let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
+          `${getBasedir()}/${opts.contentDirectory}/` + // base dir
+          `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
+            contentType.id + ( opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+          `*.(${opts.fileExtension})`   // file extensions
+        glob = glob.replace(/\/+/g, '/')
         const fg = await import('fast-glob')
-        let files = fg.sync(glob).map(f => {
+        let files = fg.sync(glob, {fs}).map(f => {
           let item = fs.readFileSync(f, { encoding: 'utf8' })
           return parseFileStoreContentItem(f, item, opts)
         })
         return files.length === 1 ? files[0] : files
       },
 
-      saveContent: async (content, contentType, opts:ConfigSetting & { directory?:string, markdownBodyField?:string }) => {
+      saveContent: async (content, contentType, opts:ConfigSetting & { filepath?:string, contentDirectory?:string, fileExtension:string, markdownBodyField?:string }) => {
 
-        if (!opts.slug && !content.slug) throw new Error(`New ${contentType.label} must have a slug`)
+        let slug = opts.slug ?? content._slug ?? content.slug
+        if (!slug) throw new Error(`Content to be saved must have a slug: ${contentType.label}`)
 
-        const base = import.meta.url
-        let filepath = content?._filepath ?? (opts.filepath ? `${base}/${opts.filepath}`.replace(/\/+/, '/') : '')
-        if (!filepath) {
-          filepath = path.resolve(
-            base, opts.directory,             // base dir
-            `${opts.prependContentTypeIdAs ?  // content type, as directory or prefix
-              contentType.id + ( opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-            opts.prependText || '' +          // prependText
-            (opts.slug || content.slug) +     // slug
-            '.' + opts.saveAsExtension        // extension
-          )
-        }
+        const fs = await getFs(opts.databaseName)
 
-        let ext = path.extname(filepath)
+        const base = `${getBasedir()}/${opts.contentDirectory}/`
+        let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
+          `${getBasedir()}/${opts.contentDirectory}/` + // base dir
+          `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
+            contentType.id + ( opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+          `${slug}.${opts.fileExtension}`   // file extensions
+
         let body = ''
-        switch (ext) {
+        switch (opts.fileExtension) {
           case "json":
             content = JSON.stringify(content, null, 2)
             break;
@@ -152,7 +266,7 @@ const plugin:CMSPlugin = {
           case "yaml":
             let yaml = await import('js-yaml')
             content = yaml.dump(content)
-            if (ext === 'md') content = `---\n${content}\n---\n${body}`
+            if (opts.fileExtension === 'md') content = `---\n${content}\n---\n${body}`
             break;
           default:
             throw new Error('Extension for file stores must be md, json, yml or yaml.')
@@ -162,11 +276,18 @@ const plugin:CMSPlugin = {
 
       },
 
-      deleteContent: async (content, contentType, opts) => {
+      deleteContent: async (content, contentType, opts:ConfigSetting & { filepath?:string, contentDirectory?:string, fileExtension:string, markdownBodyField?:string }) => {
 
-        const base = import.meta.url
-        let filepath = content._filepath ?? (opts.filepath ? `${base}/${opts.filepath}`.replace(/\/+/, '/') : '')
-        if (!filepath) return
+        let slug = opts.slug ?? content._slug ?? content.slug
+        if (!slug) throw new Error(`Content to be deleted must have a slug: ${contentType.label}`)
+
+        const fs = await getFs(opts.databaseName)
+
+        let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
+          `${getBasedir()}/${opts.contentDirectory}/` + // base dir
+          `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
+            contentType.id + ( opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+          `${slug}.${opts.fileExtension}`   // file extensions
 
         fs.unlinkSync(filepath)
 
