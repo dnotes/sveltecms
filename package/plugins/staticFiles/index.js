@@ -1,28 +1,35 @@
-import { get } from 'lodash-es';
+import formDataHandler from '../../utils/formDataHandler';
+import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
+const fs = {};
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
-function isBrowser() { return typeof window !== 'undefined'; }
-function getBasedir() { return isBrowser() ? '' : import.meta.url; }
-async function getFs(dbName) {
-    if (isBrowser()) {
-        const FS = await import('@isomorphic-git/lightning-fs');
-        const fs = new FS(dbName);
-        return fs;
+function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/node_modules\/.+/, '').replace(/^file:\/\/\//, '/'); }
+export async function getFs(databaseName) {
+    if (isBrowser || isWebWorker) {
+        if (!fs[databaseName]) {
+            const { default: FS } = await import('@isomorphic-git/lightning-fs');
+            let _fs = new FS(databaseName);
+            fs[databaseName] = _fs.promises;
+        }
+        return fs[databaseName];
     }
-    const fs = await import('fs');
-    return fs;
+    if (isJsDom)
+        console.warn('Use of jsdom is untested and unsupported by SvelteCMS');
+    const { promises } = await import('fs');
+    // @ts-ignore: todo: how to get the type for fs/promises
+    return promises;
 }
-export const fileStoresContentOptionFields = {
-    databaseName: {
-        type: 'text',
-        default: '',
-        tooltip: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
-            'It should be globally unique and generally should be the same across one site or app; your site url might be a good choice. ' +
-            'At the moment, if you are using something like isomorphic-git, you must import content into the browser filesystem yourself.',
-    },
+export const databaseNameField = {
+    type: 'text',
+    default: '',
+    tooltip: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
+        'It should be globally unique and generally should be the same across one site or app; your site url might be a good choice. ' +
+        'At the moment, if you are using something like isomorphic-git, you must import content into the browser filesystem yourself.',
+};
+export const staticFilesContentOptionFields = {
     contentDirectory: {
         type: 'text',
         default: 'content',
-        tooltip: 'The directory for local content files relative to the project root',
+        tooltip: 'The directory for local content files relative to the project root.',
     },
     prependContentTypeIdAs: {
         type: 'text',
@@ -58,101 +65,63 @@ export const fileStoresContentOptionFields = {
         tooltip: 'Which field should be used as the body of the Markdown file',
     },
 };
-async function collapseFormItem(cms, contentType, fields, data, prefix) {
-    let promises = Object.entries(fields).map(async ([id, field]) => {
-        let formPath = [prefix, id].filter(Boolean).join('.');
-        let item = get(data, formPath);
-        let value;
-        let itemIsArray = Object.keys(value).reduce((cur, v) => {
-            if (cur === false)
-                return cur;
-            return (typeof cur === 'number' && v == cur.toString()) ? cur + 1 : false;
-        }, 0);
-        // Collection fields must be collapsed recursively
-        if (field.type === 'collection') {
-            if (field.multiple && itemIsArray) {
-                let promises = Object.entries(item).map(async ([i, item]) => {
-                    return collapseFormItem(cms, contentType, field.fields, item, formPath);
-                });
-                value = await Promise.all(promises);
-            }
-            else {
-                value = await collapseFormItem(cms, contentType, field.fields, item['0'], formPath);
-            }
-        }
-        // multiple fields must either handle multiple values or be an array - otherwise it's definitely an error
-        else if (field.multiple && !itemIsArray && !(field.widget.handlesMultiple && field.widget.formDataHandler)) {
-            throw new Error(`Multiple field must either be an array or use a widget with handlesMultiple and formDataHandler: ${formPath}.`);
-        }
-        // if it is a valid multiple field
-        else if (field.multiple || field.widget.handlesMultiple) {
-            // Make the item an array if necessary
-            value = itemIsArray ? Object.entries(item).map(([i, val]) => val) : item;
-            // Use a formDataHandler if provided
-            if (field.widget.formDataHandler) {
-                if (field.widget.handlesMultiple) {
-                    value = await field.widget.formDataHandler(value, cms, contentType, field);
-                }
-                else {
-                    let promises = Object.entries(item).map(async ([i, item]) => {
-                        return field.widget.formDataHandler(item, cms, contentType, field);
-                    });
-                    value = await Promise.all(promises);
-                }
-            }
-            // For singular fields that use a widget with handlesMultiple, return the first value
-            if (!field.multiple && Array.isArray(value))
-                value = value[0];
-        }
-        else {
-            value = item['0'];
-        }
-        return [id, value];
-    });
-    return Object.fromEntries(await Promise.all(promises));
-}
-/**
- * Converts FormData into an object to be saved to a content store.
- * @param cms SvelteCMS
- * @param contentType CMSContentType
- * @param formdata FormData
- */
-export async function formDataHandler(cms, contentTypeID, formdata) {
-    let rawdata = {};
-    // @ts-ignore -- why does this not have a proper FormData object?!?!!
-    for (let k of formdata.keys()) {
-        rawdata[k] = formdata.getAll(k);
-    }
-    const contentType = cms.getContentType(contentTypeID);
-    return collapseFormItem(cms, contentType, contentType.fields, rawdata);
-}
+export const staticFilesMediaOptionFields = {
+    staticDirectory: {
+        type: 'text',
+        default: 'static',
+        tooltip: 'The directory for static files relative to the project root. For SvelteKit projects this is "static" by default.'
+    },
+    mediaDirectory: {
+        type: 'text',
+        default: '',
+        tooltip: 'The directory for media files relative to the static directory.',
+    },
+    allowMediaTypes: {
+        type: 'tags',
+        default: 'image/*',
+        tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+    },
+    maxUploadSize: {
+        type: 'text',
+        default: "",
+        tooltip: 'The maximum file size allowed for media uploads, e.g. "10MB". Empty or 0 for unlimited.'
+    },
+};
 export async function saveContentEndpoint(cms, contentTypeID, request, options = {}) {
-    let formdata = await request.formData();
-    let data = await formDataHandler(cms, contentTypeID, formdata);
+    let content;
     try {
-        let response = await cms.saveContent(contentTypeID, data, options);
+        let formdata = await request.formData();
+        content = await formDataHandler(cms, contentTypeID, formdata);
+        let response = await cms.saveContent(contentTypeID, content, options);
         return response;
     }
     catch (error) {
         return {
             status: 500,
-            error,
-            data,
+            body: {
+                message: error.message,
+                stack: error.stack.split('\n'),
+                content,
+            }
         };
     }
 }
 export async function deleteContentEndpoint(cms, contentTypeID, request, options = {}) {
-    let formdata = await request.formData();
-    let data = await formDataHandler(cms, contentTypeID, formdata);
+    let content;
     try {
-        let response = await cms.deleteContent(contentTypeID, data, options);
+        let formdata = await request.formData();
+        content = await formDataHandler(cms, contentTypeID, formdata);
+        let response = await cms.deleteContent(contentTypeID, content, options);
         return response;
     }
     catch (error) {
         return {
             status: 500,
-            error,
-            data,
+            body: {
+                message: error.message,
+                stack: error.stack.split('\n'),
+                content,
+            }
         };
     }
 }
@@ -181,50 +150,68 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
         throw new Error('Extension for file stores must be md, json, yml or yaml.');
     }
 }
+function bytes(text) {
+    let num = parseInt(text);
+    if (isNaN(num))
+        return 0;
+    let multiplier = {
+        b: 1,
+        k: 1024,
+        m: 1024 * 1024,
+        g: 1024 * 1024 * 1024,
+    }[(text.toLowerCase().match(/^[\s\d]+(k|m|g)/) || [])[1] || 'b'];
+    return num * multiplier;
+}
 const plugin = {
     contentStores: [
         {
             id: 'staticFiles',
-            optionFields: fileStoresContentOptionFields,
+            optionFields: { databaseName: databaseNameField, ...staticFilesContentOptionFields },
             listContent: async (contentType, opts) => {
                 const fs = await getFs(opts.databaseName);
                 let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-                        `*.(${opts.fileExtension})`; // file extensions
+                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+                        `*.${opts.fileExtension}`; // file extensions
                 glob = glob.replace(/\/+/g, '/');
-                const fg = await import('fast-glob');
-                return fg.sync(glob, { fs }).map(f => {
-                    let item = fs.readFileSync(f, { encoding: 'utf8' });
+                const { default: fg } = await import('fast-glob');
+                const items = await fg(glob, { fs });
+                const files = items.map(async (f) => {
+                    let item = await fs.readFile(f, { encoding: 'utf8' });
                     return parseFileStoreContentItem(f, item, opts);
                 });
+                await Promise.all(files);
+                return files;
             },
             getContent: async (contentType, opts, slug = '') => {
+                slug = slug || opts.slug || '*';
                 const fs = await getFs(opts.databaseName);
                 let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-                        `*.(${opts.fileExtension})`; // file extensions
+                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+                        `${slug}.${opts.fileExtension}`; // file extensions
                 glob = glob.replace(/\/+/g, '/');
-                const fg = await import('fast-glob');
-                let files = fg.sync(glob, { fs }).map(f => {
-                    let item = fs.readFileSync(f, { encoding: 'utf8' });
+                const { default: fg } = await import('fast-glob');
+                const items = await fg(glob, { fs });
+                const files = items.map(async (f) => {
+                    let item = await fs.readFile(f, { encoding: 'utf8' });
                     return parseFileStoreContentItem(f, item, opts);
                 });
+                await Promise.all(files);
                 return files.length === 1 ? files[0] : files;
             },
             saveContent: async (content, contentType, opts) => {
                 let slug = opts.slug ?? content._slug ?? content.slug;
-                if (!slug)
-                    throw new Error(`Content to be saved must have a slug: ${contentType.label}`);
+                if (!slug && !opts.filepath)
+                    throw new Error(`Content to be saved must have a slug or a provided filepath: ${contentType.label}\n - opts.slug: ${opts.slug}\n - content._slug: ${content._slug}\n - content.slug: ${content.slug}`);
                 const fs = await getFs(opts.databaseName);
                 const base = `${getBasedir()}/${opts.contentDirectory}/`;
                 let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
                         `${slug}.${opts.fileExtension}`; // file extensions
                 let body = '';
                 switch (opts.fileExtension) {
@@ -244,29 +231,89 @@ const plugin = {
                     default:
                         throw new Error('Extension for file stores must be md, json, yml or yaml.');
                 }
-                fs.writeFileSync(filepath, content);
+                try {
+                    await fs.writeFile(filepath, content);
+                    return {
+                        status: 200,
+                        body: {
+                            action: 'saved',
+                            filepath,
+                            content,
+                        }
+                    };
+                }
+                catch (e) {
+                    e.message = `Error writing ${filepath}:\n${e.message}`;
+                    throw e;
+                }
             },
             deleteContent: async (content, contentType, opts) => {
                 let slug = opts.slug ?? content._slug ?? content.slug;
-                if (!slug)
-                    throw new Error(`Content to be deleted must have a slug: ${contentType.label}`);
+                if (!slug && !opts.filepath)
+                    throw new Error(`Content to be deleted must have a slug or a provided filepath: ${contentType.label}`);
                 const fs = await getFs(opts.databaseName);
                 let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.useContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
+                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
                         `${slug}.${opts.fileExtension}`; // file extensions
-                fs.unlinkSync(filepath);
+                try {
+                    await fs.unlink(filepath);
+                    return {
+                        status: 200,
+                        body: {
+                            action: 'deleted',
+                            filepath,
+                            content
+                        }
+                    };
+                }
+                catch (e) {
+                    e.message = `Error deleting ${filepath}:\n${e.message}`;
+                    throw e;
+                }
             },
         }
     ],
     mediaStores: [
         {
-            id: 'local',
+            id: 'staticFiles',
+            optionFields: { databaseName: databaseNameField, ...staticFilesMediaOptionFields },
             saveMedia: async (file, opts) => {
-                return '';
+                // Check media for validity
+                let mediaTypes = opts.allowMediaTypes.split(/\s*,\s*/);
+                if (!mediaTypes.includes(file.type) && // exact type
+                    !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type
+                    !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension
+                )
+                    throw new Error(`${file.name} is not among the allowed media types (${mediaTypes.join(', ')}).`);
+                let maxUploadSize = bytes(opts.maxUploadSize);
+                if (maxUploadSize && file.size > maxUploadSize)
+                    throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`);
+                // Get file system
+                const fs = await getFs(opts.databaseName);
+                const filepath = `${getBasedir()}/${opts.staticDirectory}/${opts.mediaDirectory}/${file.name}`.replace(/\/+/g, '/');
+                // TODO: determine what to do if files exist
+                let fileStats;
+                try {
+                    fileStats = await fs.stat(filepath);
+                }
+                catch (e) {
+                    if (e.code === 'ENOENT')
+                        fileStats = false;
+                }
+                try {
+                    const buffer = await file.arrayBuffer();
+                    const uint8 = new Uint8Array(buffer);
+                    await fs.writeFile(filepath, uint8);
+                    return `/${opts.mediaDirectory}/${file.name}`;
+                }
+                catch (e) {
+                    throw e;
+                }
             },
             deleteMedia: async (file, opts) => {
+                const fs = await getFs(opts.databaseName);
                 return '';
             },
         }

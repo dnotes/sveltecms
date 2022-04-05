@@ -64,6 +64,7 @@ const storageBuilder = (options) => {
         mediaStores: [
             {
                 id: 'firebaseStorage',
+                immediateUpload: true,
                 async getMedia(filename, opts) {
                     const storage = getFirebaseStorage();
                     const fileRef = ref(storage, `${opts.path ?? this.opts.path ?? ''}/${filename}`.replace(/\/+/g, '/'));

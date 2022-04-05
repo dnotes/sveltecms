@@ -32,7 +32,8 @@ export default class SvelteCMS {
     getContentType(contentType: string): CMSContentType;
     getCollection(contentType: string, valuePath: string): CMSContentField;
     getContentStore(contentType: string): CMSContentStore;
-    slugifyContent(content: any, contentType: string, force?: boolean): void;
+    slugifyContent(content: any, contentType: CMSContentType, force?: boolean): any;
+    getSlug(content: any, contentType: CMSContentType, force: boolean): any;
     listContent(contentType: string, options?: {
         [key: string]: any;
     }): Promise<{}>;
@@ -204,8 +205,9 @@ export declare class CMSMediaStore {
     id: string;
     listMedia: (path?: string | null, options?: ConfigSetting) => Promise<string[]>;
     getMedia: (filename?: string | number | null, options?: ConfigSetting) => Promise<string | string[]>;
-    saveMedia: (file: File, options?: ConfigSetting) => Promise<string>;
+    saveMedia: (file: Blob, options?: ConfigSetting) => Promise<string>;
     deleteMedia: (filename: string, options?: ConfigSetting) => Promise<any>;
+    immediateUpload?: boolean;
     options?: ConfigSetting;
     constructor(conf: string | CMSStoreConfigSetting, cms: SvelteCMS, contentType: CMSContentType);
 }
@@ -391,6 +393,7 @@ export declare type CMSMediaStoreType = {
     getMedia?: (filename: string | number | null, opts: ConfigSetting) => Promise<string | string[]>;
     saveMedia?: (file: File, opts: ConfigSetting) => Promise<string>;
     deleteMedia?: (filename: string, opts: ConfigSetting) => Promise<any>;
+    immediateUpload?: boolean;
     optionFields?: {
         [key: string]: CMSConfigFieldConfigSetting;
     };

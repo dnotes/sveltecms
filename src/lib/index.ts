@@ -169,22 +169,22 @@ export default class SvelteCMS {
     return type.contentStore
   }
 
-  slugifyContent(content:any, contentType:string, force?:boolean) {
-    const type = this.getContentType(contentType)
+  slugifyContent(content:any, contentType:CMSContentType, force?:boolean) {
     if (Array.isArray(content)) {
       content.forEach(c => {
-        if (force || !c._slug) {
-          let newSlug = type.slug.fields.map(id => { return getProp(c,id) }).filter(Boolean).join(type.slug.separator)
-          c._slug = this.runFunction('transformers', type.slug.slugify, newSlug)
-        }
+        c._slug = this.getSlug(content, contentType, force)
       })
     }
     else {
-      if (force || !content._slug) {
-        let newSlug = type.slug.fields.map(id => { return getProp(content,id) }).filter(Boolean).join(type.slug.separator)
-        content._slug = this.runFunction('transformers', type.slug.slugify, newSlug)
-      }
+      content._slug = this.getSlug(content, contentType, force)
     }
+    return content
+  }
+
+  getSlug(content:any, contentType:CMSContentType, force:boolean) {
+    if (content._slug && !force) return content._slug
+    let newSlug = contentType.slug.fields.map(id => { return getProp(content,id) }).filter(Boolean).join(contentType.slug.separator)
+    return this.runFunction('transformers', contentType.slug.slugify, newSlug)
   }
 
   async listContent(contentType:string, options:{[key:string]:any} = {}) {
@@ -193,7 +193,7 @@ export default class SvelteCMS {
     Object.assign(db.options, options)
     const rawContent = await db.listContent(type, db.options)
     if (!rawContent) return
-    this.slugifyContent(rawContent, contentType)
+    this.slugifyContent(rawContent, type)
     if (options.getRaw) return rawContent
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
@@ -214,7 +214,7 @@ export default class SvelteCMS {
     Object.assign(db.options, options)
     const rawContent = await db.getContent(type, db.options, slug)
     if (!rawContent) return
-    this.slugifyContent(rawContent, contentType)
+    this.slugifyContent(rawContent, type)
     if (options.getRaw) return rawContent
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
@@ -223,16 +223,14 @@ export default class SvelteCMS {
     const type = this.getContentType(contentType)
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
-    this.slugifyContent(content, contentType)
-    return db.saveContent(this.preSave(contentType, content), type, db.options)
+    return db.saveContent(this.slugifyContent(this.preSave(contentType, content), type), type, db.options)
   }
 
   async deleteContent(contentType:string, content:any, options:{[key:string]:any} = {}) {
     const type = this.getContentType(contentType)
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
-    this.slugifyContent(content, contentType)
-    return db.deleteContent(this.preSave(contentType, content), type, db.options)
+    return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), type), type, db.options)
   }
 
   runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|CMSFieldTransformerSetting, value) {
@@ -603,22 +601,28 @@ export class CMSMediaStore {
   id:string
   listMedia:(path?:string|null, options?:ConfigSetting)=>Promise<string[]>
   getMedia:(filename?:string|number|null, options?:ConfigSetting)=>Promise<string|string[]>
-  saveMedia:(file:File, options?:ConfigSetting)=>Promise<string>
+  saveMedia:(file:Blob, options?:ConfigSetting)=>Promise<string>
   deleteMedia:(filename:string, options?:ConfigSetting)=>Promise<any>
+  // getPreview?:(file:Blob, options?:ConfigSetting)=>Promise<string>
+  // deletePreview?:(file:Blob, options?:ConfigSetting)=>Promise<any>
+  immediateUpload?:boolean
   options?:ConfigSetting
   constructor(conf:string|CMSStoreConfigSetting, cms:SvelteCMS, contentType:CMSContentType) {
     let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf?.id]
     if (!store) store = Object.values(cms.mediaStores)[0]
     this.id = store?.id
-    this.listMedia = store?.listMedia ? store.listMedia.bind(this) : async () => { console.error(store?.id ? `No function 'list' for store '${this.id}'` : `Store ${this.id} not found`)}
-    this.getMedia = store?.getMedia ? store.getMedia.bind(this) : async () => { console.error(store?.id ? `No function 'get' for store '${this.id}'` : `Store ${this.id} not found`)}
-    this.saveMedia = store?.saveMedia ? store.saveMedia.bind(this) : async () => { console.error(store?.id ? `No function 'save' for store '${this.id}'` : `Store ${this.id} not found`)}
-    this.deleteMedia = store?.deleteMedia ? store.deleteMedia.bind(this)  : async () => { console.error(store?.id ? `No function 'delete' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.listMedia = store?.listMedia ? store.listMedia.bind(this) : async () => { console.error(store?.id ? `No function 'listMedia' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.getMedia = store?.getMedia ? store.getMedia.bind(this) : async () => { console.error(store?.id ? `No function 'getMedia' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.saveMedia = store?.saveMedia ? store.saveMedia.bind(this) : async () => { console.error(store?.id ? `No function 'saveMedia' for store '${this.id}'` : `Store ${this.id} not found`)}
+    this.deleteMedia = store?.deleteMedia ? store.deleteMedia.bind(this)  : async () => { console.error(store?.id ? `No function 'deleteMedia' for store '${this.id}'` : `Store ${this.id} not found`)}
+    // this.getPreview = store?.getPreview ? store.getPreview.bind(this) : undefined
+    // this.deletePreview = store?.deletePreview ? store.deletePreview.bind(this) : undefined
     this.options = cms.mergeConfigOptions(
       cms.getConfigOptionsFromFields(store?.optionFields || {}),
       store?.options || {},
       conf?.['options'] || {},
     )
+    this.immediateUpload = Boolean(this.options.immediateUpload) || store.immediateUpload
   }
 }
 
@@ -786,6 +790,9 @@ export type CMSMediaStoreType = {
   getMedia?:(filename:string|number|null, opts:ConfigSetting) => Promise<string|string[]>
   saveMedia?:(file:File, opts:ConfigSetting) => Promise<string>
   deleteMedia?:(filename:string, opts:ConfigSetting) => Promise<any>
+  // getPreview?:(file:Blob, options?:ConfigSetting)=>Promise<string>
+  // deletePreview?:(file:Blob, options?:ConfigSetting)=>Promise<any>
+  immediateUpload?:boolean
   optionFields?: {[key:string]:CMSConfigFieldConfigSetting}
   options?: ConfigSetting
 }

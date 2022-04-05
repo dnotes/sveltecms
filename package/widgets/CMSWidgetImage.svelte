@@ -46,26 +46,33 @@ export let handleUpload = () => {
     [...files].forEach(async (file) => {
         // If it does not have a previewUrl (i.e. it has not been parsed yet)
         if (!previewUrls.hasOwnProperty(file.name)) {
+            let newValue;
             // FOR IMMEDIATELY UPLOADED PREVIEWS
-            if (true) { // TODO: make this an option in the widget
+            if (field.mediaStore.immediateUpload) {
                 previewUrls[file.name] = {};
                 let url;
                 try {
                     url = await field.mediaStore.saveMedia(file, field.mediaStore.options);
+                    file.name = url;
                     previewUrls[file.name] = { url };
+                    newValue = isString ? url : { url };
                 }
                 catch (e) {
                     result = e;
                 }
             }
-            // FOR BLOB PREVIEWS (TODO)
-            // else {
-            //   // Create an objectUrl
-            //   previewUrls[file.name] = URL.createObjectURL(file)
-            // }
-            // Create newValue to add to or replace the "value" variable
-            let newSrc = previewUrls[file.name].url || file.name || '';
-            let newValue = isString ? newSrc : { src: newSrc };
+            else {
+                // Create an objectUrl
+                let url = URL.createObjectURL(file);
+                previewUrls[file.name] = {
+                    url,
+                    blob: file,
+                };
+                newValue = {
+                    src: url,
+                    filename: file.name,
+                };
+            }
             // Add to or replace "value"
             if (field.multiple) {
                 if (Array.isArray(value))
@@ -144,10 +151,24 @@ function releaseObjectUrls() {
               alt="{preview.alt || ''}"
               title="{preview.title}" />
 
+            {#if typeof value === 'string'}
+              <input
+                type="hidden"
+                name="{id}[{i}][src]"
+                bind:value={value[i]}
+              >
+            {:else}
+              <input
+                type="hidden"
+                name="{id}[{i}][src]"
+                bind:value={value[i]['src']}
+              >
+            {/if}
+
             <input
               type="hidden"
-              name="{id}[{i}]"
-              value="{typeof value[i] === 'string' ? value[i] : value[i]?.['src']}"
+              name="{id}[{i}][filename]"
+              value="{value[i]?.['filename'] || ''}"
             >
 
             {#if opts.altField}
@@ -193,7 +214,7 @@ function releaseObjectUrls() {
             {#if typeof value === 'string'}
               <input
                 type="hidden"
-                name="{id}[{i}]"
+                name="{id}[{i}][src]"
                 bind:value={value}
               >
             {:else}
@@ -203,6 +224,12 @@ function releaseObjectUrls() {
                 bind:value={value['src']}
               >
             {/if}
+
+            <input
+              type="hidden"
+              name="{id}[{i}][filename]"
+              value="{value?.['filename'] || ''}"
+            >
 
             {#if opts.altField}
               <input

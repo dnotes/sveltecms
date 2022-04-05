@@ -157,8 +157,6 @@ const widgetTypes:{[key:string]:CMSWidgetType} = {
     formDataHandler: async (value, cms, contentType, field) => {
       let files = value.files
 
-      console.log(JSON.stringify(files))
-
       let data = []
       Object.entries(value).forEach(([i,obj]) => {
         if (i.match(/^\d+$/)) {
@@ -166,11 +164,27 @@ const widgetTypes:{[key:string]:CMSWidgetType} = {
         }
       })
 
-      return data
+      const promises = data.map(async item => {
+        if (item?.filename?.[0]) {
+          let file = files.find(f => f.name === item.filename[0])
+          if (file) {
+            item.src = [ await field.mediaStore.saveMedia(file, field.mediaStore.options) ]
+          }
+        }
+        delete(item.filename)
+        item.src = item.src[0]
+        item.alt = item?.alt?.[0] ? item.alt[0] : undefined
+        item.title = (item?.title?.[0]) ? item.title[0] : undefined
+        item.attribution = (item?.attribution?.[0]) ? item.attribution[0] : undefined
+        return item
+      })
+      const result = await Promise.all(promises)
+
+      return result
     },
     optionFields: {
       accept: {
-        type: 'text',
+        type: 'tags',
         default: 'image/*',
         tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       },

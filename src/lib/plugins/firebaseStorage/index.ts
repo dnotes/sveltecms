@@ -84,6 +84,7 @@ const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:CMS
     mediaStores: [
       {
         id: 'firebaseStorage',
+        immediateUpload: true,
         async getMedia(filename, opts):Promise<string> {
           const storage = getFirebaseStorage()
           const fileRef = ref(storage, `${opts.path ?? this.opts.path ?? ''}/${filename}`.replace(/\/+/g,'/'))

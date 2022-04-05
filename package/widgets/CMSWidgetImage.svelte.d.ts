@@ -1,6 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 export declare type CMSImage = {
     src: string;
+    filename?: string;
     alt?: string;
     title?: string;
     attribution?: string;
