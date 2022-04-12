@@ -5,10 +5,6 @@ export declare type CMSImage = {
     alt?: string;
     title?: string;
     attribution?: string;
-    cropCoorinatesXY?: {
-        leftTop: string;
-        rightBottom: string;
-    };
 };
 export declare type CMSPreviewImage = CMSImage & {
     title: string;

@@ -220,7 +220,32 @@ const widgetTypes = {
                 type: 'text',
                 default: undefined,
                 tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
-            }
+            },
+            storeStats: {
+                type: 'boolean',
+                default: undefined,
+                tooltip: 'Store type, size, and upload date for each file in the database.'
+            },
+            titleField: {
+                type: 'boolean',
+                default: false,
+                tooltip: 'Show a field for the "title" attribute'
+            },
+            attributionField: {
+                type: 'boolean',
+                default: false,
+                tooltip: 'Show a field for license or attribution of the image'
+            },
+            attributionRequired: {
+                type: 'boolean',
+                default: false,
+                tooltip: 'Require the attribution field',
+            },
+            hideHeader: {
+                type: 'boolean',
+                default: false,
+                tooltip: 'Hide the header for the table of files'
+            },
         }
     },
     select: {

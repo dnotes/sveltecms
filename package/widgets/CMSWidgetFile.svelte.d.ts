@@ -1,10 +1,34 @@
 import { SvelteComponentTyped } from "svelte";
+export declare class CMSFile {
+    src: string;
+    filename: string;
+    title?: string;
+    attribution?: string;
+    size?: number;
+    type?: string;
+    date?: Date;
+    isCMSFile: true;
+    stringify: boolean;
+    toString(): string;
+    toJSON(): string | {
+        src: string;
+        title: string;
+        attribution: string;
+        size: number;
+        date: Date;
+    };
+    constructor(src: string | CMSFile, stringify: boolean, file?: string | File);
+    get displayDate(): string;
+    get displaySize(): any;
+}
 import type { CMSWidgetField } from "..";
 declare const __propDef: {
     props: {
         field: CMSWidgetField;
         id: string;
-        value?: any;
+        value: string | CMSFile | Array<string | CMSFile>;
+        files: any;
+        input?: any;
     };
     events: {
         [evt: string]: CustomEvent<any>;

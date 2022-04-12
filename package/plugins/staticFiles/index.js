@@ -1,5 +1,6 @@
 import formDataHandler from '../../utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
+import bytes from 'bytes';
 const fs = {};
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
 function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/node_modules\/.+/, '').replace(/^file:\/\/\//, '/'); }
@@ -150,18 +151,6 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
         throw new Error('Extension for file stores must be md, json, yml or yaml.');
     }
 }
-function bytes(text) {
-    let num = parseInt(text);
-    if (isNaN(num))
-        return 0;
-    let multiplier = {
-        b: 1,
-        k: 1024,
-        m: 1024 * 1024,
-        g: 1024 * 1024 * 1024,
-    }[(text.toLowerCase().match(/^[\s\d]+(k|m|g)/) || [])[1] || 'b'];
-    return num * multiplier;
-}
 const plugin = {
     contentStores: [
         {
@@ -287,7 +276,7 @@ const plugin = {
                     !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension
                 )
                     throw new Error(`${file.name} is not among the allowed media types (${mediaTypes.join(', ')}).`);
-                let maxUploadSize = bytes(opts.maxUploadSize);
+                let maxUploadSize = bytes.parse(opts.maxUploadSize);
                 if (maxUploadSize && file.size > maxUploadSize)
                     throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`);
                 // Get file system
