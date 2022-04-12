@@ -6,10 +6,6 @@
     alt?:string
     title?:string
     attribution?:string
-    cropCoorinatesXY?:{
-      leftTop:string
-      rightBottom:string
-    }
   }
 
   export type CMSPreviewImage = CMSImage & {
@@ -28,7 +24,7 @@ let result
 
   //@ts-ignore
   let opts:{
-    accept:boolean
+    accept:string
     altField:boolean
     altRequired:boolean
     titleField:boolean
