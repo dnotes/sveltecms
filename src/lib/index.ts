@@ -371,6 +371,12 @@ export default class SvelteCMS {
     return configValues
   }
 
+  get defaultMediaStore():string {
+    let k = (Object.keys(this.mediaStores || {}))[0]
+    if (!k) throw new Error('CMS has no mediaStores, but one is required by a field')
+    return k
+  }
+
 }
 
 export type CMSSlugConfigSetting = {
@@ -402,13 +408,15 @@ export class CMSContentType {
   id:string
   label:string = ''
   slug:CMSSlugConfig
-  contentStore?:CMSContentStore
+  contentStore:CMSContentStore
+  mediaStore?:string|CMSStoreConfigSetting
   fields:{[key:string]:CMSContentField} = {}
   constructor(id, conf:CMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
     this.label = conf.label || getLabelFromID(this.id)
 
     this.contentStore = new CMSContentStore(conf?.contentStore, cms)
+    this.mediaStore = conf.mediaStore
 
     Object.entries(conf.fields).forEach(([id,conf]) => {
       this.fields[id] = new CMSContentField(id, conf, cms, this)
@@ -498,6 +506,10 @@ export class CMSContentField {
       this.validator = fieldType?.defaultValidator
       this.preSave = fieldType?.defaultPreSave
       this.preMount = fieldType?.defaultPreMount
+
+      if (this.widget.handlesMedia) {
+        this.mediaStore = new CMSMediaStore(contentType.mediaStore || cms.defaultMediaStore, cms, contentType)
+      }
     }
     else {
       this.type = conf.type
@@ -540,9 +552,9 @@ export class CMSContentField {
           this.fields[id] = new CMSContentField(id, conf, cms, contentType)
         })
       }
-    }
-    if (this.widget.handlesMedia) {
-      this.mediaStore = new CMSMediaStore(conf?.['mediaStore'], cms, contentType)
+      if (this.widget.handlesMedia) {
+        this.mediaStore = new CMSMediaStore((conf?.['mediaStore'] || contentType.mediaStore || cms.defaultMediaStore), cms, contentType)
+      }
     }
   }
 }
@@ -729,8 +741,8 @@ export type CMSContentTypeConfigSetting = {
   label: string
   fields: {[key:string]:string|CMSContentFieldConfigSetting}
   contentStore: string|CMSStoreConfigSetting
-  mediaStore: string|CMSStoreConfigSetting
-  slug: string|string[]
+  mediaStore?: string|CMSStoreConfigSetting
+  slug?: string|string[]|CMSSlugConfigSetting
 }
 
 export type CMSContentFieldConfigSetting = {
@@ -760,6 +772,7 @@ export type CMSContentFieldConfigSetting = {
   preMount?: string|CMSFieldTransformerSetting|(string|CMSFieldTransformerSetting)[]
   class?: string
   events?: {on:string,function:CMSFieldFunctionConfigSetting}|{on:string,function:CMSFieldFunctionConfigSetting}[]
+  mediaStore?:string|CMSStoreConfigSetting
 }
 
 export type CMSConfigFieldConfigSetting = CMSContentFieldConfigSetting & {
