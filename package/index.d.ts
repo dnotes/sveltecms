@@ -101,6 +101,7 @@ export default class SvelteCMS {
     getValidatorConfig(fieldset: {
         [id: string]: CMSContentField;
     }): Rules;
+    get defaultMediaStore(): string;
 }
 export declare type CMSSlugConfigSetting = {
     fields: string | string[];
@@ -117,7 +118,8 @@ export declare class CMSContentType {
     id: string;
     label: string;
     slug: CMSSlugConfig;
-    contentStore?: CMSContentStore;
+    contentStore: CMSContentStore;
+    mediaStore?: string | CMSStoreConfigSetting;
     fields: {
         [key: string]: CMSContentField;
     };
@@ -325,8 +327,8 @@ export declare type CMSContentTypeConfigSetting = {
         [key: string]: string | CMSContentFieldConfigSetting;
     };
     contentStore: string | CMSStoreConfigSetting;
-    mediaStore: string | CMSStoreConfigSetting;
-    slug: string | string[];
+    mediaStore?: string | CMSStoreConfigSetting;
+    slug?: string | string[] | CMSSlugConfigSetting;
 };
 export declare type CMSContentFieldConfigSetting = {
     type: string;
@@ -363,6 +365,7 @@ export declare type CMSContentFieldConfigSetting = {
         on: string;
         function: CMSFieldFunctionConfigSetting;
     }[];
+    mediaStore?: string | CMSStoreConfigSetting;
 };
 export declare type CMSConfigFieldConfigSetting = CMSContentFieldConfigSetting & {
     type: 'text' | 'number' | 'boolean' | 'date' | 'collection' | 'tags' | 'cmsField' | 'cmsTransformer' | 'cmsFunction';
