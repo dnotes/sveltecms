@@ -162,7 +162,7 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
       if (sections.length > 2 && sections.shift() === '') {
         let data
         try {
-          let data = yaml.load(sections.shift())
+          data = yaml.load(sections.shift())
         }
         catch (e) {} // The yaml would not load.
         if (data) return { ...data, _filepath }
