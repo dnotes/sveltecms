@@ -46,7 +46,7 @@ export default class SvelteCMS {
           // - create a new item (`conf.widgetTypes.newItem = ...`)
           // - modify an existing item (`conf.widgetTypes.text = ...`)
           // - create a new item based on an existing item (`conf.widgetTypes.longtext = { type:"text", ... })
-          const type = conf[objectType][k].type || k
+          const type = conf[objectType][k].type || conf[objectType][k].id || k
 
           // we merge all of the following
           this[objectType][type] = this.mergeConfigOptions(
