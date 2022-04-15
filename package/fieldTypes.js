@@ -56,6 +56,12 @@ const fieldTypes = {
         defaultWidget: 'collection',
         hidden: true,
     },
+    tags: {
+        id: 'tags',
+        defaultValue: [],
+        defaultWidget: 'text',
+        defaultPreSave: ['tags']
+    },
     // password: {
     //   id: 'password',
     //   defaultValue: null,

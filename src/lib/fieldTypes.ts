@@ -1,4 +1,4 @@
-import type { CMSFieldType } from './global'
+import type { CMSFieldType } from '.'
 
 const fieldTypes:{[key:string]:CMSFieldType} = {
   text: {
@@ -57,6 +57,12 @@ const fieldTypes:{[key:string]:CMSFieldType} = {
     defaultValue: null,
     defaultWidget: 'collection',
     hidden: true,
+  },
+  tags: {
+    id: 'tags',
+    defaultValue: [],
+    defaultWidget: 'text', // @todo: add tags widget
+    defaultPreSave: ['tags']
   },
   // password: {
   //   id: 'password',

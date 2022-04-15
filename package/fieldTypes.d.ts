@@ -1,4 +1,4 @@
-import type { CMSFieldType } from './global';
+import type { CMSFieldType } from '.';
 declare const fieldTypes: {
     [key: string]: CMSFieldType;
 };

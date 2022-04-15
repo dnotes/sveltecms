@@ -25,7 +25,7 @@ const widgetTypes = {
     },
     text: {
         id: 'text',
-        fieldTypes: ['text', 'date', 'number'],
+        fieldTypes: ['text', 'date', 'number', 'tags'],
         widget: CMSWidgetText,
         optionFields: {
             placeholder: {
@@ -281,31 +281,14 @@ const widgetTypes = {
         }
     }
     // {
-    //   id: './widgets/CMSWidgetCollection',
-    //   fieldTypes: 'collection',
-    // },
-    // {
-    //   id: './widgets/CMSWidgetSelect',
+    //   id: 'options', // i.e. radios or checkboxes
     //   fieldTypes: 'text,number,date',
     //   handlesMultiple: true,
     // },
     // {
-    //   id: './widgets/CMSWidgetCheckboxes',
-    //   fieldTypes: 'text,number,date',
+    //   id: 'tags',
+    //   fieldTypes: 'tags', // We need a good widget for tag handling, like Select2
     //   handlesMultiple: true,
-    // },
-    // {
-    //   id: './widgets/CMSWidgetRadios',
-    //   fieldTypes: 'text,number,date',
-    // },
-    // {
-    //   id: './widgets/CMSWidgetTags',
-    //   fieldTypes: 'tags',
-    //   handlesMultiple: true,
-    // },
-    // {
-    //   id: './widgets/CMSWidgetMarkdown',
-    //   fieldTypes: 'text,html,markdown'
     // },
 };
 export default widgetTypes;

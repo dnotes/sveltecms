@@ -50,10 +50,8 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
       default: '',
     },
     listFields: {
-      type: "text",
+      type: "tags",
       default: [],
-      multiple: true,
-      widget: "tags",
     },
     listQuery: {
       type: "collection",

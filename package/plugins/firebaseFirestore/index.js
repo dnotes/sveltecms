@@ -32,10 +32,8 @@ const firestoreBuilder = (options) => {
             default: '',
         },
         listFields: {
-            type: "text",
+            type: "tags",
             default: [],
-            multiple: true,
-            widget: "tags",
         },
         listQuery: {
             type: "collection",
