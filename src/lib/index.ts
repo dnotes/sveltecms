@@ -18,6 +18,8 @@ export const CMSContentFieldPropsAllowFunctions = [
 
 export default class SvelteCMS {
 
+  fields:{[key:string]:CMSContentFieldConfigSetting} = {}
+  widgets:{[key:string]:CMSWidgetTypeConfigSetting} = {}
   fieldFunctions:{[key:string]:CMSFieldFunctionType} = functions
   fieldTypes:{[key:string]:CMSFieldType} = fieldTypes
   widgetTypes:{[key:string]:CMSWidgetType} = widgetTypes
@@ -62,6 +64,10 @@ export default class SvelteCMS {
         })
       }
     });
+
+    ['fields', 'widgets'].forEach(objectType => {
+      if (conf?.[objectType]) this[objectType] = {...conf[objectType]}
+    })
 
     // Build out config for the content types
     Object.entries(conf?.types).forEach(([id,conf]) => {
@@ -268,10 +274,10 @@ export default class SvelteCMS {
     return options
   }
 
-  mergeConfigOptions(options1:ConfigSetting, ...optionsAll:ConfigSetting[]):ConfigSetting {
+  mergeConfigOptions(options1:ConfigSetting, ...optionsAll:Array<string|ConfigSetting>):ConfigSetting {
     let options = cloneDeep(options1)
     optionsAll.forEach(options2 => {
-      mergeWith(options, options2, (a,b) => {
+      if (typeof options2 !== 'string') mergeWith(options, options2, (a,b) => {
         let valueA = this.getConfigOptionValue(a)
         let valueB = this.getConfigOptionValue(b)
         if (Array.isArray(valueA) || Array.isArray(valueB)) return valueB
@@ -493,6 +499,13 @@ export class CMSContentField {
 
     // Sort out the type first, because if it doesn't exist that's an error
     let type = typeof conf === 'string' ? conf : conf?.type
+    if (cms.fields[type]) {
+      // Get any field config from cms.fields
+      // @ts-ignore - @todo: specify in the type definition that the function returns the same type of object as the first param
+      conf = cms.mergeConfigOptions(cms.fields[type], conf)
+      type = conf[type] || type
+    }
+
     let fieldType = cms.fieldTypes?.[type]
     if (!fieldType) throw new Error(`SvelteCMS: field type "${type}" does not exist`)
 
@@ -567,6 +580,14 @@ export class CMSWidget {
   options?: ConfigSetting
   formDataHandler?:FormDataHandler
   constructor(conf:string|CMSWidgetTypeConfigSetting, cms:SvelteCMS) {
+    let type = typeof conf === 'string' ? conf : conf?.id
+    if (cms.widgets[type]) {
+      // Get any widget config from cms.widgets
+      // @ts-ignore
+      conf = cms.mergeConfigOptions(cms.widgets[type], conf)
+      type = conf[type] || type
+    }
+
     let widgetType = typeof conf === 'string' ? cms.widgetTypes[conf] : cms.widgetTypes[conf.id]
     this.type = widgetType?.id
     this.widget = widgetType?.widget
@@ -733,7 +754,10 @@ export type CMSConfigSetting = {
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
   contentStores?: {[key:string]: CMSStoreConfigSetting}
   mediaStores?: {[key:string]: CMSStoreConfigSetting}
-  widgetTypes?: {[key:string]: CMSWidgetTypeConfigSetting}
+  widgetTypes?: {[key:string]: CMSWidgetTypeMerge}
+  fieldTypes?: {[key:string]: CMSFieldTypeMerge}
+  fields?: {[key:string]: CMSContentFieldConfigSetting}
+  widgets?: {[key:string]: CMSWidgetTypeConfigSetting}
   transformers?: {[key:string]: CMSFieldTransformerSetting}
 }
 
@@ -810,7 +834,7 @@ export type CMSMediaStoreType = {
   options?: ConfigSetting
 }
 
-export class CMSFieldType {
+export type CMSFieldType = {
   id:string
   defaultValue:any
   defaultWidget:string|CMSWidgetTypeConfigSetting
@@ -818,24 +842,13 @@ export class CMSFieldType {
   defaultPreSave?:Array<string|CMSFieldTransformerSetting>
   defaultPreMount?:Array<string|CMSFieldTransformerSetting>
   hidden?:boolean
-  // constructor(id,conf:CMSFieldTypeConfig) {
-  //   this.id = id
-  //   this.defaultValue = conf.defaultValue
-  //   this.defaultWidget = conf.defaultWidget
-  //   // @ts-ignore
-  //   if (conf?.defaultTransform) this.defaultTransform = conf.defaultTransform
-  // }
-  // merge(conf:CMSFieldTypeConfigMerge):void {
-  //   if (conf.hasOwnProperty('defaultValue')) this.defaultValue = conf.defaultValue
-  //   if (conf.hasOwnProperty('defaultWidget')) this.defaultWidget = conf.defaultWidget
-  // }
 }
 
-export type CMSFieldTypeMerge = {
-  id:string
+export type CMSFieldTypeMerge = CMSFieldType & {
+  id?:string
+  type?:string
   defaultValue?:any
   defaultWidget?:string
-
 }
 
 export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:CMSContentType, field:CMSContentField)=>Promise<any>
@@ -851,8 +864,9 @@ export type CMSWidgetType = {
   formDataHandler?:FormDataHandler
 }
 
-export type CMSWidgetTypeMerge = {
-  id:string
+export type CMSWidgetTypeMerge = CMSWidgetType & {
+  id?:string
+  type?:string
   fieldTypes?:string[]
 }
 

@@ -14,6 +14,8 @@ export const CMSContentFieldPropsAllowFunctions = [
 ];
 export default class SvelteCMS {
     constructor(conf, plugins = []) {
+        this.fields = {};
+        this.widgets = {};
         this.fieldFunctions = functions;
         this.fieldTypes = fieldTypes;
         this.widgetTypes = widgetTypes;
@@ -51,6 +53,10 @@ export default class SvelteCMS {
                     { options: settings });
                 });
             }
+        });
+        ['fields', 'widgets'].forEach(objectType => {
+            if (conf?.[objectType])
+                this[objectType] = { ...conf[objectType] };
         });
         // Build out config for the content types
         Object.entries(conf?.types).forEach(([id, conf]) => {
@@ -260,12 +266,13 @@ export default class SvelteCMS {
     mergeConfigOptions(options1, ...optionsAll) {
         let options = cloneDeep(options1);
         optionsAll.forEach(options2 => {
-            mergeWith(options, options2, (a, b) => {
-                let valueA = this.getConfigOptionValue(a);
-                let valueB = this.getConfigOptionValue(b);
-                if (Array.isArray(valueA) || Array.isArray(valueB))
-                    return valueB;
-            });
+            if (typeof options2 !== 'string')
+                mergeWith(options, options2, (a, b) => {
+                    let valueA = this.getConfigOptionValue(a);
+                    let valueB = this.getConfigOptionValue(b);
+                    if (Array.isArray(valueA) || Array.isArray(valueB))
+                        return valueB;
+                });
         });
         return options;
     }
@@ -409,6 +416,12 @@ export class CMSContentField {
         this.id = id;
         // Sort out the type first, because if it doesn't exist that's an error
         let type = typeof conf === 'string' ? conf : conf?.type;
+        if (cms.fields[type]) {
+            // Get any field config from cms.fields
+            // @ts-ignore - @todo: specify in the type definition that the function returns the same type of object as the first param
+            conf = cms.mergeConfigOptions(cms.fields[type], conf);
+            type = conf[type] || type;
+        }
         let fieldType = cms.fieldTypes?.[type];
         if (!fieldType)
             throw new Error(`SvelteCMS: field type "${type}" does not exist`);
@@ -473,6 +486,13 @@ export class CMSContentField {
 }
 export class CMSWidget {
     constructor(conf, cms) {
+        let type = typeof conf === 'string' ? conf : conf?.id;
+        if (cms.widgets[type]) {
+            // Get any widget config from cms.widgets
+            // @ts-ignore
+            conf = cms.mergeConfigOptions(cms.widgets[type], conf);
+            type = conf[type] || type;
+        }
         let widgetType = typeof conf === 'string' ? cms.widgetTypes[conf] : cms.widgetTypes[conf.id];
         this.type = widgetType?.id;
         this.widget = widgetType?.widget;
@@ -570,8 +590,6 @@ export class CMSFieldFunction {
  */
 export function getConfigPathFromValuePath(path) {
     return 'fields.' + path.replace(/\[\d+\]/g, '').replace(/\./g, '.fields.');
-}
-export class CMSFieldType {
 }
 // export type CMSFieldValidator = {
 //   id:string

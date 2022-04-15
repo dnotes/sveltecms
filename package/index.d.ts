@@ -2,6 +2,12 @@ import { CMSFieldFunctionConfig } from './fieldFunctions';
 import { default as Validator, Rules } from 'validatorjs';
 export declare const CMSContentFieldPropsAllowFunctions: string[];
 export default class SvelteCMS {
+    fields: {
+        [key: string]: CMSContentFieldConfigSetting;
+    };
+    widgets: {
+        [key: string]: CMSWidgetTypeConfigSetting;
+    };
     fieldFunctions: {
         [key: string]: CMSFieldFunctionType;
     };
@@ -61,7 +67,7 @@ export default class SvelteCMS {
     getConfigOptionsFromFields(optionFields: {
         [id: string]: CMSConfigFieldConfigSetting;
     }): ConfigSetting;
-    mergeConfigOptions(options1: ConfigSetting, ...optionsAll: ConfigSetting[]): ConfigSetting;
+    mergeConfigOptions(options1: ConfigSetting, ...optionsAll: Array<string | ConfigSetting>): ConfigSetting;
     getValidator(typeID: string, values: Object): Validator.Validator<Object>;
     getWidgetFields(collection: CMSContentType | CMSContentField, vars: {
         values: any;
@@ -315,6 +321,15 @@ export declare type CMSConfigSetting = {
         [key: string]: CMSStoreConfigSetting;
     };
     widgetTypes?: {
+        [key: string]: CMSWidgetTypeMerge;
+    };
+    fieldTypes?: {
+        [key: string]: CMSFieldTypeMerge;
+    };
+    fields?: {
+        [key: string]: CMSContentFieldConfigSetting;
+    };
+    widgets?: {
         [key: string]: CMSWidgetTypeConfigSetting;
     };
     transformers?: {
@@ -402,7 +417,7 @@ export declare type CMSMediaStoreType = {
     };
     options?: ConfigSetting;
 };
-export declare class CMSFieldType {
+export declare type CMSFieldType = {
     id: string;
     defaultValue: any;
     defaultWidget: string | CMSWidgetTypeConfigSetting;
@@ -410,9 +425,10 @@ export declare class CMSFieldType {
     defaultPreSave?: Array<string | CMSFieldTransformerSetting>;
     defaultPreMount?: Array<string | CMSFieldTransformerSetting>;
     hidden?: boolean;
-}
-export declare type CMSFieldTypeMerge = {
-    id: string;
+};
+export declare type CMSFieldTypeMerge = CMSFieldType & {
+    id?: string;
+    type?: string;
     defaultValue?: any;
     defaultWidget?: string;
 };
@@ -431,8 +447,9 @@ export declare type CMSWidgetType = {
     hidden?: boolean;
     formDataHandler?: FormDataHandler;
 };
-export declare type CMSWidgetTypeMerge = {
-    id: string;
+export declare type CMSWidgetTypeMerge = CMSWidgetType & {
+    id?: string;
+    type?: string;
     fieldTypes?: string[];
 };
 export declare type CMSWidgetTypeConfigSetting = {
