@@ -1,4 +1,4 @@
-import formDataHandler from '../../utils/formDataHandler';
+import formDataHandler from 'sveltecms/utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
 import bytes from 'bytes';
 const fs = {};

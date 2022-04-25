@@ -1,4 +1,4 @@
-<script >import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
+<script>import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
 let parentField;
 let parentID = '';

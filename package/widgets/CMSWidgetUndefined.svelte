@@ -1,4 +1,4 @@
-<script >export let field;
+<script>export let field;
 export let id;
 </script>
 

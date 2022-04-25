@@ -1,4 +1,4 @@
-<script >import getLabelFromID from "../../utils/getLabelFromID";
+<script>import getLabelFromID from "../../utils/getLabelFromID";
 import Grid from 'gridjs-svelte';
 import { html } from 'gridjs';
 export let cms;

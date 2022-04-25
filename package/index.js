@@ -2,10 +2,10 @@ import { getLabelFromID } from "./utils";
 import transformers from './transformers';
 import fieldTypes from './fieldTypes';
 import widgetTypes from './widgetTypes';
-import { functions, parseFieldFunctionScript } from './fieldFunctions';
+import { functions, parseFieldFunctionScript, CMSFieldFunctionConfig } from './fieldFunctions';
 import { cloneDeep, mergeWith, get as getProp, has as hasProp } from 'lodash-es';
 import { defaultAdminPaths } from './components/admin';
-import { default as Validator } from 'validatorjs';
+import { default as Validator, Rules } from 'validatorjs';
 const splitter = /\s*,\s*/g;
 export const CMSContentFieldPropsAllowFunctions = [
     'label', 'tooltip', 'required', 'disabled',

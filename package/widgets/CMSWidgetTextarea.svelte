@@ -1,4 +1,4 @@
-<script >import { onMount } from "svelte";
+<script>import { onMount } from "svelte";
 export let field;
 export let id;
 export let value = field.default;

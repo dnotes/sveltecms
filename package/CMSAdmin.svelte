@@ -1,4 +1,4 @@
-<script >import { page } from '$app/stores';
+<script>import { page } from '$app/stores';
 import getLabelFromID from "./utils/getLabelFromID";
 export let cms;
 export let adminPath = $page.params.adminPath;

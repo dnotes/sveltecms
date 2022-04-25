@@ -1,4 +1,4 @@
-<script >export let cms;
+<script>export let cms;
 export let adminPath;
 $: [key] = adminPath.split('/');
 $: items = Object.entries(cms[key]);

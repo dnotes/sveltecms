@@ -1,6 +1,7 @@
-<script context="module" ></script>
+<script context="module">export {};
+</script>
 
-<script >import DisplayResult from "../components/DisplayResult.svelte";
+<script>import DisplayResult from "../components/DisplayResult.svelte";
 let result;
 export let field;
 export let id;

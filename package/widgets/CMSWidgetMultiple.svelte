@@ -1,4 +1,4 @@
-<script >import { tick } from "svelte";
+<script>import { tick } from "svelte";
 import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
 export let field;
 export let id;

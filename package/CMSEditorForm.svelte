@@ -1,4 +1,4 @@
-<script >import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
+<script>import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
 import CmsWidgetCollection from './widgets/CMSWidgetCollection.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
 import DisplayResult from './components/DisplayResult.svelte';

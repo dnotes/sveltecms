@@ -1,6 +1,6 @@
 import type { default as SvelteCMS, CMSPlugin, ConfigSetting, CMSConfigFieldConfigSetting, CMSContentField, CMSContentType, CMSPluginBuilder } from '../..';
 import type { PromisifiedFS } from '@isomorphic-git/lightning-fs'
-import formDataHandler from '$lib/utils/formDataHandler';
+import formDataHandler from 'sveltecms/utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
 const fs = {}

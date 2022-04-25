@@ -1,4 +1,4 @@
-import type { CMSPluginBuilder } from "$lib";
+import type { CMSPluginBuilder } from "sveltecms";
 declare const firestoreBuilder: CMSPluginBuilder;
 export declare function parseListQuery(listQuery: any, useClientSDK?: boolean): {
     compositeFilter: {

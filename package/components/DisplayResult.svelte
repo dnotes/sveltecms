@@ -1,4 +1,4 @@
-<script >import { fade } from 'svelte/transition';
+<script>import { fade } from 'svelte/transition';
 export let duration = 4000;
 export let result = undefined;
 export let fadeOptions = {};

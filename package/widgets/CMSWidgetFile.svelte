@@ -1,4 +1,4 @@
-<script context="module" >import bytes from 'bytes';
+<script context="module">import bytes from 'bytes';
 export class CMSFile {
     constructor(src, stringify, file) {
         this.isCMSFile = true;
@@ -33,7 +33,7 @@ export class CMSFile {
 }
 </script>
 
-<script >import DisplayResult from "../components/DisplayResult.svelte";
+<script>import DisplayResult from "../components/DisplayResult.svelte";
 export let field;
 export let id;
 //@ts-ignore

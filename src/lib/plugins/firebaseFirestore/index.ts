@@ -1,4 +1,4 @@
-import type { CMSPlugin, CMSPluginBuilder, CMSConfigFieldConfigSetting, ConfigSetting } from "$lib"
+import type { CMSPlugin, CMSPluginBuilder, CMSConfigFieldConfigSetting, ConfigSetting } from "sveltecms"
 
 const defaultOptions = {
   firebaseConfig: {

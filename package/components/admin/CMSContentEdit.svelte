@@ -1,4 +1,4 @@
-<script >import CmsEditorForm from "../../CMSEditorForm.svelte";
+<script>import CmsEditorForm from "../../CMSEditorForm.svelte";
 export let cms;
 export let adminPath;
 $: [contentPath, contentTypeID, slug] = adminPath.split('/');

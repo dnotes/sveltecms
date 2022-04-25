@@ -1,4 +1,4 @@
-import type { CMSConfigFieldConfigSetting, CMSMediaStoreType, CMSPluginBuilder } from '$lib'
+import type { CMSConfigFieldConfigSetting, CMSMediaStoreType, CMSPluginBuilder } from 'sveltecms'
 import { initializeApp } from 'firebase/app'
 import { getStorage, connectStorageEmulator, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { merge } from 'lodash-es'

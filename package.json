@@ -33,6 +33,8 @@
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "markdown-it": "^12.3.2",
+    "markdown-it-attrs": "^4.1.3",
+    "markdown-it-footnote": "^3.0.3",
     "sanitize-html": "^2.5.3",
     "svelte": "^3.42.6",
     "svelte-check": "^2.2.6",
