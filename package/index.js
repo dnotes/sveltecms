@@ -1,9 +1,10 @@
-import getLabelFromID from "./utils/getLabelFromID";
+import { getLabelFromID } from "./utils";
 import transformers from './transformers';
 import fieldTypes from './fieldTypes';
 import widgetTypes from './widgetTypes';
 import { functions, parseFieldFunctionScript } from './fieldFunctions';
 import { cloneDeep, mergeWith, get as getProp, has as hasProp } from 'lodash-es';
+import { defaultAdminPaths } from './components/admin';
 import { default as Validator } from 'validatorjs';
 const splitter = /\s*,\s*/g;
 export const CMSContentFieldPropsAllowFunctions = [
@@ -14,6 +15,7 @@ export const CMSContentFieldPropsAllowFunctions = [
 ];
 export default class SvelteCMS {
     constructor(conf, plugins = []) {
+        this.adminPaths = defaultAdminPaths; // TODO: get proper svelte component type
         this.fields = {};
         this.widgets = {};
         this.fieldFunctions = functions;
@@ -62,6 +64,7 @@ export default class SvelteCMS {
         Object.entries(conf?.types).forEach(([id, conf]) => {
             this.types[id] = new CMSContentType(id, conf, this);
         });
+        this.adminStore = new CMSContentStore(conf.adminStore, this);
     }
     use(plugin, config) {
         // TODO: allow function that returns plugin
@@ -76,6 +79,9 @@ export default class SvelteCMS {
                 }
             });
         });
+        if (plugin.adminPaths) {
+            Object.entries(plugin.adminPaths).forEach(([path, component]) => this.adminPaths[path] = component);
+        }
     }
     preMount(contentTypeOrField, values) {
         let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField;
@@ -190,7 +196,7 @@ export default class SvelteCMS {
         this.slugifyContent(rawContent, type);
         if (options.getRaw)
             return rawContent;
-        return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent);
+        return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)];
     }
     /**
      * Gets an individual piece of content or all content of a content type
@@ -419,8 +425,8 @@ export class CMSContentField {
         if (cms.fields[type]) {
             // Get any field config from cms.fields
             // @ts-ignore - @todo: specify in the type definition that the function returns the same type of object as the first param
-            conf = cms.mergeConfigOptions(cms.fields[type], conf);
-            type = conf[type] || type;
+            conf = cms.mergeConfigOptions(cms.fields[type], conf, { type: cms.fields[type]['type'] });
+            type = conf['type'] || type;
         }
         let fieldType = cms.fieldTypes?.[type];
         if (!fieldType)

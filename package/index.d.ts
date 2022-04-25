@@ -2,6 +2,10 @@ import { CMSFieldFunctionConfig } from './fieldFunctions';
 import { default as Validator, Rules } from 'validatorjs';
 export declare const CMSContentFieldPropsAllowFunctions: string[];
 export default class SvelteCMS {
+    adminStore: CMSContentStore;
+    adminPaths: {
+        [key: string]: Object;
+    };
     fields: {
         [key: string]: CMSContentFieldConfigSetting;
     };
@@ -42,7 +46,7 @@ export default class SvelteCMS {
     getSlug(content: any, contentType: CMSContentType, force: boolean): any;
     listContent(contentType: string, options?: {
         [key: string]: any;
-    }): Promise<{}>;
+    }): Promise<Array<any>>;
     /**
      * Gets an individual piece of content or all content of a content type
      * @param contentType string
@@ -128,6 +132,11 @@ export declare class CMSContentType {
     mediaStore?: string | CMSStoreConfigSetting;
     fields: {
         [key: string]: CMSContentField;
+    };
+    form?: {
+        method?: 'post' | 'get';
+        action?: string;
+        previewComponent?: string;
     };
     constructor(id: any, conf: CMSContentTypeConfigSetting, cms: SvelteCMS);
 }
@@ -263,6 +272,9 @@ export declare type ConfigSetting = {
     [key: string]: string | number | boolean | null | undefined | ConfigSetting | Array<ConfigSetting>;
 };
 export declare type CMSPlugin = {
+    adminPaths?: {
+        [path: string]: Object;
+    };
     fieldTypes?: CMSFieldType[];
     widgetTypes?: CMSWidgetType[];
     transformers?: CMSFieldTransformer[];
@@ -305,6 +317,7 @@ export declare type CMSStoreConfigSetting = ConfigSetting & {
     id: string;
 };
 export declare type CMSConfigSetting = {
+    adminStore?: string | CMSStoreConfigSetting;
     types?: {
         [key: string]: CMSContentTypeConfigSetting;
     };

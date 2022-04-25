@@ -15,6 +15,7 @@ export let disabled = false;
 export let submitOptions = {};
 export let action = '';
 export let method = 'POST';
+export let admin = false;
 export let contentType = undefined; // in case someone wants to log / debug
 contentType = cms.getContentType(contentTypeID);
 let collection = cms.getWidgetFields(contentType, { values, errors, touched });

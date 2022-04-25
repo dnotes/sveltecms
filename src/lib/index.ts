@@ -1,9 +1,10 @@
-import getLabelFromID from "./utils/getLabelFromID"
+import { getLabelFromID } from "./utils"
 import transformers from './transformers'
 import fieldTypes from './fieldTypes'
 import widgetTypes from './widgetTypes'
 import { functions, parseFieldFunctionScript, CMSFieldFunctionConfig } from './fieldFunctions'
 import { cloneDeep, mergeWith, get as getProp, has as hasProp } from 'lodash-es'
+import { defaultAdminPaths } from './components/admin'
 
 import { default as Validator, Rules } from 'validatorjs'
 
@@ -18,6 +19,8 @@ export const CMSContentFieldPropsAllowFunctions = [
 
 export default class SvelteCMS {
 
+  adminStore: CMSContentStore
+  adminPaths: {[key:string]:Object} = defaultAdminPaths // TODO: get proper svelte component type
   fields:{[key:string]:CMSContentFieldConfigSetting} = {}
   widgets:{[key:string]:CMSWidgetTypeConfigSetting} = {}
   fieldFunctions:{[key:string]:CMSFieldFunctionType} = functions
@@ -74,6 +77,8 @@ export default class SvelteCMS {
       this.types[id] = new CMSContentType(id, conf, this)
     });
 
+    this.adminStore = new CMSContentStore(conf.adminStore, this)
+
   }
 
   use(plugin:CMSPlugin, config?:any) {
@@ -90,6 +95,11 @@ export default class SvelteCMS {
         }
       })
     })
+
+    if (plugin.adminPaths) {
+      Object.entries(plugin.adminPaths).forEach(([path, component]) => this.adminPaths[path]=component )
+    }
+
   }
 
   preMount(contentTypeOrField:string|CMSContentField, values:Object) {
@@ -193,7 +203,7 @@ export default class SvelteCMS {
     return this.runFunction('transformers', contentType.slug.slugify, newSlug)
   }
 
-  async listContent(contentType:string, options:{[key:string]:any} = {}) {
+  async listContent(contentType:string, options:{[key:string]:any} = {}):Promise<Array<any>> {
     const type = this.getContentType(contentType)
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
@@ -201,7 +211,7 @@ export default class SvelteCMS {
     if (!rawContent) return
     this.slugifyContent(rawContent, type)
     if (options.getRaw) return rawContent
-    return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
+    return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)]
   }
 
   /**
@@ -417,6 +427,11 @@ export class CMSContentType {
   contentStore:CMSContentStore
   mediaStore?:string|CMSStoreConfigSetting
   fields:{[key:string]:CMSContentField} = {}
+  form?: {
+    method?:'post'|'get'
+    action?:string
+    previewComponent?:string
+  }
   constructor(id, conf:CMSContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
     this.label = conf.label || getLabelFromID(this.id)
@@ -502,8 +517,8 @@ export class CMSContentField {
     if (cms.fields[type]) {
       // Get any field config from cms.fields
       // @ts-ignore - @todo: specify in the type definition that the function returns the same type of object as the first param
-      conf = cms.mergeConfigOptions(cms.fields[type], conf)
-      type = conf[type] || type
+      conf = cms.mergeConfigOptions(cms.fields[type], conf, { type:cms.fields[type]['type'] })
+      type = conf['type'] || type
     }
 
     let fieldType = cms.fieldTypes?.[type]
@@ -718,6 +733,7 @@ export function getConfigPathFromValuePath(path:string):string {
 export type ConfigSetting = {[key:string]: string|number|boolean|null|undefined|ConfigSetting|Array<ConfigSetting>}
 
 export type CMSPlugin = {
+  adminPaths?: {[path:string]:Object}
   fieldTypes?: CMSFieldType[]
   widgetTypes?: CMSWidgetType[]
   transformers?: CMSFieldTransformer[]
@@ -750,6 +766,7 @@ export type CMSStoreConfigSetting = ConfigSetting & {
 }
 
 export type CMSConfigSetting = {
+  adminStore?:string|CMSStoreConfigSetting
   types?: {[key:string]: CMSContentTypeConfigSetting}
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
   contentStores?: {[key:string]: CMSStoreConfigSetting}
