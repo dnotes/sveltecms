@@ -21,6 +21,8 @@ import { onDestroy, onMount } from 'svelte';
   export let action = ''
   export let method = 'POST'
 
+  export let admin = false
+
   export let contentType = undefined // in case someone wants to log / debug
 
   contentType = cms.getContentType(contentTypeID)
