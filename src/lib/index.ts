@@ -73,7 +73,7 @@ export default class SvelteCMS {
     })
 
     // Build out config for the content types
-    Object.entries(conf?.types).forEach(([id,conf]) => {
+    Object.entries(conf?.types || {}).forEach(([id,conf]) => {
       this.types[id] = new CMSContentType(id, conf, this)
     });
 
