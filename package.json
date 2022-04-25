@@ -24,6 +24,8 @@
     "firebase": "^9.5.0",
     "firebase-admin": "^10.0.0",
     "firebase-functions": "^3.16.0",
+    "gridjs": "^5.0.2",
+    "gridjs-svelte": "^2.1.1",
     "isomorphic-git": "^1.17.0",
     "jest": "^27.4.5",
     "jest-each": "^27.4.2",
