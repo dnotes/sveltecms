@@ -3,4 +3,4 @@
   import cms from '$lib/cms'
 </script>
 
-<CMSAdmin {cms} adminPath='' />
+<CMSAdmin {cms} />

@@ -4,9 +4,8 @@ import { page } from '$app/stores'
 import getLabelFromID from "./utils/getLabelFromID";
 
   export let cms:SvelteCMS
-  export let adminPath:string = $page.params.adminPath
 
-  let basePath = $page.url.pathname.replace('/' + adminPath, '')
+  let basePath = $page.url.pathname.replace('/' + $page.params.adminPath, '')
 
   let sections = Object.entries(cms.adminPaths)
     .reduce((agg, [path, component]) => {
@@ -14,12 +13,12 @@ import getLabelFromID from "./utils/getLabelFromID";
       return agg
     }, [])
 
-  $: component = cms.adminPaths[adminPath]
+  $: component = cms.getAdminPath($page.params.adminPath)
 
 </script>
 
 {#if component}
-  <svelte:component this={component} {cms} {adminPath} />
+  <svelte:component this={component} {cms} adminPath={$page.params.adminPath} />
 {:else}
   <ul>
     {#each sections as section}

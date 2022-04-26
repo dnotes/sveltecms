@@ -5,6 +5,7 @@ import widgetTypes from './widgetTypes'
 import { functions, parseFieldFunctionScript, CMSFieldFunctionConfig } from './fieldFunctions'
 import { cloneDeep, mergeWith, get as getProp, has as hasProp } from 'lodash-es'
 import { defaultAdminPaths } from './components/admin'
+import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
 
 import { default as Validator, Rules } from 'validatorjs'
 
@@ -19,6 +20,7 @@ export const CMSContentFieldPropsAllowFunctions = [
 
 export default class SvelteCMS {
 
+  configPath: string = 'src/sveltecms.config.json'
   adminStore: CMSContentStore
   adminPaths: {[key:string]:Object} = defaultAdminPaths // TODO: get proper svelte component type
   fields:{[key:string]:CMSContentFieldConfigSetting} = {}
@@ -33,6 +35,7 @@ export default class SvelteCMS {
   lists:CMSListConfig = {}
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
+    this.use(staticFilesPlugin)
     plugins.forEach(p => this.use(p))
 
     // Build out config for the lists
@@ -77,7 +80,7 @@ export default class SvelteCMS {
       this.types[id] = new CMSContentType(id, conf, this)
     });
 
-    this.adminStore = new CMSContentStore(conf.adminStore, this)
+    this.adminStore = new CMSContentStore(conf?.adminStore, this)
 
   }
 
@@ -385,6 +388,17 @@ export default class SvelteCMS {
       if (configValues[k] && fieldset[k]?.multiple) configValues[k] = [configValues[k]]
     })
     return configValues
+  }
+
+  getAdminPath(path:string) {
+    let pathArray = path.replace(/(^\/|\/$)/g,'').split('/')
+    path = pathArray.join('/')
+    if (this.adminPaths[path]) return this.adminPaths[path]
+    for (let i=pathArray.length-1; i>0; i--) {
+      pathArray[i] = '*'
+      path = pathArray.join('/')
+      if (this.adminPaths[path]) return this.adminPaths[path]
+    }
   }
 
   get defaultMediaStore():string {
