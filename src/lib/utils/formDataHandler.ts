@@ -78,7 +78,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:CMSContentType
  * @param contentType CMSContentType
  * @param formdata FormData
  */
-export async function formDataHandler(cms:SvelteCMS, contentTypeID:string, formdata:FormData) {
+export async function formDataHandler(cms:SvelteCMS, contentType:string|CMSContentType, formdata:FormData) {
 
   let rawdata = {}
   // @ts-ignore -- why does this not have a proper FormData object?!?!!
@@ -86,7 +86,7 @@ export async function formDataHandler(cms:SvelteCMS, contentTypeID:string, formd
     set(rawdata, k, formdata.getAll(k))
   }
 
-  const contentType = cms.getContentType(contentTypeID)
+  contentType = typeof contentType === 'string' ? cms.getContentType(contentType) : contentType
 
   return collapseFormItem(cms, contentType, contentType.fields, rawdata)
 

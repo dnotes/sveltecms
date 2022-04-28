@@ -100,7 +100,7 @@ import { onDestroy, onMount } from 'svelte';
     </div>
     {#if previewComponent}
       <div class="cms-editor-preview">
-        <svelte:component this={previewComponent} item={cms.preMount(contentTypeID, values)} ></svelte:component>
+        <svelte:component this={previewComponent} item={cms.preMount(cms.getContentType(contentTypeID), values)} ></svelte:component>
       </div>
     {/if}
   </div>
