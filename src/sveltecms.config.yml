@@ -1,0 +1,27 @@
+configPath: src/sveltecms.config.yml
+contentStores:
+  staticFiles:
+    id: staticFiles
+    contentDirectory: content
+    prependContentTypeIdAs: directory
+    fileExtension: md
+    markdownBodyField: body
+mediaStores:
+  images:
+    type: staticFiles
+    mediaDirectory: images
+    allowMediaTypes: image/jpeg, image/png, image/gif
+fields:
+  body: markdown
+  title:
+    type: text
+    required: true
+  image: image
+types:
+  blog:
+    slug: date,title
+    fields:
+      title: title
+      date: date
+      image: image
+      body: body

@@ -1,6 +1,7 @@
 import CMS from 'sveltecms'
-import conf from './cms-config.json'
-import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
+// @ts-ignore TODO: why can't it find this?
+import conf from '../sveltecms.config.yml'
+import components from '../sveltecms.config.yml.components'
 import markdownPlugin from 'sveltecms/plugins/markdown'
 
 import MarkdownIT from 'markdown-it'
@@ -18,8 +19,10 @@ const md = new MarkdownIT({
 .use(MarkdownFootnotes)
 
 const cms = new CMS(conf, [
-  staticFilesPlugin,
-  markdownPlugin({ md })
+  markdownPlugin({ md }),
+  {
+    components
+  }
 ])
 
 export default cms
