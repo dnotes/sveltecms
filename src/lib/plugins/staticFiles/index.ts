@@ -153,7 +153,7 @@ export async function deleteContentEndpoint(cms:SvelteCMS, contentTypeID:string,
 
 export async function parseFileStoreContentItem(_filepath, content, opts) {
   let ext = extname(_filepath)
-  if (ext === '.json') return { ...JSON.parse(content), _filepath }
+  if (ext === 'json') return { ...JSON.parse(content), _filepath }
   else {
     const yaml = await import('js-yaml')
     if (ext === 'yml' || ext === 'yaml') return { ...yaml.load(content), _filepath, }

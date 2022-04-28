@@ -128,7 +128,7 @@ export async function deleteContentEndpoint(cms, contentTypeID, request, options
 }
 export async function parseFileStoreContentItem(_filepath, content, opts) {
     let ext = extname(_filepath);
-    if (ext === '.json')
+    if (ext === 'json')
         return { ...JSON.parse(content), _filepath };
     else {
         const yaml = await import('js-yaml');
