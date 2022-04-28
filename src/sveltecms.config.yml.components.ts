@@ -1,4 +1,4 @@
-import BlogPost from '$lib/display/BlogPost.svelte'
+import BlogPost from '$lib/content/BlogPost.svelte'
 
 export const components = {
   BlogPost
