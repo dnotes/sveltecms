@@ -6,7 +6,7 @@ import bytes from 'bytes'
 const fs = {}
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
-function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/node_modules\/.+/, '').replace(/^file:\/\/\//, '/') }
+function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/') }
 export async function getFs(databaseName):Promise<PromisifiedFS> {
   if (isBrowser || isWebWorker) {
     if (!fs[databaseName]) {
@@ -232,6 +232,7 @@ const plugin:CMSPlugin = {
           `${slug}.${opts.fileExtension}`   // file extensions
 
         let body = ''
+        console.log(filepath)
         switch (opts.fileExtension) {
           case "json":
             content = JSON.stringify(content, null, 2)

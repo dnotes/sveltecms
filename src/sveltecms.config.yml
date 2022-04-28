@@ -1,4 +1,12 @@
 configPath: src/sveltecms.config.yml
+types:
+  blog:
+    slug: date,title
+    fields:
+      title: title
+      date: date
+      image: image
+      body: body
 contentStores:
   staticFiles:
     id: staticFiles
@@ -17,11 +25,4 @@ fields:
     type: text
     required: true
   image: image
-types:
-  blog:
-    slug: date,title
-    fields:
-      title: title
-      date: date
-      image: image
-      body: body
+_slug: sveltecms.config
