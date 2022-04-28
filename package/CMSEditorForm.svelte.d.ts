@@ -13,7 +13,6 @@ declare const __propDef: {
         submitOptions?: {};
         action?: string;
         method?: string;
-        admin?: boolean;
         contentType?: any;
         submit?: (event: any) => Promise<void>;
     };
@@ -22,7 +21,6 @@ declare const __propDef: {
     };
     slots: {
         header: {};
-        default: {};
         submit: {};
     };
 };

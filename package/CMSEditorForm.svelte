@@ -1,6 +1,4 @@
-<script>import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
-import CmsWidgetCollection from './widgets/CMSWidgetCollection.svelte';
-import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
+<script>import CmsFieldCollection from './CMSFieldCollection.svelte';
 import DisplayResult from './components/DisplayResult.svelte';
 import { cloneDeep } from 'lodash-es';
 import { onDestroy, onMount } from 'svelte';
@@ -15,7 +13,6 @@ export let disabled = false;
 export let submitOptions = {};
 export let action = '';
 export let method = 'POST';
-export let admin = false;
 export let contentType = undefined; // in case someone wants to log / debug
 contentType = cms.getContentType(contentTypeID);
 let collection = cms.getWidgetFields(contentType, { values, errors, touched });
@@ -75,41 +72,7 @@ $: if (values || errors || touched)
         </h2>
       </slot>
       <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        {#each Object.entries(collection.fields) as [id,field]}
-          {#if !field.hidden}
-            <div class="field field-{field.id} {field?.class || ''}">
-              {#if !field.widget.widget}
-                <CmsWidgetUndefined {field} {id} />
-              {:else if field.multiple && !field.widget.handlesMultiple}
-                <CmsWidgetMultiple
-                  {field}
-                  {id}
-                  bind:value={values[id]}
-                  {cms}
-                  {contentTypeID}
-                />
-              {:else if field.widget.type === 'collection'}
-                <CmsWidgetCollection
-                  {field}
-                  {id}
-                  bind:value={values[id]}
-                  {cms}
-                  {contentTypeID}
-                />
-              {:else}
-                <svelte:component
-                  this={field.widget.widget}
-                  {field}
-                  {id}
-                  bind:value={values[id]}
-                />
-              {/if}
-            </div>
-          {/if}
-        {:else}
-          There are no fields to edit.
-        {/each}
-        <slot/>
+        <CmsFieldCollection {cms} {contentTypeID} {values} fieldList={collection.fields} />
         <button
           type="submit"
           class="primary"

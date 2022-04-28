@@ -1,6 +1,6 @@
 <script lang="ts">
-import type SvelteCMS from "../.."
-import CmsEditorForm from "../../CMSEditorForm.svelte"
+import type SvelteCMS from 'sveltecms'
+import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
 
   export let cms:SvelteCMS
   export let adminPath:string

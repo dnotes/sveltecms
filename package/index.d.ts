@@ -1,16 +1,57 @@
 import { CMSFieldFunctionConfig } from './fieldFunctions';
+import type { AdminPath } from 'sveltecms/plugins/admin';
 import { default as Validator, Rules } from 'validatorjs';
 export declare const CMSContentFieldPropsAllowFunctions: string[];
+export declare type CMSConfigSetting = {
+    adminStore?: string | CMSStoreConfigSetting;
+    types?: {
+        [key: string]: CMSContentTypeConfigSetting;
+    };
+    lists?: {
+        [key: string]: string | (string | number | {
+            id: string | number;
+            value: ConfigSetting;
+        })[];
+    };
+    contentStores?: {
+        [key: string]: CMSStoreConfigSetting;
+    };
+    mediaStores?: {
+        [key: string]: CMSStoreConfigSetting;
+    };
+    fields?: {
+        [key: string]: CMSContentFieldConfigSetting;
+    };
+    widgets?: {
+        [key: string]: CMSWidgetConfigSetting;
+    };
+    collections?: {
+        [key: string]: CollectionConfigSetting;
+    };
+    transformers?: {
+        [key: string]: CMSFieldTransformerSetting;
+    };
+};
 export default class SvelteCMS {
+    conf: CMSConfigSetting;
     adminStore: CMSContentStore;
-    adminPaths: {
-        [key: string]: Object;
+    adminPaths?: {
+        [key: string]: AdminPath;
+    };
+    adminCollections?: {
+        [key: string]: AdminCollection;
     };
     fields: {
         [key: string]: CMSContentFieldConfigSetting;
     };
+    collections: {
+        [key: string]: Collection;
+    };
+    components: {
+        [key: string]: Object;
+    };
     widgets: {
-        [key: string]: CMSWidgetTypeConfigSetting;
+        [key: string]: CMSWidgetConfigSetting;
     };
     fieldFunctions: {
         [key: string]: CMSFieldFunctionType;
@@ -39,6 +80,8 @@ export default class SvelteCMS {
     preMount(contentTypeOrField: string | CMSContentField, values: Object): {};
     preSave(contentTypeOrField: string | CMSContentField, values: Object): {};
     doTransforms(op: 'preSave' | 'preMount', field: CMSContentField, value: any): any;
+    getFieldTypes(): string[];
+    getFieldTypeWidgets(fieldType: any): string[];
     getContentType(contentType: string): CMSContentType;
     getCollection(contentType: string, valuePath: string): CMSContentField;
     getContentStore(contentType: string): CMSContentStore;
@@ -111,6 +154,7 @@ export default class SvelteCMS {
     getValidatorConfig(fieldset: {
         [id: string]: CMSContentField;
     }): Rules;
+    getAdminPath(path: string): AdminPath;
     get defaultMediaStore(): string;
 }
 export declare type CMSSlugConfigSetting = {
@@ -198,7 +242,7 @@ export declare class CMSContentField {
     touched: {
         [key: string]: any;
     };
-    constructor(id: any, conf: string | CMSContentFieldConfigSetting, cms: SvelteCMS, contentType: CMSContentType);
+    constructor(id: any, conf: string | CMSContentFieldConfigSetting, cms: SvelteCMS, contentType?: CMSContentType);
 }
 export declare class CMSWidget {
     type: string;
@@ -207,7 +251,7 @@ export declare class CMSWidget {
     handlesMedia: boolean;
     options?: ConfigSetting;
     formDataHandler?: FormDataHandler;
-    constructor(conf: string | CMSWidgetTypeConfigSetting, cms: SvelteCMS);
+    constructor(conf: string | CMSWidgetConfigSetting, cms: SvelteCMS);
 }
 export declare class CMSContentStore {
     id: string;
@@ -226,11 +270,12 @@ export declare class CMSMediaStore {
     deleteMedia: (filename: string, options?: ConfigSetting) => Promise<any>;
     immediateUpload?: boolean;
     options?: ConfigSetting;
-    constructor(conf: string | CMSStoreConfigSetting, cms: SvelteCMS, contentType: CMSContentType);
+    constructor(conf: string | CMSStoreConfigSetting, cms: SvelteCMS);
 }
 export declare class CMSFieldFunction {
     id: string;
     fn: (vars: {
+        cms: SvelteCMS;
         field: CMSContentField;
         values: any;
         errors: any;
@@ -240,6 +285,7 @@ export declare class CMSFieldFunction {
         [key: string]: any;
     }) => any;
     vars: {
+        cms: SvelteCMS;
         field: CMSContentField;
         values: any;
         errors: any;
@@ -272,14 +318,15 @@ export declare type ConfigSetting = {
     [key: string]: string | number | boolean | null | undefined | ConfigSetting | Array<ConfigSetting>;
 };
 export declare type CMSPlugin = {
-    adminPaths?: {
-        [path: string]: Object;
-    };
+    adminPaths?: AdminPath[];
     fieldTypes?: CMSFieldType[];
     widgetTypes?: CMSWidgetType[];
     transformers?: CMSFieldTransformer[];
     contentStores?: CMSContentStoreType[];
     mediaStores?: CMSMediaStoreType[];
+    collections?: CollectionConfigSetting[];
+    adminCollections?: CollectionConfigSetting[];
+    components?: ComponentConfig[];
     lists?: CMSListConfig;
     optionFields?: {
         [key: string]: CMSConfigFieldConfigSetting;
@@ -295,6 +342,7 @@ export declare type CMSListConfig = {
 export declare type CMSFieldFunctionType = {
     id: string;
     fn: (vars: {
+        cms: SvelteCMS;
         field: CMSContentField;
         values: any;
         errors: any;
@@ -315,39 +363,6 @@ export declare type CMSFieldFunctionConfigSetting = string | {
 };
 export declare type CMSStoreConfigSetting = ConfigSetting & {
     id: string;
-};
-export declare type CMSConfigSetting = {
-    adminStore?: string | CMSStoreConfigSetting;
-    types?: {
-        [key: string]: CMSContentTypeConfigSetting;
-    };
-    lists?: {
-        [key: string]: string | (string | number | {
-            id: string | number;
-            value: ConfigSetting;
-        })[];
-    };
-    contentStores?: {
-        [key: string]: CMSStoreConfigSetting;
-    };
-    mediaStores?: {
-        [key: string]: CMSStoreConfigSetting;
-    };
-    widgetTypes?: {
-        [key: string]: CMSWidgetTypeMerge;
-    };
-    fieldTypes?: {
-        [key: string]: CMSFieldTypeMerge;
-    };
-    fields?: {
-        [key: string]: CMSContentFieldConfigSetting;
-    };
-    widgets?: {
-        [key: string]: CMSWidgetTypeConfigSetting;
-    };
-    transformers?: {
-        [key: string]: CMSFieldTransformerSetting;
-    };
 };
 export declare type CMSContentTypeConfigSetting = {
     label: string;
@@ -380,7 +395,7 @@ export declare type CMSContentFieldConfigSetting = {
     fields?: {
         [key: string]: string | CMSContentFieldConfigSetting;
     };
-    widget?: string | CMSWidgetTypeConfigSetting;
+    widget?: string | CMSWidgetConfigSetting;
     widgetOptions?: ConfigSetting;
     validator?: Rules;
     preSave?: string | CMSFieldTransformerSetting | (string | CMSFieldTransformerSetting)[];
@@ -396,7 +411,7 @@ export declare type CMSContentFieldConfigSetting = {
     mediaStore?: string | CMSStoreConfigSetting;
 };
 export declare type CMSConfigFieldConfigSetting = CMSContentFieldConfigSetting & {
-    type: 'text' | 'number' | 'boolean' | 'date' | 'collection' | 'tags' | 'cmsField' | 'cmsTransformer' | 'cmsFunction';
+    type: 'text' | 'number' | 'boolean' | 'date' | 'collection' | 'tags';
     default: any;
     fields?: {
         [key: string]: CMSConfigFieldConfigSetting;
@@ -433,7 +448,7 @@ export declare type CMSMediaStoreType = {
 export declare type CMSFieldType = {
     id: string;
     defaultValue: any;
-    defaultWidget: string | CMSWidgetTypeConfigSetting;
+    defaultWidget: string | CMSWidgetConfigSetting;
     defaultValidator?: Rules;
     defaultPreSave?: Array<string | CMSFieldTransformerSetting>;
     defaultPreMount?: Array<string | CMSFieldTransformerSetting>;
@@ -460,14 +475,13 @@ export declare type CMSWidgetType = {
     hidden?: boolean;
     formDataHandler?: FormDataHandler;
 };
-export declare type CMSWidgetTypeMerge = CMSWidgetType & {
-    id?: string;
-    type?: string;
+export declare type CMSWidgetTypeMerge = {
+    id: string;
     fieldTypes?: string[];
 };
-export declare type CMSWidgetTypeConfigSetting = {
-    id: string;
-    options: ConfigSetting;
+export declare type CMSWidgetConfigSetting = {
+    type: string;
+    options?: ConfigSetting;
 };
 export declare type CMSFieldTransformer = {
     id: string;
@@ -480,4 +494,33 @@ export declare type CMSFieldTransformer = {
 export declare type CMSFieldTransformerSetting = {
     id: string;
     options: ConfigSetting;
+};
+export declare type ComponentConfig = {
+    id: string;
+    component: Object;
+};
+export declare type CollectionConfigSetting = {
+    id: string;
+    fields: {
+        [id: string]: CMSContentFieldConfigSetting;
+    };
+    component?: string;
+    allowString?: boolean;
+    admin?: boolean;
+};
+export declare type AdminCollectionConfigSetting = CollectionConfigSetting & {
+    admin: true;
+};
+export declare class Collection {
+    id: string;
+    component?: string;
+    allowString?: boolean;
+    admin?: boolean;
+    fields: {
+        [id: string]: CMSContentField;
+    };
+    constructor(conf: CollectionConfigSetting, cms: SvelteCMS);
+}
+export declare type AdminCollection = Collection & {
+    admin: true;
 };

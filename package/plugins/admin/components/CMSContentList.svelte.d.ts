@@ -1,5 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from "../..";
+import type SvelteCMS from "sveltecms";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;

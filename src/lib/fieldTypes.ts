@@ -52,12 +52,6 @@ const fieldTypes:{[key:string]:CMSFieldType} = {
     defaultWidget: 'checkbox',
     defaultPreSave: ['boolean'],
   },
-  cmsfield: {
-    id: 'cmsfield',
-    defaultValue: null,
-    defaultWidget: 'collection',
-    hidden: true,
-  },
   tags: {
     id: 'tags',
     defaultValue: [],

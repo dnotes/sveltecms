@@ -1,31 +1,39 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms"
+// @ts-ignore TODO: why can't it find this?
 import { page } from '$app/stores'
 import getLabelFromID from "./utils/getLabelFromID";
+import adminPlugin from 'sveltecms/plugins/admin'
 
   export let cms:SvelteCMS
+  cms.use(adminPlugin)
 
   let basePath = $page.url.pathname.replace('/' + $page.params.adminPath, '')
 
-  let sections = Object.entries(cms.adminPaths)
-    .reduce((agg, [path, component]) => {
-      if (!path.match('/') && !agg.includes(path)) agg.push(path)
-      return agg
-    }, [])
+  let sections = Object.values(cms.adminPaths)
+    .filter(o => !o.id.match('/'))
 
-  $: component = cms.getAdminPath($page.params.adminPath)
+  $: adminPath = cms.getAdminPath($page.params.adminPath)
+  $: title = adminPath ? adminPath.title ?? getLabelFromID($page.params.adminPath.replace(/\/.+/, '')) : 'Site Admin'
 
 </script>
 
-{#if component}
-  <svelte:component this={component} {cms} adminPath={$page.params.adminPath} />
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
+
+<h1>{title}</h1>
+
+{#if adminPath}
+  <svelte:component this={adminPath.component} {cms} adminPath={$page.params.adminPath} />
 {:else}
   <ul>
     {#each sections as section}
       <li>
-        <a href="{basePath}/{section}">{getLabelFromID(section)}</a>
+        <a href="{basePath}/{section.id}">{section.title || getLabelFromID(section.id)}</a>
       </li>
+    {:else}
+      Can't find any admin sections! Did you remember to <code>cms.use(adminPlugin)</code>?
     {/each}
   </ul>
 {/if}
-

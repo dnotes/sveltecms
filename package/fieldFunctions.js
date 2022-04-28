@@ -36,7 +36,7 @@ export const functions = {
         },
         optionFields: {
             function: {
-                type: 'cmsFunction',
+                type: 'text',
                 default: null,
             }
         }
@@ -48,11 +48,11 @@ export const functions = {
         },
         optionFields: {
             transformer: {
-                type: 'cmsTransformer',
+                type: 'text',
                 default: null
             },
             value: {
-                type: 'cmsFunction',
+                type: 'text',
                 default: {
                     function: 'getValue'
                 }
@@ -327,7 +327,33 @@ export const functions = {
                 tooltip: 'List of strings to concatenate',
             }
         }
-    }
+    },
+    cmsFieldList: {
+        id: 'cmsFieldList',
+        fn: (vars, opts) => {
+            return vars.cms.getFieldTypes();
+        }
+    },
+    cmsWidgets: {
+        id: 'cmsWidgetList',
+        fn: (vars, opts) => {
+            return vars.cms.getFieldTypeWidgets(opts.fieldType);
+        },
+        optionFields: {
+            fieldType: {
+                type: 'text',
+                default: '',
+                widget: {
+                    type: 'select',
+                    options: {
+                        options: {
+                            function: '$cmsFieldList()'
+                        }
+                    }
+                }
+            }
+        }
+    },
 };
 export class CMSFieldFunctionConfig {
     constructor(conf) {

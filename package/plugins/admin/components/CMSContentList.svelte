@@ -1,4 +1,4 @@
-<script>import getLabelFromID from "../../utils/getLabelFromID";
+<script>import getLabelFromID from "sveltecms/utils/getLabelFromID";
 import Grid from 'gridjs-svelte';
 import { html } from 'gridjs';
 export let cms;
@@ -18,7 +18,7 @@ $: content = contentTypeID
     }));
 </script>
 
-<Grid data={content} />
+<!-- <Grid data={content} /> -->
 
 <style global>
   @import "https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css";

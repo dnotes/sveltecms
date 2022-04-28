@@ -1,6 +1,6 @@
 <script lang="ts">
-import type SvelteCMS from "../..";
-import getLabelFromID from "../../utils/getLabelFromID";
+import type SvelteCMS from "sveltecms";
+import getLabelFromID from "sveltecms/utils/getLabelFromID";
 import Grid from 'gridjs-svelte'
 import { html } from 'gridjs'
 
@@ -23,7 +23,7 @@ import { html } from 'gridjs'
 
 </script>
 
-<Grid data={content} />
+<!-- <Grid data={content} /> -->
 
 <style global>
   @import "https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css";
