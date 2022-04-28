@@ -1,6 +1,6 @@
 import { CMSContentEdit, CMSContentList, CMSConfigEdit, CMSConfigList, CMSConfigFieldList } from './components'
 
-import type { CMSConfigFieldConfigSetting } from 'sveltecms'
+import type { CMSConfigFieldConfigSetting, CollectionConfigSetting } from 'sveltecms'
 
 export type AdminPath = {
   id:string
@@ -85,15 +85,10 @@ export const adminPaths:AdminPath[] = [
   },
 ]
 
-export type AdminFieldCollectionSetting = {
-  id:string
-  fields:{[id:string]:CMSConfigFieldConfigSetting}
-  allowString?:true
-}
-
-export const adminFieldCollections:AdminFieldCollectionSetting[] = [
+export const collections:CollectionConfigSetting[] = [
   {
     id: 'fieldConfig',
+    admin: true,
     allowString: true,
     fields: {
       type: {
@@ -114,5 +109,5 @@ export const adminFieldCollections:AdminFieldCollectionSetting[] = [
 
 export default {
   adminPaths,
-  adminFieldCollections,
+  collections,
 }

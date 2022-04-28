@@ -80,7 +80,41 @@ export default class SvelteCMS {
         Object.entries(conf?.types || {}).forEach(([id, conf]) => {
             this.types[id] = new CMSContentType(id, conf, this);
         });
-        this.adminStore = new CMSContentStore(conf?.adminStore, this);
+        let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json';
+        if (typeof adminStore === 'string') {
+            let contentDirectory = adminStore.replace(/\/[^\/]+$/, '');
+            let fileExtension = adminStore.replace(/.+[\.]/, '');
+            if (!['json', 'yml', 'yaml'].includes(fileExtension))
+                throw new Error('adminStore must end in .json, .yml, or .yaml.');
+            adminStore = {
+                id: 'staticFiles',
+                options: {
+                    prependContentTypeIdAs: '',
+                    contentDirectory,
+                    fileExtension,
+                }
+            };
+        }
+        this.admin = new CMSContentType('admin', {
+            label: 'Admin',
+            contentStore: adminStore,
+            slug: {
+                fields: ['configPath'],
+                slugify: 'getFilename'
+            },
+            fields: {
+                configPath: 'text',
+                adminStore: 'collection',
+                types: 'collection',
+                lists: 'collection',
+                contentStores: 'collection',
+                mediaStores: 'collection',
+                fields: 'collection',
+                widgets: 'collection',
+                collections: 'collection',
+                transformers: 'collection',
+            }
+        }, this);
     }
     use(plugin, config) {
         // TODO: allow function that returns plugin
@@ -415,6 +449,9 @@ export default class SvelteCMS {
             if (this.adminPaths[path])
                 return this.adminPaths[path];
         }
+    }
+    async saveConfig() {
+        this.admin.contentStore.saveContent(this.slugifyContent(this.conf, this.admin), this.admin, this.admin.contentStore.options);
     }
     get defaultMediaStore() {
         let k = (Object.keys(this.mediaStores || {}))[0];

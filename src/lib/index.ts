@@ -19,6 +19,7 @@ export const CMSContentFieldPropsAllowFunctions = [
 ]
 
 export type CMSConfigSetting = {
+  configPath?:string
   adminStore?:string|CMSStoreConfigSetting
   types?: {[key:string]: CMSContentTypeConfigSetting}
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
@@ -32,7 +33,7 @@ export type CMSConfigSetting = {
 export default class SvelteCMS {
 
   conf:CMSConfigSetting = {}
-  adminStore: CMSContentStore
+  admin: CMSContentType
   adminPaths?: {[key:string]:AdminPath} = {}
   adminCollections?: {[key:string]:AdminCollection} = {}
   fields:{[key:string]:CMSContentFieldConfigSetting} = {}
@@ -104,7 +105,40 @@ export default class SvelteCMS {
       this.types[id] = new CMSContentType(id, conf, this)
     });
 
-    this.adminStore = new CMSContentStore(conf?.adminStore, this)
+    let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json'
+    if (typeof adminStore === 'string') {
+      let contentDirectory = adminStore.replace(/\/[^\/]+$/, '')
+      let fileExtension = adminStore.replace(/.+[\.]/, '')
+      if (!['json','yml','yaml'].includes(fileExtension)) throw new Error('adminStore must end in .json, .yml, or .yaml.')
+      adminStore = {
+        id: 'staticFiles',
+        options: {
+          prependContentTypeIdAs: '',
+          contentDirectory,
+          fileExtension,
+        }
+      }
+    }
+    this.admin = new CMSContentType('admin', {
+      label: 'Admin',
+      contentStore: adminStore,
+      slug: {
+        fields: ['configPath'],
+        slugify: 'getFilename'
+      },
+      fields: {
+        configPath:'text',
+        adminStore:'collection',
+        types:'collection',
+        lists:'collection',
+        contentStores:'collection',
+        mediaStores:'collection',
+        fields:'collection',
+        widgets:'collection',
+        collections:'collection',
+        transformers:'collection',
+      }
+    }, this)
 
   }
 
@@ -442,6 +476,10 @@ export default class SvelteCMS {
       path = pathArray.join('/')
       if (this.adminPaths[path]) return this.adminPaths[path]
     }
+  }
+
+  async saveConfig() {
+    this.admin.contentStore.saveContent(this.slugifyContent(this.conf, this.admin), this.admin, this.admin.contentStore.options)
   }
 
   get defaultMediaStore():string {

@@ -1,5 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
-import type { AdminPath } from "..";
+import type { AdminPath } from 'sveltecms/plugins/admin';
 import type SvelteCMS from 'sveltecms';
 declare const __propDef: {
     props: {

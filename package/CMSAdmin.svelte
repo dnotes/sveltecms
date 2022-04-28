@@ -18,7 +18,7 @@ $: title = adminPath ? adminPath.title ?? getLabelFromID($page.params.adminPath.
 <h1>{title}</h1>
 
 {#if adminPath}
-  <svelte:component this={adminPath.component} {cms} adminPath={$page.params.adminPath} />
+  <svelte:component this={adminPath.component} {cms} {adminPath} />
 {:else}
   <ul>
     {#each sections as section}

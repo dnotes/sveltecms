@@ -113,6 +113,12 @@ const transformers = {
                 default: false,
             },
         }
+    },
+    getFilename: {
+        id: 'getFilename',
+        fn: (v) => {
+            return v.replace(/.+\//, '').replace(/\.[^\.]*$/, '');
+        }
     }
 };
 export default transformers;

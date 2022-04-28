@@ -113,6 +113,12 @@ const transformers:{[id:string]:CMSFieldTransformer} = {
         default: false,
       },
     }
+  },
+  getFilename: {
+    id: 'getFilename',
+    fn: (v) => {
+      return v.replace(/.+\//, '').replace(/\.[^\.]*$/, '')
+    }
   }
 }
 

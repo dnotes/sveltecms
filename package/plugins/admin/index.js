@@ -72,9 +72,10 @@ export const adminPaths = [
         component: CMSConfigEdit,
     },
 ];
-export const adminFieldCollections = [
+export const collections = [
     {
         id: 'fieldConfig',
+        admin: true,
         allowString: true,
         fields: {
             type: {
@@ -94,5 +95,5 @@ export const adminFieldCollections = [
 ];
 export default {
     adminPaths,
-    adminFieldCollections,
+    collections,
 };

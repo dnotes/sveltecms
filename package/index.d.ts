@@ -3,6 +3,7 @@ import type { AdminPath } from 'sveltecms/plugins/admin';
 import { default as Validator, Rules } from 'validatorjs';
 export declare const CMSContentFieldPropsAllowFunctions: string[];
 export declare type CMSConfigSetting = {
+    configPath?: string;
     adminStore?: string | CMSStoreConfigSetting;
     types?: {
         [key: string]: CMSContentTypeConfigSetting;
@@ -34,7 +35,7 @@ export declare type CMSConfigSetting = {
 };
 export default class SvelteCMS {
     conf: CMSConfigSetting;
-    adminStore: CMSContentStore;
+    admin: CMSContentType;
     adminPaths?: {
         [key: string]: AdminPath;
     };
@@ -155,6 +156,7 @@ export default class SvelteCMS {
         [id: string]: CMSContentField;
     }): Rules;
     getAdminPath(path: string): AdminPath;
+    saveConfig(): Promise<void>;
     get defaultMediaStore(): string;
 }
 export declare type CMSSlugConfigSetting = {

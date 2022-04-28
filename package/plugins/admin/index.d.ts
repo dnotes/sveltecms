@@ -1,4 +1,4 @@
-import type { CMSConfigFieldConfigSetting } from 'sveltecms';
+import type { CMSConfigFieldConfigSetting, CollectionConfigSetting } from 'sveltecms';
 export declare type AdminPath = {
     id: string;
     component: Object;
@@ -10,16 +10,9 @@ export declare type AdminPath = {
     };
 };
 export declare const adminPaths: AdminPath[];
-export declare type AdminFieldCollectionSetting = {
-    id: string;
-    fields: {
-        [id: string]: CMSConfigFieldConfigSetting;
-    };
-    allowString?: true;
-};
-export declare const adminFieldCollections: AdminFieldCollectionSetting[];
+export declare const collections: CollectionConfigSetting[];
 declare const _default: {
     adminPaths: AdminPath[];
-    adminFieldCollections: AdminFieldCollectionSetting[];
+    collections: CollectionConfigSetting[];
 };
 export default _default;
