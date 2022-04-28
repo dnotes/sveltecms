@@ -13,6 +13,7 @@ export const CMSContentFieldPropsAllowFunctions = [
     'collapsible', 'collapsed',
     'multiple', 'multipleLabel', 'multipleMin', 'multipleMax',
 ];
+export const cmsConfigurables = ['adminStore', 'types', 'lists', 'contentStores', 'mediaStores', 'fields', 'widgets', 'collections', 'transformers'];
 export default class SvelteCMS {
     constructor(conf, plugins = []) {
         this.conf = {};
@@ -104,15 +105,7 @@ export default class SvelteCMS {
             },
             fields: {
                 configPath: 'text',
-                adminStore: 'collection',
-                types: 'collection',
-                lists: 'collection',
-                contentStores: 'collection',
-                mediaStores: 'collection',
-                fields: 'collection',
-                widgets: 'collection',
-                collections: 'collection',
-                transformers: 'collection',
+                ...Object.fromEntries(cmsConfigurables.map(k => [k, 'collection']))
             }
         }, this);
     }
@@ -138,8 +131,7 @@ export default class SvelteCMS {
                 this.collections[collection.id] = collection;
         });
     }
-    preMount(contentTypeOrField, values) {
-        let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField;
+    preMount(container, values) {
         let res = {};
         Object.entries(container.fields).forEach(([id, field]) => {
             try {
@@ -163,8 +155,7 @@ export default class SvelteCMS {
         });
         return res;
     }
-    preSave(contentTypeOrField, values) {
-        let container = typeof contentTypeOrField === 'string' ? this.types[contentTypeOrField] : contentTypeOrField;
+    preSave(container, values) {
         let res = {};
         Object.entries(container.fields).forEach(([id, field]) => {
             try {
@@ -235,7 +226,7 @@ export default class SvelteCMS {
         return field;
     }
     getContentStore(contentType) {
-        const type = this.getContentType(contentType);
+        const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         return type.contentStore;
     }
     slugifyContent(content, contentType, force) {
@@ -256,7 +247,7 @@ export default class SvelteCMS {
         return this.runFunction('transformers', contentType.slug.slugify, newSlug);
     }
     async listContent(contentType, options = {}) {
-        const type = this.getContentType(contentType);
+        const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         Object.assign(db.options, options);
         const rawContent = await db.listContent(type, db.options);
@@ -265,6 +256,7 @@ export default class SvelteCMS {
         this.slugifyContent(rawContent, type);
         if (options.getRaw)
             return rawContent;
+        // @ts-ignore contentType has by now been type checked
         return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)];
     }
     /**
@@ -278,28 +270,29 @@ export default class SvelteCMS {
      * @returns object|object[]
      */
     async getContent(contentType, slug, options = {}) {
-        const type = this.getContentType(contentType);
+        contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         Object.assign(db.options, options);
-        const rawContent = await db.getContent(type, db.options, slug);
+        const rawContent = await db.getContent(contentType, db.options, slug);
         if (!rawContent)
             return;
-        this.slugifyContent(rawContent, type);
+        this.slugifyContent(rawContent, contentType);
         if (options.getRaw)
             return rawContent;
+        // @ts-ignore contentType has by now been type checked
         return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent);
     }
     async saveContent(contentType, content, options = {}) {
-        const type = this.getContentType(contentType);
+        contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         Object.assign(db.options, options);
-        return db.saveContent(this.slugifyContent(this.preSave(contentType, content), type), type, db.options);
+        return db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options);
     }
     async deleteContent(contentType, content, options = {}) {
-        const type = this.getContentType(contentType);
+        contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         Object.assign(db.options, options);
-        return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), type), type, db.options);
+        return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options);
     }
     runFunction(functionType, conf, value) {
         let id = typeof conf === 'string' ? conf : conf.id;
@@ -449,9 +442,6 @@ export default class SvelteCMS {
             if (this.adminPaths[path])
                 return this.adminPaths[path];
         }
-    }
-    async saveConfig() {
-        this.admin.contentStore.saveContent(this.slugifyContent(this.conf, this.admin), this.admin, this.admin.contentStore.options);
     }
     get defaultMediaStore() {
         let k = (Object.keys(this.mediaStores || {}))[0];

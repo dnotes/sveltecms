@@ -5,6 +5,7 @@ declare const __propDef: {
     props: {
         cms: SvelteCMS;
         adminPath: AdminPath;
+        saveConfig?: () => Promise<void>;
     };
     events: {
         [evt: string]: CustomEvent<any>;

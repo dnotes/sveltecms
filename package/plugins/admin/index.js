@@ -1,5 +1,9 @@
-import { CMSContentEdit, CMSContentList, CMSConfigEdit, CMSConfigList, CMSConfigFieldList } from './components';
+import { CMSContentEdit, CMSContentList, CMSConfigEdit, CMSConfigList, CMSConfigFieldList, CMSConfig } from './components';
 export const adminPaths = [
+    {
+        id: 'config',
+        component: CMSConfig,
+    },
     {
         id: 'content',
         component: CMSContentList,
@@ -37,19 +41,9 @@ export const adminPaths = [
         component: CMSConfigList,
     },
     {
-        id: 'widgets/*',
-        configPath: 'widgets',
-        component: CMSConfigEdit,
-    },
-    {
         id: 'lists',
         configPath: 'lists',
         component: CMSConfigList,
-    },
-    {
-        id: 'lists/*',
-        configPath: 'lists',
-        component: CMSConfigEdit,
     },
     {
         id: 'contentStores',
@@ -57,19 +51,9 @@ export const adminPaths = [
         component: CMSConfigList,
     },
     {
-        id: 'contentStores/*',
-        configPath: 'contentStores',
-        component: CMSConfigEdit,
-    },
-    {
         id: 'mediaStores',
         configPath: 'mediaStores',
         component: CMSConfigList,
-    },
-    {
-        id: 'mediaStores/*',
-        configPath: 'mediaStores',
-        component: CMSConfigEdit,
     },
 ];
 export const collections = [

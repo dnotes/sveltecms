@@ -3,12 +3,18 @@ import { tick } from 'svelte';
 export let cms;
 export let adminPath;
 let addID, addType, addIDEl;
-let isCustom = {};
 let focuses = {};
 $: fieldCollection = cms.adminCollections[adminPath.fieldCollection];
 $: allowString = fieldCollection?.allowString;
 $: conf = get(cms.conf, adminPath.configPath, {});
 $: items = Object.entries(conf);
+$: isDefault = Object.fromEntries(items.map(([id, item]) => {
+    return [id, typeof item === 'string'];
+}));
+async function toggleCustom(id) {
+    conf[id] = typeof conf[id] === 'string' ? { type: conf[id] } : conf[id].type;
+    conf = conf;
+}
 async function addItem() {
     if (addID && addType) {
         conf[addID] = fieldCollection?.allowString ? addType : { type: addType };
@@ -23,15 +29,25 @@ function removeItem(id) {
     conf = conf;
     addIDEl.focus();
 }
+export let saveConfig = async () => {
+    let res = await fetch('/admin/config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cms.conf),
+    });
+    console.log(res);
+};
 </script>
 
-<form on:submit|preventDefault={()=>{cms.saveConfig()}}>
+<form method="post" enctype="multipart/form-data" on:submit|preventDefault={saveConfig}>
   <table>
     <thead>
       <tr>
         <th>ID</th>
         <th>Type</th>
-        <th>More</th>
+        <th>Default</th>
         <th>Ops</th>
       </tr>
     </thead>
@@ -56,7 +72,10 @@ function removeItem(id) {
             </td>
             <td>
               {#if fieldCollection?.allowString}
-                <input type="checkbox" bind:checked={isCustom[id]} bind:this={focuses[id]}>
+                <input type="checkbox"
+                  bind:checked={isDefault[id]}
+                  bind:this={focuses[id]}
+                  on:click={()=>{toggleCustom(id)}}>
               {:else}
                 <input type="checkbox" checked disabled />
               {/if}
@@ -77,7 +96,7 @@ function removeItem(id) {
             </select>
           </td>
           <td>
-            <input type="checkbox" checked={!allowString} on:focus={addItem}>
+            <input type="checkbox" checked={allowString} on:focus={addItem}>
           </td>
           <td>
           </td>

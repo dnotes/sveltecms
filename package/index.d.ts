@@ -2,6 +2,7 @@ import { CMSFieldFunctionConfig } from './fieldFunctions';
 import type { AdminPath } from 'sveltecms/plugins/admin';
 import { default as Validator, Rules } from 'validatorjs';
 export declare const CMSContentFieldPropsAllowFunctions: string[];
+export declare const cmsConfigurables: string[];
 export declare type CMSConfigSetting = {
     configPath?: string;
     adminStore?: string | CMSStoreConfigSetting;
@@ -78,17 +79,17 @@ export default class SvelteCMS {
     lists: CMSListConfig;
     constructor(conf: CMSConfigSetting, plugins?: CMSPlugin[]);
     use(plugin: CMSPlugin, config?: any): void;
-    preMount(contentTypeOrField: string | CMSContentField, values: Object): {};
-    preSave(contentTypeOrField: string | CMSContentField, values: Object): {};
+    preMount(container: CMSContentType | CMSContentField, values: Object): {};
+    preSave(container: CMSContentType | CMSContentField, values: Object): {};
     doTransforms(op: 'preSave' | 'preMount', field: CMSContentField, value: any): any;
     getFieldTypes(): string[];
     getFieldTypeWidgets(fieldType: any): string[];
     getContentType(contentType: string): CMSContentType;
     getCollection(contentType: string, valuePath: string): CMSContentField;
-    getContentStore(contentType: string): CMSContentStore;
+    getContentStore(contentType: string | CMSContentType): CMSContentStore;
     slugifyContent(content: any, contentType: CMSContentType, force?: boolean): any;
     getSlug(content: any, contentType: CMSContentType, force: boolean): any;
-    listContent(contentType: string, options?: {
+    listContent(contentType: string | CMSContentType, options?: {
         [key: string]: any;
     }): Promise<Array<any>>;
     /**
@@ -101,13 +102,13 @@ export default class SvelteCMS {
      * @param options object
      * @returns object|object[]
      */
-    getContent(contentType: string, slug?: string | number | null, options?: {
+    getContent(contentType: string | CMSContentType, slug?: string | number | null, options?: {
         [key: string]: any;
     }): Promise<any>;
-    saveContent(contentType: string, content: any, options?: {
+    saveContent(contentType: string | CMSContentType, content: any, options?: {
         [key: string]: any;
     }): Promise<any>;
-    deleteContent(contentType: string, content: any, options?: {
+    deleteContent(contentType: string | CMSContentType, content: any, options?: {
         [key: string]: any;
     }): Promise<any>;
     runFunction(functionType: 'transformers' | 'contentStorage' | 'mediaStorage', conf: string | CMSFieldTransformerSetting, value: any): any;
@@ -156,7 +157,6 @@ export default class SvelteCMS {
         [id: string]: CMSContentField;
     }): Rules;
     getAdminPath(path: string): AdminPath;
-    saveConfig(): Promise<void>;
     get defaultMediaStore(): string;
 }
 export declare type CMSSlugConfigSetting = {

@@ -8,5 +8,5 @@ export declare function collapseFormItem(cms: SvelteCMS, contentType: CMSContent
  * @param contentType CMSContentType
  * @param formdata FormData
  */
-export declare function formDataHandler(cms: SvelteCMS, contentTypeID: string, formdata: FormData): Promise<any>;
+export declare function formDataHandler(cms: SvelteCMS, contentType: string | CMSContentType, formdata: FormData): Promise<any>;
 export default formDataHandler;

@@ -63,13 +63,13 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
  * @param contentType CMSContentType
  * @param formdata FormData
  */
-export async function formDataHandler(cms, contentTypeID, formdata) {
+export async function formDataHandler(cms, contentType, formdata) {
     let rawdata = {};
     // @ts-ignore -- why does this not have a proper FormData object?!?!!
     for (let k of formdata.keys()) {
         set(rawdata, k, formdata.getAll(k));
     }
-    const contentType = cms.getContentType(contentTypeID);
+    contentType = typeof contentType === 'string' ? cms.getContentType(contentType) : contentType;
     return collapseFormItem(cms, contentType, contentType.fields, rawdata);
 }
 export default formDataHandler;
