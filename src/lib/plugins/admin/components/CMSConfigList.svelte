@@ -121,7 +121,7 @@ import { tick } from 'svelte';
             </select>
           </td>
           <td>
-            <input type="checkbox" checked={opts.allowString} on:focus={addItem}>
+            <input type="checkbox" checked={opts.allowString} disabled={!opts.allowString} on:focus={addItem}>
           </td>
           <td>
             <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>
