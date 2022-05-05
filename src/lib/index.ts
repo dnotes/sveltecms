@@ -247,7 +247,7 @@ export default class SvelteCMS {
   }
 
   getFieldTypeWidgets(fieldType) {
-    if (!fieldType) return
+    if (!fieldType) return union(Object.keys(this.widgetTypes || {}), Object.keys(this.widgets || {}))
     return union(
       Object.entries(this.widgetTypes).map(([id,w]) => {
         if (!w.hidden && w.fieldTypes.includes(fieldType)) return id
