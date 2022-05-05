@@ -99,6 +99,11 @@ const widgetTypes:{[key:string]:CMSWidgetType} = {
         type: 'date',
         default: undefined,
       },
+    },
+    formDataHandler: async (value, cms, contentType, field) => {
+      let result = value?.date?.[0]
+      if (value?.time?.[0]) result += 'T' + value?.time?.[0]
+      return result
     }
   },
   textarea: {

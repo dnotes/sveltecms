@@ -2,14 +2,19 @@ import type { CMSContentType } from "sveltecms"
 import type SvelteCMS from "sveltecms"
 import { formDataHandler } from './formDataHandler'
 
+function getFormat(format:string):'json'|'form'|void {
+  if (format === 'application/json') return 'json'
+  else if (format.match(/^multipart\/form-data/)) return 'form'
+}
+
 async function parseRequest(cms:SvelteCMS, contentType:string|CMSContentType, request:Request):Promise<{format:string,data:any}> {
   let data
-  let format = request.headers.get('Content-Type')
-  if (format === 'application/json') {
+  let format = getFormat(request.headers.get('Content-Type'))
+  if (format === 'json') {
     data = await request.json()
     return { format, data }
   }
-  else if (format.match(/^multipart\/form-data/)) {
+  else if (format === 'form') {
     let formdata = await request.formData()
     data = await formDataHandler(cms, contentType, formdata)
     return { format, data }
@@ -22,14 +27,10 @@ async function saveContentEndpoint(cms:SvelteCMS, contentType:string|CMSContentT
   try {
     let { format, data } = await parseRequest(cms, contentType, request)
     content = data
-    if (format === 'application/json') {
-      let response = await cms.saveContent(contentType, content, options)
+    let response = await cms.saveContent(contentType, content, options)
+    if (format === 'json') {
       response.headers['Content-Type'] = 'application/json'
       return response
-    }
-    else if (format === 'multipart/form-data') {
-      await cms.saveContent(contentType, content, options)
-      return
     }
   }
   catch(error) {
@@ -49,14 +50,10 @@ async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|CMSConten
   let content
   try {
     let { format, data } = await parseRequest(cms, contentType, request)
-    if (format === 'application/json') {
-      let response = await cms.deleteContent(contentType, content, options)
+    let response = await cms.deleteContent(contentType, content, options)
+    if (format === 'json') {
       response.headers['Content-Type'] = 'application/json'
       return response
-    }
-    else if (format === 'multipart/form-data') {
-      await cms.deleteContent(contentType, content, options)
-      return
     }
   }
   catch(error) {

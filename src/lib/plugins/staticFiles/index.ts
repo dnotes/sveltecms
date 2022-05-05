@@ -232,7 +232,6 @@ const plugin:CMSPlugin = {
           `${slug}.${opts.fileExtension}`   // file extensions
 
         let body = ''
-        console.log(filepath)
         switch (opts.fileExtension) {
           case "json":
             content = JSON.stringify(content, null, 2)
@@ -243,7 +242,7 @@ const plugin:CMSPlugin = {
           case "yml":
           case "yaml":
             let yaml = await import('js-yaml')
-            content = yaml.dump(content)
+            content = yaml.dump(content).trim()
             if (opts.fileExtension === 'md') content = `---\n${content}\n---\n${body}`
             break;
           default:

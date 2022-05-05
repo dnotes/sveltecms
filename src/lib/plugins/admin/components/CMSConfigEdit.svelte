@@ -1,10 +1,11 @@
 <script lang="ts">
 import type SvelteCMS from 'sveltecms';
+import type { AdminPage } from '..';
 
   export let cms:SvelteCMS
+  export let adminPage:AdminPage
   export let adminPath:string
-
-  $: [section, id] = adminPath.split('/')
-  $: item = cms[section][id] || { id }
+  export let basePath:string
+  export let data:Object
 
 </script>

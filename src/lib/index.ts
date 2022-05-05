@@ -4,7 +4,7 @@ import fieldTypes from './fieldTypes'
 import widgetTypes from './widgetTypes'
 import { functions, parseFieldFunctionScript, CMSFieldFunctionConfig } from './fieldFunctions'
 import { cloneDeep, mergeWith, get as getProp, has as hasProp, union } from 'lodash-es'
-import type { AdminPath } from 'sveltecms/plugins/admin'
+import type { AdminPage } from 'sveltecms/plugins/admin'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
 
 import { default as Validator, Rules } from 'validatorjs'
@@ -36,7 +36,7 @@ export default class SvelteCMS {
 
   conf:CMSConfigSetting = {}
   admin: CMSContentType
-  adminPaths?: {[key:string]:AdminPath} = {}
+  adminPages?: {[key:string]:AdminPage} = {}
   adminCollections?: {[key:string]:AdminCollection} = {}
   fields:{[key:string]:CMSContentFieldConfigSetting} = {}
   collections: {[key:string]:Collection} = {}
@@ -139,7 +139,7 @@ export default class SvelteCMS {
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
-    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPaths','components'].forEach(k => {
+    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components'].forEach(k => {
       plugin?.[k]?.forEach(conf => {
         try {
           this[k][conf.id] = conf
@@ -222,12 +222,30 @@ export default class SvelteCMS {
     }
   }
 
+  getConfigTypes(path:string, arg?:string):string[] {
+    switch (path) {
+      case 'fields':
+        return this.getFieldTypes()
+      case 'widgets':
+        return this.getFieldTypeWidgets(arg)
+      case 'types':
+      case 'lists':
+      case 'contentStores':
+      case 'mediaStores':
+      case 'collections':
+      case 'transformers':
+        return Object.keys(this[path])
+      default:
+        return []
+    }
+  }
+
   getFieldTypes() {
     return union(Object.keys(this.fieldTypes || {}), Object.keys(this.fields || {}))
   }
 
   getFieldTypeWidgets(fieldType) {
-    if (!fieldType) return []
+    if (!fieldType) return
     return union(
       Object.entries(this.widgetTypes).map(([id,w]) => {
         if (!w.hidden && w.fieldTypes.includes(fieldType)) return id
@@ -243,11 +261,10 @@ export default class SvelteCMS {
     return this.types[contentType]
   }
 
-  getCollection(contentType:string, valuePath:string):CMSContentField {
-    if (!this.types[contentType]) throw new Error (`Content type not found: ${contentType}`)
-    let type = this.types[contentType]
+  getCollection(contentType:string|CMSContentType, valuePath:string):CMSContentField {
+    contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     let configPath = getConfigPathFromValuePath(valuePath)
-    let field = <CMSContentField> getProp(type, configPath)
+    let field = <CMSContentField> getProp(contentType, configPath)
     if (!field || !(field?.type === 'collection') || !(field?.fields)) throw new Error (`${contentType}.${configPath} is not a valid collection`)
     return field
   }
@@ -378,7 +395,7 @@ export default class SvelteCMS {
 
   getWidgetFields(
     collection:CMSContentType|CMSContentField,
-    vars:{ values:any, errors:any, touched:any, id?:string }
+    vars:{ values:any, errors:any, touched:any, id?:string },
   ):CMSWidgetFieldCollection {
     let c = cloneDeep(collection)
     // @ts-ignore
@@ -461,14 +478,14 @@ export default class SvelteCMS {
     return configValues
   }
 
-  getAdminPath(path:string):AdminPath {
+  getAdminPage(path:string):AdminPage {
     let pathArray = path.replace(/(^\/|\/$)/g,'').split('/')
     path = pathArray.join('/')
-    if (this.adminPaths[path]) return this.adminPaths[path]
+    if (this.adminPages[path]) return this.adminPages[path]
     for (let i=pathArray.length-1; i>0; i--) {
       pathArray[i] = '*'
       path = pathArray.join('/')
-      if (this.adminPaths[path]) return this.adminPaths[path]
+      if (this.adminPages[path]) return this.adminPages[path]
     }
   }
 
@@ -804,7 +821,7 @@ export function getConfigPathFromValuePath(path:string):string {
 export type ConfigSetting = {[key:string]: string|number|boolean|null|undefined|ConfigSetting|Array<ConfigSetting>}
 
 export type CMSPlugin = {
-  adminPaths?: AdminPath[]
+  adminPages?: AdminPage[]
   fieldTypes?: CMSFieldType[]
   widgetTypes?: CMSWidgetType[]
   transformers?: CMSFieldTransformer[]
@@ -972,20 +989,17 @@ export type CollectionConfigSetting = {
   id:string
   fields:{[id:string]:CMSContentFieldConfigSetting}
   component?:string
-  allowString?:boolean
   admin?:boolean
 }
 export type AdminCollectionConfigSetting = CollectionConfigSetting & { admin:true }
 export class Collection {
   id:string
   component?:string
-  allowString?:boolean
   admin?:boolean
   fields:{[id:string]:CMSContentField}
   constructor(conf:CollectionConfigSetting, cms:SvelteCMS) {
     this.id = conf.id
     this.component = conf.component
-    this.allowString = conf.allowString
     this.admin = conf.admin
     this.fields = Object.fromEntries(Object.entries(conf.fields).map(([id,conf]) => {
       return [id, new CMSContentField(id, conf, cms)]

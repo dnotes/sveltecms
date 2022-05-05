@@ -82,6 +82,7 @@ export default class SvelteCMS {
     preMount(container: CMSContentType | CMSContentField, values: Object): {};
     preSave(container: CMSContentType | CMSContentField, values: Object): {};
     doTransforms(op: 'preSave' | 'preMount', field: CMSContentField, value: any): any;
+    getConfigTypes(path: string, arg?: string): string[];
     getFieldTypes(): string[];
     getFieldTypeWidgets(fieldType: any): string[];
     getContentType(contentType: string): CMSContentType;
@@ -507,7 +508,6 @@ export declare type CollectionConfigSetting = {
         [id: string]: CMSContentFieldConfigSetting;
     };
     component?: string;
-    allowString?: boolean;
     admin?: boolean;
 };
 export declare type AdminCollectionConfigSetting = CollectionConfigSetting & {
@@ -516,7 +516,6 @@ export declare type AdminCollectionConfigSetting = CollectionConfigSetting & {
 export declare class Collection {
     id: string;
     component?: string;
-    allowString?: boolean;
     admin?: boolean;
     fields: {
         [id: string]: CMSContentField;

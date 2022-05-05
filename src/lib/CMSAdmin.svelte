@@ -3,18 +3,18 @@ import type SvelteCMS from "sveltecms"
 // @ts-ignore TODO: why can't it find this?
 import { page } from '$app/stores'
 import getLabelFromID from "./utils/getLabelFromID";
-import adminPlugin from 'sveltecms/plugins/admin'
 
   export let cms:SvelteCMS
-  cms.use(adminPlugin)
+  export let adminPath:string
+  export let data:Object = undefined
 
-  let basePath = $page.url.pathname.replace('/' + $page.params.adminPath, '')
+  let basePath = $page.url.pathname.replace('/' + adminPath, '')
 
-  let sections = Object.values(cms.adminPaths)
+  let sections = Object.values(cms.adminPages)
     .filter(o => !o.id.match('/'))
 
-  $: adminPath = cms.getAdminPath($page.params.adminPath)
-  $: title = adminPath ? adminPath.title ?? getLabelFromID($page.params.adminPath.replace(/\/.+/, '')) : 'Site Admin'
+  $: adminPage = cms.getAdminPage(adminPath)
+  $: title = adminPage ? adminPage.title ?? getLabelFromID(adminPath.replace(/\/.+/, '')) : 'Site Admin'
 
 </script>
 
@@ -24,8 +24,8 @@ import adminPlugin from 'sveltecms/plugins/admin'
 
 <h1>{title}</h1>
 
-{#if adminPath}
-  <svelte:component this={adminPath.component} {cms} {adminPath} />
+{#if adminPage}
+  <svelte:component this={adminPage.component} {cms} {adminPath} {adminPage} {basePath} {data} />
 {:else}
   <ul>
     {#each sections as section}

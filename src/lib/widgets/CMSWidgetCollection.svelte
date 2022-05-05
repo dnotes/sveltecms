@@ -1,7 +1,7 @@
 <script lang="ts">
 import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
-import type { CMSWidgetField } from "..";
+import type { CMSContentType, CMSWidgetField } from "..";
 import type SvelteCMS from '..';
 
   let parentField:CMSWidgetField
@@ -9,11 +9,11 @@ import type SvelteCMS from '..';
   export { parentField as field, parentID as id }
 
   export let cms:SvelteCMS
-  export let contentTypeID:string
+  export let contentType:string|CMSContentType
 
   let opts:{oneline?:boolean} = parentField.widget.options
 
-  let collection = cms.getWidgetFields(cms.getCollection(contentTypeID, parentID), {
+  let collection = cms.getWidgetFields(cms.getCollection(contentType, parentID), {
     values: parentField.values,
     errors: parentField.errors,
     touched: parentField.touched,
@@ -39,7 +39,7 @@ import type SvelteCMS from '..';
           id={`${parentID}.${id}`}
           bind:value={value[id]}
           {cms}
-          {contentTypeID}
+          {contentType}
         />
       {:else if field.widget.type === 'collection'}
         <svelte:self
@@ -47,7 +47,7 @@ import type SvelteCMS from '..';
           id={`${parentID}.${id}`}
           bind:value={value[id]}
           {cms}
-          {contentTypeID}
+          {contentType}
         />
       {:else}
         <svelte:component

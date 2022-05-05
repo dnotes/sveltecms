@@ -7,7 +7,6 @@ import { onDestroy, onMount } from 'svelte';
 
   export let cms:SvelteCMS
   export let contentTypeID:string
-  export let previewComponent = undefined
 
   export let result = undefined
   export let values = {}
@@ -16,13 +15,12 @@ import { onDestroy, onMount } from 'svelte';
   export let disabled = false
   export let submitOptions = {}
 
-  export let action = ''
-  export let method = 'POST'
-
-  export let contentType = undefined // in case someone wants to log / debug
-
-  contentType = cms.getContentType(contentTypeID)
+  export const contentType = cms.getContentType(contentTypeID)
   let collection = cms.getWidgetFields(contentType, { values, errors, touched })
+
+  export let action = contentType?.form?.action ?? ''
+  export let method = contentType?.form?.method ?? 'POST'
+  export let previewComponent = contentType?.form?.previewComponent
 
   const initialValues = cloneDeep(values)
 
@@ -85,7 +83,7 @@ import { onDestroy, onMount } from 'svelte';
         </h2>
       </slot>
       <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} {contentTypeID} {values} fieldList={collection.fields} />
+        <CmsFieldCollection {cms} {contentType} {values} fieldList={collection.fields} />
         <button
           type="submit"
           class="primary"

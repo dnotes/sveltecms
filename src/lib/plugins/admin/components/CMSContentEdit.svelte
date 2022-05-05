@@ -1,18 +1,28 @@
 <script lang="ts">
 import type SvelteCMS from 'sveltecms'
 import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
+import type { AdminPage } from '..';
+// @ts-ignore
+import { page } from '$app/stores'
 
   export let cms:SvelteCMS
-  export let adminPath:string
+  export let data
 
-  $: [contentPath,contentTypeID,slug] = adminPath.split('/')
-  $: type = cms.getContentType(contentTypeID)
-  $: content = cms.getContent(contentTypeID, slug, { getRaw:true })
+  // $: console.log({data,cms})
+
+  $: [ contentPath, contentTypeID, slug ] = $page.params.adminPath.split('/')
+  $: content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
 
 </script>
 
-{#await content then values}
-  <CmsEditorForm {contentTypeID} {values} {cms} method={type.form.method} action={type.form.action} previewComponent={type.form.previewComponent} />
+{#await content}
+  loading editor...
+{:then values}
+  <CmsEditorForm {contentTypeID} {values} {cms} />
 {:catch error}
   Error loading content:
+  <pre><code>
+    {error.message}
+    {error.stack}
+  </code></pre>
 {/await}

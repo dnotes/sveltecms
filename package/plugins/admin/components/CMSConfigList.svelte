@@ -5,8 +5,9 @@ export let adminPath;
 let addID, addType, addIDEl;
 let focuses = {};
 $: fieldCollection = cms.adminCollections[adminPath.fieldCollection];
+$: configPath = adminPath.configPath;
 $: allowString = fieldCollection?.allowString;
-$: conf = get(cms.conf, adminPath.configPath, {});
+$: conf = get(cms.conf, configPath, {});
 $: items = Object.entries(conf);
 $: isDefault = Object.fromEntries(items.map(([id, item]) => {
     return [id, typeof item === 'string'];
@@ -58,13 +59,13 @@ export let saveConfig = async () => {
             <td>
               {#if typeof item === 'string'}
                 <select bind:value={item}>
-                  {#each cms.getFieldTypes() as type}
+                  {#each cms.getConfigTypes(configPath) as type}
                     <option value={type}>{type}</option>
                   {/each}
                 </select>
               {:else}
                 <select bind:value={item['type']}>
-                  {#each cms.getFieldTypes() as type}
+                  {#each cms.getConfigTypes(configPath) as type}
                     <option value={type}>{type}</option>
                   {/each}
                 </select>
@@ -81,7 +82,7 @@ export let saveConfig = async () => {
               {/if}
             </td>
             <td>
-              <button type='button' on:click|preventDefault={()=>{removeItem(id)}}>✖️</button>
+              <button type="button" on:click|preventDefault={()=>{removeItem(id)}}>✖️</button>
             </td>
           </tr>
         {/each}
@@ -99,6 +100,7 @@ export let saveConfig = async () => {
             <input type="checkbox" checked={allowString} on:focus={addItem}>
           </td>
           <td>
+            <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>
           </td>
         </tr>
       </tbody>

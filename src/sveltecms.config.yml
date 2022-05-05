@@ -21,8 +21,10 @@ mediaStores:
     allowMediaTypes: image/jpeg, image/png, image/gif
 fields:
   body: markdown
-  title:
-    type: text
-    required: true
+  date:
+    type: date
+    preSave: toString
+    preMount: date
+  title: text
   image: image
 _slug: sveltecms.config

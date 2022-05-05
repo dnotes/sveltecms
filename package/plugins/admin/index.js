@@ -7,7 +7,6 @@ export const adminPaths = [
     {
         id: 'content',
         component: CMSContentList,
-        fieldCollection: '',
     },
     {
         id: 'content/*',
@@ -33,34 +32,50 @@ export const adminPaths = [
         id: 'fields',
         configPath: 'fields',
         component: CMSConfigList,
-        fieldCollection: 'fieldConfig',
+        options: {
+            collection: 'fieldConfig',
+            stringField: 'type',
+        }
     },
     {
         id: 'widgets',
         configPath: 'widgets',
         component: CMSConfigList,
+        options: {
+            collection: 'widgetConfig',
+            stringField: 'type',
+        }
     },
     {
         id: 'lists',
         configPath: 'lists',
         component: CMSConfigList,
+        options: {
+            collection: 'listConfig',
+            stringField: 'tags',
+        }
     },
     {
         id: 'contentStores',
         configPath: 'contentStores',
         component: CMSConfigList,
+        options: {
+            collection: ''
+        }
     },
     {
         id: 'mediaStores',
         configPath: 'mediaStores',
         component: CMSConfigList,
+        options: {
+            collection: ''
+        }
     },
 ];
 export const collections = [
     {
         id: 'fieldConfig',
         admin: true,
-        allowString: true,
         fields: {
             type: {
                 type: 'text',

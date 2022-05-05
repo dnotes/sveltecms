@@ -1,11 +1,10 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
-import type { AdminPath } from "..";
+import type { AdminPage } from "sveltecms/plugins/admin";
 import yaml from 'js-yaml'
 import { onMount } from "svelte";
 
   export let cms:SvelteCMS
-  export let adminPath:AdminPath
 
   let format:string
   let content:string
@@ -18,7 +17,6 @@ import { onMount } from "svelte";
     yml: v => {return yaml.dump(v)},
   }
 
-  $: console.log(format)
   $: content = encoders?.[format] ? encoders[format](cms.conf) : ''
 
 </script>

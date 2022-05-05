@@ -196,12 +196,29 @@ export default class SvelteCMS {
             throw e;
         }
     }
+    getConfigTypes(path, arg) {
+        switch (path) {
+            case 'fields':
+                return this.getFieldTypes();
+            case 'widgets':
+                return this.getFieldTypeWidgets(arg);
+            case 'types':
+            case 'lists':
+            case 'contentStores':
+            case 'mediaStores':
+            case 'collections':
+            case 'transformers':
+                return Object.keys(this[path]);
+            default:
+                return [];
+        }
+    }
     getFieldTypes() {
         return union(Object.keys(this.fieldTypes || {}), Object.keys(this.fields || {}));
     }
     getFieldTypeWidgets(fieldType) {
         if (!fieldType)
-            return [];
+            return;
         return union(Object.entries(this.widgetTypes).map(([id, w]) => {
             if (!w.hidden && w.fieldTypes.includes(fieldType))
                 return id;
@@ -665,7 +682,6 @@ export class Collection {
     constructor(conf, cms) {
         this.id = conf.id;
         this.component = conf.component;
-        this.allowString = conf.allowString;
         this.admin = conf.admin;
         this.fields = Object.fromEntries(Object.entries(conf.fields).map(([id, conf]) => {
             return [id, new CMSContentField(id, conf, cms)];
