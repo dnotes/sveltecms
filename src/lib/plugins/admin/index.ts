@@ -59,7 +59,7 @@ export const adminPages:AdminPage[] = [
     id: 'types',
     configPath: 'types',
     title: 'Content Types',
-    component: CMSConfigList,
+    component: CMSContentTypeList,
   },
   {
     id: 'types/*',
