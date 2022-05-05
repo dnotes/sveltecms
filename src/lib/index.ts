@@ -180,6 +180,7 @@ export default class SvelteCMS {
         throw e
       }
     })
+    res['_slug'] = values['_slug']
     return res
   }
 
@@ -203,6 +204,7 @@ export default class SvelteCMS {
         throw e
       }
     })
+    res['_slug'] = values['_slug']
     return res
   }
 
@@ -277,7 +279,7 @@ export default class SvelteCMS {
   slugifyContent(content:any, contentType:CMSContentType, force?:boolean) {
     if (Array.isArray(content)) {
       content.forEach(c => {
-        c._slug = this.getSlug(content, contentType, force)
+        c._slug = this.getSlug(c, contentType, force)
       })
     }
     else {
@@ -292,13 +294,13 @@ export default class SvelteCMS {
     return this.runFunction('transformers', contentType.slug.slugify, newSlug)
   }
 
-  async listContent(contentType:string|CMSContentType, options:{[key:string]:any} = {}):Promise<Array<any>> {
-    const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
+  async listContent(contentType:string|CMSContentType, options:{load?:boolean, [key:string]:any} = {}):Promise<Array<any>> {
+    contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
-    const rawContent = await db.listContent(type, db.options)
+    const rawContent = await db.listContent(contentType, db.options)
     if (!rawContent) return
-    this.slugifyContent(rawContent, type)
+    this.slugifyContent(rawContent, contentType)
     if (options.getRaw) return rawContent
     // @ts-ignore contentType has by now been type checked
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)]
