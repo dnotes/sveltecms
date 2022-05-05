@@ -247,14 +247,13 @@ export default class SvelteCMS {
   }
 
   getFieldTypeWidgets(fieldType) {
-    if (!fieldType) return union(Object.keys(this.widgetTypes || {}), Object.keys(this.widgets || {}))
+    if (!fieldType) return union(
+      Object.keys(this.widgetTypes || {}).filter(k => !this.widgetTypes[k].hidden),
+      Object.keys(this.widgets || {})
+    )
     return union(
-      Object.entries(this.widgetTypes).map(([id,w]) => {
-        if (!w.hidden && w.fieldTypes.includes(fieldType)) return id
-      }).filter(Boolean),
-      Object.entries(this.widgets).map(([id,w]) => {
-        if (this.widgetTypes[w.type].fieldTypes.includes(fieldType)) return id
-      }).filter(Boolean)
+      Object.keys(this.widgetTypes).filter(k => !this.widgetTypes[k].hidden && this.widgetTypes[k].fieldTypes.includes(fieldType)),
+      Object.keys(this.widgets).filter(k => this.widgetTypes[this.widgets[k].type].fieldTypes.includes(fieldType))
     )
   }
 
