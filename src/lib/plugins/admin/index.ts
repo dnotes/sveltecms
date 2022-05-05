@@ -87,15 +87,15 @@ export const adminPages:AdminPage[] = [
       stringField: 'type',
     }
   },
-  {
-    id: 'lists',
-    configPath: 'lists',
-    component: CMSConfigList,
-    options: {
-      collection: 'listConfig',
-      stringField: 'tags',
-    }
-  },
+  // {
+  //   id: 'lists',
+  //   configPath: 'lists',
+  //   component: CMSConfigList,
+  //   options: {
+  //     collection: 'listConfig',
+  //     stringField: 'tags',
+  //   }
+  // },
   {
     id: 'contentStores',
     configPath: 'contentStores',
