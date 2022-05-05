@@ -21,4 +21,8 @@
 
 </script>
 
-<CMSAdmin {cms} {data} {adminPath} />
+{#await data}
+  fetching data...
+{:then data}
+  <CMSAdmin {cms} {data} {adminPath} />
+{/await}

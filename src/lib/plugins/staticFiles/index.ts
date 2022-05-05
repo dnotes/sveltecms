@@ -111,46 +111,6 @@ export const staticFilesMediaOptionFields:{[key:string]:CMSConfigFieldConfigSett
   },
 }
 
-export async function saveContentEndpoint(cms:SvelteCMS, contentTypeID:string, request:Request, options={}) {
-  let content
-  try {
-    let formdata = await request.formData()
-    content = await formDataHandler(cms, contentTypeID, formdata)
-    let response = await cms.saveContent(contentTypeID, content, options)
-    return response
-  }
-  catch(error) {
-    return {
-      status: 500,
-      body: {
-        message: error.message,
-        stack: error.stack.split('\n'),
-        content,
-      }
-    }
-  }
-}
-
-export async function deleteContentEndpoint(cms:SvelteCMS, contentTypeID:string, request:Request, options={}) {
-  let content
-  try {
-    let formdata = await request.formData()
-    content = await formDataHandler(cms, contentTypeID, formdata)
-    let response = await cms.deleteContent(contentTypeID, content, options)
-    return response
-  }
-  catch(error) {
-    return {
-      status: 500,
-      body: {
-        message: error.message,
-        stack: error.stack.split('\n'),
-        content,
-      }
-    }
-  }
-}
-
 export async function parseFileStoreContentItem(_filepath, content, opts) {
   let ext = extname(_filepath)
   if (ext === 'json') return { ...JSON.parse(content), _filepath }
@@ -158,19 +118,25 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
     const yaml = await import('js-yaml')
     if (ext === 'yml' || ext === 'yaml') return { ...yaml.load(content), _filepath, }
     else if (ext === 'md') {
-      let sections = content.split(/^---$/g)
+      let sections = content.split(/^---\n/gm)
       if (sections.length > 2 && sections.shift() === '') {
         let data
         try {
           data = yaml.load(sections.shift())
         }
         catch (e) {} // The yaml would not load.
-        if (data) return { ...data, _filepath }
+        if (data) return { ...data, [opts.markdownBodyField]: sections[0], _filepath }
         else return { [opts.markdownBodyField]: content, _filepath }
       }
     }
-    throw new Error('Extension for file stores must be md, json, yml or yaml.')
+    else throw new Error('Extension for file stores must be md, json, yml or yaml.')
   }
+}
+
+export function getSlugFromFilepath(filepath:string, contentTypeID:string, opts:staticFilesContentOptions):string {
+  let slug = filepath.replace(/.+\//, '').replace(/\.[^\.]*$/, '')
+  if (opts.prependContentTypeIdAs === 'filename' && slug.indexOf(contentTypeID) === 0) slug = slug.slice(contentTypeID.length)
+  return slug
 }
 
 const plugin:CMSPlugin = {
@@ -178,7 +144,7 @@ const plugin:CMSPlugin = {
     {
       id: 'staticFiles',
       optionFields: { databaseName:databaseNameField, ...staticFilesContentOptionFields },
-      listContent: async (contentType, opts:staticFilesContentOptions & { glob?:string }) => {
+      listContent: async (contentType, opts:staticFilesContentOptions & { full?:boolean, glob?:string }) => {
         const fs = await getFs(opts.databaseName)
         let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
           `${getBasedir()}/${opts.contentDirectory}/` + // base dir
@@ -187,12 +153,18 @@ const plugin:CMSPlugin = {
           `*.${opts.fileExtension}`   // file extensions
         glob = glob.replace(/\/+/g, '/')
         const {default:fg} = await import('fast-glob')
-        const items = await fg(glob, {fs})
-        const files = items.map(async f => {
+        const items = await fg(glob)
+
+        if (!opts.full) return items.map(filepath => {
+          return {
+            _filepath: filepath,
+            _slug: getSlugFromFilepath(filepath, contentType.id, opts)
+          }
+        })
+        let files = await Promise.all(items.map(async f => {
           let item = await fs.readFile(f, { encoding: 'utf8' })
           return parseFileStoreContentItem(f, item, opts)
-        })
-        await Promise.all(files)
+        }))
         return files
       },
 
@@ -208,7 +180,7 @@ const plugin:CMSPlugin = {
           `${slug}.${opts.fileExtension}`   // file extensions
         glob = glob.replace(/\/+/g, '/')
         const {default:fg} = await import('fast-glob')
-        const items = await fg(glob, {fs})
+        const items = await fg(glob)
         const files = items.map(async f => {
           let item = await fs.readFile(f, { encoding: 'utf8' })
           return parseFileStoreContentItem(f, item, opts)

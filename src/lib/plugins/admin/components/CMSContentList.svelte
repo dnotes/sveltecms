@@ -1,15 +1,16 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
-import getLabelFromID from "sveltecms/utils/getLabelFromID";
-import type { AdminPage } from 'sveltecms/plugins/admin'
 
+  export let cms:SvelteCMS
   export let adminPath:string
   export let basePath:string
   export let data = []
 
-  // console.log(data)
+  let contentTypeID = adminPath.replace(/.+\//, '')
 
 </script>
+
+<h2>{cms.getContentType(contentTypeID).label}</h2>
 
 <ul>
   {#each data as item}
