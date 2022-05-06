@@ -70,6 +70,7 @@ import { tick } from 'svelte';
   <table>
     <thead>
       <tr>
+        <th></th>
         <th>ID</th>
         <th>Type</th>
         <th>Default</th>
@@ -79,6 +80,7 @@ import { tick } from 'svelte';
       <tbody>
         {#each items as [id, item], i}
           <tr>
+            <td class="reorder">&updownarrow;</td>
             <td><input type="text" bind:value={id}></td>
             <td>
               {#if typeof item === 'string'}
@@ -109,9 +111,18 @@ import { tick } from 'svelte';
               <button type="button" on:click|preventDefault={()=>{removeItem(id)}}>✖️</button>
             </td>
           </tr>
+          {#if !isDefault[id]}
+            <tr>
+              <td></td>
+              <td colspan="4">
+                detail goes here
+              </td>
+            </tr>
+          {/if}
         {/each}
         <!-- Add item -->
         <tr>
+          <td></td>
           <td><input id="new-item" type="text" bind:value={addID} bind:this={addIDEl}></td>
           <td>
             <select bind:value={addType}>
