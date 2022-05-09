@@ -1,4 +1,5 @@
-import type { CMSPlugin, CMSPluginBuilder, CMSConfigFieldConfigSetting, ConfigSetting } from "sveltecms"
+import type { CMSPlugin, CMSPluginBuilder, ConfigSetting } from "sveltecms"
+import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field'
 
 const defaultOptions = {
   firebaseConfig: {
@@ -40,31 +41,37 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
     appId:"",
   }, options?.firebaseConfig ?? {})
 
-  const optionFields:{[key:string]:CMSConfigFieldConfigSetting} = {
+  const optionFields:{[key:string]:ConfigFieldConfigSetting} = {
     collection: {
       type: "text",
-      default: ''
+      default: '',
+      tooltip: 'The firestore collection into which this content type will be saved.',
     },
     server: {
       type: "text",
       default: '',
+      tooltip: 'An alternate firestore server to use other than the default, https://firestore.googleapis.com.'
     },
     listFields: {
       type: "tags",
       default: [],
+      tooltip: 'The fields to get in cms.listContent queries for this type.'
     },
     listQuery: {
       type: "collection",
       multiple: true,
       default: [],
+      tooltip: 'The field query to use when listing content: see https://firebase.google.com/docs/firestore/query-data/queries.',
       fields: {
         field: {
           type: "text",
+          tooltip: 'The name of the field on which to filter.',
           default: "",
           required: true,
         },
         op: {
           type: "text",
+          tooltip: 'The comparison operator.',
           default: "",
           required: true,
           widget: "select",
@@ -74,20 +81,22 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
         },
         valueType: {
           type: "text",
+          tooltip: 'The firestore data type for the field.',
           default: "stringValue",
           required: true,
           widget: "select",
-          widgetOptions: {
+          widgetOptions: { options: {
             stringValue: "string",
             nullValue: "null",
             booleanValue: "boolean",
             integerValue: "integer",
             doubleValue: "double",
             timestampValue: "timestamp",
-          }
+          }}
         },
         value: {
           type: "text",
+          tooltip: 'The value against which to compare the field content.',
           default: "",
           required: true,
         },
@@ -96,30 +105,40 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
     firebaseConfig: {
       type: "collection",
       default: {},
+      tooltip: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
       fields: {
         apiKey: {
           type: "text",
           default: firebaseConfig?.apiKey ?? "",
+          tooltip: 'The API key for your firebase project. Compared to most API keys, '+
+          'Firebase API keys do not have the same security implications, and do not need to be kept secret. However, '+
+          'in some cases it will be necessary to take other security measures for the integrity of your project.'+
+          'See https://firebase.google.com/docs/projects/api-keys.',
         },
         authDomain: {
           type: "text",
           default: firebaseConfig?.authDomain ?? "",
+          tooltip: 'The authDomain for your Firebase app.',
         },
         projectId: {
           type: "text",
           default: firebaseConfig?.projectId ?? "",
+          tooltip: 'The projectID for your Firebase app.',
         },
         storageBucket: {
           type: "text",
           default: firebaseConfig?.storageBucket ?? "",
+          tooltip: 'The storageBucket for your Firebase app.',
         },
         messagingSenderId: {
           type: "text",
           default: firebaseConfig?.messagingSenderId ?? "",
+          tooltip: 'The messagingSenderID for your Firebase app.',
         },
         appId: {
           type: "text",
           default: firebaseConfig?.appId ?? "",
+          tooltip: 'The appId for your Firebase app.',
         },
       }
     }

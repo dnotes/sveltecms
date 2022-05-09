@@ -13,7 +13,7 @@ import getLabelFromID from "./utils/getLabelFromID";
 
   $: basePath = $page.url.pathname.replace('/' + adminPath, '')
   $: adminPage = cms.getAdminPage(adminPath)
-  $: title = adminPage ? adminPage.title ?? getLabelFromID(adminPath.replace(/\/.+/, '')) : 'Site Admin'
+
   $: crumbs = adminPath.split('/').reduce((agg,val,i,arr) => {
     if (i<arr.length-1) {
       let base = agg.length ? agg[agg.length-1][1] : ''
@@ -25,12 +25,12 @@ import getLabelFromID from "./utils/getLabelFromID";
 </script>
 
 <svelte:head>
-  <title>{title}</title>
+  <title>{adminPage?.label ?? 'Site Admin'}</title>
 </svelte:head>
 
 <nav>
   {#each sections as section}
-    <a href="{basePath}/{section.id}">{section.title || getLabelFromID(section.id)}</a>
+    <a href="{basePath}/{section.id}">{section.label || getLabelFromID(section.id)}</a>
   {/each}
 </nav>
 <div class="breadcrumbs">
@@ -41,18 +41,18 @@ import getLabelFromID from "./utils/getLabelFromID";
 </div>
 
 
-<h1>{title}</h1>
+<h1>{adminPage?.label ?? 'Site Admin'}</h1>
 
 {#if adminPage}
-  <svelte:component this={adminPage.component} {cms} {adminPath} {adminPage} {basePath} {data} />
+  <svelte:component this={adminPage.component.component} {cms} {adminPath} {adminPage} {basePath} {data} />
 {:else}
   <ul>
     {#each sections as section}
       <li>
-        <a href="{basePath}/{section.id}">{section.title || getLabelFromID(section.id)}</a>
+        <a href="{basePath}/{section.id}">{section.label || getLabelFromID(section.id)}</a>
       </li>
     {:else}
-      Can't find any admin sections! Did you remember to <code>cms.use(adminPlugin)</code>?
+      Can't find any admin sections! If you are not using the default administrative interface ('sveltecms/CMSAdmin.svelte'), did you remember to <code>cms.use(adminPlugin)</code>?
     {/each}
   </ul>
 {/if}

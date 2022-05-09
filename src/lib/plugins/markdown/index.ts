@@ -32,9 +32,9 @@ const pluginBuilder:CMSPluginBuilder = (config:{
     fieldTypes: [
       {
         id: 'markdown',
-        defaultValue: '',
-        defaultWidget: 'textarea',
-        defaultPreMount: ['markdown']
+        default: '',
+        widget: 'textarea',
+        preMount: ['markdown']
       },
     ],
   }

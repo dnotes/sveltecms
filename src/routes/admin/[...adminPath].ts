@@ -3,8 +3,6 @@ import cms from '$lib/cms'
 import admin from 'sveltecms/plugins/admin'
 cms.use(admin)
 
-import { cmsConfigurables } from "sveltecms";
-
 export async function get(event) {
 
   const { params } = event
@@ -26,7 +24,7 @@ export async function post(event:RequestEvent) {
   const { params } = event
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)
-  if (cmsConfigurables.includes(adminPage.configPath)) throw new Error('Saving configuration requires Javascript.') // TODO: fix this.
+  if (adminPage?.component?.['type'] === 'CMSConfigList') throw new Error('Saving configuration requires Javascript.') // TODO: fix this.
   if (!adminPage || !adminPage.post) return { status:405 }
 
   return adminPage.post({cms, args, event})

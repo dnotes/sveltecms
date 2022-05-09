@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { AdminPage } from 'sveltecms/plugins/admin';
+import type { AdminPage } from 'sveltecms/core/AdminPage';
 import type SvelteCMS from 'sveltecms';
 import CmsFieldCollection from 'sveltecms/CMSFieldCollection.svelte';
 import CmsField from 'sveltecms/CMSField.svelte';
@@ -12,8 +12,10 @@ import { tick } from 'svelte';
   let addID, addType, addIDEl
   let focuses = {}
 
-  let items = Object.entries(get(cms.conf, adminPage.configPath, {}))
-  $: oldConf = get(cms.conf, adminPage.configPath, {})
+  let { configPath:string, allowString:boolean } = adminPage.component.options
+
+  let items = Object.entries(get(cms.conf, configPath, {}))
+  $: oldConf = get(cms.conf, configPath, {})
   $: newConf = Object.fromEntries(items)
 
   // @ts-ignore

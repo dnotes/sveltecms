@@ -1,4 +1,6 @@
-import type { default as SvelteCMS, CMSPlugin, ConfigSetting, CMSConfigFieldConfigSetting, CMSContentField, CMSContentType, CMSPluginBuilder } from '../..';
+import type { default as SvelteCMS, CMSPlugin, CMSPluginBuilder } from 'sveltecms';
+import type { ConfigFieldConfigSetting, Field } from 'sveltecms/core/Field';
+import type { ContentType } from 'sveltecms/core/ContentType'
 import type { PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import formDataHandler from 'sveltecms/utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
@@ -23,7 +25,7 @@ export async function getFs(databaseName):Promise<PromisifiedFS> {
   return promises
 }
 
-export const databaseNameField:CMSConfigFieldConfigSetting = {
+export const databaseNameField:ConfigFieldConfigSetting = {
   type: 'text',
   default: '',
   tooltip: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
@@ -39,7 +41,7 @@ export type staticFilesContentOptions = {
   markdownBodyField: string,
 }
 
-export const staticFilesContentOptionFields:{[key:string]:CMSConfigFieldConfigSetting} = {
+export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetting} = {
   contentDirectory: {
     type: 'text',
     default: 'content',
@@ -88,7 +90,7 @@ export type staticFilesMediaOptions = {
   maxUploadSize:string,
 }
 
-export const staticFilesMediaOptionFields:{[key:string]:CMSConfigFieldConfigSetting} = {
+export const staticFilesMediaOptionFields:{[key:string]:ConfigFieldConfigSetting} = {
   staticDirectory: {
     type: 'text',
     default: 'static',

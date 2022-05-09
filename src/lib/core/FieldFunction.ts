@@ -1,5 +1,8 @@
-import { get, has, isEqual, set } from 'lodash-es'
-import type { CMSFieldFunctionType,CMSFieldFunctionConfigSetting } from "."
+import type { ConfigurableEntity, ConfigurableEntityType } from "sveltecms"
+import type SvelteCMS from 'sveltecms'
+import type Field from './Field'
+
+import { get, has, isEqual, set, cloneDeep } from 'lodash-es'
 
 function getFullPath(path, id) {
   if (!path) return id
@@ -7,7 +10,108 @@ function getFullPath(path, id) {
   return `${path}.${id}`
 }
 
-export const functions:{[id:string]:CMSFieldFunctionType} = {
+export class FieldFunction implements ConfigurableEntity {
+  id: string
+  fn: (vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
+  vars: { cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string}
+  options: {[key:string]:string|number|boolean|null|undefined|Transformer & {options?:any}|(string|number|boolean|null|undefined)[]}
+  constructor(conf:string|FieldFunctionConfig, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
+    if (typeof conf === 'string') conf = parseFieldFunctionScript(conf) // this should be rare, but just in case...
+    let func:FieldFunctionType = cms.fieldFunctions[conf.function]
+    if (!func) throw `field function not found for ${conf}` // this will also happen if the config is bad
+    this.id = func.id
+    this.vars = {...vars, cms}
+    this.fn = func.fn
+    // @ts-ignore
+    this.options = cms.getConfigOptionsFromFields(func?.optionFields || {})
+    if (Array.isArray(conf.params)) {
+      let params = cloneDeep(conf.params)
+      let lastKey
+      Object.keys(func?.optionFields || {}).forEach((k,i) => {
+        // @ts-ignore
+        if (params.length) this.options[k] = params.shift()
+        lastKey = k
+      })
+      // for functions where the last param is an array
+      if (func?.optionFields?.[lastKey]?.multiple) {
+        // @ts-ignore
+        if (!Array.isArray(this.options[lastKey])) this.options[lastKey] = [this.options[lastKey]]
+        while (params.length) {
+          // @ts-ignore
+          this.options[lastKey].push(params.shift())
+        }
+      }
+    }
+    // }
+    cms.initializeConfigOptions(this.options, vars)
+    // for transformers
+    if (this.id === 'transform') {
+      this.options.transformer = cms.transformers[this.options?.transformer?.toString()]
+      if (this.options.transformer) this.options.transformer.options = cms.getInstanceOptions(this.options.transformer)
+    }
+  }
+  run() {
+    this.fn(this.vars, this.options)
+  }
+}
+
+export type FieldFunctionType = ConfigurableEntityType & {
+  fn:(vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
+}
+
+export type FieldFunctionConfigSetting = string | {
+  function?: string
+  fn?: string
+  params: (string|number|boolean|null|FieldFunctionConfigSetting)[]
+}
+
+
+export class FieldFunctionConfig {
+  function:string = ''
+  params:(string|number|boolean|null|FieldFunctionConfig)[] = []
+  constructor(conf?:FieldFunctionConfig) {
+    this.setFunction(conf?.function || '')
+    this.params = conf?.params || []
+  }
+  get alias() {
+    let aliases = {
+      'getValue': '$values',
+      'isError': '$errors',
+      'isTouched': '$touched',
+      'getFieldProperty': '$field',
+    }
+    let alias = aliases[this.function]
+    if (alias) {
+      if (!this.params[0] || this.params[0] === '$id') alias = alias.replace(/s$/,'');
+      return alias
+    }
+    return this.function
+  }
+  setFunction(name:string) {
+    if (name.match(/^values?$/)) this.function = 'getValue'
+    else if (name.match(/^field$/)) this.function = 'getFieldProperty'
+    else if (name.match(/^errors?$/)) this.function = 'isError'
+    else if (name.match(/^touched$/)) this.function = 'isTouched'
+    else this.function = name
+  }
+  push(param:string|number|boolean|null|FieldFunctionConfig) {
+    this.params.push(param)
+  }
+  toString() {
+    let string = ""
+    if (['getValue', 'isError', 'isTouched', 'getFieldProperty'].includes(this.function)) {
+      if (!this.params[0] || this.params[0] === '$id') return this.alias
+      else if (typeof this.params[0] === 'string') return `${this.alias}.${this.params[0]}`
+    }
+    else return `$${this.function}(${this.params.map(p => {
+      if (p === null) return 'null'
+      if (typeof p === 'string' && p.match(/[,"\(\)]/)) return `"${p.replace(/"/g, '""')}"`
+      return p
+    }).join(',')})`
+  }
+}
+
+export const fieldFunctions:{[id:string]:FieldFunctionType} = {
   now: {
     id: 'now',
     fn: () => {
@@ -23,10 +127,12 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
       textOrArray: {
         type: 'text',
         default: '',
+        tooltip: 'A string or array which may or may not contain the value.'
       },
       searchFor: {
         type: 'text',
         default: '',
+        tooltip: 'The value for which to test.'
       },
     }
   },
@@ -39,6 +145,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
       function: {
         type: 'text', // TODO: determine field type for field functions
         default: null,
+        tooltip: 'A function to run once.'
       }
     }
   },
@@ -50,13 +157,15 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       transformer: {
         type: 'text', // TODO: determine field type for transformers
-        default: null
+        default: null,
+        tooltip: 'The ID of the transformer to run.'
       },
       value: {
         type: 'text', // TODO: determine field type for field functions
         default: {
           function: 'getValue'
-        }
+        },
+        tooltip: 'The value to be transformed.',
       }
     }
   },
@@ -69,6 +178,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
       property: {
         type: 'text',
         default: '',
+        tooltip: 'The name of the property to get.'
       }
     }
   },
@@ -95,10 +205,12 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
       property: {
         type: 'text',
         default: '',
+        tooltip: 'The name of the field property to set.',
       },
       value: {
         type: 'text',
         default: '',
+        tooltip: 'The value to set.'
       },
     }
   },
@@ -118,9 +230,10 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
+        tooltip: 'The name of the item field to get.',
         default: {
           function: 'id',
-        }
+        },
       }
     }
   },
@@ -134,12 +247,14 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
+        tooltip: 'The name of the item field which should be set to a value.',
         default: {
           function: 'id',
         }
       },
       value: {
         type: 'text',
+        tooltip: 'The value to set.',
         default: '',
       }
     }
@@ -154,6 +269,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
+        tooltip: 'The name of the item field to check for errors.',
         default: {
           function: 'id'
         },
@@ -170,6 +286,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
+        tooltip: 'The name of the item field to check if it was touched.',
         default: {
           function: 'id'
         },
@@ -184,6 +301,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
+        tooltip: 'The value to be tested for "truthiness"--returns true for: false, 0, null, undefined, and empty strings.',
         default: {
           function: 'getValue'
         },
@@ -198,14 +316,17 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       condition: {
         type: 'text',
-        default: '',
+        tooltip: '',
+        default: 'The condition to be tested.',
       },
       ifTrue: {
         type: 'text',
+        tooltip: 'The function to run or value to return if true.',
         default: true,
       },
       ifFalse: {
         type: 'text',
+        tooltip: 'The function to run or value to return if false.',
         default: false,
       }
     }
@@ -219,6 +340,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       conditions: {
         type: 'text',
+        tooltip: 'The conditions or values to be tested for truthiness.',
         multiple: true,
         default: [],
       }
@@ -233,6 +355,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       conditions: {
         type: 'text',
+        tooltip: 'The conditions or values to be tested for truthiness.',
         multiple: true,
         default: [],
       }
@@ -250,6 +373,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       values: {
         type: 'text',
+        tooltip: 'The values to be tested for equality, using isEqual from lodash.',
         multiple: true,
         default: [],
       }
@@ -263,14 +387,17 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
+        tooltip: 'The base value.',
         default: '',
       },
       isLessThan: {
         type: 'text',
+        tooltip: 'The test value. Returns true if test value is less than the base value.',
         default: '',
       },
       orEqual: {
         type: 'boolean',
+        tooltip: 'If true, returns true if the test value is equal to the base value.',
         default: false,
       }
     }
@@ -283,14 +410,17 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
+        tooltip: 'The base value.',
         default: '',
       },
       isGreaterThan: {
         type: 'text',
+        tooltip: 'The test value. Returns true if test value is greater than the base value.',
         default: '',
       },
       orEqual: {
         type: 'boolean',
+        tooltip: 'If true, returns true if the test value is equal to the base value.',
         default: false,
       }
     }
@@ -303,6 +433,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
+        tooltip: 'The test value. Returns true if test value is null or undefined.',
         default: {
           function: 'getValue'
         },
@@ -338,6 +469,7 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
       fieldType: {
         type: 'text',
         default: '',
+        tooltip: 'the name of the field type for which to return widgets',
         widget: {
           type: 'select',
           options: {
@@ -351,57 +483,13 @@ export const functions:{[id:string]:CMSFieldFunctionType} = {
   },
 }
 
-export class CMSFieldFunctionConfig {
-  function:string = ''
-  params:(string|number|boolean|null|CMSFieldFunctionConfig)[] = []
-  constructor(conf?:CMSFieldFunctionConfig) {
-    this.setFunction(conf?.function || '')
-    this.params = conf?.params || []
-  }
-  get alias() {
-    let aliases = {
-      'getValue': '$values',
-      'isError': '$errors',
-      'isTouched': '$touched',
-      'getFieldProperty': '$field',
-    }
-    let alias = aliases[this.function]
-    if (alias) {
-      if (!this.params[0] || this.params[0] === '$id') alias = alias.replace(/s$/,'');
-      return alias
-    }
-    return this.function
-  }
-  setFunction(name:string) {
-    if (name.match(/^values?$/)) this.function = 'getValue'
-    else if (name.match(/^field$/)) this.function = 'getFieldProperty'
-    else if (name.match(/^errors?$/)) this.function = 'isError'
-    else if (name.match(/^touched$/)) this.function = 'isTouched'
-    else this.function = name
-  }
-  push(param:string|number|boolean|null|CMSFieldFunctionConfig) {
-    this.params.push(param)
-  }
-  toString() {
-    let string = ""
-    if (['getValue', 'isError', 'isTouched', 'getFieldProperty'].includes(this.function)) {
-      if (!this.params[0] || this.params[0] === '$id') return this.alias
-      else if (typeof this.params[0] === 'string') return `${this.alias}.${this.params[0]}`
-    }
-    else return `$${this.function}(${this.params.map(p => {
-      if (p === null) return 'null'
-      if (typeof p === 'string' && p.match(/[,"\(\)]/)) return `"${p.replace(/"/g, '""')}"`
-      return p
-    }).join(',')})`
-  }
-}
 
 // Some changeless regexes
 const valueRegex = /^\$(field|values?|errors?|touched)\b/
 const propRegex = /^\.([a-zA-Z0-9\.\[\]]+)/ // TODO: evaluate allowed characters restrictions - could we just use [^\n\s\),]?
 const endScriptRegex = /^[\n\s]*$/
 
-export function parseFieldFunctionScript(config:any, functionNames:string[] = Object.keys(functions)):CMSFieldFunctionConfig|undefined {
+export function parseFieldFunctionScript(config:any, functionNames:string[] = Object.keys(fieldFunctions)):FieldFunctionConfig|undefined {
 
   // PRE-FLIGHT
   if (!config) return
@@ -409,7 +497,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
   // (note: no errors yet, as this function will be used to test if a string will parse as a script)
   // In case we are passed a valid config setting
   if (functionNames.includes(config?.['function']) && (!config?.['params'] || Array.isArray(config?.['params']))) {
-    return new CMSFieldFunctionConfig(config)
+    return new FieldFunctionConfig(config)
   }
 
   // If it is not a string, exit
@@ -433,7 +521,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
   // initialize variables
   let tail:string,
       i:number = 0,
-      stack:CMSFieldFunctionConfig[] = [],
+      stack:FieldFunctionConfig[] = [],
       match,
       textParam = '',
       parsing:string = 'base' // 'base'|'params'|'command'|'function'|'value'|'text'|'vars'|'endValue'|'endParams'
@@ -500,7 +588,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
         if (tail[0] === '$') {
           // Initialize new CMSFieldFunctionConfig
           // deepcode ignore MissingArgument: <this works, and I don't understand what's missing>
-          stack.push(new CMSFieldFunctionConfig)
+          stack.push(new FieldFunctionConfig)
           // Set parsing (but don't advance, as the $ is part of the command syntax)
           parsing = 'command'
         }
@@ -688,4 +776,4 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
 
 }
 
-export default functions
+export default FieldFunction

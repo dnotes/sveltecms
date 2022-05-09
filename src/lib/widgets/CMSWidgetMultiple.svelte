@@ -1,14 +1,13 @@
 <script lang="ts">
 import { tick } from "svelte";
 import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
-import type { CMSContentType, CMSWidgetField } from "..";
+import type { WidgetField } from "..";
 import type SvelteCMS from "..";
 
-  export let field:CMSWidgetField
+  export let field:WidgetField
   export let id:string
 
   export let cms:SvelteCMS
-  export let contentType:string|CMSContentType
 
   // For multiple collections, it is necessary to set the value to {}, otherwise SSR causes infinite loop
   export let value = [field.fields ? {} : field.default]
@@ -34,7 +33,6 @@ import type SvelteCMS from "..";
           id={`${id}[${i}]`}
           bind:value={v}
           {cms}
-          {contentType}
         />
       {:else}
         <svelte:component

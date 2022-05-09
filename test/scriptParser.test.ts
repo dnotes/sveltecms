@@ -1,4 +1,4 @@
-import { parseFieldFunctionScript } from '../src/lib/fieldFunctions'
+import { parseFieldFunctionScript } from '../src/lib/core/FieldFunctions'
 
 
 function testScript({script,expectedScript,expectedConf}) {

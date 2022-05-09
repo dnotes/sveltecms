@@ -1,19 +1,20 @@
 <script lang="ts">
 import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
-import type { CMSContentType, CMSWidgetField } from "..";
-import type SvelteCMS from '..';
+import type { WidgetField } from "sveltecms";
+import type SvelteCMS from 'sveltecms';
 
-  let parentField:CMSWidgetField
+  let parentField:WidgetField
   let parentID = ''
   export { parentField as field, parentID as id }
 
   export let cms:SvelteCMS
-  export let contentType:string|CMSContentType
 
   let opts:{oneline?:boolean} = parentField.widget.options
 
-  let collection = cms.getWidgetFields(cms.getCollection(contentType, parentID), {
+  // testing change: cms.getCollection(contentType, parentID) -> parentField
+  // if this works we may not need to pass contentType to fields at all
+  let collection = cms.getWidgetFields(parentField, {
     values: parentField.values,
     errors: parentField.errors,
     touched: parentField.touched,
@@ -39,7 +40,6 @@ import type SvelteCMS from '..';
           id={`${parentID}.${id}`}
           bind:value={value[id]}
           {cms}
-          {contentType}
         />
       {:else if field.widget.type === 'collection'}
         <svelte:self
@@ -47,7 +47,6 @@ import type SvelteCMS from '..';
           id={`${parentID}.${id}`}
           bind:value={value[id]}
           {cms}
-          {contentType}
         />
       {:else}
         <svelte:component

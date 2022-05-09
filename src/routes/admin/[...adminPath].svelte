@@ -12,7 +12,7 @@
   import { page } from '$app/stores'
   import CMSAdmin from 'sveltecms/CMSAdmin.svelte'
 
-  export let data
+  export let data = undefined
 
   let adminPath = $page.params.adminPath
   let adminPage = cms.getAdminPage($page.params.adminPath)
