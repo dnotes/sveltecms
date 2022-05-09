@@ -1,6 +1,5 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
-import type { AdminPage } from "sveltecms/plugins/admin";
 import yaml from 'js-yaml'
 import { onMount } from "svelte";
 
