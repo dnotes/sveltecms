@@ -13,7 +13,6 @@ import getLabelFromID from "./utils/getLabelFromID";
 
   $: basePath = $page.url.pathname.replace('/' + adminPath, '')
   $: adminPage = cms.getAdminPage(adminPath)
-
   $: crumbs = adminPath.split('/').reduce((agg,val,i,arr) => {
     if (i<arr.length-1) {
       let base = agg.length ? agg[agg.length-1][1] : ''
@@ -44,7 +43,7 @@ import getLabelFromID from "./utils/getLabelFromID";
 <h1>{adminPage?.label ?? 'Site Admin'}</h1>
 
 {#if adminPage}
-  <svelte:component this={adminPage.component.component} {cms} {adminPath} {adminPage} {basePath} {data} />
+  <svelte:component this={adminPage.component.component} {cms} {adminPath} {adminPage} {basePath} {data} options={adminPage?.component?.options || {}} />
 {:else}
   <ul>
     {#each sections as section}

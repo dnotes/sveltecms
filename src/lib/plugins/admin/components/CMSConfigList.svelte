@@ -8,20 +8,20 @@ import { tick } from 'svelte';
 
   export let cms:SvelteCMS
   export let adminPage:AdminPage
+  export let options:{
+    configPath:string,
+    allowString:boolean,
+  }
 
   let addID, addType, addIDEl
   let focuses = {}
 
-  let { configPath:string, allowString:boolean } = adminPage.component.options
-
-  let items = Object.entries(get(cms.conf, configPath, {}))
-  $: oldConf = get(cms.conf, configPath, {})
+  let items = Object.entries(get(cms.conf, options.configPath, {}))
+  $: oldConf = get(cms.conf, options.configPath, {})
   $: newConf = Object.fromEntries(items)
 
   // @ts-ignore
   let opts:{ collection:string, allowString:boolean, stringField:string } = adminPage.options
-
-  $: collection = cms.adminCollections[opts.collection]
 
   $: unsaved = !isEqual(oldConf, newConf) || !isEqual(Object.keys(oldConf), Object.keys(newConf))
 
@@ -38,7 +38,7 @@ import { tick } from 'svelte';
 
   async function addItem() {
     if (addID && addType) {
-      items.push([addID, (opts.allowString ? addType : { type:addType })])
+      items.push([addID, (options.allowString ? addType : { type:addType })])
       items = items
       await tick()
       focuses[addID]?.focus()
@@ -55,7 +55,7 @@ import { tick } from 'svelte';
   }
 
   export let saveConfig = async () => {
-    set(cms.conf, adminPage.configPath, Object.fromEntries(items))
+    set(cms.conf, options.configPath, Object.fromEntries(items))
     let res = await fetch('/admin/config', {
       method: 'POST',
       headers: {
@@ -87,20 +87,20 @@ import { tick } from 'svelte';
             <td>
               {#if typeof item === 'string'}
                 <select bind:value={item}>
-                  {#each cms.getConfigTypes(adminPage.configPath) as type}
+                  {#each cms.getConfigTypes(options.configPath) as type}
                      <option value={type}>{type}</option>
                   {/each}
                 </select>
               {:else}
                 <select bind:value={item['type']}>
-                  {#each cms.getConfigTypes(adminPage.configPath) as type}
+                  {#each cms.getConfigTypes(options.configPath) as type}
                       <option value={type}>{type}</option>
                   {/each}
                 </select>
               {/if}
             </td>
             <td>
-              {#if opts.allowString}
+              {#if options.allowString}
                 <input type="checkbox"
                   bind:checked={isDefault[id]}
                   bind:this={focuses[id]}
@@ -128,13 +128,13 @@ import { tick } from 'svelte';
           <td><input id="new-item" type="text" bind:value={addID} bind:this={addIDEl}></td>
           <td>
             <select bind:value={addType}>
-              {#each cms.getConfigTypes(adminPage.configPath) as type}
+              {#each cms.getConfigTypes(options.configPath) as type}
                 <option value={type}>{type}</option>
               {/each}
             </select>
           </td>
           <td>
-            <input type="checkbox" checked={opts.allowString} disabled={!opts.allowString} on:focus={addItem}>
+            <input type="checkbox" checked={options.allowString} disabled={!options.allowString} on:focus={addItem}>
           </td>
           <td>
             <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>
