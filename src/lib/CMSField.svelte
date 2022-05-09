@@ -3,13 +3,12 @@ import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
 import CmsWidgetCollection from './widgets/CMSWidgetCollection.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
 import type SvelteCMS from 'sveltecms';
-import type { CMSContentType, CMSWidgetField } from 'sveltecms';
+import type { WidgetField } from 'sveltecms';
 
 export let cms:SvelteCMS
 export let id:string
-export let field:CMSWidgetField
+export let field:WidgetField
 export let value
-export let contentType:string|CMSContentType
 
 </script>
 
@@ -23,7 +22,6 @@ export let contentType:string|CMSContentType
         {id}
         bind:value
         {cms}
-        {contentType}
       />
     {:else if field.widget.type === 'collection'}
       <CmsWidgetCollection
@@ -31,7 +29,6 @@ export let contentType:string|CMSContentType
         {id}
         bind:value
         {cms}
-        {contentType}
       />
     {:else}
       <svelte:component
