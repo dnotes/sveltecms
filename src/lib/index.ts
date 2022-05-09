@@ -4,7 +4,7 @@ import { widgetTypes, type WidgetType, type WidgetConfigSetting } from './core/W
 import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType"
 import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
 import type { ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
-import { Collection, type CollectionConfigSetting, type AdminCollection } from './core/Collection'
+import type { CollectionConfigSetting, AdminCollectionConfigSetting } from './core/Collection'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { FieldFunction, fieldFunctions, type FieldFunctionType, type FieldFunctionConfigSetting } from './core/FieldFunction'
 import type { ComponentType, ComponentConfigSetting } from './core/Component'
@@ -92,9 +92,9 @@ export default class SvelteCMS {
   conf:CMSConfigSetting = {}
   admin: ContentType
   adminPages?: {[key:string]:AdminPageConfig} = {}
-  adminCollections?: {[key:string]:AdminCollection} = {}
+  adminCollections?: {[key:string]:AdminCollectionConfigSetting} = {}
   fields:{[key:string]:FieldConfigSetting} = {}
-  collections: {[key:string]:Collection} = {}
+  collections: {[key:string]:CollectionConfigSetting} = {}
   components: {[key:string]:ComponentType} = {}
   widgets:{[key:string]:WidgetConfigSetting} = {}
   fieldFunctions:{[key:string]:FieldFunctionType} = fieldFunctions
@@ -150,10 +150,9 @@ export default class SvelteCMS {
 
     if (conf.collections) {
       Object.entries(conf.collections).forEach(([id,conf]) => {
-        let collection = new Collection(conf, this)
         // @ts-ignore - this is a type check
-        if (collection.admin) this.adminCollections[collection.id] = collection
-        else this.collections[collection.id] = collection
+        if (conf.admin) this.adminCollections[conf.id] = conf
+        else this.collections[conf.id] = conf
       })
     }
 
@@ -207,10 +206,9 @@ export default class SvelteCMS {
     });
 
     plugin?.collections?.forEach((conf:CollectionConfigSetting) => {
-      let collection = new Collection(conf, this)
       // @ts-ignore - this is a type check
-      if (collection.admin) this.adminCollections[collection.id] = collection
-      else this.collections[collection.id] = collection
+      if (conf.admin) this.adminCollections[conf.id] = conf
+      else this.collections[conf.id] = conf
     })
 
   }
@@ -453,7 +451,7 @@ export default class SvelteCMS {
   }
 
   getWidgetFields(
-    collection:ContentType|Field,
+    collection:FieldableEntity,
     vars:{ values:any, errors:any, touched:any, id?:string },
   ):WidgetFieldCollection {
     let c = cloneDeep(collection)
