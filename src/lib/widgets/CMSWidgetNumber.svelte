@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { CMSWidgetField } from "..";
+import type { WidgetField } from "..";
 
-  export let field:CMSWidgetField
+  export let field:WidgetField
   export let id:string
 
   export let value = field.default
