@@ -205,6 +205,10 @@ export default class SvelteCMS {
       })
     });
 
+    Object.entries(plugin?.fieldWidgets || {}).forEach(([fieldTypeID, widgetTypeIDs]) => {
+      widgetTypeIDs.forEach(id => this.widgetTypes[id].fieldTypes.push(fieldTypeID))
+    })
+
     plugin?.collections?.forEach((conf:CollectionConfigSetting) => {
       // @ts-ignore - this is a type check
       if (conf.admin) this.adminCollections[conf.id] = conf
@@ -306,6 +310,15 @@ export default class SvelteCMS {
           'widgets',
         ]
     }
+  }
+
+  getEntityType(type:string, id:string) {
+    if (!type || !id) return
+    if (type === 'fields') return this.fieldTypes[id] || this.getEntityType('fields', this.fields?.[id]?.['type'])
+    if (type === 'widgets') return this.widgetTypes[id] || this.getEntityType('widgets', this.widgets?.[id]?.['type'])
+    let entityType = this?.[type]?.[id]
+    if (!entityType?.type || entityType?.type === entityType?.id) return entityType
+    return this.getEntityType(type, entityType?.type)
   }
 
   getFieldTypes() {
@@ -618,6 +631,7 @@ export type CMSPlugin = {
   components?: Array<ComponentType|ComponentConfigSetting>
   lists?: CMSListConfig
   optionFields?:{[key:string]:ConfigFieldConfigSetting}
+  fieldWidgets?:{[key:string]:string[]}
 }
 
 export type CMSPluginBuilder = (config:any) => CMSPlugin

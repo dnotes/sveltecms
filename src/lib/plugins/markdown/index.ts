@@ -34,9 +34,12 @@ const pluginBuilder:CMSPluginBuilder = (config:{
         id: 'markdown',
         default: '',
         widget: 'textarea',
-        preMount: ['markdown']
+        preMount: ['markdown'],
       },
     ],
+    fieldWidgets: {
+      markdown: ['textarea']
+    },
   }
   return plugin
 }
