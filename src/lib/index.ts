@@ -277,8 +277,8 @@ export default class SvelteCMS {
     }
   }
 
-  getConfigTypes(path:string, arg?:string):string[] {
-    switch (path) {
+  listEntities(type:string, includeAdmin?:boolean, arg?:string):string[] {
+    switch (type) {
       case 'fields':
         return this.getFieldTypes()
       case 'widgets':
@@ -289,9 +289,22 @@ export default class SvelteCMS {
       case 'mediaStores':
       case 'collections':
       case 'transformers':
-        return Object.keys(this[path])
+      case 'components':
+        return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']))
       default:
-        return []
+        return [
+          'adminPages',
+          'collections',
+          'adminCollections',
+          'components',
+          'contentStores',
+          'fields',
+          'fieldFunctions',
+          'mediaStores',
+          'transformers',
+          'types',
+          'widgets',
+        ]
     }
   }
 

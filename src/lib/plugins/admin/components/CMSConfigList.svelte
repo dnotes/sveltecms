@@ -1,35 +1,34 @@
 <script lang="ts">
 import type { AdminPage } from 'sveltecms/core/AdminPage';
 import type SvelteCMS from 'sveltecms';
-import CmsFieldCollection from 'sveltecms/CMSFieldCollection.svelte';
-import CmsField from 'sveltecms/CMSField.svelte';
-import { get, set, isEqual } from 'lodash-es'
+import CmsConfigurableEntity from './CMSConfigurableEntity.svelte';
+import { get, set, isEqual, values } from 'lodash-es'
 import { tick } from 'svelte';
 
   export let cms:SvelteCMS
-  export let adminPage:AdminPage
   export let options:{
     configPath:string,
     allowString:boolean,
+    collection:string,
   }
 
   let addID, addType, addIDEl
   let focuses = {}
 
   let items = Object.entries(get(cms.conf, options.configPath, {}))
+  $: defaultItems = Object.keys(cms[options.configPath]).filter(id => !items.find(item => item[0] === id))
+
   $: oldConf = get(cms.conf, options.configPath, {})
   $: newConf = Object.fromEntries(items)
 
-  // @ts-ignore
-  let opts:{ collection:string, allowString:boolean, stringField:string } = adminPage.options
-
   $: unsaved = !isEqual(oldConf, newConf) || !isEqual(Object.keys(oldConf), Object.keys(newConf))
+
+  let entities = cms.listEntities(options.configPath)
 
   $: isDefault = Object.fromEntries(items.map(([id,item]) => {
     return [id, typeof item === 'string']
   }));
-
-  $: console.log()
+  let isCollapsed = {}
 
   async function toggleCustom(id) {
     let i = items.findIndex(entry => entry[0] === id)
@@ -80,47 +79,62 @@ import { tick } from 'svelte';
       </tr>
     </thead>
       <tbody>
-        {#each items as [id, item], i}
+        {#each defaultItems as id}
+          <tr>
+            <td></td>
+            <td>{id}</td>
+            <td></td>
+            <td>
+              <input type="checkbox" checked on:change={()=>{
+                items = [[id,{ type:id }], ...items]
+              }}>
+            </td>
+            <td></td>
+          </tr>
+        {/each}
+        {#each items as [id, item]}
           <tr>
             <td class="reorder">&updownarrow;</td>
-            <td><input type="text" bind:value={id}></td>
+            <td><input type="text" bind:value={id} disabled={!item['type'] || item['type'] === item['id']}></td>
             <td>
               {#if typeof item === 'string'}
                 <select bind:value={item}>
-                  {#each cms.getConfigTypes(options.configPath) as type}
+                  {#each entities as type}
                      <option value={type}>{type}</option>
                   {/each}
                 </select>
+              {:else if id === item['type']}
+                &nbsp;
               {:else}
                 <select bind:value={item['type']}>
-                  {#each cms.getConfigTypes(options.configPath) as type}
-                      <option value={type}>{type}</option>
+                  {#each entities as type}
+                    <option value={type}>{type}</option>
                   {/each}
                 </select>
               {/if}
             </td>
             <td>
-              {#if options.allowString}
-                <input type="checkbox"
-                  bind:checked={isDefault[id]}
-                  bind:this={focuses[id]}
-                  on:click={()=>{toggleCustom(id)}}>
-              {:else}
-                <input type="checkbox" disabled />
+              <input type="checkbox"
+                bind:checked={isDefault[id]}
+                bind:this={focuses[id]}
+                on:change={()=>{toggleCustom(id)}}
+              >
+              {#if !isDefault[id]}
+                <button type="button" on:click|preventDefault={()=>{isCollapsed[id] = !isCollapsed?.[id]}}>
+                  {#if isCollapsed[id]}&dtri{:else}&utri;{/if}
+                </button>
               {/if}
             </td>
             <td>
               <button type="button" on:click|preventDefault={()=>{removeItem(id)}}>✖️</button>
             </td>
           </tr>
-          {#if !isDefault[id]}
-            <tr>
-              <td></td>
-              <td colspan="4">
-                detail goes here
-              </td>
-            </tr>
-          {/if}
+          <tr style:display={(isDefault[id] || isCollapsed[id]) ? 'none' : 'table-row'}>
+            <td><span style:display="none"></span></td>
+            <td colspan="4">
+              <CmsConfigurableEntity {cms} bind:data={item} options={{type:options.configPath, id}} />
+            </td>
+          </tr>
         {/each}
         <!-- Add item -->
         <tr>
@@ -128,13 +142,13 @@ import { tick } from 'svelte';
           <td><input id="new-item" type="text" bind:value={addID} bind:this={addIDEl}></td>
           <td>
             <select bind:value={addType}>
-              {#each cms.getConfigTypes(options.configPath) as type}
+              {#each cms.listEntities(options.configPath) as type}
                 <option value={type}>{type}</option>
               {/each}
             </select>
           </td>
           <td>
-            <input type="checkbox" checked={options.allowString} disabled={!options.allowString} on:focus={addItem}>
+            <input type="checkbox" checked={options.allowString} on:focus={addItem}>
           </td>
           <td>
             <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>

@@ -1,7 +1,7 @@
 import type SvelteCMS from "sveltecms";
-import type { ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntityConfigSetting, ConfigurableEntity, ConfigSetting, TypedEntity } from "sveltecms";
+import type { ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntityConfigSetting, ConfigurableEntity, ConfigSetting, TypedEntity, EntityType } from "sveltecms";
 
-export type ComponentType = ConfigurableEntityType & {
+export type ComponentType = EntityType & ConfigurableEntityType & {
   component:Object // TODO: find type for svelte component
 }
 

@@ -214,6 +214,11 @@ export const fieldTypes:{[key:string]:FieldType} = {
     widget: 'text', // @todo: add tags widget
     preSave: ['tags']
   },
+  value: {
+    id: 'value',
+    default: undefined,
+    widget: 'value',
+  }
   // password: {
   //   id: 'password',
   //   default: null,

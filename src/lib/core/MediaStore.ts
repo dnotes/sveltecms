@@ -1,8 +1,8 @@
 import type SvelteCMS from 'sveltecms'
-import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityType, TypedEntityConfigSetting } from 'sveltecms'
+import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
 import type { ContentType } from 'sveltecms/core/ContentType'
 
-export type MediaStoreType = ConfigurableEntityType & {
+export type MediaStoreType = EntityType & ConfigurableEntityType & {
   listMedia?:(path:string|null, opts:ConfigSetting) => Promise<string[]>
   getMedia?:(filename:string|number|null, opts:ConfigSetting) => Promise<string|string[]>
   saveMedia?:(file:File, opts:ConfigSetting) => Promise<string>
@@ -10,9 +10,9 @@ export type MediaStoreType = ConfigurableEntityType & {
   immediateUpload?:boolean
 }
 
-export type MediaStoreConfigSetting = TypedEntityConfigSetting
+export type MediaStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting
 
-export class MediaStore implements ConfigurableEntity {
+export class MediaStore implements ConfigurableEntity, TypedEntity {
   id:string
   type:string
   listMedia:(path?:string|null, options?:ConfigSetting)=>Promise<string[]>

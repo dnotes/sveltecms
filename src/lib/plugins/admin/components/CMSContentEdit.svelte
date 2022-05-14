@@ -1,7 +1,7 @@
 <script lang="ts">
 import type SvelteCMS from 'sveltecms'
 import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
-import type { AdminPage } from '..';
+
 // @ts-ignore
 import { page } from '$app/stores'
 

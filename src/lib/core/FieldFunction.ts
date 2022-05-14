@@ -460,27 +460,6 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       return vars.cms.getFieldTypes()
     }
   },
-  cmsWidgets: {
-    id: 'cmsWidgetList',
-    fn: (vars, opts) => {
-      return vars.cms.getFieldTypeWidgets(opts.fieldType)
-    },
-    optionFields: {
-      fieldType: {
-        type: 'text',
-        default: '',
-        tooltip: 'the name of the field type for which to return widgets',
-        widget: {
-          type: 'select',
-          options: {
-            options: {
-              function: '$cmsFieldList()'
-            }
-          }
-        }
-      }
-    }
-  },
 }
 
 

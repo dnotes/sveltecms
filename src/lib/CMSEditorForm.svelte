@@ -16,7 +16,7 @@ import { onDestroy, onMount } from 'svelte';
   export let submitOptions = {}
 
   export const contentType = cms.getContentType(contentTypeID)
-  let collection = cms.getWidgetFields(contentType, { values, errors, touched })
+  let widgetFieldCollection = cms.getWidgetFields(contentType, { values, errors, touched })
 
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
@@ -49,7 +49,7 @@ import { onDestroy, onMount } from 'svelte';
 
   let form:HTMLElement
   onMount(() => {
-    collection.eventListeners?.forEach(conf => {
+    widgetFieldCollection.eventListeners?.forEach(conf => {
       form.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.addEventListener(conf.on, (event) => {
         // TODO: Why are event and el not available when the function is executed?
         conf.function.fn(conf.function.vars, conf.function.options, event, el)
@@ -57,7 +57,7 @@ import { onDestroy, onMount } from 'svelte';
     })
   })
   onDestroy(() => {
-    collection.eventListeners?.forEach(conf => {
+    widgetFieldCollection.eventListeners?.forEach(conf => {
       form?.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.removeEventListener(conf.on, (event) => {
         conf.function.fn(conf.function.vars, conf.function.options, event, el)
       }))
@@ -65,7 +65,7 @@ import { onDestroy, onMount } from 'svelte';
   })
 
   // This is necessary for conditional/computed fields
-  $: if (values || errors || touched) collection = collection
+  $: if (values || errors || touched) widgetFieldCollection = widgetFieldCollection
 
 </script>
 
@@ -79,11 +79,11 @@ import { onDestroy, onMount } from 'svelte';
           {:else}
             New
           {/if}
-          {collection?.label}
+          {widgetFieldCollection?.label}
         </h2>
       </slot>
       <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} {contentType} {values} fieldList={collection.fields} />
+        <CmsFieldCollection {cms} {values} {widgetFieldCollection} />
         <button
           type="submit"
           class="primary"

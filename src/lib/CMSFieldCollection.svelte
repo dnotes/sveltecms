@@ -1,26 +1,28 @@
 <script lang="ts">
 import CmsField from 'sveltecms/CMSField.svelte';
 import type SvelteCMS from 'sveltecms';
-import type { WidgetField } from 'sveltecms';
-import type { ContentType } from 'sveltecms/core/ContentType'
-import type { Field } from 'sveltecms/core/Field'
+import Collection, { type CollectionConfigSetting } from './core/Collection';
 
 export let cms:SvelteCMS
-export let value = {}
 
-export let fieldableItem:ContentType|Field
+export let values = {}
+export let errors = {}
+export let touched = {}
 
-let widgetFieldCollection = cms.getWidgetFields(fieldableItem, {
-  values: fieldableItem.values,
-  errors: fieldableItem.errors,
-  touched: fieldableItem.touched,
-  id: fieldableItem.id
+// One of the below is required; widgetFieldCollection overrides collection
+export let collection:CollectionConfigSetting = undefined
+export let widgetFieldCollection = cms.getWidgetFields(new Collection(collection, cms), {
+  values, errors, touched, id:collection.id
 })
 
 </script>
-
+{#each Object.keys(values) as id}
+  {#if !widgetFieldCollection.fields[id]}
+    <input type="hidden" name={id} bind:value={values[id]} />
+  {/if}
+{/each}
 {#each Object.entries(widgetFieldCollection.fields) as [id,field]}
-  <CmsField {field} {id} bind:value={value[id]} {cms} />
+  <CmsField {field} {id} bind:value={values[id]} {cms} />
 {:else}
   There are no fields to edit.
 {/each}

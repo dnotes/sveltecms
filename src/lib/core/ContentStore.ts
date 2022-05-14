@@ -1,5 +1,5 @@
 import type SvelteCMS from 'sveltecms'
-import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
+import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
 import type { ContentType } from 'sveltecms/core/ContentType'
 
 const noStore = async () => {
@@ -7,7 +7,7 @@ const noStore = async () => {
   console.error(`Store not found: (${this?.['id'] || ''})`)
 }
 
-export type ContentStoreType = ConfigurableEntityType & {
+export type ContentStoreType = EntityType & ConfigurableEntityType & {
   listContent?:(contentType:ContentType, opts:ConfigSetting) => Promise<any[]>
   getContent?:(contentType:ContentType, opts:ConfigSetting, slug?:string|number) => Promise<any|any[]>
   saveContent?:(content:any, contentType:ContentType, opts:ConfigSetting) => Promise<any>
