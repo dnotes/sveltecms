@@ -10,7 +10,7 @@
 
   // @ts-ignore todo: why doesn't it find this?
   import { page } from '$app/stores'
-  import CMSAdmin from 'sveltecms/CMSAdmin.svelte'
+  import CmsAdmin from 'sveltecms/CMSAdmin.svelte'
 
   export let data = undefined
 
@@ -24,5 +24,5 @@
 {#await data}
   fetching data...
 {:then data}
-  <CMSAdmin {cms} {data} {adminPath} />
+  <CmsAdmin {cms} {data} {adminPath} />
 {/await}
