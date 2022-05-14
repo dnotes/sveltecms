@@ -15,6 +15,7 @@ import CMSWidgetCheckbox from 'sveltecms/widgets/CMSWidgetCheckbox.svelte'
 import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
+import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
 
 
 export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:ContentType, field:Field)=>Promise<any>
@@ -352,6 +353,11 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         }
       },
     }
+  },
+  value: {
+    id:'value',
+    fieldTypes: [],
+    widget: CMSWidgetValue,
   }
   // {
   //   id: 'options', // i.e. radios or checkboxes
