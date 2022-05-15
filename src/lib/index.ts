@@ -130,7 +130,7 @@ export default class SvelteCMS {
           const type = conf[objectType][k].type || conf[objectType][k].id || k
 
           // we merge all of the following
-          this[objectType][type] = this.mergeConfigOptions(
+          this[objectType][k] = this.mergeConfigOptions(
             // the base item of this type
             cloneDeep(this[objectType][type] || {}),
             // the config item
