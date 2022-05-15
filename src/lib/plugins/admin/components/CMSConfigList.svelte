@@ -100,7 +100,7 @@ import { tick } from 'svelte';
               {#if typeof item === 'string'}
                 <select bind:value={item}>
                   {#each entities as type}
-                     <option value={type}>{type}</option>
+                    <option value={type}>{type}</option>
                   {/each}
                 </select>
               {:else if id === item['type']}

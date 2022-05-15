@@ -80,13 +80,8 @@ export const adminPages:AdminPageConfig[] = [
   },
   {
     id: 'fields',
-    component: {
-      type: 'CMSConfigList',
-      options: {
-        allowString: true,
-        configPath: 'fields',
-      }
-    }
+    component: 'CMSConfigFieldList',
+    get: async({cms,args})=>{ return cms.conf.fields || {}}
   },
   {
     id: 'widgets',

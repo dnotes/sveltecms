@@ -193,7 +193,7 @@ export default class SvelteCMS {
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
-    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components'].forEach(k => {
+    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','collections'].forEach(k => {
       plugin?.[k]?.forEach(conf => {
         try {
           this[k][conf.id] = conf
@@ -205,6 +205,7 @@ export default class SvelteCMS {
       })
     });
 
+    // This allows plugins to update existing widgets to work with provided fields. See markdown plugin.
     Object.entries(plugin?.fieldWidgets || {}).forEach(([fieldTypeID, widgetTypeIDs]) => {
       widgetTypeIDs.forEach(id => this.widgetTypes[id].fieldTypes.push(fieldTypeID))
     })
@@ -287,6 +288,8 @@ export default class SvelteCMS {
         return this.getFieldTypes()
       case 'widgets':
         return this.getFieldTypeWidgets(arg)
+      case 'fieldTypes':
+      case 'widgetTypes':
       case 'types':
       case 'lists':
       case 'contentStores':
