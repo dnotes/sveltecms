@@ -106,10 +106,8 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.tooltip = parseFieldFunctionScript(conf.value) ?? (typeof conf.tooltip === 'string' ? conf.tooltip : '')
       this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false)
       this.multipleLabel = parseFieldFunctionScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false)
-      this.multipleMin = parseFieldFunctionScript(conf.multipleMin) ?? Number(conf.multipleMin)
-      if (this.multipleMin === NaN) this.multipleMin = undefined
-      this.multipleMax = parseFieldFunctionScript(conf.multipleMax) ?? Number(conf.multipleMax)
-      if (this.multipleMax === NaN) this.multipleMax = undefined
+      this.multipleMin = parseFieldFunctionScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))
+      this.multipleMax = parseFieldFunctionScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax))
 
       if (conf.events) {
         if (!Array.isArray(conf.events)) conf.events = [conf.events]
