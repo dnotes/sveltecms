@@ -8,7 +8,7 @@ import type SvelteCMS from "sveltecms";
 import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
 
   export let cms:SvelteCMS
-  export let data:{[id:string]:string|FieldConfigSetting}
+  export let data:{[id:string]:string|FieldConfigSetting} = {}
   export let options:{
     id?:string // e.g. `${contentType}[fields]`, or blank when configuring field types
   } = {}
@@ -28,6 +28,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   }, options)
 
   let items = Object.entries(data)
+  let mediaStores = cms.listEntities('mediaStores')
 
   $: fieldTypeList = opts?.id ? cms.listEntities('fields') : cms.listEntities('fieldTypes')
   $: defaults = Object.fromEntries(items.map(([id,conf]) => {
@@ -54,16 +55,20 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     return [id, typeof item === 'string']
   }));
 
-  let addID, addType, addIDEl, fieldDetail
-  let focuses = {}
+  let addID, addType, addIDEl, fieldDetailIndex
   let fieldEls = {}
+
+  $: detailID = items?.[fieldDetailIndex]?.[0]
+  $: detail = items?.[fieldDetailIndex]?.[1]
+
+  function getFieldName(id:string) { return opts?.id ? `${opts.id}[${id}]` : id }
 
   async function addItem() {
     if (addID && addType) {
       items.push([addID, addType])
       items = items
       await tick()
-      focuses[addID]?.focus()
+      fieldEls[addID].widget?.focus()
       addID = ''
       addType = ''
     }
@@ -191,7 +196,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       <td>
         <button type="button" disabled={i===0} on:click={()=>{shiftItem(i,true)}}>&utri;</button>
         <button type="button" disabled={i===items.length-1} on:click={()=>{shiftItem(i)}}>&dtri;</button>
-        <button type="button" on:click={()=>{fieldDetail=i}}>Detail</button>
+        <button type="button" on:click={()=>{fieldDetailIndex=i}}>Detail</button>
         <button type="button" on:click={()=>{confirmRemove=i}}>X</button>
         {#if !isString[id]}
           <button type="button" on:click={()=>{resetItem(i)}}>Reset</button>
@@ -199,11 +204,28 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       </td>
 
     </tr>
+    {#if defaults[id].field.isFieldable}
+      <tr>
+        <td></td>
+        <td colspan="6">
+          <svelte:self {cms} data={item?.['fields']} options={{id:getFieldName(id) + '[fields]'}} />
+        </td>
+      </tr>
+    {/if}
   {/each}
     <!-- Add item -->
     <tr>
       <!-- <td></td> TODO: add reorder -->
-      <td><input id="new-item" type="text" size="9" bind:value={addID} bind:this={addIDEl}></td>
+      <td>
+        <input
+          id="new-item"
+          type="text"
+          size="9"
+          placeholder="new field"
+          bind:value={addID}
+          bind:this={addIDEl}
+        >
+      </td>
       <td>
         <select bind:value={addType}>
           {#each fieldTypeList as type}
@@ -218,6 +240,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
 </table>
 
 {#if typeof confirmRemove !== 'undefined'}
+  <!-- Remove Field Confirmation -->
   <Modal on:cancel={()=>{confirmRemove=undefined}}>
     <div><p>Are you sure you want to delete the {items[confirmRemove][0]} field?</p></div>
     <div class="center">
@@ -227,9 +250,92 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   </Modal>
 {/if}
 
-{#if typeof fieldDetail !== 'undefined'}
-  <Modal on:cancel={()=>{fieldDetail=undefined}}>
-    <button type="button" on:click={()=>{fieldDetail=undefined}}>Close</button>
+{#if typeof fieldDetailIndex !== 'undefined'}
+  <!-- Field Detail Form -->
+  <Modal on:cancel={()=>{fieldDetailIndex=undefined}}>
+    <h2>Field Detail: <code>{detailID}</code></h2>
+
+    <div class="field"><label>
+      <span>Type</span>
+      <select
+        value={detail?.['type'] ?? detail}
+        on:change={(e)=>{setProp(fieldDetailIndex, 'type', e.target?.['value'])}}
+      >
+        {#each fieldTypeList as type}
+          <option value={type}>{type}</option>
+        {/each}
+      </select>
+    </label></div>
+
+    <div class="field"><label>
+      <span>Label</span>
+      <input type="text"
+        value={detail?.['label']}
+        placeholder={defaults[detailID].field.label ? defaults[detailID].field.label.toString() : ''}
+        on:change={(e)=>{ setProp(fieldDetailIndex, 'label', e.target?.['value'] )}}
+      >
+    </label></div>
+
+    <div class="field"><label>
+      <span>Tooltip</span>
+      <input type="text"
+        value={detail?.['tooltip']}
+        placeholder={defaults[detailID].field.tooltip ? defaults[detailID].field.tooltip.toString() : ''}
+        on:change={(e)=>{ setProp(fieldDetailIndex, 'tooltip', e.target?.['value'] )}}
+      >
+    </label></div>
+
+    <div class="field"><label>
+      <span>Widget</span>
+      <select
+        value={detail?.['widget'] ?? defaults[detailID].field.widget.type}
+        on:change={(e)=>{ setProp(fieldDetailIndex, 'widget', e.target?.['value']) }}
+      >
+        {#each defaults[detailID].widgetList as type}
+          <option value={type}>{type}</option>
+        {/each}
+      </select>
+    </label></div>
+
+    {#if defaults[detailID].field.widget.handlesMedia}
+      <div class="field"><label>
+        <span>Media Store</span>
+        <select
+          value={detail?.['mediaStore']?.['type'] ?? detail?.['mediaStore'] ?? ''}
+          on:change={(e)=>{ setProp( fieldDetailIndex, 'mediaStore', e.target?.['value'] || undefined )}}
+        >
+          <option value="">- unspecified -</option>
+          {#each mediaStores as type}
+            <option value="{type}">{type}</option>
+          {/each}
+        </select>
+      </label></div>
+    {/if}
+
+    <div class="field"><label>
+      <span>Required</span>
+      <input
+        type="checkbox"
+        value={detail?.['required'] ?? defaults[detailID].field.required}
+        on:change={(e)=>{ setProp(fieldDetailIndex, 'required', e.target?.['checked']) } }
+      >
+    </label></div>
+
+    <div class="field"><label>
+      <span>Multiple</span>
+      <input
+        type="checkbox"
+        value={detail?.['multiple'] ?? defaults[detailID].field.multiple}
+        on:change={(e)=>{ setProp(fieldDetailIndex, 'multiple', e.target?.['checked']) } }
+      >
+    </label></div>
+
+    {#if defaults[detailID].field.isFieldable}
+      <h2>Fields:</h2>
+      <svelte:self {cms} data={detail?.['fields']} options={{id:`${getFieldName(detailID)}[fields]`}} />
+    {/if}
+
+    <div class="center"><button type="button" on:click={()=>{fieldDetailIndex=undefined}}>Close</button></div>
   </Modal>
 {/if}
 
@@ -237,7 +343,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   .center { text-align:center; }
   .left { text-align:left; }
   select { width: 100%; }
-  td { padding: 2px 3px; }
+  td { padding:0; }
   button.cancel { background:transparent; color:steelblue; border:none; }
-  button { cursor:pointer; }
+  button { cursor:pointer; height:1.8em; display:table-cell; vertical-align:middle; line-height:1.2em; }
 </style>
