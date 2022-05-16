@@ -49,12 +49,14 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
   },
   prependContentTypeIdAs: {
     type: 'text',
-    widget: 'select',
-    widgetOptions: {
+    widget: {
+      type: 'select',
       options: {
-        '': 'None',
-        'directory': 'Directory',
-        'filename': 'Filename prefix'
+        items: {
+          '': 'None',
+          'directory': 'Directory',
+          'filename': 'Filename prefix'
+        },
       },
     },
     default: 'directory',
@@ -62,15 +64,17 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
   },
   fileExtension: {
     type: 'text',
-    widget: 'select',
     default: 'md',
     required: true,
-    widgetOptions: {
+    widget: {
+      type: 'select',
       options: {
-        'md': '.md (Markdown)',
-        'json': '.json (JSON)',
-        'yml': '.yml (YAML)',
-        'yaml': '.yaml (YAML)',
+        items: {
+          'md': '.md (Markdown)',
+          'json': '.json (JSON)',
+          'yml': '.yml (YAML)',
+          'yaml': '.yaml (YAML)',
+        }
       }
     },
     tooltip: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',

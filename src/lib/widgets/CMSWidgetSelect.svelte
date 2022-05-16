@@ -7,9 +7,9 @@ import type { WidgetField } from "..";
   export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '')
 
   //@ts-ignore
-  let opts:{size:number, options:string[]|{[key:string|number]:string}} = field.widget.options
+  let opts:{size:number, items:string[]|{[key:string|number]:string}} = field.widget.options
 
-  $: options = Array.isArray(opts.options) ? Object.fromEntries(opts.options.map(o => { return [o,o] })) : opts.options
+  $: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => { return [o,o] })) : opts.items
 
 </script>
 

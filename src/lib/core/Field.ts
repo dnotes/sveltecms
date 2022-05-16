@@ -18,19 +18,12 @@ export type FieldConfigSetting = {
   required?: boolean|FieldFunctionConfigSetting
   disabled?: boolean|FieldFunctionConfigSetting
   hidden?: boolean|FieldFunctionConfigSetting
-  collapsible?: boolean|FieldFunctionConfigSetting
-  collapsed?: boolean|FieldFunctionConfigSetting
-  multiple?: boolean|FieldFunctionConfigSetting|{
-    label?: boolean|FieldFunctionConfigSetting
-    min?: number|FieldFunctionConfigSetting
-    max?: number|FieldFunctionConfigSetting
-  }
+  multiple?: boolean|FieldFunctionConfigSetting
   multipleLabel?: string|FieldFunctionConfigSetting
   multipleMin?: number|FieldFunctionConfigSetting
   multipleMax?: number|FieldFunctionConfigSetting
   fields?: {[key:string]:string|FieldConfigSetting}
   widget?: string|WidgetConfigSetting
-  widgetOptions?: ConfigSetting
   // validator?: Rules // TODO
   preSave?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   preMount?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
@@ -73,8 +66,6 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
 
   // implemented only in Multiple and Collection widgets
   // implement as needed in custom widgets
-  collapsible?: boolean|FieldFunctionConfig
-  collapsed?: boolean|FieldFunctionConfig
   multiple?: boolean|FieldFunctionConfig
   multipleLabel?: boolean|FieldFunctionConfig
   multipleMin?: number|FieldFunctionConfig
@@ -113,16 +104,12 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.label = parseFieldFunctionScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
       this.value = parseFieldFunctionScript(conf.value) ?? conf.value
       this.tooltip = parseFieldFunctionScript(conf.value) ?? (typeof conf.tooltip === 'string' ? conf.tooltip : '')
-
-      if (conf.multiple) {
-        if (hasProp(conf.multiple, 'label') || hasProp(conf.multiple, 'max') || hasProp(conf.multiple, 'min')) {
-          this.multiple = true
-          this.multipleLabel = conf.multiple?.['label']
-          this.multipleMin = conf.multiple?.['min']
-          this.multipleMax = conf.multiple?.['max']
-        }
-        else this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false)
-      }
+      this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false)
+      this.multipleLabel = parseFieldFunctionScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false)
+      this.multipleMin = parseFieldFunctionScript(conf.multipleMin) ?? Number(conf.multipleMin)
+      if (this.multipleMin === NaN) this.multipleMin = undefined
+      this.multipleMax = parseFieldFunctionScript(conf.multipleMax) ?? Number(conf.multipleMax)
+      if (this.multipleMax === NaN) this.multipleMax = undefined
 
       if (conf.events) {
         if (!Array.isArray(conf.events)) conf.events = [conf.events]
@@ -135,10 +122,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.required = parseFieldFunctionScript(conf.required) ?? (typeof conf.required === 'boolean' ? conf.required : false)
       this.disabled = parseFieldFunctionScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseFieldFunctionScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
-      this.collapsible = parseFieldFunctionScript(conf.collapsible) ?? (typeof conf.collapsible === 'boolean' ? conf.collapsible : false)
-      this.collapsed = parseFieldFunctionScript(conf.collapsed) ?? (typeof conf.collapsed === 'boolean' ? conf.collapsed : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
-      if (conf?.widgetOptions) this.widget.options = cms.mergeConfigOptions(this.widget.options, conf.widgetOptions)
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave
       this.preMount = conf.preMount ? ( Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.preMount

@@ -74,9 +74,11 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
           tooltip: 'The comparison operator.',
           default: "",
           required: true,
-          widget: "select",
-          widgetOptions: {
-            options: operators
+          widget: {
+            type: "select",
+            options: {
+              items: operators
+            }
           }
         },
         valueType: {
@@ -84,15 +86,19 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
           tooltip: 'The firestore data type for the field.',
           default: "stringValue",
           required: true,
-          widget: "select",
-          widgetOptions: { options: {
-            stringValue: "string",
-            nullValue: "null",
-            booleanValue: "boolean",
-            integerValue: "integer",
-            doubleValue: "double",
-            timestampValue: "timestamp",
-          }}
+          widget: {
+            type: "select",
+            options: {
+              items: {
+                stringValue: "string",
+                nullValue: "null",
+                booleanValue: "boolean",
+                integerValue: "integer",
+                doubleValue: "double",
+                timestampValue: "timestamp",
+              }
+            }
+          }
         },
         value: {
           type: "text",

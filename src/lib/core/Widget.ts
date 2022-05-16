@@ -191,10 +191,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         type: 'text',
         tooltip: 'Whether to allow resizing of the textarea element.',
         default: undefined,
-        widget: 'select',
-        widgetOptions: {
+        widget: {
+          type: 'select',
+          options: {
           // @ts-ignore
-          options: ['none','both','horizontal','vertical']
+            items: ['none','both','horizontal','vertical']
+          }
         }
       },
       autosize: {
@@ -334,13 +336,16 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         default: 0,
         tooltip: 'The maximum number of items shown in the dropdown area of a select box.'
       },
-      options: { // TODO: replace this with a List widget when one is available
+      items: { // TODO: replace this with a List widget when one is available
         type: 'collection',
         tooltip: '',
         multiple: true,
         default: {},
-        widgetOptions: {
-          oneline: true,
+        widget: {
+          type: 'collection',
+          options: {
+            oneline: true
+          }
         },
         fields: {
           label: {

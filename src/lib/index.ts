@@ -19,7 +19,6 @@ const splitter = /\s*,\s*/g
 export const FieldPropsAllowFunctions = [
   'label', 'tooltip', 'required', 'disabled',
   'hidden', 'class', 'default', 'value',
-  'collapsible', 'collapsed',
   'multiple', 'multipleLabel', 'multipleMin', 'multipleMax',
 ]
 
@@ -602,8 +601,6 @@ export type WidgetField = Field & {
   disabled?:boolean,
   hidden?:boolean,
   class:string,
-  collapsible?:boolean,
-  collapsed?:boolean,
   multiple?:boolean,
   multipleLabel?:boolean,
   multipleMin?:number
