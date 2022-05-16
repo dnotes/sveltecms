@@ -138,8 +138,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
         {(fieldEls[id] = {}) && ''}
         <input type="text"
         size="9"
-        bind:value={id}
-        disabled={!item['type'] || item['type'] === item['id']}>
+        bind:value={id}>
       </td>
 
       <td title={headings['Type']}>
@@ -343,5 +342,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   .center { text-align:center; }
   .left { text-align:left; }
   td { padding:0; }
-  table button { height:1.8em; display:table-cell; vertical-align:middle; line-height:1.2em; }
+  select { width:100%; }
+  table button { height:1.8em; display:table-cell; vertical-align:middle; line-height:1.2em; margin:0 3px; }
+  table button:disabled { color:transparent; }
 </style>
