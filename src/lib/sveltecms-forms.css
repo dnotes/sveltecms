@@ -1,0 +1,62 @@
+html {
+  --cms-background: white;
+  --cms-main: rgb(113, 155, 155);
+  --cms-link: rgb(113, 155, 155);
+  --cms-text: #222;
+  --cms-tooltip: lightgoldenrodyellow;
+  --cms-action: rgb(0, 212, 219);
+}
+
+@media (prefers-color-scheme:dark) {
+  html {
+    --cms-background: #222;
+    --cms-text: white;
+    --cms-tooltip: darkslategrey;
+  }
+}
+
+/* Styles for all forms */
+
+p.cms-tooltip {
+  display:none;
+}
+div.field:focus-within>p.cms-tooltip {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  background: var(--cms-tooltip);
+  color: var(--cms-text);
+  padding: 13px 21px;
+  border-radius: 1em;
+  max-width: 600px;
+  margin: 1px 0 0 24px;
+  box-shadow: 0 0 2px var(--cms-text);
+}
+
+/* Styles for SvelteCMS */
+
+.sveltecms {
+  background-color: var(--cms-background);
+  color: var(--cms-text);
+  border-color: var(--cms-main);
+}
+.sveltecms a { color:var(--cms-link); }
+.sveltecms a.action { color:var(--cms-action); }
+
+.sveltecms button {
+  cursor:pointer;
+  background:transparent;
+  color:var(--cms-link);
+  border:none;
+}
+.sveltecms button:disabled {
+  cursor:default;
+}
+.sveltecms button.primary,
+.sveltecms button[type="submit"] {
+  border: 3px solid var(--cms-action);
+  color: var(--cms-action);
+  padding: .6em 1em;
+  border-radius: 1em;
+  font-weight: bold;
+}

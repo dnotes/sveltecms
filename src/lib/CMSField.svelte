@@ -38,5 +38,8 @@ export let value
         bind:value
       />
     {/if}
+    {#if field.tooltip}
+      <p class="cms-tooltip">{field.tooltip}</p>
+    {/if}
   </div>
 {/if}

@@ -1,0 +1,19 @@
+html {
+  background-color: var(--cms-background);
+  color: var(--cms-text);
+  border-color: var(--cms-main);
+}
+
+body {
+  margin:0; padding:0;
+}
+
+a {
+  color: var(--cms-link);
+}
+
+a.action {
+  color: var(--cms-action);
+  border-color: var(--cms-action);
+}
+

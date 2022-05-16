@@ -3,6 +3,7 @@ import type SvelteCMS from "sveltecms"
 // @ts-ignore TODO: why can't it find this?
 import { page } from '$app/stores'
 import getLabelFromID from "./utils/getLabelFromID";
+import Nav from "sveltecms/components/Nav.svelte";
 
   export let cms:SvelteCMS
   export let adminPath:string
@@ -27,18 +28,11 @@ import getLabelFromID from "./utils/getLabelFromID";
   <title>{adminPage?.label ?? 'Site Admin'}</title>
 </svelte:head>
 
-<nav>
-  {#each sections as section}
-    <a href="{basePath}/{section.id}">{section.label || getLabelFromID(section.id)}</a>
-  {/each}
-</nav>
-<div class="breadcrumbs">
-  &nbsp;
-  {#each crumbs as [name, path], i}
-    <a href="{basePath}{path}"> &ltri; {name}</a>
-  {/each}
-</div>
+<div class="sveltecms">
 
+<Nav {cms} {adminPath} {basePath} />
+
+<div class="cms-admin">
 
 <h1>{adminPage?.label ?? 'Site Admin'}</h1>
 
@@ -56,10 +50,10 @@ import getLabelFromID from "./utils/getLabelFromID";
   </ul>
 {/if}
 
-<style>
-  h1 { margin:10px 0; }
-  nav { position:fixed; top:0; left:0; padding:4px 0; width:100%; background:lightgray; }
-  nav>a { padding:2px 10px; display:inline-block; text-align:center; vertical-align:middle; }
-  .breadcrumbs { margin-top:2em; }
-  .breadcrumbs a { font-size:12px; font-weight:normal; display:inline-block; padding-left: 8px; vertical-align:middle; text-decoration:none; }
+</div>
+</div>
+
+<style global>
+  @import "sveltecms/sveltecms-forms.css";
+  .cms-admin { padding:0 20px; }
 </style>

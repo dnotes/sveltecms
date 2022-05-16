@@ -245,7 +245,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     <div><p>Are you sure you want to delete the {items[confirmRemove][0]} field?</p></div>
     <div class="center">
       <button bind:this={confirmRemoveButton} type="button" on:click={()=>{removeItem(confirmRemove)}}>Delete</button>
-      <button type="button" class="cancel" on:click={()=>{confirmRemove=undefined}}>cancel</button>
+      <button type="button" on:click={()=>{confirmRemove=undefined}}>cancel</button>
     </div>
   </Modal>
 {/if}
@@ -342,8 +342,6 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
 <style>
   .center { text-align:center; }
   .left { text-align:left; }
-  select { width: 100%; }
   td { padding:0; }
-  button.cancel { background:transparent; color:steelblue; border:none; }
-  button { cursor:pointer; height:1.8em; display:table-cell; vertical-align:middle; line-height:1.2em; }
+  table button { height:1.8em; display:table-cell; vertical-align:middle; line-height:1.2em; }
 </style>
