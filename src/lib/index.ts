@@ -57,7 +57,13 @@ export type LabeledEntity = {
   label:string
 }
 
+export type FieldableEntityType = {
+  isFieldable?:boolean
+  fields?:{[id:string]:FieldConfigSetting}
+}
+
 export type FieldableEntity = {
+  isFieldable:boolean
   fields?:{[id:string]:Field}
 }
 

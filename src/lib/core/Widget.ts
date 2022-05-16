@@ -1,5 +1,5 @@
 import type SvelteCMS from "sveltecms"
-import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntityType } from "sveltecms"
+import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntityType, FieldableEntity, ConfigurableEntity, FieldableEntityType } from "sveltecms"
 import type ContentType from "sveltecms/core/ContentType"
 import type Field from "sveltecms/core/Field"
 
@@ -28,15 +28,17 @@ export type WidgetType = ConfigurableEntityType & {
   fieldTypes: string[]
   handlesMultiple?: boolean
   handlesMedia?: boolean
-  admin?:boolean
+  isFieldable?: boolean
+  admin?: boolean
   formDataHandler?:FormDataHandler
 }
 
-export class Widget {
+export class Widget implements ConfigurableEntity {
   type: string
   widget: Object
   handlesMultiple: boolean
   handlesMedia: boolean
+  isFieldable: boolean
   options?: ConfigSetting
   formDataHandler?:FormDataHandler
   constructor(conf:string|WidgetConfigSetting, cms:SvelteCMS) {
@@ -53,6 +55,7 @@ export class Widget {
     this.widget = widgetType?.widget
     this.handlesMultiple = widgetType?.handlesMultiple || false
     this.handlesMedia = widgetType?.handlesMedia || false
+    this.isFieldable = widgetType?.isFieldable || false
     if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
       this.formDataHandler = widgetType.formDataHandler
     }
@@ -88,6 +91,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   collection: {
     id: 'collection',
     fieldTypes: ['collection'],
+    isFieldable: true,
     widget: CMSWidgetCollection,
     optionFields: {
       oneline: {

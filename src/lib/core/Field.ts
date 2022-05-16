@@ -154,6 +154,9 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       }
     }
   }
+
+  get isFieldable():boolean { return this.widget.isFieldable }
+
 }
 
 export const fieldTypes:{[key:string]:FieldType} = {

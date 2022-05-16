@@ -19,6 +19,7 @@ export type ContentTypeConfigSetting = ConfigSetting & {
 export class ContentType implements FieldableEntity, LabeledEntity {
   id:string
   label:string = ''
+  isFieldable=true
   slug:SlugConfig
   contentStore:ContentStore
   mediaStore?:string|MediaStoreConfigSetting
