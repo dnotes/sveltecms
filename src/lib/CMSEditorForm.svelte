@@ -47,26 +47,6 @@ import { onDestroy, onMount } from 'svelte';
     }
   }
 
-  let form:HTMLElement
-  onMount(() => {
-    widgetFieldCollection.eventListeners?.forEach(conf => {
-      form.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.addEventListener(conf.on, (event) => {
-        // TODO: Why are event and el not available when the function is executed?
-        conf.function.fn(conf.function.vars, conf.function.options, event, el)
-      }))
-    })
-  })
-  onDestroy(() => {
-    widgetFieldCollection.eventListeners?.forEach(conf => {
-      form?.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.removeEventListener(conf.on, (event) => {
-        conf.function.fn(conf.function.vars, conf.function.options, event, el)
-      }))
-    })
-  })
-
-  // This is necessary for conditional/computed fields
-  $: if (values || errors || touched) widgetFieldCollection = widgetFieldCollection
-
 </script>
 
 <div>
@@ -82,8 +62,8 @@ import { onDestroy, onMount } from 'svelte';
           {widgetFieldCollection?.label}
         </h2>
       </slot>
-      <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} {values} {widgetFieldCollection} />
+      <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
+        <CmsFieldCollection {cms} {values} collection={contentType} />
         <button
           type="submit"
           class="primary"

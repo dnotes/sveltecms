@@ -17,10 +17,11 @@ html {
 
 /* Styles for all forms */
 
-p.cms-tooltip {
-  display:none;
-}
-div.field:focus-within>p.cms-tooltip {
+.cms-tooltip { display:none; }
+label:focus-within+.cms-tooltip,
+td:focus-within>.cms-tooltip,
+label:hover+.cms-tooltip,
+td:hover>.cms-tooltip {
   display: block;
   position: absolute;
   z-index: 1;
@@ -32,6 +33,8 @@ div.field:focus-within>p.cms-tooltip {
   margin: 1px 0 0 24px;
   box-shadow: 0 0 2px var(--cms-text);
 }
+label+.cms-tooltip:hover,
+td>.cms-tooltip:hover { display:none; }
 
 /* Styles for SvelteCMS */
 

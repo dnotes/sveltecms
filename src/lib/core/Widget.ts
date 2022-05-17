@@ -179,18 +179,18 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       },
       rows: {
         type: 'number',
-        default: undefined,
-        tooltip: 'The width, in "rows", of the textarea element.',
+        default: 3,
+        tooltip: 'The height, in "rows", of the textarea element.',
       },
       cols: {
         type: 'number',
         default: 20,
-        tooltip: 'The height, in "columns", of the textarea element.',
+        tooltip: 'The width, in "columns", of the textarea element.',
       },
       resize: {
         type: 'text',
         tooltip: 'Whether to allow resizing of the textarea element.',
-        default: undefined,
+        default: 'none',
         widget: {
           type: 'select',
           options: {

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { isEqual } from "lodash-es";
 import Modal from 'sveltecms/components/Modal.svelte'
+import ConfigurableEntityWidget from 'sveltecms/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte'
 
 import { tick } from "svelte/internal";
 
@@ -18,6 +19,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     ID: 'The machine name of the field in data storage.',
     Type: 'The type of data stored in the field.',
     Widget: 'The widget used for data entry on a content form.',
+    MediaStore: 'The Media Store used for any uploaded media',
     Tooltip: 'The help text shown to the editor on a content form.',
     'Req.': 'Whether the field is required.',
     'Mult.': 'Whether the field can have multiple values.',
@@ -36,19 +38,11 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     let parentField = cms.fields[field.type] || {}
     let fieldType = cms.getEntityType('fields', field.type)
     let widgetList = cms.getFieldTypeWidgets(fieldType?.id)
-    let widgetType = cms.getEntityType('widgets', field.widget.type)
-    // console.log({conf,field,fieldType,widgetList,widgetType})
-    let widgetOptions = cms.mergeConfigOptions(
-      cms.getConfigOptionsFromFields(widgetType?.optionFields || {}),
-      parentField?.['widget']?.['options'] || parentField?.['widgetOptions'] || {},
-    )
     return [id,{
       field,
       parentField,
       fieldType,
       widgetList,
-      widgetType,
-      widgetOptions,
     }]
   }));
   $: isString = Object.fromEntries(items.map(([id,item]) => {
@@ -106,6 +100,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       f.type.value = d.field.widget.type
     }
     else {
+      // @TODO: refactor for recursive types?
       if (typeof value === 'undefined' || value === (d.parentField[prop] ?? d.fieldType[prop] ?? false)) delete e[1][prop]
       else e[1][prop] = value
     }
@@ -154,15 +149,30 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       </td>
 
       <td title={headings['Widget']}>
-        <select
-          value={defaults[id].field.widget.type}
-          bind:this={fieldEls[id].widget}
-          on:change={(e)=>{ setProp(i, 'widget', e.target?.['value']) }}
-        >
-          {#each defaults[id].widgetList as type}
-            <option value={type}>{type}</option>
-          {/each}
-        </select>
+        <ConfigurableEntityWidget
+          {cms}
+          {id}
+          type="widgets"
+          value={item?.['widget'] ?? defaults[id]?.parentField?.['widget']?.['type'] ?? defaults[id]?.fieldType?.widget?.type ?? defaults[id]?.fieldType?.widget}
+          items={defaults[id].widgetList}
+          on:change={(e)=>{ setProp(i, 'widget', e?.detail?.['value']) }}
+        />
+      </td>
+
+      <td title={headings['MediaStore']}>
+        {#if defaults[id].field.widget.handlesMedia}
+          <ConfigurableEntityWidget
+            {cms}
+            {id}
+            type="mediaStores"
+            value={item?.['mediaStore'] || ''}
+            items={mediaStores}
+            unset="- default -"
+            on:change={(e)=>{ setProp(i, 'mediaStore', e?.detail?.['value']) }}
+          />
+        {:else}
+          <div class="center">n/a</div>
+        {/if}
       </td>
 
       <td title={headings['Tooltip']}>

@@ -4,7 +4,7 @@ import { widgetTypes, type WidgetType, type WidgetConfigSetting } from './core/W
 import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType"
 import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
 import type { ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
-import type { CollectionConfigSetting, AdminCollectionConfigSetting } from './core/Collection'
+import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection } from './core/Collection'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { FieldFunction, fieldFunctions, type FieldFunctionType, type FieldFunctionConfigSetting } from './core/FieldFunction'
 import type { ComponentType, ComponentConfigSetting } from './core/Component'
@@ -212,13 +212,7 @@ export default class SvelteCMS {
 
     // This allows plugins to update existing widgets to work with provided fields. See markdown plugin.
     Object.entries(plugin?.fieldWidgets || {}).forEach(([fieldTypeID, widgetTypeIDs]) => {
-      widgetTypeIDs.forEach(id => this.widgetTypes[id].fieldTypes.push(fieldTypeID))
-    })
-
-    plugin?.collections?.forEach((conf:CollectionConfigSetting) => {
-      // @ts-ignore - this is a type check
-      if (conf.admin) this.adminCollections[conf.id] = conf
-      else this.collections[conf.id] = conf
+      widgetTypeIDs.forEach(id =>{ if (!this.widgetTypes[id].fieldTypes.includes(fieldTypeID)) this.widgetTypes[id].fieldTypes.push(fieldTypeID) })
     })
 
   }
@@ -318,6 +312,20 @@ export default class SvelteCMS {
           'widgets',
         ]
     }
+  }
+
+  getEntity(type:string, id:string) {
+    if (!type || !id) return
+    if (type === 'fields' || type === 'field') return this.fields[id] ?? this.fieldTypes[id]
+    if (type === 'widgets' || type === 'widget') return this.widgets[id] ?? this.widgetTypes[id]
+    return this?.[type]?.[id]
+  }
+
+  getEntityParent(type:string, id:string) {
+    if (!type || !id) return
+    if (type === 'fields' || type === 'field') return this.fields[id] ?? this.fieldTypes[id]
+    if (type === 'widgets' || type === 'widget') return this.widgets[id] ?? this.widgetTypes[id]
+    return this?.[type]?.[id]
   }
 
   getEntityType(type:string, id:string) {
@@ -584,6 +592,43 @@ export default class SvelteCMS {
       path = pathArray.join('/')
       if (this.adminPages[path]) return new AdminPage(this.adminPages[path], this)
     }
+  }
+
+  getEntityConfig(type:string, id:string, options?:string[]) {
+    if (!type || !id) return
+    if (!options) {
+      options = Object.keys((this.getEntityType(type, id))?.optionFields ?? {})
+      if (!options) return {}
+    }
+    let entity = this.getEntity(type, id)
+    return {
+      // the entity config of the parent (recursive)
+      ...(this.getEntityConfig(type, entity?.[type], options) ?? {}),
+      // the entity config of the parent's optionFields (if it is an entityType)
+      ...(this.getConfigOptionsFromFields(entity?.optionFields ?? {})),
+      // any options written directly into the entity config, e.g. in a ConfigurableEntityConfigSetting
+      ...(Object.fromEntries(options.filter(k=>entity.hasOwnProperty(k)).map(k => ([ k, entity?.[k] ]) ))),
+      // the options, e.g. in a ConfigurableEntity
+      ...(entity.options || {}),
+    }
+  }
+
+  getEntityConfigCollection(type:string, id:string) {
+    let entityType = this.getEntityType(type, id)
+    // Check that there are option fields, otherwise it's moot
+    if (!entityType?.optionFields) return new Collection({ id:`entityType_${type}`, fields:{} }, this)
+    // Clone the optionFields so that we can change the default values
+    let optionFields = Object.assign({}, entityType.optionFields)
+    // Get a list of options
+    let options = Object.keys(optionFields)
+    // Get the options from the parent element
+    let defaults = this.getEntityConfig(type, id, options)
+    // Set the defaults for optionFields
+    options.forEach(k => { optionFields[k].default = defaults[k] })
+    return new Collection({
+      id:`entityType_${type}`,
+      fields: optionFields,
+    }, this)
   }
 
   get defaultMediaStore():string {
