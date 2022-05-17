@@ -13,6 +13,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   export let options:{
     id?:string // e.g. `${contentType}[fields]`, or blank when configuring field types
   } = {}
+  $: opts = Object.assign({}, options)
 
   const headings = {
     // Order: 'Move the field.', // TODO: add reorder
@@ -26,36 +27,48 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     Operations: 'Edit or delete the field',
   }
 
-  $: opts = Object.assign({
-  }, options)
-
+  // All field configuration, as an array
   let items = Object.entries(data)
+
+  // List all mediastores, as these are common to all fields
   let mediaStores = cms.listEntities('mediaStores')
 
-  $: fieldTypeList = opts?.id ? cms.listEntities('fields') : cms.listEntities('fieldTypes')
-  $: defaults = Object.fromEntries(items.map(([id,conf]) => {
-    let field = new Field(id,conf,cms)
-    let parentField = cms.fields[field.type] || {}
-    let fieldType = cms.getEntityType('fields', field.type)
-    let widgetList = cms.getFieldTypeWidgets(fieldType?.id)
-    return [id,{
-      field,
-      parentField,
-      fieldType,
-      widgetList,
-    }]
-  }));
-  $: isString = Object.fromEntries(items.map(([id,item]) => {
-    return [id, typeof item === 'string']
-  }));
-
-  let addID, addType, addIDEl, fieldDetailIndex
+  // Variables for the elements where new lines are added
+  let addID, addType, addIDEl
   let fieldEls = {}
 
+  // Get the list of field configurations, for the 'type' select options
+  // This is fieldTypes only for admin/fields, and a full list when in context of another form
+  $: fieldTypeList = opts?.id ? cms.listEntities('fields') : cms.listEntities('fieldTypes')
+
+  // Get defaults for each field type
+  $: defaults = Object.fromEntries(items.map(([id,conf]) => {
+
+    // A genuine Field object, which makes config easier
+    let field = new Field(id,conf,cms)
+
+    // The parent field, if it is not a direct descendant of a field type (TODO: is this needed?)
+    let parentField = cms.fields[field.type] || {}
+
+    // The fieldTypes ancestor of the field
+    let fieldType = cms.getEntityType('fields', field.type)
+
+    // A list of widgets available for the field type
+    let widgetList = cms.getFieldTypeWidgets(fieldType?.id)
+
+    // Whether the item is a default configuration (i.e. a string)
+    let isString = typeof conf === 'string'
+
+    return [id,{ field, parentField, fieldType, widgetList, isString }]
+  }));
+
+  // Variables for the detail modal
+  let fieldDetailIndex
   $: detailID = items?.[fieldDetailIndex]?.[0]
   $: detail = items?.[fieldDetailIndex]?.[1]
 
-  function getFieldName(id:string) { return opts?.id ? `${opts.id}[${id}]` : id }
+  // Get the "id" variable to pass to fieldable fields, for the "name" attribute of inputs
+  function getFieldFormID(id:string) { return opts?.id ? `${opts.id}[${id}]` : id }
 
   async function addItem() {
     if (addID && addType) {
@@ -74,10 +87,13 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     items = items
     addIDEl.focus()
   }
+  // Variables for the remove item modal
   let confirmRemove:number
   let confirmRemoveButton
   $: if (typeof confirmRemove === 'number') confirmRemoveButton?.focus()
 
+  // Move items up or down
+  // TODO: refactor into a draggable list
   function shiftItem(i:number, up?:true) {
     if (i === 0 && up || i === items.length-1 && !up) return
     let entry = items.splice(i,1)[0]
@@ -87,6 +103,8 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     items = items
   }
 
+  // Function to set a field property for one-way binding
+  // This is done so that defaults are not duplicated for every field
   async function setProp(i, prop, value) {
     let e = items[i]
     let d = defaults[e[0]]
@@ -108,13 +126,14 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     items = items
   }
 
+  // Function to reset a field to default config
   function resetItem(i) {
     items[i][1] = typeof items[i][1] === 'string' ? { type: items[i][1] } : items[i][1]?.['type']
     items = items
   }
 
+  // Whenever items changes, data must change as well.
   $: data = Object.fromEntries(items)
-  // $: console.log(data)
 
 </script>
 
@@ -126,8 +145,6 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   </tr>
   {#each items as [id, item], i}
     <tr>
-
-      <!-- <td title={headings.Order} class="reorder">&updownarrow;</td> TODO: add reorder -->
 
       <td title={headings['ID']}>
         {(fieldEls[id] = {}) && ''}
@@ -207,7 +224,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
         <button type="button" disabled={i===items.length-1} on:click={()=>{shiftItem(i)}}>&dtri;</button>
         <button type="button" on:click={()=>{fieldDetailIndex=i}}>Detail</button>
         <button type="button" on:click={()=>{confirmRemove=i}}>X</button>
-        {#if !isString[id]}
+        {#if !defaults[id].isString}
           <button type="button" on:click={()=>{resetItem(i)}}>Reset</button>
         {/if}
       </td>
@@ -217,7 +234,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       <tr>
         <td></td>
         <td colspan="6">
-          <svelte:self {cms} data={item?.['fields']} options={{id:getFieldName(id) + '[fields]'}} />
+          <svelte:self {cms} data={item?.['fields']} options={{id:getFieldFormID(id) + '[fields]'}} />
         </td>
       </tr>
     {/if}
@@ -341,7 +358,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
 
     {#if defaults[detailID].field.isFieldable}
       <h2>Fields:</h2>
-      <svelte:self {cms} data={detail?.['fields']} options={{id:`${getFieldName(detailID)}[fields]`}} />
+      <svelte:self {cms} data={detail?.['fields']} options={{id:`${getFieldFormID(detailID)}[fields]`}} />
     {/if}
 
     <div class="center"><button type="button" on:click={()=>{fieldDetailIndex=undefined}}>Close</button></div>
