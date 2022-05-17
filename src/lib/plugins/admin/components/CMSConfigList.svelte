@@ -4,31 +4,41 @@ import type SvelteCMS from 'sveltecms';
 import CmsConfigurableEntity from './CMSConfigurableEntity.svelte';
 import { get, set, isEqual, values } from 'lodash-es'
 import { tick } from 'svelte';
+import Modal from 'sveltecms/components/Modal.svelte';
+import type { ConfigurableEntityConfigSetting } from 'sveltecms';
 
   export let cms:SvelteCMS
   export let options:{
-    configPath:string,
-    allowString:boolean,
-    collection:string,
+    configPath?:string,
+  } = {}
+  let opts = Object.assign({}, options)
+
+  const headings = {
+    ID: `The machine name for each of the ${opts.configPath}.`,
+    Type: `The parent type for each entity configuration.`,
+    Config: `The type-specific config that will be saved.`,
+    Operations: `Edit or delete ${opts.configPath}`,
   }
 
+  // All config items for the type of entities being configured, as an array
+  let items = Object.entries(get(cms.conf, options.configPath, {}))
+
+  // All entities of the type being configured
+  let entities = cms.listEntities(options.configPath)
+
+  // Variables for the elements where new lines are added
   let addID, addType, addIDEl
   let focuses = {}
 
-  let items = Object.entries(get(cms.conf, options.configPath, {}))
-  $: defaultItems = Object.keys(cms[options.configPath]).filter(id => !items.find(item => item[0] === id))
+  // A variable for an the entity configuration Modal
+  let collection
 
-  $: oldConf = get(cms.conf, options.configPath, {})
-  $: newConf = Object.fromEntries(items)
-
-  $: unsaved = !isEqual(oldConf, newConf) || !isEqual(Object.keys(oldConf), Object.keys(newConf))
-
-  let entities = cms.listEntities(options.configPath)
+  // A list of items that are not configured at all
+  $: defaultItems = entities.filter(id => !items.find(item => item[0] === id))
 
   $: isDefault = Object.fromEntries(items.map(([id,item]) => {
     return [id, typeof item === 'string']
   }));
-  let isCollapsed = {}
 
   async function toggleCustom(id) {
     let i = items.findIndex(entry => entry[0] === id)
@@ -37,7 +47,7 @@ import { tick } from 'svelte';
 
   async function addItem() {
     if (addID && addType) {
-      items.push([addID, (options.allowString ? addType : { type:addType })])
+      items.push([addID, addType])
       items = items
       await tick()
       focuses[addID]?.focus()
@@ -53,29 +63,12 @@ import { tick } from 'svelte';
     addIDEl.focus()
   }
 
-  export let saveConfig = async () => {
-    set(cms.conf, options.configPath, Object.fromEntries(items))
-    let res = await fetch('/admin/config', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(cms.conf),
-    })
-    console.log(res)
-  }
-
 </script>
 
-<form method="post" enctype="multipart/form-data" on:submit|preventDefault={saveConfig}>
   <table>
     <thead>
       <tr>
-        <th></th>
-        <th>ID</th>
-        <th>Type</th>
-        <th>Default</th>
-        <th>Ops</th>
+
       </tr>
     </thead>
       <tbody>
@@ -119,20 +112,9 @@ import { tick } from 'svelte';
                 bind:this={focuses[id]}
                 on:change={()=>{toggleCustom(id)}}
               >
-              {#if !isDefault[id]}
-                <button type="button" on:click|preventDefault={()=>{isCollapsed[id] = !isCollapsed?.[id]}}>
-                  {#if isCollapsed[id]}&dtri{:else}&utri;{/if}
-                </button>
-              {/if}
             </td>
             <td>
               <button type="button" on:click|preventDefault={()=>{removeItem(id)}}>✖️</button>
-            </td>
-          </tr>
-          <tr style:display={(isDefault[id] || isCollapsed[id]) ? 'none' : 'table-row'}>
-            <td><span style:display="none"></span></td>
-            <td colspan="4">
-              <CmsConfigurableEntity {cms} bind:data={item} options={{type:options.configPath, id}} />
             </td>
           </tr>
         {/each}
@@ -148,7 +130,6 @@ import { tick } from 'svelte';
             </select>
           </td>
           <td>
-            <input type="checkbox" checked={options.allowString} on:focus={addItem}>
           </td>
           <td>
             <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>
@@ -156,5 +137,15 @@ import { tick } from 'svelte';
         </tr>
       </tbody>
   </table>
-  <button type="submit" disabled={!unsaved}>Save</button>
-</form>
+
+{#if collection}
+  <Modal on:cancel={()=>{ collection = undefined }}>
+
+    <button
+      type="button"
+      class="primary"
+      on:click={()=>{ collection = undefined }}
+    >Close</button>
+
+  </Modal>
+{/if}
