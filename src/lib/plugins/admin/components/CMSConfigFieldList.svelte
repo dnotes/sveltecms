@@ -13,7 +13,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
   export let options:{
     id?:string // e.g. `${contentType}[fields]`, or blank when configuring field types
   } = {}
-  $: opts = Object.assign({}, options)
+  let opts = Object.assign({}, options)
 
   const headings = {
     // Order: 'Move the field.', // TODO: add reorder

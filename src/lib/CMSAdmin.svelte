@@ -37,7 +37,15 @@ import Nav from "sveltecms/components/Nav.svelte";
 <h1>{adminPage?.label ?? 'Site Admin'}</h1>
 
 {#if adminPage}
-  <svelte:component this={adminPage.component.component} {cms} {adminPath} {adminPage} {basePath} {data} options={adminPage?.component?.options || {}} />
+  <svelte:component
+    this={adminPage.component.component}
+    {cms}
+    {adminPath}
+    {adminPage}
+    {basePath}
+    {data}
+    options={adminPage?.component?.options || {}}
+  />
 {:else}
   <ul>
     {#each sections as section}
