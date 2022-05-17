@@ -14,7 +14,7 @@ import { createEventDispatcher } from "svelte";
 <style>
   .modalbg {
     z-index:10;
-    background:rgba(95,95,95,.4);
+    background:rgba(0,0,0,.4);
     user-select:none;
     width:100vw;
     height:100vh;
@@ -32,6 +32,6 @@ import { createEventDispatcher } from "svelte";
     max-width: 85vw;
     max-height: 92vh;
     overflow-y:scroll;
-    background:white;
+    background:var(--cms-background);
   }
 </style>
