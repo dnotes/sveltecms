@@ -80,26 +80,6 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
     </tr>
   </thead>
     <tbody>
-      {#each defaultItems as [id, value]}
-        <tr>
-          <td>{id}</td>
-          <td>
-            <CmsWidgetConfigurableEntity
-              {cms}
-              type={opts.type}
-              {id}
-              items={entities}
-              forceEntityID={id}
-              unset="- default -"
-              disabled
-              bind:value
-              on:change={(e)=>{customizeDefaultItem(id,e?.detail?.value)}}
-            />
-          </td>
-          <td></td>
-          <td></td>
-        </tr>
-      {/each}
       {#each items as [id, value], i}
         <tr>
           <td><input type="text" bind:value={id} disabled={!value['type'] || value['type'] === value['id']}></td>
@@ -124,7 +104,26 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
           </td>
         </tr>
       {/each}
-      <!-- Add item -->
+      {#each defaultItems as [id, value]}
+        <tr>
+          <td>{id}</td>
+          <td>
+            <CmsWidgetConfigurableEntity
+              {cms}
+              type={opts.type}
+              {id}
+              items={entities}
+              forceEntityID={id}
+              unset="- default -"
+              disabled
+              bind:value
+              on:change={(e)=>{customizeDefaultItem(id,e?.detail?.value)}}
+            />
+          </td>
+          <td>(default)</td>
+          <td></td>
+        </tr>
+      {/each}
     </tbody>
 </table>
 
