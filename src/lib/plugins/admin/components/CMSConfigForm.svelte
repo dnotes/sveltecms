@@ -8,13 +8,13 @@ import Button from "sveltecms/ui/Button.svelte";
   export let adminPath:string
   export let options:{
     component:string
-    type?:string,
+    configType?:string,
     configPath?:string,
   }
   let opts = Object.assign({}, options)
   let component = cms.getEntity('components', opts.component)
   opts.configPath = data ?? opts.configPath ?? adminPath.replace(/\//,'.')
-  if (!opts.type) opts.type = opts.configPath.replace(/\..+/, '')
+  if (!opts.configType) opts.configType = opts.configPath.replace(/\..+/, '')
   let conf = get(cms.conf, opts.configPath, {})
 
   // Variables for diffing

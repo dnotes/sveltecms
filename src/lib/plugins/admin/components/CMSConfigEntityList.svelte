@@ -11,7 +11,7 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
   export let cms:SvelteCMS
   export let data:{[id:string]:string|ConfigSetting}
   export let options:{
-    type:string
+    configType:string
     configPath:string
   }
   let opts = Object.assign({}, options)
@@ -56,8 +56,6 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
   }
   // Variables for the remove item modal
   let confirmRemove:number
-  let confirmRemoveButton
-  $: if (typeof confirmRemove === 'number') confirmRemoveButton?.focus()
 
   function resetItem(i:number) {
     items[i][1] = items[i][0]
@@ -86,7 +84,7 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
           <td>
             <CmsWidgetConfigurableEntity
               {cms}
-              type={opts.type}
+              type={opts.configType}
               {id}
               disabled={!value['type'] || value['type'] === id}
               items={entities}
@@ -110,7 +108,7 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
           <td>
             <CmsWidgetConfigurableEntity
               {cms}
-              type={opts.type}
+              type={opts.configType}
               {id}
               items={entities}
               forceEntityID={id}
@@ -142,7 +140,7 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
   <Modal on:cancel={()=>{confirmRemove=undefined}}>
     <div><p>Are you sure you want to delete the {items[confirmRemove][0]} configuration?</p></div>
     <div class="center">
-      <Button primary bind:this={confirmRemoveButton} on:click={()=>{removeItem(confirmRemove)}}>Delete</Button>
+      <Button primary on:click={()=>{removeItem(confirmRemove)}}>Delete</Button>
       <Button on:click={()=>{confirmRemove=undefined}}>cancel</Button>
     </div>
   </Modal>

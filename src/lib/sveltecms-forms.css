@@ -72,10 +72,11 @@ td>.cms-helptext:hover { display:none; }
   border-radius: 1em;
   border: 2px solid var(--cms-button);
   display: inline-block;
+  text-transform: lowercase;
 }
 .sveltecms button.small,
 .sveltecms a.button.small {
-  font-size: 75%;
+  font-size: 80%;
   border-width: 1px;
 }
 

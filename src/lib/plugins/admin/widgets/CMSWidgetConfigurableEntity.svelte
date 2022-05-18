@@ -42,7 +42,6 @@ import yaml from 'js-yaml';
   $: entityID = forceEntityID || value?.['type'] || value
   $: entityType = cms.getEntityType(type, entityID)
   $: optionFields = Object.keys(entityType?.optionFields ?? {})
-  $: hasOptionFields = optionFields.length > 0
 
   function openOptions() {
     optionValues = Object.fromEntries(optionFields.filter(k => value.hasOwnProperty(k)).map(k => ([ k, value?.[k] ])))
@@ -120,7 +119,3 @@ import yaml from 'js-yaml';
     <Button primary on:click={saveOptions}>Close</Button>
   </Modal>
 {/if}
-
-<style>
-  select { padding-right:20px; }
-</style>

@@ -607,9 +607,9 @@ export default class SvelteCMS {
       // the entity config of the parent's optionFields (if it is an entityType)
       ...(this.getConfigOptionsFromFields(entity?.optionFields ?? {})),
       // any options written directly into the entity config, e.g. in a ConfigurableEntityConfigSetting
-      ...(Object.fromEntries(options.filter(k=>entity.hasOwnProperty(k)).map(k => ([ k, entity?.[k] ]) ))),
+      ...(Object.fromEntries(options.filter(k=>entity?.hasOwnProperty(k)).map(k => ([ k, entity?.[k] ]) ))),
       // the options, e.g. in a ConfigurableEntity
-      ...(entity.options || {}),
+      ...(entity?.options || {}),
     }
   }
 
