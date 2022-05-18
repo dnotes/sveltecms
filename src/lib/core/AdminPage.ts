@@ -76,7 +76,12 @@ export const adminPages:AdminPageConfig[] = [
   {
     id: 'types/*',
     label: 'Content Types',
-    component: 'CMSConfigEdit',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigContentType',
+      },
+    },
   },
   {
     id: 'fields',
@@ -90,12 +95,11 @@ export const adminPages:AdminPageConfig[] = [
   {
     id: 'widgets',
     component: {
-      type: 'CMSConfigList',
+      type: 'CMSConfigForm',
       options: {
-        allowString: true,
-        configPath: 'widgets',
-      }
-    }
+        component: 'CMSConfigEntityList',
+      },
+    },
   },
   // {
   //   id: 'lists',
@@ -109,20 +113,19 @@ export const adminPages:AdminPageConfig[] = [
   {
     id: 'contentStores',
     component: {
-      type: 'CMSConfigList',
+      type: 'CMSConfigForm',
       options: {
-        configPath: 'contentStores',
-        allowString: false,
-      }
-    }
+        component: 'CMSConfigEntityList',
+      },
+    },
   },
   {
     id: 'mediaStores',
     component: {
-      type: 'CMSConfigList',
+      type: 'CMSConfigForm',
       options: {
-        configPath: 'mediaStores',
-      }
-    }
+        component: 'CMSConfigEntityList',
+      },
+    },
   },
 ]

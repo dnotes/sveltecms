@@ -63,3 +63,7 @@ td>.cms-tooltip:hover { display:none; }
   border-radius: 1em;
   font-weight: bold;
 }
+.sveltecms button.primary:disabled,
+.sveltecms button[type="submit"]:disabled {
+  filter: grayscale(75%);
+}

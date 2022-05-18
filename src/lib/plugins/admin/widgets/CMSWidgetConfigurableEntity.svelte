@@ -8,11 +8,20 @@ import { createEventDispatcher } from "svelte";
 
   export let cms:SvelteCMS
   export let type:string // The type of configurable entity being configured
-  export let id:string // The base id for the form element
-  export let items:string[] // The list of items for the select box
+  export let id:string // The 'name' attribute of the form element
+  export let items:string[] // The list of items for the select box, or a single entity ID for default items
   let exportedValue:string|ConfigSetting // The config setting exported as value
   export { exportedValue as value }
+  export let disabled:boolean = undefined // Whether the select box should be disabled
   export let unset:string = undefined // The label for the unset value
+  export let forceEntityID:string = undefined // A single entity ID to force configuration, e.g. for default items
+
+  // For a single item, get the entityID
+  if (forceEntityID) {
+    items = []
+    disabled = true
+    unset = forceEntityID
+  }
 
   // the value of the form, including undefined
   let value = exportedValue === undefined ? '' : exportedValue
@@ -28,34 +37,45 @@ import { createEventDispatcher } from "svelte";
   let optionValues
 
   // check if there is anything to configure
-  $: optionFields = Object.keys(cms.getEntityType(type, (value?.['type'] || value))?.optionFields || {})
+  $: entityID = forceEntityID || value?.['type'] || value
+  $: entityType = cms.getEntityType(type, entityID)
+  $: optionFields = Object.keys(entityType?.optionFields ?? {})
   $: hasOptionFields = optionFields.length > 0
 
   function openOptions() {
     optionValues = Object.fromEntries(optionFields.filter(k => value.hasOwnProperty(k)).map(k => ([ k, value?.[k] ])))
-    collection = cms.getEntityConfigCollection(type, (value?.['type'] ?? value))
+    collection = cms.getEntityConfigCollection(type, entityID)
   }
 
   // Whenever the modal is closed, set the real value
   function saveOptions() {
-    let defaults = cms.getEntityConfig(type, value?.['type'] || value)
+    // Get the default config for the configuration
+    let defaults = forceEntityID ? cms.getConfigOptionsFromFields(entityType?.optionFields ?? {}) : cms.getEntityConfig(type, entityID)
+    // Get any customized values // TODO: test whether we need isEqual instead of !==
     let customizations = Object.entries(optionValues).filter(([k,v]) => (defaults[k] !== v) )
-    let newValueArray = typeof value === 'string' ? [[ 'type', value ]] : Object.entries(value).filter(([k,v]) => !optionFields.includes(k))
+    // Set an array of new values
+    let newValueArray = typeof value === 'string' ? [[ 'type', forceEntityID || value ]] : Object.entries(value).filter(([k,v]) => !optionFields.includes(k))
+    // Set the new value
     let newValue = Object.fromEntries([...newValueArray, ...customizations])
-    if ( isEqual(newValue, { type: newValue?.['type'] }) ) newValue = newValue?.['type']
+    // If the new value is only a type, it should be a string
+    // If there is a forced entity id, then we are configuring a default entity type, and should return undefined
+    if ( isEqual(Object.keys(newValue), ['type']) ) newValue = forceEntityID ? '' : newValue?.['type']
+    // TODO: figure out how to remove the "type" field if this is a default entity type
+    // Now set the value
     value = newValue
-    dispatch('change', { value: exportedValue })
+    // And dispatch the change event
+    dispatch('change', { value })
+    // Close the Modal and unset the optionValues
     collection=undefined
     optionValues=undefined
   }
-
-  $: console.log(value)
 
 </script>
 
 {#if typeof value === 'string' || typeof value === 'undefined' || isNull(value)}
   <select
     name="{id}"
+    {disabled}
     bind:value>
 
     {#if unset}
@@ -69,6 +89,7 @@ import { createEventDispatcher } from "svelte";
 {:else}
   <select
     name="{id}[type]"
+    {disabled}
     bind:value={value['type']}>
 
     {#if unset}

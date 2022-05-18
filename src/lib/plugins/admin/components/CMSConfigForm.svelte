@@ -7,32 +7,33 @@ import { get, set, isEqual } from 'lodash-es'
   export let adminPath:string
   export let options:{
     component:string
+    type?:string,
     configPath?:string,
   }
   let opts = Object.assign({}, options)
   let component = cms.getEntity('components', opts.component)
-  let configPath = data ?? options.configPath ?? adminPath.replace(/\//,'.')
-  let conf = get(cms.conf, configPath, {})
+  opts.configPath = data ?? opts.configPath ?? adminPath.replace(/\//,'.')
+  if (!opts.type) opts.type = opts.configPath.replace(/\..+/, '')
+  let conf = get(cms.conf, opts.configPath, {})
 
   // Variables for diffing
-  $: oldConf = get(cms.conf, configPath, {})
+  $: oldConf = get(cms.conf, opts.configPath, {})
   $: unsaved = !isEqual(oldConf, conf) || !isEqual(Object.keys(oldConf), Object.keys(conf))
 
   export let saveConfig = async () => {
-    set(cms.conf, configPath, conf)
-    let res = await fetch('/admin/config', {
+    set(cms.conf, opts.configPath, conf)
+    return fetch('/admin/config', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(cms.conf),
     })
-    console.log(res)
   }
 
 </script>
 
 <form method="dialog" on:submit|preventDefault={saveConfig}>
-  <svelte:component {cms} bind:data={conf} this={component.component} options={component.options}/>
+  <svelte:component {cms} bind:data={conf} this={component.component} options={{...opts, ...component.options}}/>
   <button type="submit" disabled={!unsaved}>Save</button>
 </form>
