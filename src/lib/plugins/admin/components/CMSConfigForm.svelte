@@ -32,8 +32,7 @@ import { get, set, isEqual } from 'lodash-es'
   }
 
 </script>
-
 <form method="dialog" on:submit|preventDefault={saveConfig}>
-  <svelte:component {cms} bind:data={conf} this={component.component} options={{...opts, ...component.options}}/>
+  <svelte:component {cms} bind:data={conf} this={component.component} options={{...opts, ...component.options}} {adminPath} />
   <button type="submit" disabled={!unsaved}>Save</button>
 </form>

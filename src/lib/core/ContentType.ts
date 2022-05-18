@@ -6,7 +6,7 @@ import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore'
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field'
 
 import { getLabelFromID } from 'sveltecms/utils';
-
+import type { ComponentConfigSetting } from './Component';
 
 export type ContentTypeConfigSetting = ConfigSetting & {
   label: string
@@ -14,6 +14,11 @@ export type ContentTypeConfigSetting = ConfigSetting & {
   contentStore: string|ContentStoreConfigSetting
   mediaStore?: string|MediaStoreConfigSetting
   slug?: string|string[]|SlugConfigSetting
+  previewComponent?:string
+  form?:{
+    method?:'post'|'get'
+    action?:string
+  }
 }
 
 export class ContentType implements FieldableEntity, LabeledEntity {
@@ -23,19 +28,22 @@ export class ContentType implements FieldableEntity, LabeledEntity {
   slug:SlugConfig
   contentStore:ContentStore
   mediaStore?:string|MediaStoreConfigSetting
+  previewComponent?:string|ComponentConfigSetting
   fields:{[key:string]:Field} = {}
-  form?: {
+  form: {
     method?:'post'|'get'
     action?:string
-    previewComponent?:string
   }
   constructor(id, conf:ContentTypeConfigSetting, cms:SvelteCMS) {
     this.id = id
     this.label = conf.label || getLabelFromID(this.id)
-
     this.contentStore = new ContentStore(conf?.contentStore, cms)
     this.mediaStore = conf.mediaStore
-
+    this.previewComponent = conf.previewComponent
+    this.form = {
+      method:conf?.form?.method,
+      action:conf?.form?.action,
+    }
     Object.entries(conf.fields).forEach(([id,conf]) => {
       this.fields[id] = new Field(id, conf, cms, this)
     })

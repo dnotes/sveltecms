@@ -33,13 +33,6 @@ export class AdminPage implements LabeledEntity {
 
 export const adminPages:AdminPageConfig[] = [
   {
-    id: 'config',
-    component: 'CMSConfigView',
-    post: async({cms,event,values})=>{
-      if (event) return saveContentEndpoint(cms, cms.admin, event.request)
-    }
-  },
-  {
     id: 'content',
     component: 'CMSContentTypeList',
   },
@@ -69,21 +62,6 @@ export const adminPages:AdminPageConfig[] = [
     }
   },
   {
-    id: 'types',
-    label: 'Content Types',
-    component: 'CMSContentTypeList',
-  },
-  {
-    id: 'types/*',
-    label: 'Content Types',
-    component: {
-      type: 'CMSConfigForm',
-      options: {
-        component: 'CMSConfigContentType',
-      },
-    },
-  },
-  {
     id: 'fields',
     component: {
       type: 'CMSConfigForm',
@@ -98,6 +76,21 @@ export const adminPages:AdminPageConfig[] = [
       type: 'CMSConfigForm',
       options: {
         component: 'CMSConfigEntityList',
+      },
+    },
+  },
+  {
+    id: 'types',
+    label: 'Content Types',
+    component: 'CMSConfigContentTypeList',
+  },
+  {
+    id: 'types/*',
+    label: 'Content Types',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigContentType',
       },
     },
   },
@@ -127,5 +120,12 @@ export const adminPages:AdminPageConfig[] = [
         component: 'CMSConfigEntityList',
       },
     },
+  },
+  {
+    id: 'config',
+    component: 'CMSConfigView',
+    post: async({cms,event,values})=>{
+      if (event) return saveContentEndpoint(cms, cms.admin, event.request)
+    }
   },
 ]
