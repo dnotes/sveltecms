@@ -79,7 +79,7 @@ import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 
 <AddItemLine>
   <div class="field"><input type="text" bind:value={addID}></div>
-  <Button primary on:click={()=>{addLink.click()}}>+ add</Button>
+  <Button primary disabled={!addID} on:click={()=>{addLink.click()}}>+ add</Button>
   <a href="{basePath}/{adminPath}/{addID}" bind:this={addLink} style:display='none'>add</a>
 </AddItemLine>
 
