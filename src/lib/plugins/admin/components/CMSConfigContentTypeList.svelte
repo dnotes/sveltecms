@@ -30,7 +30,14 @@ import Modal from 'sveltecms/components/Modal.svelte'
 
   }
   async function listContent(id) {
-    return cms.listContent(id)
+    try {
+      let content = await cms.listContent(id)
+      return content
+    }
+    catch(e) {
+      console.error(e)
+      return Promise.reject()
+    }
   }
 
 </script>
@@ -91,7 +98,7 @@ import Modal from 'sveltecms/components/Modal.svelte'
         <p>There is no content of this type. {(confirmRemoveType = removeType) && ''}</p>
       {/if}
     {:catch}
-      <p>There was an error checking the content for this type.
+      <p>There was an error checking for content of this type.
         To remove it anyway, please type "{removeType}" in the field below:</p>
       <input type="text" placeholder="{removeType}" bind:value={confirmRemoveType}>
     {/await}
