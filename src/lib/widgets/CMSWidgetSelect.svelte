@@ -20,7 +20,7 @@ import type { WidgetField } from "..";
     </span>
     <select
       name={id}
-      title={field.tooltip}
+      title={field.helptext}
       bind:value
       size={opts?.size || 0}
       multiple
@@ -39,7 +39,7 @@ import type { WidgetField } from "..";
     </span>
     <select
       name={id}
-      title={field.tooltip}
+      title={field.helptext}
       bind:value
       size={opts.size || 0}
       disabled={field.disabled}

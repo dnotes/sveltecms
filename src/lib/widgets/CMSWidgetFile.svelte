@@ -239,7 +239,7 @@ import DisplayResult from "../components/DisplayResult.svelte";
 
     <input
       name="{id}[files]"
-      title={field.tooltip}
+      title={field.helptext}
       type="file"
       bind:files
       bind:this={input}

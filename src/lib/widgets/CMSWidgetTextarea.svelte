@@ -41,7 +41,7 @@ import { onMount } from "svelte";
   </span>
   <textarea
     name={id}
-    title={field.tooltip}
+    title={field.helptext}
     bind:value
     bind:this={el}
     on:input={autosize}

@@ -18,7 +18,7 @@ import type { WidgetField } from "sveltecms";
   {/if}
   <input
     name={id}
-    title={field.tooltip}
+    title={field.helptext}
     type="checkbox"
     bind:checked={value}
     disabled={field.disabled}

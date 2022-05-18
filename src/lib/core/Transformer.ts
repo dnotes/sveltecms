@@ -27,7 +27,7 @@ export const transformers:{[id:string]:Transformer} = {
   //     locale: {
   //       type: 'text',
   //       default: '',
-  //       tooltip: "The locale to display the date, e.g. 'en-US', or empty to display in client's locale."
+  //       helptext: "The locale to display the date, e.g. 'en-US', or empty to display in client's locale."
   //     },
   //     dateFormatOptions: {
   //       type: 'collection',
@@ -69,16 +69,16 @@ export const transformers:{[id:string]:Transformer} = {
       delimiter: {
         type: 'text',
         default: ',',
-        tooltip: 'The delimiter between tags.',
+        helptext: 'The delimiter between tags.',
       },
       splitOnSpaces: {
         type: 'boolean',
-        tooltip: 'If true, any space will also function as a delimiter between tags.',
+        helptext: 'If true, any space will also function as a delimiter between tags.',
         default: false,
       },
       trimItems: {
         type: 'boolean',
-        tooltip: 'Whether to trim spaces around tags. ' +
+        helptext: 'Whether to trim spaces around tags. ' +
           'Only set to false if it is necessary to begin or end tags with a space character. ' +
           'Does nothing if "Split On Spaces" is false.',
         default: true,
@@ -102,35 +102,35 @@ export const transformers:{[id:string]:Transformer} = {
     optionFields: {
       separator: {
         type: "text",
-        tooltip: 'The separator character to subsitute for spaces, etc.',
+        helptext: 'The separator character to subsitute for spaces, etc.',
         default: '-',
       },
       lowercase: {
         type: 'boolean',
-        tooltip: 'Make the slug lowercase.',
+        helptext: 'Make the slug lowercase.',
         default: true,
       },
       decamelize: {
         type: 'boolean',
-        tooltip: 'Convert camelcase to separate words, e.g. fooBar > foo-bar.',
+        helptext: 'Convert camelcase to separate words, e.g. fooBar > foo-bar.',
         default: true,
       },
       customReplacements: {
         type: 'tags',
         default: [],
-        tooltip: `Add your own custom replacements. `+
+        helptext: `Add your own custom replacements. `+
           `The replacements are run on the original string before any other transformations. `+
           `The format is "from:to,from2:to2,...". To remove a character, use "from:". `+
           `Add a leading and trailing space to the replacement to have it separated by dashes, e.g. "@: at ,...".`,
       },
       preserveLeadingUnderscore: {
         type: 'boolean',
-        tooltip: `If your string starts with an underscore, it will be preserved in the slug.`,
+        helptext: `If your string starts with an underscore, it will be preserved in the slug.`,
         default: false,
       },
       preserveTrailingDash: {
         type: 'boolean',
-        tooltip: `If your string ends with a dash, it will be preserved in the slug.`,
+        helptext: `If your string ends with a dash, it will be preserved in the slug.`,
         default: false,
       },
     }

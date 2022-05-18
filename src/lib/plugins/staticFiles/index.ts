@@ -28,7 +28,7 @@ export async function getFs(databaseName):Promise<PromisifiedFS> {
 export const databaseNameField:ConfigFieldConfigSetting = {
   type: 'text',
   default: '',
-  tooltip: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
+  helptext: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
     'It should be globally unique and generally should be the same across one site or app; your site url might be a good choice. ' +
     'At the moment, if you are using something like isomorphic-git, you must import content into the browser filesystem yourself.',
 }
@@ -45,7 +45,7 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
   contentDirectory: {
     type: 'text',
     default: 'content',
-    tooltip: 'The directory for local content files relative to the project root.',
+    helptext: 'The directory for local content files relative to the project root.',
   },
   prependContentTypeIdAs: {
     type: 'text',
@@ -60,7 +60,7 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
       },
     },
     default: 'directory',
-    tooltip: 'Include the content type id as part of the path',
+    helptext: 'Include the content type id as part of the path',
   },
   fileExtension: {
     type: 'text',
@@ -77,12 +77,12 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
         }
       }
     },
-    tooltip: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',
+    helptext: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',
   },
   markdownBodyField: {
     type: 'text',
     default: 'body',
-    tooltip: 'Which field should be used as the body of the Markdown file',
+    helptext: 'Which field should be used as the body of the Markdown file',
   },
 }
 
@@ -98,22 +98,22 @@ export const staticFilesMediaOptionFields:{[key:string]:ConfigFieldConfigSetting
   staticDirectory: {
     type: 'text',
     default: 'static',
-    tooltip: 'The directory for static files relative to the project root. For SvelteKit projects this is "static" by default.'
+    helptext: 'The directory for static files relative to the project root. For SvelteKit projects this is "static" by default.'
   },
   mediaDirectory: {
     type: 'text',
     default: '',
-    tooltip: 'The directory for media files relative to the static directory.',
+    helptext: 'The directory for media files relative to the static directory.',
   },
   allowMediaTypes: {
     type: 'tags',
     default: 'image/*',
-    tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+    helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
   },
   maxUploadSize: {
     type: 'text',
     default: "",
-    tooltip: 'The maximum file size allowed for media uploads, e.g. "10MB". Empty or 0 for unlimited.'
+    helptext: 'The maximum file size allowed for media uploads, e.g. "10MB". Empty or 0 for unlimited.'
   },
 }
 

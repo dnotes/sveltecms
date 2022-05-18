@@ -127,12 +127,12 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       textOrArray: {
         type: 'text',
         default: '',
-        tooltip: 'A string or array which may or may not contain the value.'
+        helptext: 'A string or array which may or may not contain the value.'
       },
       searchFor: {
         type: 'text',
         default: '',
-        tooltip: 'The value for which to test.'
+        helptext: 'The value for which to test.'
       },
     }
   },
@@ -145,7 +145,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       function: {
         type: 'text', // TODO: determine field type for field functions
         default: null,
-        tooltip: 'A function to run once.'
+        helptext: 'A function to run once.'
       }
     }
   },
@@ -158,14 +158,14 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       transformer: {
         type: 'text', // TODO: determine field type for transformers
         default: null,
-        tooltip: 'The ID of the transformer to run.'
+        helptext: 'The ID of the transformer to run.'
       },
       value: {
         type: 'text', // TODO: determine field type for field functions
         default: {
           function: 'getValue'
         },
-        tooltip: 'The value to be transformed.',
+        helptext: 'The value to be transformed.',
       }
     }
   },
@@ -178,7 +178,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       property: {
         type: 'text',
         default: '',
-        tooltip: 'The name of the property to get.'
+        helptext: 'The name of the property to get.'
       }
     }
   },
@@ -205,12 +205,12 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       property: {
         type: 'text',
         default: '',
-        tooltip: 'The name of the field property to set.',
+        helptext: 'The name of the field property to set.',
       },
       value: {
         type: 'text',
         default: '',
-        tooltip: 'The value to set.'
+        helptext: 'The value to set.'
       },
     }
   },
@@ -230,7 +230,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
-        tooltip: 'The name of the item field to get.',
+        helptext: 'The name of the item field to get.',
         default: {
           function: 'id',
         },
@@ -247,14 +247,14 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
-        tooltip: 'The name of the item field which should be set to a value.',
+        helptext: 'The name of the item field which should be set to a value.',
         default: {
           function: 'id',
         }
       },
       value: {
         type: 'text',
-        tooltip: 'The value to set.',
+        helptext: 'The value to set.',
         default: '',
       }
     }
@@ -269,7 +269,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
-        tooltip: 'The name of the item field to check for errors.',
+        helptext: 'The name of the item field to check for errors.',
         default: {
           function: 'id'
         },
@@ -286,7 +286,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       fieldID: {
         type: 'text',
-        tooltip: 'The name of the item field to check if it was touched.',
+        helptext: 'The name of the item field to check if it was touched.',
         default: {
           function: 'id'
         },
@@ -301,7 +301,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
-        tooltip: 'The value to be tested for "truthiness"--returns true for: false, 0, null, undefined, and empty strings.',
+        helptext: 'The value to be tested for "truthiness"--returns true for: false, 0, null, undefined, and empty strings.',
         default: {
           function: 'getValue'
         },
@@ -316,17 +316,17 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       condition: {
         type: 'text',
-        tooltip: '',
+        helptext: '',
         default: 'The condition to be tested.',
       },
       ifTrue: {
         type: 'text',
-        tooltip: 'The function to run or value to return if true.',
+        helptext: 'The function to run or value to return if true.',
         default: true,
       },
       ifFalse: {
         type: 'text',
-        tooltip: 'The function to run or value to return if false.',
+        helptext: 'The function to run or value to return if false.',
         default: false,
       }
     }
@@ -340,7 +340,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       conditions: {
         type: 'text',
-        tooltip: 'The conditions or values to be tested for truthiness.',
+        helptext: 'The conditions or values to be tested for truthiness.',
         multiple: true,
         default: [],
       }
@@ -355,7 +355,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       conditions: {
         type: 'text',
-        tooltip: 'The conditions or values to be tested for truthiness.',
+        helptext: 'The conditions or values to be tested for truthiness.',
         multiple: true,
         default: [],
       }
@@ -373,7 +373,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       values: {
         type: 'text',
-        tooltip: 'The values to be tested for equality, using isEqual from lodash.',
+        helptext: 'The values to be tested for equality, using isEqual from lodash.',
         multiple: true,
         default: [],
       }
@@ -387,17 +387,17 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
-        tooltip: 'The base value.',
+        helptext: 'The base value.',
         default: '',
       },
       isLessThan: {
         type: 'text',
-        tooltip: 'The test value. Returns true if test value is less than the base value.',
+        helptext: 'The test value. Returns true if test value is less than the base value.',
         default: '',
       },
       orEqual: {
         type: 'boolean',
-        tooltip: 'If true, returns true if the test value is equal to the base value.',
+        helptext: 'If true, returns true if the test value is equal to the base value.',
         default: false,
       }
     }
@@ -410,17 +410,17 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
-        tooltip: 'The base value.',
+        helptext: 'The base value.',
         default: '',
       },
       isGreaterThan: {
         type: 'text',
-        tooltip: 'The test value. Returns true if test value is greater than the base value.',
+        helptext: 'The test value. Returns true if test value is greater than the base value.',
         default: '',
       },
       orEqual: {
         type: 'boolean',
-        tooltip: 'If true, returns true if the test value is equal to the base value.',
+        helptext: 'If true, returns true if the test value is equal to the base value.',
         default: false,
       }
     }
@@ -433,7 +433,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
     optionFields: {
       value: {
         type: 'text',
-        tooltip: 'The test value. Returns true if test value is null or undefined.',
+        helptext: 'The test value. Returns true if test value is null or undefined.',
         default: {
           function: 'getValue'
         },
@@ -450,7 +450,7 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
         type: 'text',
         multiple: true,
         default: '',
-        tooltip: 'List of strings to concatenate',
+        helptext: 'List of strings to concatenate',
       }
     }
   },

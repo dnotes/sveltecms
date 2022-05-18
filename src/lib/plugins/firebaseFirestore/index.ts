@@ -45,33 +45,33 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
     collection: {
       type: "text",
       default: '',
-      tooltip: 'The firestore collection into which this content type will be saved.',
+      helptext: 'The firestore collection into which this content type will be saved.',
     },
     server: {
       type: "text",
       default: '',
-      tooltip: 'An alternate firestore server to use other than the default, https://firestore.googleapis.com.'
+      helptext: 'An alternate firestore server to use other than the default, https://firestore.googleapis.com.'
     },
     listFields: {
       type: "tags",
       default: [],
-      tooltip: 'The fields to get in cms.listContent queries for this type.'
+      helptext: 'The fields to get in cms.listContent queries for this type.'
     },
     listQuery: {
       type: "collection",
       multiple: true,
       default: [],
-      tooltip: 'The field query to use when listing content: see https://firebase.google.com/docs/firestore/query-data/queries.',
+      helptext: 'The field query to use when listing content: see https://firebase.google.com/docs/firestore/query-data/queries.',
       fields: {
         field: {
           type: "text",
-          tooltip: 'The name of the field on which to filter.',
+          helptext: 'The name of the field on which to filter.',
           default: "",
           required: true,
         },
         op: {
           type: "text",
-          tooltip: 'The comparison operator.',
+          helptext: 'The comparison operator.',
           default: "",
           required: true,
           widget: {
@@ -83,7 +83,7 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
         },
         valueType: {
           type: "text",
-          tooltip: 'The firestore data type for the field.',
+          helptext: 'The firestore data type for the field.',
           default: "stringValue",
           required: true,
           widget: {
@@ -102,7 +102,7 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
         },
         value: {
           type: "text",
-          tooltip: 'The value against which to compare the field content.',
+          helptext: 'The value against which to compare the field content.',
           default: "",
           required: true,
         },
@@ -111,12 +111,12 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
     firebaseConfig: {
       type: "collection",
       default: {},
-      tooltip: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
+      helptext: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
       fields: {
         apiKey: {
           type: "text",
           default: firebaseConfig?.apiKey ?? "",
-          tooltip: 'The API key for your firebase project. Compared to most API keys, '+
+          helptext: 'The API key for your firebase project. Compared to most API keys, '+
           'Firebase API keys do not have the same security implications, and do not need to be kept secret. However, '+
           'in some cases it will be necessary to take other security measures for the integrity of your project.'+
           'See https://firebase.google.com/docs/projects/api-keys.',
@@ -124,27 +124,27 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
         authDomain: {
           type: "text",
           default: firebaseConfig?.authDomain ?? "",
-          tooltip: 'The authDomain for your Firebase app.',
+          helptext: 'The authDomain for your Firebase app.',
         },
         projectId: {
           type: "text",
           default: firebaseConfig?.projectId ?? "",
-          tooltip: 'The projectID for your Firebase app.',
+          helptext: 'The projectID for your Firebase app.',
         },
         storageBucket: {
           type: "text",
           default: firebaseConfig?.storageBucket ?? "",
-          tooltip: 'The storageBucket for your Firebase app.',
+          helptext: 'The storageBucket for your Firebase app.',
         },
         messagingSenderId: {
           type: "text",
           default: firebaseConfig?.messagingSenderId ?? "",
-          tooltip: 'The messagingSenderID for your Firebase app.',
+          helptext: 'The messagingSenderID for your Firebase app.',
         },
         appId: {
           type: "text",
           default: firebaseConfig?.appId ?? "",
-          tooltip: 'The appId for your Firebase app.',
+          helptext: 'The appId for your Firebase app.',
         },
       }
     }

@@ -34,7 +34,7 @@ import { getLabelFromID } from "sveltecms/utils";
     <span>Label</span>
     <input type="text" name='label' bind:value={data.label} placeholder={defaultLabel}>
   </label>
-  <div class="cms-tooltip">
+  <div class="cms-helptext">
     The title used for this content type in admin interfaces. Should be singular.
   </div>
 </div>
@@ -44,7 +44,7 @@ import { getLabelFromID } from "sveltecms/utils";
     <span>Slug</span>
     <input type="text" name="slug" required bind:value={data.slug}>
   </label>
-  <div class="cms-tooltip">
+  <div class="cms-helptext">
     A comma-separated list of field IDs to use for the slug for each content type.
   </div>
 </div>
@@ -94,7 +94,7 @@ import { getLabelFromID } from "sveltecms/utils";
     <option value="post">POST to server</option>
     <option value="get">GET to server</option>
   </select>
-  <div class="cms-tooltip">
+  <div class="cms-helptext">
     The method that the form uses when submitted.
   </div>
 </label></div>
@@ -105,7 +105,7 @@ import { getLabelFromID } from "sveltecms/utils";
       <span>Form Action</span>
       <input type="text" on:change={(e)=>{setProp('form[action]', e.target?.['value'])}}>
     </label>
-    <div class="cms-tooltip">
+    <div class="cms-helptext">
       The url to which the form gets submitted. If blank, will submit to the same url as the form.
     </div>
   </div>

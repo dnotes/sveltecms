@@ -14,7 +14,7 @@ export type FieldConfigSetting = {
   label?: string|FieldFunctionConfigSetting
   default?: any
   value?: any
-  tooltip?: string|FieldFunctionConfigSetting
+  helptext?: string|FieldFunctionConfigSetting
   required?: boolean|FieldFunctionConfigSetting
   disabled?: boolean|FieldFunctionConfigSetting
   hidden?: boolean|FieldFunctionConfigSetting
@@ -35,7 +35,7 @@ export type FieldConfigSetting = {
 export type ConfigFieldConfigSetting = FieldConfigSetting & {
   type: 'text'|'number'|'boolean'|'date'|'collection'|'tags'
   default: any
-  tooltip: string
+  helptext: string
   fields?: {[key:string]:ConfigFieldConfigSetting}
 }
 
@@ -53,7 +53,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
 
   // should be implemented by every widget
   label: string|FieldFunctionConfig
-  tooltip?: string|FieldFunctionConfig = ''
+  helptext?: string|FieldFunctionConfig = ''
   required?: boolean|FieldFunctionConfig
   disabled?: boolean|FieldFunctionConfig
 
@@ -103,7 +103,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.type = conf.type
       this.label = parseFieldFunctionScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
       this.value = parseFieldFunctionScript(conf.value) ?? conf.value
-      this.tooltip = parseFieldFunctionScript(conf.value) ?? (typeof conf.tooltip === 'string' ? conf.tooltip : '')
+      this.helptext = parseFieldFunctionScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '')
       this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false)
       this.multipleLabel = parseFieldFunctionScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false)
       this.multipleMin = parseFieldFunctionScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))

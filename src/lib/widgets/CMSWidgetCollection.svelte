@@ -56,8 +56,8 @@ import type SvelteCMS from 'sveltecms';
           bind:value={value[id]}
         />
       {/if}
-      {#if field.tooltip}
-        <p class="cms-tooltip">{field.tooltip}</p>
+      {#if field.helptext}
+        <p class="cms-helptext">{field.helptext}</p>
       {/if}
     {/if}
   </div>

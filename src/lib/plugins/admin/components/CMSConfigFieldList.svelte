@@ -21,7 +21,7 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     Type: 'The type of data stored in the field.',
     Widget: 'The widget used for data entry on a content form.',
     MediaStore: 'The Media Store used for any uploaded media',
-    Tooltip: 'The help text shown to the editor on a content form.',
+    Helptext: 'The help text shown to the editor on a content form. Plain text only, no html.',
     'Req.': 'Whether the field is required.',
     'Mult.': 'Whether the field can have multiple values.',
     Operations: 'Edit or delete the field',
@@ -192,12 +192,12 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
         {/if}
       </td>
 
-      <td title={headings['Tooltip']}>
+      <td title={headings['Helptext']}>
         <input
           type="text"
           size="12"
-          placeholder={defaults[id].field.tooltip ? defaults[id].field.tooltip.toString() : ''}
-          on:input={(e)=>{ setProp(i, 'tooltip', e.target?.['value'] || undefined) }}
+          placeholder={defaults[id].field.helptext ? defaults[id].field.helptext.toString() : ''}
+          on:input={(e)=>{ setProp(i, 'helptext', e.target?.['value'] || undefined) }}
         >
       </td>
 
@@ -303,11 +303,11 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
     </label></div>
 
     <div class="field"><label>
-      <span>Tooltip</span>
+      <span>Helptext</span>
       <input type="text"
-        value={detail?.['tooltip']}
-        placeholder={defaults[detailID].field.tooltip ? defaults[detailID].field.tooltip.toString() : ''}
-        on:change={(e)=>{ setProp(fieldDetailIndex, 'tooltip', e.target?.['value'] )}}
+        value={detail?.['helptext']}
+        placeholder={defaults[detailID].field.helptext ? defaults[detailID].field.helptext.toString() : ''}
+        on:change={(e)=>{ setProp(fieldDetailIndex, 'helptext', e.target?.['value'] )}}
       >
     </label></div>
 

@@ -17,7 +17,7 @@ import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es'
 const splitter = /\s*,\s*/g
 
 export const FieldPropsAllowFunctions = [
-  'label', 'tooltip', 'required', 'disabled',
+  'label', 'helptext', 'required', 'disabled',
   'hidden', 'class', 'default', 'value',
   'multiple', 'multipleLabel', 'multipleMin', 'multipleMax',
 ]
@@ -641,7 +641,7 @@ export default class SvelteCMS {
 
 export type WidgetField = Field & {
   label:string
-  tooltip?:string
+  helptext?:string
   required?:boolean,
   disabled?:boolean,
   hidden?:boolean,

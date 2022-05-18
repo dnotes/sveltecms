@@ -40,7 +40,7 @@ import type { WidgetField } from "..";
 
   <input
     name="{id}[date]"
-    title={field.tooltip}
+    title={field.helptext}
     type="date"
     bind:value={splitValue.date}
     disabled={field.disabled}
@@ -51,7 +51,7 @@ import type { WidgetField } from "..";
   {#if opts.time}
   <input
     name="{id}[time]"
-    title={field.tooltip}
+    title={field.helptext}
     type="time"
     bind:value={splitValue.time}
     disabled={field.disabled || !splitValue.date }

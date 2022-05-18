@@ -39,17 +39,17 @@ const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:Med
     path: {
       type: 'text',
       default: opts?.path ?? "",
-      tooltip: 'The path, within your storage bucket, at which to save or retrieve content.',
+      helptext: 'The path, within your storage bucket, at which to save or retrieve content.',
     },
     firebaseConfig: {
       type: "collection",
       default: {},
-      tooltip: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
+      helptext: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
       fields: {
         apiKey: {
           type: "text",
           default: opts?.firebaseConfig?.apiKey ?? "",
-          tooltip: 'The API key for your firebase project. Compared to most API keys, '+
+          helptext: 'The API key for your firebase project. Compared to most API keys, '+
           'Firebase API keys do not have the same security implications, and do not need to be kept secret. However, '+
           'in some cases it will be necessary to take other security measures for the integrity of your project.'+
           'See https://firebase.google.com/docs/projects/api-keys.',
@@ -57,27 +57,27 @@ const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:Med
         authDomain: {
           type: "text",
           default: opts?.firebaseConfig?.authDomain ?? "",
-          tooltip: 'The authDomain for your Firebase app.',
+          helptext: 'The authDomain for your Firebase app.',
         },
         projectId: {
           type: "text",
           default: opts?.firebaseConfig?.projectId ?? "",
-          tooltip: 'The projectID for your Firebase app.',
+          helptext: 'The projectID for your Firebase app.',
         },
         storageBucket: {
           type: "text",
           default: opts?.firebaseConfig?.storageBucket ?? "",
-          tooltip: 'The storageBucket for your Firebase app.',
+          helptext: 'The storageBucket for your Firebase app.',
         },
         messagingSenderId: {
           type: "text",
           default: opts?.firebaseConfig?.messagingSenderId ?? "",
-          tooltip: 'The messagingSenderID for your Firebase app.',
+          helptext: 'The messagingSenderID for your Firebase app.',
         },
         appId: {
           type: "text",
           default: opts?.firebaseConfig?.appId ?? "",
-          tooltip: 'The appId for your Firebase app.',
+          helptext: 'The appId for your Firebase app.',
         },
       }
     },

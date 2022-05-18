@@ -17,7 +17,7 @@ import type { WidgetField } from 'sveltecms'
   </span>
   <input
     name={id}
-    title={field.tooltip}
+    title={field.helptext}
     type="text"
     bind:value
     placeholder="{opts?.placeholder ?? ''}"

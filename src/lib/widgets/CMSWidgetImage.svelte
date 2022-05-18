@@ -174,7 +174,7 @@ let result
     </span>
     <input
       name="{id}[files]"
-      title={field.tooltip}
+      title={field.helptext}
       type="file"
       bind:files
       bind:this={input}

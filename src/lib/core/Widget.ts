@@ -84,7 +84,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       placeholder: {
         type: 'text',
         default: '',
-        tooltip: 'This text will be displayed when the field is empty.',
+        helptext: 'This text will be displayed when the field is empty.',
       }
     }
   },
@@ -97,7 +97,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       oneline: {
         type: 'boolean',
         default: false,
-        tooltip: 'add the "oneline" class to a collection fieldset',
+        helptext: 'add the "oneline" class to a collection fieldset',
       }
     }
   },
@@ -109,17 +109,17 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       min: {
         type: 'number',
         default: 0,
-        tooltip: 'The minimum number allowed on the form. Does not validate form submissions!',
+        helptext: 'The minimum number allowed on the form. Does not validate form submissions!',
       },
       max: {
         type: 'number',
         default: undefined,
-        tooltip: 'The maximum number allowed on the form. Does not validate form submissions!',
+        helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
       },
       step: {
         type: 'number',
         default: 1,
-        tooltip: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
+        helptext: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
       },
     }
   },
@@ -131,17 +131,17 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       min: {
         type: 'number',
         default: 0,
-        tooltip: 'The minimum number allowed on the form. Does not validate form submissions!',
+        helptext: 'The minimum number allowed on the form. Does not validate form submissions!',
       },
       max: {
         type: 'number',
         default: undefined,
-        tooltip: 'The maximum number allowed on the form. Does not validate form submissions!',
+        helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
       },
       step: {
         type: 'number',
         default: 1,
-        tooltip: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
+        helptext: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
       },
     }
   },
@@ -153,12 +153,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       min: {
         type: 'date',
         default: undefined,
-        tooltip: 'The minimum number allowed on the form. Does not validate form submissions!',
+        helptext: 'The minimum number allowed on the form. Does not validate form submissions!',
       },
       max: {
         type: 'date',
         default: undefined,
-        tooltip: 'The maximum number allowed on the form. Does not validate form submissions!',
+        helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
       },
     },
     formDataHandler: async (value, cms, contentType, field) => {
@@ -175,21 +175,21 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       placeholder: {
         type: 'text',
         default: '',
-        tooltip: 'This text will be displayed when the field is empty.',
+        helptext: 'This text will be displayed when the field is empty.',
       },
       rows: {
         type: 'number',
         default: 3,
-        tooltip: 'The height, in "rows", of the textarea element.',
+        helptext: 'The height, in "rows", of the textarea element.',
       },
       cols: {
         type: 'number',
         default: 20,
-        tooltip: 'The width, in "columns", of the textarea element.',
+        helptext: 'The width, in "columns", of the textarea element.',
       },
       resize: {
         type: 'text',
-        tooltip: 'Whether to allow resizing of the textarea element.',
+        helptext: 'Whether to allow resizing of the textarea element.',
         default: 'none',
         widget: {
           type: 'select',
@@ -202,7 +202,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       autosize: {
         type: 'boolean',
         default: false,
-        tooltip: 'If selected, the textarea element will be automatically resized to accommodate the entered text.'
+        helptext: 'If selected, the textarea element will be automatically resized to accommodate the entered text.'
       },
     }
   },
@@ -214,7 +214,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       labelBeforeCheckbox: {
         type: 'boolean',
         default: false,
-        tooltip: 'Render the text label before the checkbox element in HTML markup.',
+        helptext: 'Render the text label before the checkbox element in HTML markup.',
       }
     }
   },
@@ -256,32 +256,32 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       accept: {
         type: 'tags',
         default: 'image/*',
-        tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       },
       altField: {
         type: 'boolean',
         default: true,
-        tooltip: 'Show a field for the "alt" attribute'
+        helptext: 'Show a field for the "alt" attribute'
       },
       altRequired: {
         type: 'boolean',
         default: false,
-        tooltip: 'Require "alt" attribute'
+        helptext: 'Require "alt" attribute'
       },
       titleField: {
         type: 'boolean',
         default: false,
-        tooltip: 'Show a field for the "title" attribute'
+        helptext: 'Show a field for the "title" attribute'
       },
       attributionField: {
         type: 'boolean',
         default: false,
-        tooltip: 'Show a field for license or attribution of the image'
+        helptext: 'Show a field for license or attribution of the image'
       },
       attributionRequired: {
         type: 'boolean',
         default: false,
-        tooltip: 'Require the attribution field',
+        helptext: 'Require the attribution field',
       },
     },
   },
@@ -295,32 +295,32 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       accept: {
         type: 'text',
         default: undefined,
-        tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       },
       storeStats: {
         type: 'boolean',
         default: undefined,
-        tooltip: 'Store type, size, and upload date for each file in the database.'
+        helptext: 'Store type, size, and upload date for each file in the database.'
       },
       titleField: {
         type: 'boolean',
         default: false,
-        tooltip: 'Show a field for the "title" attribute'
+        helptext: 'Show a field for the "title" attribute'
       },
       attributionField: {
         type: 'boolean',
         default: false,
-        tooltip: 'Show a field for license or attribution of the image'
+        helptext: 'Show a field for license or attribution of the image'
       },
       attributionRequired: {
         type: 'boolean',
         default: false,
-        tooltip: 'Require the attribution field',
+        helptext: 'Require the attribution field',
       },
       hideHeader: {
         type: 'boolean',
         default: false,
-        tooltip: 'Hide the header for the table of files'
+        helptext: 'Hide the header for the table of files'
       },
     }
   },
@@ -334,11 +334,11 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         type: 'number',
         widget: 'text',
         default: 0,
-        tooltip: 'The maximum number of items shown in the dropdown area of a select box.'
+        helptext: 'The maximum number of items shown in the dropdown area of a select box.'
       },
       items: { // TODO: replace this with a List widget when one is available
         type: 'collection',
-        tooltip: '',
+        helptext: '',
         multiple: true,
         default: {},
         widget: {
@@ -352,12 +352,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
             type: 'text',
             required: true,
             default: '',
-            tooltip: 'The label for the select option, shown to users.',
+            helptext: 'The label for the select option, shown to users.',
           },
           value: {
             type: 'text',
             default: '',
-            tooltip: 'The value saved to the database.'
+            helptext: 'The value saved to the database.'
           }
         }
       },

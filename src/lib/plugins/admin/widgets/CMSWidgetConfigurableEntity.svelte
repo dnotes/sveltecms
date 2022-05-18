@@ -109,7 +109,7 @@ import { createEventDispatcher } from "svelte";
 
 {#if hasOptionFields}
   <button type="button" on:click={openOptions}>...</button>
-  <div class="cms-tooltip">
+  <div class="cms-helptext">
     {#if typeof value === 'string'}
       default
     {:else}
@@ -117,7 +117,7 @@ import { createEventDispatcher } from "svelte";
     {/if}
   </div>
 {:else}
-  <p class="cms-tooltip">This entity has no configuration.</p>
+  <p class="cms-helptext">This entity has no configuration.</p>
 {/if}
 
 {#if collection}
