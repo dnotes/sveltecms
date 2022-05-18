@@ -7,13 +7,7 @@ types:
       date: date
       image: image
       body: body
-contentStores:
-  staticFiles:
-    id: staticFiles
-    contentDirectory: content
-    prependContentTypeIdAs: directory
-    fileExtension: md
-    markdownBodyField: body
+contentStores: {}
 mediaStores:
   images:
     type: staticFiles
@@ -27,4 +21,9 @@ fields:
     preMount: date
   title: text
   image: image
+widgets:
+  textarea:
+    type: textarea
+    autosize: true
+    resize: vertical
 _slug: sveltecms.config
