@@ -39,7 +39,7 @@ export let value
       />
     {/if}
     {#if field.helptext}
-      <p class="cms-helptext">{field.helptext}</p>
+      <div class="cms-helptext">{field.helptext}</div>
     {/if}
   </div>
 {/if}

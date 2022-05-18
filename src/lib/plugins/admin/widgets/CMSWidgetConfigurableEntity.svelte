@@ -2,9 +2,11 @@
 import type { ConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntityType } from "sveltecms";
 import type SvelteCMS from "sveltecms";
 import Modal from 'sveltecms/components/Modal.svelte'
+import Button from 'sveltecms/ui/Button.svelte'
 import CmsFieldCollection from "sveltecms/CMSFieldCollection.svelte";
 import { isEqual, isNull } from "lodash-es";
 import { createEventDispatcher } from "svelte";
+import yaml from 'js-yaml';
 
   export let cms:SvelteCMS
   export let type:string // The type of configurable entity being configured
@@ -107,18 +109,7 @@ import { createEventDispatcher } from "svelte";
   {/each}
 {/if}
 
-{#if hasOptionFields}
-  <button type="button" on:click={openOptions}>...</button>
-  <div class="cms-helptext">
-    {#if typeof value === 'string'}
-      default
-    {:else}
-      customized
-    {/if}
-  </div>
-{:else}
-  <p class="cms-helptext">This entity has no configuration.</p>
-{/if}
+<Button small on:click={openOptions}>...</Button>
 
 {#if collection}
   <Modal on:cancel={saveOptions}>
@@ -126,11 +117,10 @@ import { createEventDispatcher } from "svelte";
     <form on:submit|preventDefault={saveOptions}>
       <CmsFieldCollection {cms} {collection} bind:values={optionValues} />
     </form>
-    <button type="button" class="primary" on:click={saveOptions}>Close</button>
+    <Button primary on:click={saveOptions}>Close</Button>
   </Modal>
 {/if}
 
 <style>
   select { padding-right:20px; }
-  .primary { margin:1em auto 0; display:block; }
 </style>

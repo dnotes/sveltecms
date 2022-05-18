@@ -1,10 +1,12 @@
 <script lang="ts">
 import type SvelteCMS from 'sveltecms';
 import type { ConfigSetting } from 'sveltecms';
+import Button from 'sveltecms/ui/Button.svelte';
 import Modal from 'sveltecms/components/Modal.svelte'
 import CmsWidgetConfigurableEntity from 'sveltecms/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte';
 import { tick } from 'svelte';
 import yaml from 'js-yaml'
+import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
 
   export let cms:SvelteCMS
   export let data:{[id:string]:string|ConfigSetting}
@@ -115,39 +117,34 @@ import yaml from 'js-yaml'
             <pre><code>{yaml.dump(value)}</code></pre>
           </td>
           <td>
-            <button type="button" on:click={()=>{confirmRemove=i}}>X</button>
+            <Button small on:click={()=>{confirmRemove=i}}>X</Button>
             {#if typeof value !== 'string'}
-              <button type="button" on:click={()=>{resetItem(i)}}>Reset</button>
+              <Button small on:click={()=>{resetItem(i)}}>Reset</Button>
             {/if}
           </td>
         </tr>
       {/each}
       <!-- Add item -->
-      <tr>
-        <td><input id="new-item" type="text" bind:value={addID} bind:this={addIDEl}></td>
-        <td>
-          <select bind:value={addType}>
-            {#each cms.listEntities(opts.configPath) as type}
-              <option value={type}>{type}</option>
-            {/each}
-          </select>
-        </td>
-        <td>
-          <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>
-        </td>
-        <td>
-        </td>
-      </tr>
     </tbody>
 </table>
+
+<AddItemLine>
+  <input id="new-item" type="text" bind:value={addID} bind:this={addIDEl}>
+  <select bind:value={addType}>
+    {#each cms.listEntities(opts.configPath) as type}
+      <option value={type}>{type}</option>
+    {/each}
+  </select>
+  <Button primary disabled={!addID || !addType} on:click={addItem}>+ add</Button>
+</AddItemLine>
 
 {#if typeof confirmRemove !== 'undefined'}
   <!-- Remove Field Confirmation -->
   <Modal on:cancel={()=>{confirmRemove=undefined}}>
     <div><p>Are you sure you want to delete the {items[confirmRemove][0]} configuration?</p></div>
     <div class="center">
-      <button bind:this={confirmRemoveButton} type="button" class="action" on:click={()=>{removeItem(confirmRemove)}}>Delete</button>
-      <button type="button" on:click={()=>{confirmRemove=undefined}}>cancel</button>
+      <Button primary bind:this={confirmRemoveButton} on:click={()=>{removeItem(confirmRemove)}}>Delete</Button>
+      <Button on:click={()=>{confirmRemove=undefined}}>cancel</Button>
     </div>
   </Modal>
 {/if}

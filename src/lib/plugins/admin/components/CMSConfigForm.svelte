@@ -1,6 +1,7 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
 import { get, set, isEqual } from 'lodash-es'
+import Button from "sveltecms/ui/Button.svelte";
 
   export let cms:SvelteCMS
   export let data:string
@@ -34,5 +35,5 @@ import { get, set, isEqual } from 'lodash-es'
 </script>
 <form method="dialog" on:submit|preventDefault={saveConfig}>
   <svelte:component {cms} bind:data={conf} this={component.component} options={{...opts, ...component.options}} {adminPath} />
-  <button type="submit" disabled={!unsaved}>Save</button>
+  <Button submit disabled={!unsaved}>Save</Button>
 </form>

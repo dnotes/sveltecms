@@ -4,6 +4,7 @@ import CmsFieldCollection from './CMSFieldCollection.svelte';
 import DisplayResult from './components/DisplayResult.svelte'
 import { cloneDeep } from 'lodash-es'
 import { onDestroy, onMount } from 'svelte';
+import Button from './ui/Button.svelte';
 
   export let cms:SvelteCMS
   export let contentTypeID:string
@@ -20,7 +21,7 @@ import { onDestroy, onMount } from 'svelte';
 
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
-  export let previewComponent = contentType?.form?.previewComponent
+  export let previewComponent = contentType?.previewComponent
 
   const initialValues = cloneDeep(values)
 
@@ -64,13 +65,13 @@ import { onDestroy, onMount } from 'svelte';
       </slot>
       <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
         <CmsFieldCollection {cms} {values} collection={contentType} />
-        <button
-          type="submit"
-          class="primary"
+        <Button
+          submit
+          primary
           {disabled}
         >
           <slot name="submit">Submit</slot>
-        </button>
+        </Button>
 
         <DisplayResult bind:result />
 

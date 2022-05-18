@@ -1,12 +1,14 @@
 <script lang="ts">
 import { isEqual } from "lodash-es";
 import Modal from 'sveltecms/components/Modal.svelte'
+import Button from 'sveltecms/ui/Button.svelte'
 import ConfigurableEntityWidget from 'sveltecms/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte'
 
 import { tick } from "svelte/internal";
 
 import type SvelteCMS from "sveltecms";
 import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
+import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 
   export let cms:SvelteCMS
   export let data:{[id:string]:string|FieldConfigSetting} = {}
@@ -220,12 +222,12 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       </td>
 
       <td>
-        <button type="button" disabled={i===0} on:click={()=>{shiftItem(i,true)}}>&utri;</button>
-        <button type="button" disabled={i===items.length-1} on:click={()=>{shiftItem(i)}}>&dtri;</button>
-        <button type="button" on:click={()=>{fieldDetailIndex=i}}>Detail</button>
-        <button type="button" on:click={()=>{confirmRemove=i}}>X</button>
+        <Button small disabled={i===0} on:click={()=>{shiftItem(i,true)}}>&utri;</Button>
+        <Button small disabled={i===items.length-1} on:click={()=>{shiftItem(i)}}>&dtri;</Button>
+        <Button small on:click={()=>{fieldDetailIndex=i}}>Detail</Button>
+        <Button small on:click={()=>{confirmRemove=i}}>X</Button>
         {#if !defaults[id].isString}
-          <button type="button" on:click={()=>{resetItem(i)}}>Reset</button>
+          <Button small on:click={()=>{resetItem(i)}}>Reset</Button>
         {/if}
       </td>
 
@@ -239,39 +241,35 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       </tr>
     {/if}
   {/each}
-    <!-- Add item -->
-    <tr>
-      <!-- <td></td> TODO: add reorder -->
-      <td>
-        <input
-          id="new-item"
-          type="text"
-          size="9"
-          placeholder="new field"
-          bind:value={addID}
-          bind:this={addIDEl}
-        >
-      </td>
-      <td>
-        <select bind:value={addType}>
-          {#each fieldTypeList as type}
-            <option value={type}>{type}</option>
-          {/each}
-        </select>
-      </td>
-      <td>
-        <button type="button" disabled={!addID || !addType} on:click={addItem}>+</button>
-      </td>
-    </tr>
 </table>
+
+<AddItemLine>
+  <input
+    id="new-item"
+    type="text"
+    size="9"
+    placeholder="new field"
+    bind:value={addID}
+    bind:this={addIDEl}
+  >
+
+  <select bind:value={addType}>
+    {#each fieldTypeList as type}
+      <option value={type}>{type}</option>
+    {/each}
+  </select>
+
+  <Button primary disabled={!addID || !addType} on:click={addItem}>+ add</Button>
+
+</AddItemLine>
 
 {#if typeof confirmRemove !== 'undefined'}
   <!-- Remove Field Confirmation -->
   <Modal on:cancel={()=>{confirmRemove=undefined}}>
     <div><p>Are you sure you want to delete the {items[confirmRemove][0]} field?</p></div>
     <div class="center">
-      <button bind:this={confirmRemoveButton} type="button" on:click={()=>{removeItem(confirmRemove)}}>Delete</button>
-      <button type="button" on:click={()=>{confirmRemove=undefined}}>cancel</button>
+      <Button bind:this={confirmRemoveButton} danger on:click={()=>{removeItem(confirmRemove)}}>Delete</Button>
+      <Button on:click={()=>{confirmRemove=undefined}}>cancel</Button>
     </div>
   </Modal>
 {/if}
@@ -361,15 +359,6 @@ import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
       <svelte:self {cms} data={detail?.['fields']} options={{id:`${getFieldFormID(detailID)}[fields]`}} />
     {/if}
 
-    <div class="center"><button type="button" on:click={()=>{fieldDetailIndex=undefined}}>Close</button></div>
+    <div class="center"><Button on:click={()=>{fieldDetailIndex=undefined}}>Close</Button></div>
   </Modal>
 {/if}
-
-<style>
-  .center { text-align:center; }
-  .left { text-align:left; }
-  td { padding:0; }
-  select { width:100%; }
-  table button { height:1.8em; display:table-cell; vertical-align:middle; line-height:1.2em; margin:0 3px; }
-  table button:disabled { color:transparent; }
-</style>

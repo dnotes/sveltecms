@@ -18,6 +18,9 @@ import { getLabelFromID } from "sveltecms/utils";
   let contentTypes = cms.listEntities('types')
   let components = cms.listEntities('components')
 
+  let defaultContentStore = (Object.keys(cms.contentStores || {}) || [])[0]
+  let defaultMediaStore = (Object.keys(cms.mediaStores || {}) || [])[0]
+
   $: defaultLabel = getLabelFromID(contentTypeID)
 
   let formConfig:{method?:string,action?:string} = {}
@@ -45,7 +48,7 @@ import { getLabelFromID } from "sveltecms/utils";
     <input type="text" name="slug" required bind:value={data.slug}>
   </label>
   <div class="cms-helptext">
-    A comma-separated list of field IDs to use for the slug for each content type.
+    A comma-separated list of field IDs to use for the slug.
   </div>
 </div>
 
@@ -59,7 +62,11 @@ import { getLabelFromID } from "sveltecms/utils";
     items={contentStores}
     unset="- use default -"
     bind:value={data.contentStore} />
-</label></div>
+  </label>
+  <div class="cms-helptext">
+    The contentStore used for the content type. CMS default is currently "{defaultContentStore}".
+  </div>
+</div>
 
 <!-- svelte-ignore a11y-label-has-associated-control -->
 <div class="field"><label>
@@ -71,7 +78,11 @@ import { getLabelFromID } from "sveltecms/utils";
     items={mediaStores}
     unset="- use default -"
     bind:value={data.mediaStore} />
-</label></div>
+  </label>
+  <div class="cms-helptext">
+    The mediaStore used for the content type. CMS default is currently "{defaultMediaStore}".
+  </div>
+</div>
 
 <!-- svelte-ignore a11y-label-has-associated-control -->
 <div class="field"><label>
@@ -83,7 +94,11 @@ import { getLabelFromID } from "sveltecms/utils";
     items={components}
     unset="- no preview -"
     bind:value={data.previewComponent} />
-</label></div>
+</label>
+<div class="cms-helptext">
+  The component used for previewing content of this type during editing.
+</div>
+</div>
 
 
 

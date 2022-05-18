@@ -1,8 +1,9 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
 import { getLabelFromID } from "sveltecms/utils";
-
+import Button from 'sveltecms/ui/Button.svelte';
 import Modal from 'sveltecms/components/Modal.svelte'
+import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 
   export let cms:SvelteCMS
   export let basePath:string
@@ -56,32 +57,31 @@ import Modal from 'sveltecms/components/Modal.svelte'
   <thead>
     <tr>
       <th>ID</th>
-      <th></th>
       <th>Label</th>
       <th>Fields</th>
-      <th>Content</th>
+      <th>Operations</th>
     </tr>
   </thead>
   <tbody>
     {#each contentTypes as id}
       <tr>
         <td>{id}</td>
-        <td>
-          <a href="{basePath}/{configPath}/{id}">configure</a>
-          <button type="button" on:click={()=>{removeType=id}}>delete</button>
-        </td>
         <td>{cms.types[id].label || getLabelFromID(id)}</td>
         <td>{Object.keys(cms.types[id].fields || {}).join(', ')}</td>
+        <td>
+          <a href="{basePath}/{configPath}/{id}" class="button small">configure</a>
+          <Button small on:click={()=>{removeType=id}}>delete</Button>
+        </td>
       </tr>
     {/each}
   </tbody>
 </table>
 
-<div class="row">
+<AddItemLine>
   <div class="field"><input type="text" bind:value={addID}></div>
-  <button type="button" class="primary" on:click={()=>{addLink.click()}}>+ add</button>
+  <Button primary on:click={()=>{addLink.click()}}>+ add</Button>
   <a href="{basePath}/{adminPath}/{addID}" bind:this={addLink} style:display='none'>add</a>
-</div>
+</AddItemLine>
 
 {#if removeType}
   <Modal>
@@ -102,15 +102,14 @@ import Modal from 'sveltecms/components/Modal.svelte'
         To remove it anyway, please type "{removeType}" in the field below:</p>
       <input type="text" placeholder="{removeType}" bind:value={confirmRemoveType}>
     {/await}
-    <button type="button" disabled={confirmRemoveType !== removeType} on:click={doRemove}>Delete</button>
-    <button type="button" on:click={()=>{removeType=undefined; confirmRemoveType=undefined;}}>cancel</button>
+    <Button disabled={confirmRemoveType !== removeType} on:click={doRemove}>Delete</Button>
+    <Button on:click={()=>{removeType=undefined; confirmRemoveType=undefined;}}>cancel</Button>
   </Modal>
 {/if}
 
 
 <style>
-  .row {
-    display:flex;
-    align-items:center;
+  th {
+    text-align:left;
   }
 </style>
