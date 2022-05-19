@@ -1,5 +1,4 @@
-import { parseFieldFunctionScript } from '../src/lib/core/FieldFunctions'
-
+import { parseFieldFunctionScript } from '../src/lib/core/FieldFunction'
 
 function testScript({script,expectedScript,expectedConf}) {
   let conf = parseFieldFunctionScript(script)
