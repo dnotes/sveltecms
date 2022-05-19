@@ -48,9 +48,11 @@ export type ConfigurableEntity = {
   options?:ConfigSetting
 }
 
-export type ConfigurableEntityConfigSetting = ConfigSetting & {
+export type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & {
   options?:ConfigSetting
 }
+
+export type ConfigurableEntityConfigSettingValue<T> = string|T|(string|T)[]
 
 export type LabeledEntity = {
   label:string
@@ -230,7 +232,7 @@ export default class SvelteCMS {
           }
           else res[id] = this.preMount(field, values?.[id])
         }
-        else res[id] = this.doTransforms('preMount', field, this.doTransforms('preSave', field, values?.[id]))
+        else res[id] = this.doFieldTransforms('preMount', field, this.doFieldTransforms('preSave', field, values?.[id]))
       }
       catch(e) {
         e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
@@ -254,7 +256,7 @@ export default class SvelteCMS {
           }
           else res[id] = this.preSave(field, values?.[id])
         }
-        else res[id] = this.doTransforms('preSave', field, values?.[id])
+        else res[id] = this.doFieldTransforms('preSave', field, values?.[id])
       }
       catch(e) {
         e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
@@ -265,12 +267,12 @@ export default class SvelteCMS {
     return res
   }
 
-  doTransforms(op:'preSave'|'preMount', field:Field, value:any) {
+  doFieldTransforms(op:'preSave'|'preMount', field:Field, value:any) {
     try {
       if (field[op] && field[op].length && value !== undefined && value !== null) {
         field[op].forEach((functionConfig:TransformerConfigSetting) => {
-          if (Array.isArray(value)) value = value.map(v => this.runFunction('transformers', functionConfig, v))
-          else value = this.runFunction('transformers', functionConfig, value)
+          if (Array.isArray(value)) value = value.map(v => this.transform(v, functionConfig))
+          else value = this.transform(value, functionConfig)
         })
       }
       return value
@@ -384,8 +386,11 @@ export default class SvelteCMS {
 
   getSlug(content:any, contentType:ContentType, force:boolean) {
     if (content._slug && !force) return content._slug
-    let newSlug = contentType.slug.fields.map(id => { return getProp(content,id) }).filter(Boolean).join(contentType.slug.separator)
-    return this.runFunction('transformers', contentType.slug.slugify, newSlug)
+    return contentType.slug.fields
+      .map(id => getProp(content,id))
+      .filter(value => typeof value !== 'undefined')
+      .map(value => this.transform(value, contentType.slug.slugify))
+      .join(contentType.slug.separator)
   }
 
   async listContent(contentType:string|ContentType, options:{load?:boolean, [key:string]:any} = {}):Promise<Array<any>> {
@@ -436,25 +441,29 @@ export default class SvelteCMS {
     return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
   }
 
-  runFunction(functionType:'transformers'|'contentStorage'|'mediaStorage', conf:string|TransformerConfigSetting, value) {
-    let id = typeof conf === 'string' ? conf : conf.id
-    let func = this[functionType][id]
-    if (!func) throw new Error(`${functionType}.${id} does not exist!`)
-    let fn = func.fn
-    if (!fn) throw new Error(`${functionType}.${id}.fn does not exist!`)
-    let opts
-    try {
-      if (func?.optionFields) {
-        opts = this.getConfigOptionsFromFields(func.optionFields)
-        // @ts-ignore
-        if (conf?.options) opts = this.mergeConfigOptions(opts, conf.options)
+  transform(value, conf:ConfigurableEntityConfigSettingValue<TransformerConfigSetting>) {
+    if (!Array.isArray(conf)) conf = [conf]
+    conf.forEach(conf => {
+      let id = typeof conf === 'string' ? conf : conf.type
+      let func = this.transformers[id]
+      if (!func) throw new Error(`transfomers.${id} does not exist!`)
+      let fn = func.fn
+      if (!fn) throw new Error(`transformers.${id}.fn does not exist!`)
+      let opts
+      try {
+        if (func?.optionFields) {
+          opts = this.getConfigOptionsFromFields(func.optionFields)
+          // @ts-ignore
+          if (conf?.options) opts = this.mergeConfigOptions(opts, conf.options)
+        }
+        value = fn(value, opts)
       }
-      return fn(value, opts)
-    }
-    catch(e) {
-      e.message = `${id} : ${e.message}`
-      throw e
-    }
+      catch(e) {
+        e.message = `${id} : ${e.message}`
+        throw e
+      }
+    })
+    return value
   }
 
   getConfigOptionValue(value) {
@@ -483,7 +492,7 @@ export default class SvelteCMS {
     return options
   }
 
-  getInstanceOptions(entityType:ConfigurableEntityType, conf:string|ConfigurableEntityConfigSetting = {}):ConfigSetting {
+  getInstanceOptions(entityType:ConfigurableEntityType, conf:string|ConfigurableEntityConfigSetting = { type:'' }):ConfigSetting {
     return this.mergeConfigOptions(
       (entityType.optionFields ? this.getConfigOptionsFromFields(entityType.optionFields || {}) : {}),
       entityType.options || {},
@@ -668,7 +677,7 @@ export function getConfigPathFromValuePath(path:string):string {
 /**
  * All "Setting" types must fit the pattern of ConfigSetting
  */
-export type ConfigSetting = {[key:string]: string|string[]|number|boolean|null|undefined|ConfigSetting|Array<ConfigSetting>}
+export type ConfigSetting = {[key:string]: string|number|boolean|null|undefined|ConfigSetting|Array<string|number|ConfigSetting>}
 
 export type CMSPlugin = {
   adminPages?: AdminPageConfig[]

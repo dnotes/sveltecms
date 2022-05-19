@@ -1,7 +1,9 @@
 configPath: src/sveltecms.config.yml
 types:
   blog:
-    slug: date,title
+    slug:
+      fields: date,title
+      slugify: [removeTimestamp, slugify]
     fields:
       title: title
       date: date
@@ -17,13 +19,10 @@ fields:
   body: markdown
   title: text
   image: image
-  date:
-    type: text
-    widget: date
 widgets:
   date:
     type: date
-    time: ""
+    time: editable
   textarea:
     type: textarea
     autosize: true

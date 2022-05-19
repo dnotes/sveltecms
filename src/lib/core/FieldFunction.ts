@@ -14,7 +14,7 @@ export class FieldFunction implements ConfigurableEntity {
   id: string
   fn: (vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
   vars: { cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string}
-  options: {[key:string]:string|number|boolean|null|undefined|Transformer & {options?:any}|(string|number|boolean|null|undefined)[]}
+  options: {[key:string]:string|number|boolean|null|undefined}
   constructor(conf:string|FieldFunctionConfig, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
     if (typeof conf === 'string') conf = parseFieldFunctionScript(conf) // this should be rare, but just in case...
     let func:FieldFunctionType = cms.fieldFunctions[conf.function]
@@ -44,11 +44,6 @@ export class FieldFunction implements ConfigurableEntity {
     }
     // }
     cms.initializeConfigOptions(this.options, vars)
-    // for transformers
-    if (this.id === 'transform') {
-      this.options.transformer = cms.transformers[this.options?.transformer?.toString()]
-      if (this.options.transformer) this.options.transformer.options = cms.getInstanceOptions(this.options.transformer)
-    }
   }
   run() {
     this.fn(this.vars, this.options)
@@ -152,21 +147,21 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
   transform: {
     id: 'transform',
     fn: (vars, opts) => {
-      return opts.transformer.fn(opts.value, opts.transformer.options)
+      return vars.cms.transform(opts.value, opts.transformer)
     },
     optionFields: {
-      transformer: {
-        type: 'text', // TODO: determine field type for transformers
-        default: null,
-        helptext: 'The ID of the transformer to run.'
-      },
       value: {
         type: 'text', // TODO: determine field type for field functions
         default: {
           function: 'getValue'
         },
         helptext: 'The value to be transformed.',
-      }
+      },
+      transformer: {
+        type: 'text', // TODO: determine field type for transformers
+        default: null,
+        helptext: 'The ID of the transformer to run.'
+      },
     }
   },
   getFieldProperty: {
@@ -454,20 +449,6 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
       }
     }
   },
-  getDate: {
-    id: 'getDate',
-    fn: (vars, opts) => {
-      let value = opts.value instanceof Date ? opts.value.toISOString() : opts.value
-      if (typeof value === 'string') return (value.match(/^\d{4}-\d{2}-\d{2}/) || [''])[0]
-    },
-    optionFields: {
-      value: {
-        type: 'text',
-        default: '',
-        helptext: 'The ISO date/time string from which to return a date.'
-      }
-    }
-  }
 }
 
 

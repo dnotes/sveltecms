@@ -1,6 +1,6 @@
 ---
 title: Happy Birthday SvelteCMS
-date: '2022-04-28'
+date: 2022-04-28T13:10:00.000Z
 image:
   src: /images/Birthday_cake.png
 _slug: 2022-04-28-happy-birthday-svelte-cms

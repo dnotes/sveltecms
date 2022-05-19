@@ -17,6 +17,13 @@ export const transformers:{[id:string]:Transformer} = {
     id: 'date',
     fn: (v) => new Date(v)
   },
+  removeTimestamp: {
+    id: 'removeTimestamp',
+    fn: (v) => {
+      v = v instanceof Date ? v.toISOString() : v
+      return typeof v === 'string' ? v?.replace(/(T| )\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|(-|\+)\d{2}:?\d{2})/g, '') : v
+    },
+  },
   // dateFormat: {
   //   id: 'dateFormat',
   //   fn: (v,opts) => {
