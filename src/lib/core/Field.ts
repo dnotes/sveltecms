@@ -128,7 +128,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       if (conf.fields) {
         this.fields = {}
         Object.entries(conf.fields).forEach(([id, conf]) => {
-          this.fields[id] = new Field(id, conf, cms, contentType)
+          if (id.match(/^[a-zA-Z0-9]\w*$/)) this.fields[id] = new Field(id, conf, cms, contentType)
         })
       }
       if (this.widget.handlesMedia) {

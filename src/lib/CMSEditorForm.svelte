@@ -24,6 +24,7 @@ import Button from './ui/Button.svelte';
   export let previewComponent = contentType?.previewComponent
 
   const initialValues = cloneDeep(values)
+  let oldSlug = values?.['_slug'] ?? ''
 
   // export let validator:Validator.Validator<Object> = cms.getValidator(contentTypeID, values)
 
@@ -65,6 +66,9 @@ import Button from './ui/Button.svelte';
       </slot>
       <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
         <CmsFieldCollection {cms} {values} collection={contentType} />
+
+        <input type="hidden" name="_slug" bind:value={oldSlug}>
+
         <Button
           submit
           primary

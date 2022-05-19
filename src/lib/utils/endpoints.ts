@@ -1,4 +1,4 @@
-import type { CMSContentType } from "sveltecms"
+import type { ContentType } from "sveltecms/core/ContentType"
 import type SvelteCMS from "sveltecms"
 import { formDataHandler } from './formDataHandler'
 
@@ -7,7 +7,7 @@ function getFormat(format:string):'json'|'form'|void {
   else if (format.match(/^multipart\/form-data/)) return 'form'
 }
 
-async function parseRequest(cms:SvelteCMS, contentType:string|CMSContentType, request:Request):Promise<{format:string,data:any}> {
+async function parseRequest(cms:SvelteCMS, contentType:string|ContentType, request:Request):Promise<{format:string,data:any}> {
   let data
   let format = getFormat(request.headers.get('Content-Type'))
   if (format === 'json') {
@@ -22,7 +22,7 @@ async function parseRequest(cms:SvelteCMS, contentType:string|CMSContentType, re
   throw new Error(`Content-Type must be application/json or multipart/form-data (got ${format})`)
 }
 
-async function saveContentEndpoint(cms:SvelteCMS, contentType:string|CMSContentType, request:Request, options={}) {
+async function saveContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}) {
   let content
   try {
     let { format, data } = await parseRequest(cms, contentType, request)
@@ -46,7 +46,7 @@ async function saveContentEndpoint(cms:SvelteCMS, contentType:string|CMSContentT
   }
 }
 
-async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|CMSContentType, request:Request, options={}) {
+async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}) {
   let content
   try {
     let { format, data } = await parseRequest(cms, contentType, request)

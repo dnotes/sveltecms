@@ -1,10 +1,14 @@
-import type { default as SvelteCMS, CMSPlugin, ConfigSetting, CMSConfigFieldConfigSetting, CMSContentField, CMSContentType } from '..'
+import type SvelteCMS from 'sveltecms'
+import type ContentType from 'sveltecms/core/ContentType'
+import type Field from 'sveltecms/core/Field'
 import { get, set } from 'lodash-es'
 
-export async function collapseFormItem(cms:SvelteCMS, contentType:CMSContentType, fields:{[id:string]:CMSContentField}, data:any, prefix?:string):Promise<any> {
+export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, fields:{[id:string]:Field}, data:any, prefix?:string):Promise<any> {
 
+  // Get all fields, as promises (some formDataHandler functions are async)
   let promises = Object.entries(fields).map(async ([id,field]) => {
 
+    // This function is recursive, and the prefix is provided for nested levels of a data object
     let formPath = [prefix,id].filter(Boolean).join('.')
     let item = get(data, id)
     if (typeof item === 'undefined') return [id,undefined]
@@ -56,10 +60,12 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:CMSContentType
 
     }
 
+    // If it is a singular field with a formDataHandler
     else if (field.widget.formDataHandler) {
       value = await field.widget.formDataHandler(item, cms, contentType, field)
     }
 
+    // If it is a singular field without a formDataHandler
     else {
       value = itemIsArray ? item[0] : item
     }
@@ -68,6 +74,10 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:CMSContentType
   })
 
   const result = await Promise.all(promises)
+
+  // Now any special data not provided by a Field
+  result.push(['_slug', data._slug[0]])
+
   return Object.fromEntries(result)
 
 }
@@ -78,7 +88,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:CMSContentType
  * @param contentType CMSContentType
  * @param formdata FormData
  */
-export async function formDataHandler(cms:SvelteCMS, contentType:string|CMSContentType, formdata:FormData) {
+export async function formDataHandler(cms:SvelteCMS, contentType:string|ContentType, formdata:FormData) {
 
   let rawdata = {}
   // @ts-ignore -- why does this not have a proper FormData object?!?!!
