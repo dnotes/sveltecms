@@ -190,7 +190,7 @@ import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
             on:change={(e)=>{ setProp(i, 'mediaStore', e?.detail?.['value']) }}
           />
         {:else}
-          <div class="center">n/a</div>
+          <em class="disabled">- none -</em>
         {/if}
       </td>
 

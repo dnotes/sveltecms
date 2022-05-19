@@ -118,7 +118,7 @@ import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
               on:change={(e)=>{customizeDefaultItem(id,e?.detail?.value)}}
             />
           </td>
-          <td>(default)</td>
+          <td><em class="disabled">- default -</em></td>
           <td></td>
         </tr>
       {/each}

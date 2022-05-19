@@ -52,6 +52,10 @@ td>.cms-helptext:hover { display:none; }
 .sveltecms .center { text-align:center; }
 
 /* Tables */
+.sveltecms table {
+  width: 100%;
+  max-width: 1190px;
+}
 
 /* Buttons */
 
@@ -107,10 +111,12 @@ td>.cms-helptext:hover { display:none; }
   background: var(--cms-danger);
 }
 
+.disabled,
 .sveltecms button:disabled,
 .sveltecms button.primary:disabled,
 .sveltecms button.danger:disabled,
 .sveltecms button[type="submit"]:disabled {
   cursor: default;
+  opacity: .5;
   filter: grayscale(100%);
 }
