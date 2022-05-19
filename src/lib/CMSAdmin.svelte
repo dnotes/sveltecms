@@ -14,7 +14,7 @@ import Nav from "sveltecms/components/Nav.svelte";
 
   $: basePath = $page.url.pathname.replace('/' + adminPath, '')
   $: adminPage = cms.getAdminPage(adminPath)
-  $: title = adminPath.split('/').map((t,i) => adminPage.label[i] || getLabelFromID(t) ).join(' : ')
+  $: title = adminPage ? adminPath.split('/').map((t,i) => adminPage.label[i] || getLabelFromID(t) ).join(' : ') : 'Site Admin'
 
 </script>
 
