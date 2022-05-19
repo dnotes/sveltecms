@@ -14,18 +14,12 @@ import Nav from "sveltecms/components/Nav.svelte";
 
   $: basePath = $page.url.pathname.replace('/' + adminPath, '')
   $: adminPage = cms.getAdminPage(adminPath)
-  $: crumbs = adminPath.split('/').reduce((agg,val,i,arr) => {
-    if (i<arr.length-1) {
-      let base = agg.length ? agg[agg.length-1][1] : ''
-      agg.push([val, `${base}/${val}`])
-    }
-    return agg
-  }, [['admin', '']])
+  $: title = adminPath.split('/').map((t,i) => adminPage.label[i] || getLabelFromID(t) ).join(' : ')
 
 </script>
 
 <svelte:head>
-  <title>{adminPage?.label ?? 'Site Admin'}</title>
+  <title>{title}</title>
 </svelte:head>
 
 <div class="sveltecms">
@@ -34,7 +28,7 @@ import Nav from "sveltecms/components/Nav.svelte";
 
 <div class="cms-admin">
 
-<h1>{adminPage?.label ?? 'Site Admin'}</h1>
+<h1>{title}</h1>
 
 {#if adminPage}
   <svelte:component

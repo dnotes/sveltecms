@@ -8,22 +8,23 @@ import { saveContentEndpoint, deleteContentEndpoint, parseRequest, getLabelFromI
 export type AdminPageConfig = {
   id:string
   component:string|ComponentConfigSetting
-  label?:string
+  label?:string|(string|undefined|false)[]
   get?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent})=>Promise<any>
   post?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
   del?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
 }
 
-export class AdminPage implements LabeledEntity {
+export class AdminPage {
   id:string
   component:Component
-  label:string
+  label:(string|undefined|false)[]
   get?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent})=>Promise<any>
   post?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
   del?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
   constructor(conf:AdminPageConfig, cms:SvelteCMS) {
     this.id = conf.id
-    this.label = conf.label || getLabelFromID(this.id)
+    if (conf.label) this.label = typeof conf.label === 'string' ? [conf.label] : conf.label
+    else this.label = []
     this.component = new Component(conf.component, cms)
     this.get = conf.get
     this.post = conf.post
@@ -46,6 +47,7 @@ export const adminPages:AdminPageConfig[] = [
   {
     id: 'content/*/*',
     component: 'CMSContentEdit',
+    label: ['Content',,'Edit'],
     get: async({cms, args})=>{
       if (args[2] === '_') return {}
       return cms.getContent(args[1], args[2], { getRaw:true })

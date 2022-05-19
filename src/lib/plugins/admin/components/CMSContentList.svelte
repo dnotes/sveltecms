@@ -10,8 +10,6 @@ import type SvelteCMS from "sveltecms";
 
 </script>
 
-<h2>{cms.getContentType(contentTypeID).label}</h2>
-
 <ul>
   {#each data as item}
     <li>{item._slug} <a href="{basePath}/{adminPath}/{item._slug}">[edit]</a></li>
