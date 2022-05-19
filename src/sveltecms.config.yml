@@ -15,13 +15,15 @@ mediaStores:
     allowMediaTypes: image/jpeg, image/png, image/gif
 fields:
   body: markdown
-  date:
-    type: date
-    preSave: toString
-    preMount: date
   title: text
   image: image
+  date:
+    type: text
+    widget: date
 widgets:
+  date:
+    type: date
+    time: ""
   textarea:
     type: textarea
     autosize: true

@@ -150,22 +150,84 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     fieldTypes: ['text','date'],
     widget: CMSWidgetDate,
     optionFields: {
-      min: {
-        type: 'date',
-        default: undefined,
-        helptext: 'The minimum number allowed on the form. Does not validate form submissions!',
+      time: {
+        type: 'text',
+        default: '',
+        helptext: `Whether and how to store the time. Choosing "none" will store only the date
+        as yyyy-mm-dd; which is useful when using the date widget with a text field, or as a slug,
+        but not useful for saving dates. "Time only" is similar, but stores only a time in hours
+        and minutes. Either of the other two will store a full UTC date, including time.
+        Sometimes it may be best to hide the time input, e.g. if you are interested only in
+        when a piece of content is posted and would like to simplify the form.`,
+        widget: {
+          type: 'select',
+          default: 'editable',
+          options: {
+            items: {
+              '': 'None',
+              'hidden': 'Hidden',
+              'editable': 'Editable',
+              'timeonly': 'Time only (no date)',
+            },
+          }
+        }
       },
-      max: {
+      minDate: {
         type: 'date',
-        default: undefined,
-        helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
+        widget: {
+          type: 'date',
+          options: {
+            time: '',
+          }
+        },
+        default: '',
+        helptext: 'The earliest date allowable.',
+        hidden: '$equal($values.time,timeonly)',
+      },
+      maxDate: {
+        type: 'date',
+        widget: {
+          type: 'date',
+          options: {
+            time: '',
+          }
+        },
+        default: '',
+        helptext: 'The latest date allowable.',
+        hidden: '$equal($values.time,timeonly)',
+      },
+      seconds: {
+        type: 'boolean',
+        default: false,
+        label: 'Use seconds',
+        helptext: 'Whether to store and keep seconds in the time.',
+        hidden: '$not($values.time)'
+      },
+      minTime: {
+        type: 'date',
+        widget: {
+          type: 'date',
+          options: {
+            time: 'timeonly',
+          }
+        },
+        default: '',
+        helptext: 'The earliest time allowed.',
+        hidden: '$not($values.time)'
+      },
+      maxTime: {
+        type: 'date',
+        widget: {
+          type: 'date',
+          options: {
+            time: 'timeonly',
+          }
+        },
+        default: '',
+        helptext: 'The latest time allowed.',
+        hidden: '$not($values.time)'
       },
     },
-    formDataHandler: async (value, cms, contentType, field) => {
-      let result = value?.date?.[0]
-      if (value?.time?.[0]) result += 'T' + value?.time?.[0]
-      return result
-    }
   },
   textarea: {
     id: 'textarea',

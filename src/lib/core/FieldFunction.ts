@@ -450,16 +450,24 @@ export const fieldFunctions:{[id:string]:FieldFunctionType} = {
         type: 'text',
         multiple: true,
         default: '',
-        helptext: 'List of strings to concatenate',
+        helptext: 'List of strings to concatenate.',
       }
     }
   },
-  cmsFieldList: {
-    id: 'cmsFieldList',
+  getDate: {
+    id: 'getDate',
     fn: (vars, opts) => {
-      return vars.cms.getFieldTypes()
+      let value = opts.value instanceof Date ? opts.value.toISOString() : opts.value
+      if (typeof value === 'string') return (value.match(/^\d{4}-\d{2}-\d{2}/) || [''])[0]
+    },
+    optionFields: {
+      value: {
+        type: 'text',
+        default: '',
+        helptext: 'The ISO date/time string from which to return a date.'
+      }
     }
-  },
+  }
 }
 
 
