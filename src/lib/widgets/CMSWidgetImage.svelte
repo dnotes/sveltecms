@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import type { WidgetField } from "..";
-import DisplayResult from "../components/DisplayResult.svelte";
+import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
 let result
 
   export let field:WidgetField

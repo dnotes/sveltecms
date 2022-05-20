@@ -3,7 +3,7 @@ import type SvelteCMS from "sveltecms"
 // @ts-ignore TODO: why can't it find this?
 import { page } from '$app/stores'
 import getLabelFromID from "./utils/getLabelFromID";
-import Nav from "sveltecms/components/Nav.svelte";
+import Nav from "sveltecms/ui/Nav.svelte";
 
   export let cms:SvelteCMS
   export let adminPath:string

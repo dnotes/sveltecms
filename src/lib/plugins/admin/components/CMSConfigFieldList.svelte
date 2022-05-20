@@ -1,6 +1,6 @@
 <script lang="ts">
 import { isEqual } from "lodash-es";
-import Modal from 'sveltecms/components/Modal.svelte'
+import Modal from 'sveltecms/ui/Modal.svelte'
 import Button from 'sveltecms/ui/Button.svelte'
 import ConfigurableEntityWidget from 'sveltecms/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte'
 

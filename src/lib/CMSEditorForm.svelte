@@ -1,7 +1,7 @@
 <script lang="ts">
 import type SvelteCMS from './index';
 import CmsFieldCollection from './CMSFieldCollection.svelte';
-import DisplayResult from './components/DisplayResult.svelte'
+import DisplayResult from 'sveltecms/ui/DisplayResult.svelte'
 import { cloneDeep } from 'lodash-es'
 import { onDestroy, onMount } from 'svelte';
 import Button from './ui/Button.svelte';

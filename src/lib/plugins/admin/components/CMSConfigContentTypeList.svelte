@@ -2,7 +2,7 @@
 import type SvelteCMS from "sveltecms";
 import { getLabelFromID } from "sveltecms/utils";
 import Button from 'sveltecms/ui/Button.svelte';
-import Modal from 'sveltecms/components/Modal.svelte'
+import Modal from 'sveltecms/ui/Modal.svelte'
 import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 
   export let cms:SvelteCMS

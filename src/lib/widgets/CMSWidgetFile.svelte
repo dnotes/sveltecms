@@ -44,7 +44,7 @@ import bytes from 'bytes'
 
 <script lang="ts">
 import type { WidgetField } from "..";
-import DisplayResult from "../components/DisplayResult.svelte";
+import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
 
   export let field:WidgetField
   export let id:string

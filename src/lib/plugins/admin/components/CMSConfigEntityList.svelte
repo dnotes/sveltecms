@@ -2,7 +2,7 @@
 import type SvelteCMS from 'sveltecms';
 import type { ConfigSetting } from 'sveltecms';
 import Button from 'sveltecms/ui/Button.svelte';
-import Modal from 'sveltecms/components/Modal.svelte'
+import Modal from 'sveltecms/ui/Modal.svelte'
 import CmsWidgetConfigurableEntity from 'sveltecms/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte';
 import { tick } from 'svelte';
 import yaml from 'js-yaml'
