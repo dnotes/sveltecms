@@ -17,7 +17,7 @@
 
 {#if href}
 
-<a
+<a class="button"
   on:click
   title={helptext}
   {href}
