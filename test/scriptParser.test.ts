@@ -1,18 +1,18 @@
-import { parseFieldFunctionScript } from '../src/lib/core/FieldFunction'
+import { parseScript } from '../src/lib/core/ScriptFunction'
 
 function testScript({script,expectedScript,expectedConf}) {
-  let conf = parseFieldFunctionScript(script)
+  let conf = parseScript(script)
   expect(conf).toEqual(expectedConf)
   expect(conf.toString()).toEqual(expectedScript)
 }
 
 function testNotAScript({script}) {
-  let conf = parseFieldFunctionScript(script)
+  let conf = parseScript(script)
   expect(conf).toBeUndefined()
 }
 
 function testFailingScript({script, error}) {
-  expect(() => {parseFieldFunctionScript(script)}).toThrowError(error)
+  expect(() => {parseScript(script)}).toThrowError(error)
 }
 
 describe('Test $value.property constructions', () => {

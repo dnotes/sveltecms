@@ -3,7 +3,7 @@ import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEn
 import type { TransformerConfigSetting } from "sveltecms/core/Transformer"
 import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
-import { parseFieldFunctionScript, type FieldFunctionConfigSetting, FieldFunctionConfig } from 'sveltecms/core/FieldFunction'
+import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction'
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
 
 import { has as hasProp } from 'lodash-es'
@@ -11,24 +11,24 @@ import { getLabelFromID } from 'sveltecms/utils'
 
 export type FieldConfigSetting = {
   type: string
-  label?: string|FieldFunctionConfigSetting
+  label?: string|ScriptFunctionConfigSetting
   default?: any
   value?: any
-  helptext?: string|FieldFunctionConfigSetting
-  required?: boolean|FieldFunctionConfigSetting
-  disabled?: boolean|FieldFunctionConfigSetting
-  hidden?: boolean|FieldFunctionConfigSetting
-  multiple?: boolean|FieldFunctionConfigSetting
-  multipleLabel?: string|FieldFunctionConfigSetting
-  multipleMin?: number|FieldFunctionConfigSetting
-  multipleMax?: number|FieldFunctionConfigSetting
+  helptext?: string|ScriptFunctionConfigSetting
+  required?: boolean|ScriptFunctionConfigSetting
+  disabled?: boolean|ScriptFunctionConfigSetting
+  hidden?: boolean|ScriptFunctionConfigSetting
+  multiple?: boolean|ScriptFunctionConfigSetting
+  multipleLabel?: string|ScriptFunctionConfigSetting
+  multipleMin?: number|ScriptFunctionConfigSetting
+  multipleMax?: number|ScriptFunctionConfigSetting
   fields?: {[key:string]:string|FieldConfigSetting}
   widget?: string|WidgetConfigSetting
   // validator?: Rules // TODO
   preSave?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   preMount?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   class?: string
-  events?: {on:string,function:FieldFunctionConfigSetting}|{on:string,function:FieldFunctionConfigSetting}[]
+  events?: {on:string,function:ScriptFunctionConfigSetting}|{on:string,function:ScriptFunctionConfigSetting}[]
   mediaStore?: string|MediaStoreConfigSetting
 }
 
@@ -52,24 +52,24 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   type: string
 
   // should be implemented by every widget
-  label: string|FieldFunctionConfig
-  helptext?: string|FieldFunctionConfig = ''
-  required?: boolean|FieldFunctionConfig
-  disabled?: boolean|FieldFunctionConfig
+  label: string|ScriptFunctionConfig
+  helptext?: string|ScriptFunctionConfig = ''
+  required?: boolean|ScriptFunctionConfig
+  disabled?: boolean|ScriptFunctionConfig
 
   // should be implemented by the CMS
-  hidden?: boolean|FieldFunctionConfig
-  class: string|FieldFunctionConfig = ''
+  hidden?: boolean|ScriptFunctionConfig
+  class: string|ScriptFunctionConfig = ''
   default?: any
   value?: any
-  events?: {on:string,function:FieldFunctionConfig}[]
+  events?: {on:string,function:ScriptFunctionConfig}[]
 
   // implemented only in Multiple and Collection widgets
   // implement as needed in custom widgets
-  multiple?: boolean|FieldFunctionConfig
-  multipleLabel?: boolean|FieldFunctionConfig
-  multipleMin?: number|FieldFunctionConfig
-  multipleMax?: number|FieldFunctionConfig
+  multiple?: boolean|ScriptFunctionConfig
+  multipleLabel?: boolean|ScriptFunctionConfig
+  multipleMin?: number|ScriptFunctionConfig
+  multipleMax?: number|ScriptFunctionConfig
 
   // not implemented in widgets
   // validator?: Rules
@@ -101,30 +101,30 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       let fieldType = cms.fieldTypes?.[conf.type]
       if (!fieldType) throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`)
       this.type = conf.type
-      this.label = parseFieldFunctionScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
-      this.value = parseFieldFunctionScript(conf.value) ?? conf.value
-      this.helptext = parseFieldFunctionScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '')
-      this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false)
-      this.multipleLabel = parseFieldFunctionScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false)
-      this.multipleMin = parseFieldFunctionScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))
-      this.multipleMax = parseFieldFunctionScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax))
+      this.label = parseScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
+      this.value = parseScript(conf.value) ?? conf.value
+      this.helptext = parseScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '')
+      this.multiple = parseScript(conf.multiple) ?? (conf.multiple ? true : false)
+      this.multipleLabel = parseScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false)
+      this.multipleMin = parseScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))
+      this.multipleMax = parseScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax))
 
       if (conf.events) {
         if (!Array.isArray(conf.events)) conf.events = [conf.events]
         this.events = conf.events.map(e => {
-          return { on: e.on, function: parseFieldFunctionScript(e.function) }
+          return { on: e.on, function: parseScript(e.function) }
         }).filter(e => e.on && e.function)
       }
 
-      this.default = parseFieldFunctionScript(conf.default) ?? conf.default ?? fieldType.default
-      this.required = parseFieldFunctionScript(conf.required) ?? (typeof conf.required === 'boolean' ? conf.required : false)
-      this.disabled = parseFieldFunctionScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
-      this.hidden = parseFieldFunctionScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
+      this.default = parseScript(conf.default) ?? conf.default ?? fieldType.default
+      this.required = parseScript(conf.required) ?? (typeof conf.required === 'boolean' ? conf.required : false)
+      this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
+      this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave
       this.preMount = conf.preMount ? ( Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.preMount
-      this.class = parseFieldFunctionScript(conf.class) ?? (typeof conf.class === 'string' ? conf.class : '')
+      this.class = parseScript(conf.class) ?? (typeof conf.class === 'string' ? conf.class : '')
       if (conf.fields) {
         this.fields = {}
         Object.entries(conf.fields).forEach(([id, conf]) => {

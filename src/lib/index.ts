@@ -6,7 +6,7 @@ import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
 import type { ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
 import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection } from './core/Collection'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
-import { FieldFunction, fieldFunctions, type FieldFunctionType, type FieldFunctionConfigSetting } from './core/FieldFunction'
+import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
 import type { ComponentType, ComponentConfigSetting } from './core/Component'
 
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
@@ -104,7 +104,7 @@ export default class SvelteCMS {
   collections: {[key:string]:CollectionConfigSetting} = {}
   components: {[key:string]:ComponentType} = {}
   widgets:{[key:string]:WidgetConfigSetting} = {}
-  fieldFunctions:{[key:string]:FieldFunctionType} = fieldFunctions
+  scriptFunctions:{[key:string]:ScriptFunctionType} = scriptFunctions
   fieldTypes:{[key:string]:FieldType} = fieldTypes
   widgetTypes:{[key:string]:WidgetType} = widgetTypes
   transformers:{[key:string]:Transformer} = transformers
@@ -307,7 +307,7 @@ export default class SvelteCMS {
           'components',
           'contentStores',
           'fields',
-          'fieldFunctions',
+          'scriptFunctions',
           'mediaStores',
           'transformers',
           'types',
@@ -531,7 +531,7 @@ export default class SvelteCMS {
     field.events = field?.events?.map(e => { return {
       on: e.on,
       id: vars.id,
-      function: new FieldFunction(e.function, {...vars, field}, this)
+      function: new ScriptFunction(e.function, {...vars, field}, this)
     }})
 
     if (field.widget.options) this.initializeConfigOptions(field.widget.options, {...vars, field})
@@ -547,7 +547,7 @@ export default class SvelteCMS {
   initializeFunction(obj:{[key:string]:any}, prop:string, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }) {
     let conf = cloneDeep(getProp(obj, prop))
     // console.log({name:'preInitializeFunction', obj, prop, conf:cloneDeep(conf)}) // debug functions
-    let func = new FieldFunction(conf, vars, this)
+    let func = new ScriptFunction(conf, vars, this)
     // special case for the function that only runs once
     let parentPath = prop.replace(/(?:(?:^|\.)[^\.]+|\[[^\]]\])$/, '')
     let propPath = prop.replace(/^.+\./, '')

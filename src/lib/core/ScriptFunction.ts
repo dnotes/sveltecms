@@ -10,14 +10,14 @@ function getFullPath(path, id) {
   return `${path}.${id}`
 }
 
-export class FieldFunction implements ConfigurableEntity {
+export class ScriptFunction implements ConfigurableEntity {
   id: string
   fn: (vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
   vars: { cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string}
   options: {[key:string]:string|number|boolean|null|undefined}
-  constructor(conf:string|FieldFunctionConfig, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
-    if (typeof conf === 'string') conf = parseFieldFunctionScript(conf) // this should be rare, but just in case...
-    let func:FieldFunctionType = cms.fieldFunctions[conf.function]
+  constructor(conf:string|ScriptFunctionConfig, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
+    if (typeof conf === 'string') conf = parseScript(conf) // this should be rare, but just in case...
+    let func:ScriptFunctionType = cms.scriptFunctions[conf.function]
     if (!func) throw `field function not found for ${conf}` // this will also happen if the config is bad
     this.id = func.id
     this.vars = {...vars, cms}
@@ -50,21 +50,21 @@ export class FieldFunction implements ConfigurableEntity {
   }
 }
 
-export type FieldFunctionType = ConfigurableEntityType & {
+export type ScriptFunctionType = ConfigurableEntityType & {
   fn:(vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
 }
 
-export type FieldFunctionConfigSetting = string | {
+export type ScriptFunctionConfigSetting = string | {
   function?: string
   fn?: string
-  params: (string|number|boolean|null|FieldFunctionConfigSetting)[]
+  params: (string|number|boolean|null|ScriptFunctionConfigSetting)[]
 }
 
 
-export class FieldFunctionConfig {
+export class ScriptFunctionConfig {
   function:string = ''
-  params:(string|number|boolean|null|FieldFunctionConfig)[] = []
-  constructor(conf?:FieldFunctionConfig) {
+  params:(string|number|boolean|null|ScriptFunctionConfig)[] = []
+  constructor(conf?:ScriptFunctionConfig) {
     this.setFunction(conf?.function || '')
     this.params = conf?.params || []
   }
@@ -89,7 +89,7 @@ export class FieldFunctionConfig {
     else if (name.match(/^touched$/)) this.function = 'isTouched'
     else this.function = name
   }
-  push(param:string|number|boolean|null|FieldFunctionConfig) {
+  push(param:string|number|boolean|null|ScriptFunctionConfig) {
     this.params.push(param)
   }
   toString() {
@@ -106,7 +106,7 @@ export class FieldFunctionConfig {
   }
 }
 
-export const fieldFunctions:{[id:string]:FieldFunctionType} = {
+export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
   now: {
     id: 'now',
     fn: () => {
@@ -457,7 +457,7 @@ const valueRegex = /^\$(field|values?|errors?|touched)\b/
 const propRegex = /^\.([a-zA-Z0-9\.\[\]]+)/ // TODO: evaluate allowed characters restrictions - could we just use [^\n\s\),]?
 const endScriptRegex = /^[\n\s]*$/
 
-export function parseFieldFunctionScript(config:any, functionNames:string[] = Object.keys(fieldFunctions)):FieldFunctionConfig|undefined {
+export function parseScript(config:any, functionNames:string[] = Object.keys(scriptFunctions)):ScriptFunctionConfig|undefined {
 
   // PRE-FLIGHT
   if (!config) return
@@ -465,7 +465,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
   // (note: no errors yet, as this function will be used to test if a string will parse as a script)
   // In case we are passed a valid config setting
   if (functionNames.includes(config?.['function']) && (!config?.['params'] || Array.isArray(config?.['params']))) {
-    return new FieldFunctionConfig(config)
+    return new ScriptFunctionConfig(config)
   }
 
   // If it is not a string, exit
@@ -489,7 +489,7 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
   // initialize variables
   let tail:string,
       i:number = 0,
-      stack:FieldFunctionConfig[] = [],
+      stack:ScriptFunctionConfig[] = [],
       match,
       textParam = '',
       parsing:string = 'base' // 'base'|'params'|'command'|'function'|'value'|'text'|'vars'|'endValue'|'endParams'
@@ -554,9 +554,9 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
 
         // Begin Command (if parsing is "base" or "params")
         if (tail[0] === '$') {
-          // Initialize new CMSFieldFunctionConfig
+          // Initialize new CMSScriptFunctionConfig
           // deepcode ignore MissingArgument: <this works, and I don't understand what's missing>
-          stack.push(new FieldFunctionConfig)
+          stack.push(new ScriptFunctionConfig)
           // Set parsing (but don't advance, as the $ is part of the command syntax)
           parsing = 'command'
         }
@@ -744,4 +744,4 @@ export function parseFieldFunctionScript(config:any, functionNames:string[] = Ob
 
 }
 
-export default FieldFunction
+export default ScriptFunction
