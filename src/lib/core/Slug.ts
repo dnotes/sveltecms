@@ -14,7 +14,7 @@ export interface SlugConfigSetting extends ConfigSetting {
 export class SlugConfig {
   fields:string[]
   separator: string = '-'
-  slugify: ConfigurableEntityConfigSettingValue<TransformerConfigSetting> = 'slugify'
+  slugify: ConfigurableEntityConfigSettingValue<TransformerConfigSetting> = ['removeTimestamp', 'slugify']
   constructor(conf:string|string[]|SlugConfigSetting, cms:SvelteCMS) {
     if (typeof conf === 'string') {
       this.fields = split(conf)

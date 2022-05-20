@@ -1,11 +1,7 @@
 configPath: src/sveltecms.config.yml
 types:
   blog:
-    slug:
-      fields: date,title
-      slugify:
-        - removeTimestamp
-        - slugify
+    slug: date,title
     fields:
       title: title
       date: date
@@ -25,7 +21,9 @@ fields:
     type: date
     required: true
   body: markdown
-  image: image
+  image:
+    type: image
+    mediaStore: images
 widgets:
   date:
     type: date
