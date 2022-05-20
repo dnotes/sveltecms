@@ -9,6 +9,7 @@ import { tick } from "svelte/internal";
 import type SvelteCMS from "sveltecms";
 import { Field, type FieldConfigSetting } from "sveltecms/core/Field";
 import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
+import ScriptableButton from "sveltecms/ui/ScriptableButton.svelte";
 
   export let cms:SvelteCMS
   export let data:{[id:string]:string|FieldConfigSetting} = {}
@@ -37,7 +38,13 @@ import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 
   // Variables for the elements where new lines are added
   let addID, addType, addIDEl
+
   let fieldEls = {}
+  let isScript = {}
+  $: items.forEach(([id]) => {
+    if (!fieldEls[id]) fieldEls[id] = {}
+    if (!isScript[id]) isScript[id] = {}
+  })
 
   // Get the list of field configurations, for the 'type' select options
   // This is fieldTypes only for admin/fields, and a full list when in context of another form
@@ -149,7 +156,6 @@ import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
     <tr>
 
       <td title={headings['ID']}>
-        {(fieldEls[id] = {}) && ''}
         <input type="text"
         size="9"
         bind:value={id}>
@@ -206,10 +212,18 @@ import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
       <td title={headings['Req.']} class="center">
         <input
           type="checkbox"
+          disabled={isScript[id].disabled}
           bind:this = {fieldEls[id].required}
           value={defaults[id].field.required}
           on:change={(e)=>{ setProp(i, 'required', e.target?.['checked']) } }
         >
+        <ScriptableButton
+          {cms}
+          label="{id}.required"
+          value={defaults[id].field.required}
+          default={false}
+          bind:isScript={isScript[id].disabled}
+        />
       </td>
 
       <td title={headings['Mult.']} class="center">

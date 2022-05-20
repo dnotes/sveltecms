@@ -18,7 +18,7 @@ export class ScriptFunction implements ConfigurableEntity {
   constructor(conf:string|ScriptFunctionConfig, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
     if (typeof conf === 'string') conf = parseScript(conf) // this should be rare, but just in case...
     let func:ScriptFunctionType = cms.scriptFunctions[conf.function]
-    if (!func) throw `field function not found for ${conf}` // this will also happen if the config is bad
+    if (!func) throw `Script function not found for ${conf}` // this will also happen if the config is bad
     this.id = func.id
     this.vars = {...vars, cms}
     this.fn = func.fn
@@ -50,7 +50,19 @@ export class ScriptFunction implements ConfigurableEntity {
   }
 }
 
+export class ScriptError extends Error {
+  state:string
+  tail:string
+  constructor(message:string,state:string,tail?:string) {
+    super(message)
+    this.state = state
+    this.tail = tail || ''
+    return this
+  }
+}
+
 export type ScriptFunctionType = ConfigurableEntityType & {
+  helptext?:string
   fn:(vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
 }
 
@@ -59,7 +71,6 @@ export type ScriptFunctionConfigSetting = string | {
   fn?: string
   params: (string|number|boolean|null|ScriptFunctionConfigSetting)[]
 }
-
 
 export class ScriptFunctionConfig {
   function:string = ''
@@ -73,7 +84,7 @@ export class ScriptFunctionConfig {
       'getValue': '$values',
       'isError': '$errors',
       'isTouched': '$touched',
-      'getFieldProperty': '$field',
+      'getProperty': '$props',
     }
     let alias = aliases[this.function]
     if (alias) {
@@ -84,7 +95,7 @@ export class ScriptFunctionConfig {
   }
   setFunction(name:string) {
     if (name.match(/^values?$/)) this.function = 'getValue'
-    else if (name.match(/^field$/)) this.function = 'getFieldProperty'
+    else if (name.match(/^props?$/)) this.function = 'getProperty'
     else if (name.match(/^errors?$/)) this.function = 'isError'
     else if (name.match(/^touched$/)) this.function = 'isTouched'
     else this.function = name
@@ -94,7 +105,7 @@ export class ScriptFunctionConfig {
   }
   toString() {
     let string = ""
-    if (['getValue', 'isError', 'isTouched', 'getFieldProperty'].includes(this.function)) {
+    if (['getValue', 'isError', 'isTouched', 'getProperty'].includes(this.function)) {
       if (!this.params[0] || this.params[0] === '$id') return this.alias
       else if (typeof this.params[0] === 'string') return `${this.alias}.${this.params[0]}`
     }
@@ -138,7 +149,7 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     },
     optionFields: {
       function: {
-        type: 'text', // TODO: determine field type for field functions
+        type: 'text', // TODO: determine field type for script functions
         default: null,
         helptext: 'A function to run once.'
       }
@@ -151,7 +162,7 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     },
     optionFields: {
       value: {
-        type: 'text', // TODO: determine field type for field functions
+        type: 'text', // TODO: determine field type for script functions
         default: {
           function: 'getValue'
         },
@@ -164,8 +175,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
       },
     }
   },
-  getFieldProperty: {
-    id: 'getFieldProperty',
+  getProperty: {
+    id: 'getProperty',
     fn: (vars, opts) => {
       return get(vars.field, opts.property)
     },
@@ -191,8 +202,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
   //     }
   //   }
   // },
-  setFieldProperty: {
-    id: 'setFieldProperty',
+  setProperty: {
+    id: 'setProperty',
     fn: (vars, opts) => {
       vars.field[opts.property] = opts.value
     },
@@ -453,7 +464,7 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
 
 
 // Some changeless regexes
-const valueRegex = /^\$(field|values?|errors?|touched)\b/
+const valueRegex = /^\$(props?|values?|errors?|touched)\b/
 const propRegex = /^\.([a-zA-Z0-9\.\[\]]+)/ // TODO: evaluate allowed characters restrictions - could we just use [^\n\s\),]?
 const endScriptRegex = /^[\n\s]*$/
 
@@ -588,7 +599,7 @@ export function parseScript(config:any, functionNames:string[] = Object.keys(scr
           }
 
           else {
-            throw new Error(`Script error: Function not found at ${tail}`)
+            throw new ScriptError(`Script error: Function not found at ${tail}`, parsing, tail)
           }
 
         }

@@ -96,14 +96,22 @@ td>.cms-helptext:hover { display:none; }
 }
 
 .sveltecms button.primary,
+.sveltecms button.highlight,
 .sveltecms a.button.primary,
+.sveltecms a.button.highlight,
 .sveltecms button.danger,
 .sveltecms button[type="submit"] {
   background: var(--cms-button);
   color: var(--cms-background);
-  font-weight: bold;
   border: none;
   padding-top: 1px;
+}
+
+.sveltecms button.primary,
+.sveltecms a.button.primary,
+.svetlecms a.button.danger,
+.sveltecms button[type="submit"] {
+  font-weight: bold;
 }
 
 .sveltecms button.danger,
@@ -119,4 +127,9 @@ td>.cms-helptext:hover { display:none; }
   cursor: default;
   opacity: .5;
   filter: grayscale(100%);
+}
+
+.sveltecms button.borderless,
+.sveltecms a.borderless {
+  border:none !important;
 }

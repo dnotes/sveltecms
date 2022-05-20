@@ -3,7 +3,9 @@ types:
   blog:
     slug:
       fields: date,title
-      slugify: [removeTimestamp, slugify]
+      slugify:
+        - removeTimestamp
+        - slugify
     fields:
       title: title
       date: date
@@ -16,8 +18,13 @@ mediaStores:
     mediaDirectory: images
     allowMediaTypes: image/jpeg, image/png, image/gif
 fields:
+  title:
+    type: text
+    required: true
+  date:
+    type: date
+    required: true
   body: markdown
-  title: text
   image: image
 widgets:
   date:

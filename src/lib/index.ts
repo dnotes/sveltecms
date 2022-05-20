@@ -646,6 +646,36 @@ export default class SvelteCMS {
     return k
   }
 
+  _scriptFunctionHelp
+  get scriptFunctionHelp():Array<{
+    id:string           // the function id
+    helptext?:string    // what the function does
+    params: Array<{     // an array of function parameters
+      id:string         // the param id
+      multiple:boolean  // whether it is multiple
+      helptext:string   // helptext for the param
+    }>
+  }> {
+    if (this._scriptFunctionHelp) return this._scriptFunctionHelp
+    this._scriptFunctionHelp = Object.keys(this.scriptFunctions)
+      .sort()
+      .map(id => {
+        let fn = this.scriptFunctions[id]
+        return {
+          id,
+          helptext: fn.helptext || '',
+          params: Object.entries(fn.optionFields || {})
+            .map(([id, param]) => {
+              return {
+                id,
+                multiple: param.multiple,
+                helptext: param.helptext
+              }
+            }),
+        }
+      })
+    return this._scriptFunctionHelp
+  }
 }
 
 export type WidgetField = Field & {

@@ -23,13 +23,14 @@ describe('Test $value.property constructions', () => {
     ${'$error'} | ${'$error'} | ${{function:'isError',params:[]}}
     ${'$errors'} | ${'$error'} | ${{function:'isError',params:[]}}
     ${'$touched'} | ${'$touched'} | ${{function:'isTouched',params:[]}}
-    ${'$field'} | ${'$field'} | ${{function:'getFieldProperty',params:[]}}
+    ${'$prop'} | ${'$prop'} | ${{function:'getProperty',params:[]}}
+    ${'$props'} | ${'$prop'} | ${{function:'getProperty',params:[]}}
     ${'$value.fieldname'} | ${'$values.fieldname'} | ${{function:'getValue',params:['fieldname']}}
     ${'$values.fieldname'} | ${'$values.fieldname'} | ${{function:'getValue',params:['fieldname']}}
     ${'$error.fieldname.subfield'} | ${'$errors.fieldname.subfield'} | ${{function:'isError',params:['fieldname.subfield']}}
     ${'$errors.fieldname.subfield'} | ${'$errors.fieldname.subfield'} | ${{function:'isError',params:['fieldname.subfield']}}
     ${'$touched.fieldname[0].subfield'} | ${'$touched.fieldname[0].subfield'} | ${{function:'isTouched',params:['fieldname[0].subfield']}}
-    ${'$field.hidden'} | ${'$field.hidden'} | ${{function:'getFieldProperty',params:['hidden']}}
+    ${'$props.hidden'} | ${'$props.hidden'} | ${{function:'getProperty',params:['hidden']}}
     ${'$value.$id'} | ${'$value'} | ${{function:'getValue',params:[]}}
     ${'$values.$id'} | ${'$value'} | ${{function:'getValue',params:[]}}
   `('$script', testScript)
