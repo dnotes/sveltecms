@@ -99,8 +99,7 @@ import ScriptableButton from "sveltecms/ui/ScriptableButton.svelte";
   // Variables for the remove item modal
   let confirmRemove:number
   let confirmRemoveButton
-  $: if (typeof confirmRemove === 'number') confirmRemoveButton?.focus()
-
+  // TODO $: if (typeof confirmRemove === 'number') confirmRemoveButton?.focus()
   // Move items up or down
   // TODO: refactor into a draggable list
   function shiftItem(i:number, up?:true) {
