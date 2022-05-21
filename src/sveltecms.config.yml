@@ -30,6 +30,8 @@ widgets:
     time: editable
   textarea:
     type: textarea
-    autosize: true
-    resize: vertical
+    placeholder: ''
+    rows: 15
+    cols: 0
+    autosize: false
 _slug: sveltecms.config
