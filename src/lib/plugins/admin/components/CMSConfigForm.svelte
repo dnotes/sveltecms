@@ -18,7 +18,7 @@ import Button from "sveltecms/ui/Button.svelte";
   let conf = get(cms.conf, opts.configPath, {})
 
   // Variables for diffing
-  $: oldConf = get(cms.conf, opts.configPath, {})
+  let oldConf = Object.assign({}, get(cms.conf, opts.configPath, {}))
   $: unsaved = !isEqual(oldConf, conf) || !isEqual(Object.keys(oldConf), Object.keys(conf))
 
   export let saveConfig = async () => {

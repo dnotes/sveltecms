@@ -1,6 +1,5 @@
 
 import type SvelteCMS from "sveltecms"
-import type { LabeledEntity } from "sveltecms"
 import type { RequestEvent } from "@sveltejs/kit/types/private"
 import { Component, type ComponentConfigSetting } from "sveltecms/core/Component"
 import { saveContentEndpoint, deleteContentEndpoint, parseRequest, getLabelFromID } from 'sveltecms/utils'

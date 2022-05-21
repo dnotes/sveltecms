@@ -3,22 +3,28 @@ import type SvelteCMS from 'sveltecms'
 import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
 
 // @ts-ignore
-import { page } from '$app/stores'
+import { goto } from '$app/navigation';
+import { browser } from '$app/env'
 
   export let cms:SvelteCMS
+  export let basePath:string
+  export let adminPath:string
   export let data
 
-  // $: console.log({data,cms})
+  let [ contentPath, contentTypeID, slug ] = adminPath.split('/')
 
-  $: [ contentPath, contentTypeID, slug ] = $page.params.adminPath.split('/')
-  $: content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
+  // If new content was just posted, goto the new url
+  let isNew = slug === '_'
+  if (browser && isNew && data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+
+  let content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
 
 </script>
 
 {#await content}
   loading editor...
 {:then values}
-  <CmsEditorForm {contentTypeID} {values} {cms} />
+  <CmsEditorForm {contentTypeID} {values} {cms} {isNew} />
 {:catch error}
   Error loading content:
   <pre><code>
