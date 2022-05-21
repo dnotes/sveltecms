@@ -3,7 +3,6 @@ import type SvelteCMS from './index';
 import CmsFieldCollection from './CMSFieldCollection.svelte';
 import DisplayResult from 'sveltecms/ui/DisplayResult.svelte'
 import { cloneDeep } from 'lodash-es'
-import { onDestroy, onMount } from 'svelte';
 import Button from './ui/Button.svelte';
 
   export let cms:SvelteCMS
@@ -15,6 +14,7 @@ import Button from './ui/Button.svelte';
   export let touched = {}
   export let disabled = false
   export let submitOptions = {}
+  export let isNew = undefined
 
   export const contentType = cms.getContentType(contentTypeID)
   let widgetFieldCollection = cms.getWidgetFields(contentType, { values, errors, touched })
@@ -56,10 +56,10 @@ import Button from './ui/Button.svelte';
     <div class="cms-editor-form">
       <slot name="header">
         <h2>
-          {#if initialValues === {}}
-            Edit
-          {:else}
+          {#if isNew || initialValues === {}}
             New
+          {:else}
+            Edit
           {/if}
           {widgetFieldCollection?.label}
         </h2>
