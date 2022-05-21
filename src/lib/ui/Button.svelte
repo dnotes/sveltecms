@@ -19,7 +19,8 @@
 
 <a class="button"
   on:click
-  title={helptext}
+  title="{helptext}"
+  aria-label="{helptext}"
   {href}
   class:disabled
   class:primary
@@ -36,6 +37,7 @@
 <button
   on:click
   title={helptext}
+  aria-label="{helptext}"
   type={ submit ? 'submit' : 'button'}
   {disabled}
   class:primary

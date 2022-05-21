@@ -1,9 +1,12 @@
 <script lang="ts">
 import type SvelteCMS from 'sveltecms';
 import type { WidgetField } from 'sveltecms'
+
+import { parseScript, type ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
+
 import Modal from 'sveltecms/ui/Modal.svelte'
 import CMSField from 'sveltecms/CMSField.svelte'
-import { parseScript, type ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
+import Button from 'sveltecms/ui/Button.svelte';
 
   export let cms:SvelteCMS
   export let field:WidgetField|{ disabled?:boolean|ScriptFunctionConfig, id?:string } = { }
@@ -12,40 +15,36 @@ import { parseScript, type ScriptFunctionConfig } from 'sveltecms/core/ScriptFun
 
   export let value
 
+  let functionIDs = Object.keys(cms.scriptFunctions).sort()
+  let functionParams = Object.keys(cms.scriptFunctions).sort().map(fn => Object.keys(cms.scriptFunctions[fn].optionFields || {}))
+
   let isScript = parseScript(value)
 
   let overridden
-  let configuring
+  let show
 
-  let staticValue=
-  let scriptValue
+  let scriptValue = ''
+  let originalValue
 
   function toggleOverride() {
     // Remove the override
     if (overridden) {
       overridden = false
       field.disabled = disabled
-      value =
+      value = originalValue || field?.['default']
     }
     // Set the override
     else {
       overridden = true
       field.disabled = true
-
+      value = scriptValue
     }
   }
 
 </script>
 
 <slot>
-  {#if field.type}
+  {#if field?.['type']}
     <CMSField {cms} id="_{id}" {field} bind:value />
   {/if}
 </slot>
-
-{#if configuring}
-  <Modal>
-    <h2>Configure script for </h2>
-    <input type="text" size="50" bind:value={script} />
-  </Modal>
-{/if}

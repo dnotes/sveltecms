@@ -3,6 +3,7 @@ import { tick } from "svelte";
 import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
 import type { WidgetField } from "..";
 import type SvelteCMS from "..";
+import Button from "sveltecms/ui/Button.svelte";
 
   export let field:WidgetField
   export let id:string
@@ -23,6 +24,7 @@ import type SvelteCMS from "..";
 </script>
 
 <fieldset class="cms-multiple" on:click|preventDefault>
+  <!-- svelte-ignore a11y-label-has-associated-control -->
   <label for="{id}[0]">{field.label}<label>
   {#each value as v,i}
     <div class="cms-multiple-item" bind:this={formItems[i]}>
@@ -42,11 +44,11 @@ import type SvelteCMS from "..";
           bind:value={v}
         />
       {/if}
-      <button type="button" class="cms-multiple-item-delete" aria-label="Remove {field.label} item" on:click|preventDefault={(e) => {
+      <Button small helptext="Remove {field.label} item" on:click={(e) => {
         value.splice(i,1); value=value;
-      }}>✖️</button>
+      }}>✖️</Button>
     </div>
   {/each}
-<button type="button" class="cms-multiple-item-add" aria-label="Add {field.label} item" on:click|preventDefault={addItem}>+ add {field.label.toLowerCase()} item</button>
+<Button small helptext="Add {field.label} item" on:click={addItem}>+ add {field.label.toLowerCase()} item</Button>
 
 </fieldset>

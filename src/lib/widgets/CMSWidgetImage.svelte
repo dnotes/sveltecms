@@ -17,6 +17,7 @@
 <script lang="ts">
 import type { WidgetField } from "..";
 import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
+import Button from "sveltecms/ui/Button.svelte";
 let result
 
   export let field:WidgetField
@@ -184,7 +185,7 @@ let result
       on:change={handleUpload}
       style="display:none"
     />
-    <button type="button" style="display:inline-block;" on:click={()=>{input.click()}}>Upload</button>
+    <Button helptext={'Upload a new image'} on:click={()=>{input.click()}}>Upload</Button>
   </label>
 
   {#if value && value !== {} && value !== []}
@@ -246,7 +247,7 @@ let result
               >
             {/if}
 
-            <button type="button" class="cms-image-delete" aria-label="delete {field.label} image" on:click="{() => {deleteImage(i)}}">✖️</button>
+            <Button small danger helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
           </div>
         {/each}
       {:else}
@@ -296,7 +297,7 @@ let result
               >
             {/if}
 
-            <button type="button" class="cms-image-delete" aria-label="delete {field.label} image" on:click="{() => {deleteImage(i)}}">✖️</button>
+            <Button small danger helptext="Delete image {i+1}: {value['alt'] || value['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
           </div>
         {/each}
       {/if}
