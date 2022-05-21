@@ -53,7 +53,6 @@ td>.cms-helptext:hover { display:none; }
 
 /* Tables */
 .sveltecms table {
-  width: 100%;
   max-width: 1190px;
 }
 
@@ -132,4 +131,19 @@ td>.cms-helptext:hover { display:none; }
 .sveltecms button.borderless,
 .sveltecms a.borderless {
   border:none !important;
+}
+
+.sveltecms .cms-editor-form {
+  max-width: 600px;
+}
+.sveltecms div.field {
+  padding: .5em;
+}
+.sveltecms div.field label>span:first-child {
+  display: block;
+}
+.sveltecms textarea,
+.sveltecms fieldset {
+  box-sizing: border-box;
+  width: 100%;
 }
