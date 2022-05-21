@@ -169,81 +169,109 @@ const firestoreBuilder:CMSPluginBuilder = (options:{
         optionFields,
         listContent: async(contentType, opts:ConfigSetting & { listFields:string|string[]}) => {
 
-          let headers = {}
+          try {
 
-          // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.token}`
+            let headers = {}
 
-          let body:string = JSON.stringify({ structuredQuery: {
-            from: [{
-              collectionId: opts.collection || contentType.id,
-            }],
-            select: parseListFields(opts.listFields),
-            orderBy: opts.orderBy || undefined,
-            offset: opts.offset || undefined,
-            limit: opts.limit || undefined,
-            where: parseListQuery(opts.listQuery),
-          }}, null, 2)
+            // Set auth token if provided
+            if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.token}`
 
-          let url = getUrl(opts.firebaseConfig, 'runQuery').replace('/runQuery', ':runQuery')
+            let body:string = JSON.stringify({ structuredQuery: {
+              from: [{
+                collectionId: opts.collection || contentType.id,
+              }],
+              select: parseListFields(opts.listFields),
+              orderBy: opts.orderBy || undefined,
+              offset: opts.offset || undefined,
+              limit: opts.limit || undefined,
+              where: parseListQuery(opts.listQuery),
+            }}, null, 2)
 
-          const res = await fetch(url, { method:'POST', headers, body })
-          if (!res.ok) {
-            console.error(body)
-            return resError(res)
+            let url = getUrl(opts.firebaseConfig, 'runQuery').replace('/runQuery', ':runQuery')
+
+            const res = await fetch(url, { method:'POST', headers, body })
+            if (!res.ok) throw new Error(await res.text())
+
+            const json = await res.json()
+
+            return json.map(document => decode(document.document) )
+
           }
-
-          const json = await res.json()
-
-          return json.map(document => decode(document.document) )
+          catch (e) {
+            e.message = `Error listing content ${contentType.id}:\n${e.message}`
+            throw e
+          }
 
         },
 
         getContent: async (contentType, opts, slug = '') => {
 
-          let headers = {}
+          try {
 
-          // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
+            let headers = {}
 
-          const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug.toString()), { headers })
-          if (!res.ok) return resError(res)
+            // Set auth token if provided
+            if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
 
-          const json = await res.json()
+            const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug.toString()), { headers })
+            if (!res.ok) throw new Error(await res.text())
 
-          return (Array.isArray(json.documents)) ? json.documents.map(decode) : decode(json)
+            const json = await res.json()
 
-        },
+            return (Array.isArray(json.documents)) ? json.documents.map(decode) : decode(json)
 
-        saveContent: async (content, contentType, opts):Promise<Response|void> => {
-
-          let headers = {}
-
-          // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
-
-          let body = JSON.stringify(jsonToDocument(content).mapValue,null,2)
-          if (!body || !body.length) throw new Error(`Bad conversion to Firestore Document format.`)
-          let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), (opts.slug || content.slug || '')), { method: 'PATCH', headers, body })
-          if (!res.ok) {
-            console.error(body)
-            return resError(res)
+          }
+          catch(e) {
+            e.message = `Error getting content ${contentType.id}/${slug}:\n${e.message}`
+            throw e
           }
 
-          return res
+        },
+
+        saveContent: async (content, contentType, opts:ConfigSetting & {slug?:string}) => {
+
+          let headers = {}
+          let slug = opts?.slug || content?._slug
+
+          try {
+
+            if (!slug) throw new Error(`Tried to save content without a slug.`)
+
+            // Set auth token if provided
+            if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
+
+            let body = JSON.stringify(jsonToDocument(content).mapValue,null,2)
+            if (!body || !body.length) throw new Error(`Bad conversion to Firestore Document format.`)
+            let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), slug), { method: 'PATCH', headers, body })
+            if (!res.ok) throw new Error(await res.text())
+
+            return content
+
+          }
+          catch(e) {
+            e.message = `Error saving content ${contentType.id}/${slug}:\n${e.message}`
+            throw e
+          }
 
         },
 
-        deleteContent: async (content, contentType, opts):Promise<Response|void> => {
+        deleteContent: async (content, contentType, opts:ConfigSetting & {slug?:string}) => {
 
-          let headers = {}
+          try {
 
-          // Set auth token if provided
-          if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
+            let headers = {}
 
-          let res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, content.slug), { method: 'DELETE', headers })
-          if (!res.ok) return resError(res)
-          return res
+            // Set auth token if provided
+            if (opts.bearerToken) headers['Authorization'] = `Bearer ${opts.bearerToken}`
+
+            let res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, opts.slug || content._slug), { method: 'DELETE', headers })
+            if (!res.ok) throw new Error(await res.text())
+            return content
+
+          }
+          catch(e) {
+            throw e
+          }
 
         },
       }
@@ -324,12 +352,6 @@ export function parseListQuery(listQuery, useClientSDK:boolean = false) {
       })
     }
   }
-}
-
-async function resError(res) {
-  console.log(res)
-  let err = await(res.json())
-  throw err.error
 }
 
 function decode(json) {

@@ -1,6 +1,7 @@
 import type { ContentType } from "sveltecms/core/ContentType"
 import type SvelteCMS from "sveltecms"
 import { formDataHandler } from './formDataHandler'
+import type { Content } from "sveltecms/core/ContentStore"
 
 function getFormat(format:string):'json'|'form'|void {
   if (format === 'application/json') return 'json'
@@ -22,51 +23,16 @@ async function parseRequest(cms:SvelteCMS, contentType:string|ContentType, reque
   throw new Error(`Content-Type must be application/json or multipart/form-data (got ${format})`)
 }
 
-async function saveContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}) {
-  let content
-  try {
-    let { format, data } = await parseRequest(cms, contentType, request)
-    content = data
-    let response = await cms.saveContent(contentType, content, options)
-    if (format === 'json') {
-      response.headers['Content-Type'] = 'application/json'
-      return response
-    }
-  }
-  catch(error) {
-    return {
-      status: 500,
-      body: {
-        message: error.message,
-        request,
-        content,
-        stack: error.stack.split('\n'),
-      }
-    }
-  }
+async function saveContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}):Promise<Content> {
+  let { format, data } = await parseRequest(cms, contentType, request)
+  let content = await cms.saveContent(contentType, data, options)
+  return content
 }
 
-async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}) {
-  let content
-  try {
-    let { format, data } = await parseRequest(cms, contentType, request)
-    let response = await cms.deleteContent(contentType, content, options)
-    if (format === 'json') {
-      response.headers['Content-Type'] = 'application/json'
-      return response
-    }
-  }
-  catch(error) {
-    return {
-      status: 500,
-      body: {
-        message: error.message,
-        request,
-        content,
-        stack: error.stack.split('\n'),
-      }
-    }
-  }
+async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}):Promise<Content> {
+  let { format, data } = await parseRequest(cms, contentType, request)
+  let content = await cms.deleteContent(contentType, data, options)
+  return content
 }
 
 export {

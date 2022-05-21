@@ -5,13 +5,19 @@ import type { ContentType } from 'sveltecms/core/ContentType'
 const noStore = async () => {
   // @ts-ignore
   console.error(`Store not found: (${this?.['id'] || ''})`)
+  return {}
+}
+
+export type Content = {
+  _slug?:string
+  [id:string]:string|number|boolean|null|undefined|Date|Array<string|number|boolean|null|undefined|Date|Content>|Content
 }
 
 export type ContentStoreType = EntityType & ConfigurableEntityType & {
-  listContent?:(contentType:ContentType, opts:ConfigSetting) => Promise<any[]>
-  getContent?:(contentType:ContentType, opts:ConfigSetting, slug?:string|number) => Promise<any|any[]>
-  saveContent?:(content:any, contentType:ContentType, opts:ConfigSetting) => Promise<any>
-  deleteContent?:(content:any, contentType:ContentType, opts:ConfigSetting) => Promise<any>
+  listContent?:(contentType:ContentType, opts:ConfigSetting) => Promise<Content[]>
+  getContent?:(contentType:ContentType, opts:ConfigSetting, slug?:string|number) => Promise<Content|Content[]>
+  saveContent?:(content:Content, contentType:ContentType, opts:ConfigSetting) => Promise<Content>
+  deleteContent?:(content:Content, contentType:ContentType, opts:ConfigSetting) => Promise<Content>
 }
 
 export type ContentStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting
@@ -19,10 +25,10 @@ export type ContentStoreConfigSetting = TypedEntityConfigSetting & ConfigurableE
 export class ContentStore implements ConfigurableEntity, TypedEntity {
   id:string
   type:string
-  listContent:(contentType:ContentType, options:ConfigSetting)=>Promise<any[]>
-  getContent:(contentType:ContentType, options:ConfigSetting, slug?:string|number)=>Promise<any|any[]>
-  saveContent:(content:any, contentType:ContentType, options:ConfigSetting)=>Promise<any>
-  deleteContent:(content:any, contentType:ContentType, options:ConfigSetting)=>Promise<any>
+  listContent:(contentType:ContentType, options:ConfigSetting)=>Promise<Content[]>
+  getContent:(contentType:ContentType, options:ConfigSetting, slug?:string|number)=>Promise<Content|Content[]>
+  saveContent:(content:Content, contentType:ContentType, options:ConfigSetting)=>Promise<Content>
+  deleteContent:(content:Content, contentType:ContentType, options:ConfigSetting)=>Promise<Content>
   options:ConfigSetting
   constructor(conf:string|ContentStoreConfigSetting, cms:SvelteCMS) {
     let store = typeof conf === 'string' ? cms.contentStores[conf] : (cms.contentStores[conf?.type] || cms.contentStores[conf?.id])

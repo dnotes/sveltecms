@@ -3,7 +3,7 @@ import { Field, fieldTypes, type FieldType, type FieldConfigSetting, type Config
 import { widgetTypes, type WidgetType, type WidgetConfigSetting } from './core/Widget'
 import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType"
 import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
-import type { ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
+import type { Content, ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
 import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection } from './core/Collection'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
@@ -393,7 +393,7 @@ export default class SvelteCMS {
       .join(contentType.slug.separator)
   }
 
-  async listContent(contentType:string|ContentType, options:{load?:boolean, [key:string]:any} = {}):Promise<Array<any>> {
+  async listContent(contentType:string|ContentType, options:{load?:boolean, [key:string]:any} = {}):Promise<Content[]> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
@@ -415,7 +415,7 @@ export default class SvelteCMS {
    * @param options object
    * @returns object|object[]
    */
-  async getContent(contentType:string|ContentType, slug?:string|number|null, options:{[key:string]:any} = {}) {
+  async getContent(contentType:string|ContentType, slug?:string|number|null, options:{[key:string]:any} = {}):Promise<Content|Content[]> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
@@ -427,14 +427,14 @@ export default class SvelteCMS {
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
 
-  async saveContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}) {
+  async saveContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}):Promise<Content> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
     return db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
   }
 
-  async deleteContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}) {
+  async deleteContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}):Promise<Content> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)

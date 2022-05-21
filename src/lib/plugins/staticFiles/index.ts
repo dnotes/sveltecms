@@ -5,6 +5,7 @@ import type { PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import formDataHandler from 'sveltecms/utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
+import { cloneDeep } from 'lodash-es';
 const fs = {}
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
@@ -210,33 +211,27 @@ const plugin:CMSPlugin = {
           `${slug}.${opts.fileExtension}`   // file extensions
 
         let body = ''
+        let saveContent:any = cloneDeep(content)
         switch (opts.fileExtension) {
           case "json":
-            content = JSON.stringify(content, null, 2)
+            saveContent = JSON.stringify(saveContent, null, 2)
             break;
           case "md":
-            body = content[opts.markdownBodyField] || ''
-            delete(content[opts.markdownBodyField])
+            body = saveContent[opts.markdownBodyField] || ''
+            delete(saveContent[opts.markdownBodyField])
           case "yml":
           case "yaml":
             let yaml = await import('js-yaml')
-            content = yaml.dump(content).trim()
-            if (opts.fileExtension === 'md') content = `---\n${content}\n---\n${body}`
+            saveContent = yaml.dump(saveContent).trim()
+            if (opts.fileExtension === 'md') saveContent = `---\n${saveContent}\n---\n${body}`
             break;
           default:
             throw new Error('Extension for file stores must be md, json, yml or yaml.')
         }
 
         try {
-          await fs.writeFile(filepath, content)
-          return {
-            status: 200,
-            body: {
-              action: 'saved',
-              filepath,
-              content,
-            }
-          }
+          await fs.writeFile(filepath, saveContent)
+          return content
         }
         catch (e) {
           e.message = `Error writing ${filepath}:\n${e.message}`
@@ -260,14 +255,7 @@ const plugin:CMSPlugin = {
 
         try {
           await fs.unlink(filepath)
-          return {
-            status: 200,
-            body: {
-              action: 'deleted',
-              filepath,
-              content
-            }
-          }
+          return content
         }
         catch (e) {
           e.message = `Error deleting ${filepath}:\n${e.message}`
