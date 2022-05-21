@@ -84,7 +84,7 @@ import ScriptableButton from "sveltecms/ui/ScriptableButton.svelte";
       items.push([addID, addType])
       items = items
       await tick()
-      fieldEls[addID].widget?.focus()
+      addIDEl.focus()
       addID = ''
       addType = ''
     }
