@@ -54,12 +54,12 @@ export const adminPages:AdminPageConfig[] = [
     post: async({cms, args, event, values})=>{
       if (event) return saveContentEndpoint(cms, args[1], event.request)
       else if (values) return cms.saveContent(args[1], values)
-      return { status:400 }
+      throw new Error('Empty POST to content/*/*')
     },
     del: async({cms, args, event, values})=>{
       if (event) return deleteContentEndpoint(cms, args[1], event.request)
       else if (values) return cms.deleteContent(args[1], values)
-      return { status:400 }
+      throw new Error('Empty DELETE to content/*/*')
     }
   },
   {
