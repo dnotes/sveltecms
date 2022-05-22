@@ -12,8 +12,6 @@ import type SvelteCMS from 'sveltecms';
 
   let opts:{oneline?:boolean} = parentField.widget.options
 
-  // testing change: cms.getCollection(contentType, parentID) -> parentField
-  // if this works we may not need to pass contentType to fields at all
   let collection = cms.getWidgetFields(parentField, {
     values: parentField.values,
     errors: parentField.errors,

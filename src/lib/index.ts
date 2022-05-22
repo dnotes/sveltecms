@@ -359,14 +359,6 @@ export default class SvelteCMS {
     return this.types[contentType]
   }
 
-  getCollection(contentType:string|ContentType, valuePath:string):Field {
-    contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
-    let configPath = getConfigPathFromValuePath(valuePath)
-    let field = <Field> getProp(contentType, configPath)
-    if (!field || !(field?.type === 'collection') || !(field?.fields)) throw new Error (`${contentType}.${configPath} is not a valid collection`)
-    return field
-  }
-
   getContentStore(contentType:string|ContentType) {
     const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     return type.contentStore
