@@ -10,7 +10,7 @@ export type AdminCollectionConfigSetting = CollectionConfigSetting & { admin:tru
 
 export class Collection implements EntityType, FieldableEntity {
   id:string
-  component?:string
+  type:string
   admin?:boolean
   isFieldable=true
   fields:{[id:string]:Field}
@@ -23,5 +23,12 @@ export class Collection implements EntityType, FieldableEntity {
   }
 }
 export type AdminCollection = Collection & { admin:true }
+
+export const collectionTypes = [
+  {
+    id: 'base',
+    fields: {},
+  },
+]
 
 export default Collection
