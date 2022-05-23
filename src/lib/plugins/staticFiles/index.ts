@@ -1,8 +1,6 @@
 import type { default as SvelteCMS, CMSPlugin, CMSPluginBuilder } from 'sveltecms';
-import type { ConfigFieldConfigSetting, Field } from 'sveltecms/core/Field';
-import type { ContentType } from 'sveltecms/core/ContentType'
+import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { PromisifiedFS } from '@isomorphic-git/lightning-fs'
-import formDataHandler from 'sveltecms/utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
 import { cloneDeep } from 'lodash-es';
@@ -35,7 +33,6 @@ export const databaseNameField:ConfigFieldConfigSetting = {
 }
 
 export type staticFilesContentOptions = {
-  databaseName: string,
   contentDirectory: string,
   prependContentTypeIdAs: ""|"directory"|"filename",
   fileExtension: "md"|"json"|"yml"|"yaml",
@@ -88,7 +85,6 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
 }
 
 export type staticFilesMediaOptions = {
-  databaseName:string,
   staticDirectory:string,
   mediaDirectory:string,
   allowMediaTypes:string,
@@ -152,7 +148,7 @@ const plugin:CMSPlugin = {
       id: 'staticFiles',
       optionFields: { databaseName:databaseNameField, ...staticFilesContentOptionFields },
       listContent: async (contentType, opts:staticFilesContentOptions & { full?:boolean, glob?:string }) => {
-        const fs = await getFs(opts.databaseName)
+        const fs = await getFs('opts.databaseName')
         let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
           `${getBasedir()}/${opts.contentDirectory}/` + // base dir
           `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
@@ -179,7 +175,7 @@ const plugin:CMSPlugin = {
 
         slug = slug || opts.slug || '*'
 
-        const fs = await getFs(opts.databaseName)
+        const fs = await getFs('opts.databaseName')
         let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
           `${getBasedir()}/${opts.contentDirectory}/` + // base dir
           `${opts.prependContentTypeIdAs ?          // content type, as directory or prefix
@@ -201,7 +197,7 @@ const plugin:CMSPlugin = {
         let slug = opts.slug ?? content._slug ?? content.slug
         if (!slug && !opts.filepath) throw new Error(`Content to be saved must have a slug or a provided filepath: ${contentType.label}\n - opts.slug: ${opts.slug}\n - content._slug: ${content._slug}\n - content.slug: ${content.slug}`)
 
-        const fs = await getFs(opts.databaseName)
+        const fs = await getFs('opts.databaseName')
 
         const base = `${getBasedir()}/${opts.contentDirectory}/`
         let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
@@ -245,7 +241,7 @@ const plugin:CMSPlugin = {
         let slug = opts.slug ?? content._slug ?? content.slug
         if (!slug && !opts.filepath) throw new Error(`Content to be deleted must have a slug or a provided filepath: ${contentType.label}`)
 
-        const fs = await getFs(opts.databaseName)
+        const fs = await getFs('opts.databaseName')
 
         let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
           `${getBasedir()}/${opts.contentDirectory}/` + // base dir
@@ -284,7 +280,7 @@ const plugin:CMSPlugin = {
         if (maxUploadSize && file.size > maxUploadSize) throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`)
 
         // Get file system
-        const fs = await getFs(opts.databaseName)
+        const fs = await getFs('opts.databaseName')
         const filepath = `${getBasedir()}/${opts.staticDirectory}/${opts.mediaDirectory}/${file.name}`.replace(/\/+/g,'/')
 
         // TODO: determine what to do if files exist
@@ -308,12 +304,51 @@ const plugin:CMSPlugin = {
 
       },
       deleteMedia: async (file, opts:staticFilesMediaOptions) => {
-        const fs = await getFs(opts.databaseName)
-
+        const fs = await getFs('opts.databaseName')
+        throw new Error('Deleting local media is not yet implemented')
         return ''
       },
     }
   ],
+  adminPages: [
+    {
+      id: 'components',
+      component: 'CMSComponentList',
+      get: async() => {
+        // @ts-ignore TODO: remove sveltekit/vite-specific code
+        let files = await import.meta.glob(`$lib/**/*.svelte`)
+        return Object.keys(files)
+      },
+      post: async({cms, event}) => {
+        let values = await event.request.json()
+        let saveComponents = Object.keys(values)
+          .filter(k => values[k])
+          .filter(f => f.match(/^[a-zA-Z0-9_\/]+$/)) // no filenames with ".", and no saving files above $lib
+
+        let imports = [], components = []
+        saveComponents.forEach(f => {
+          f = f.replace(/^\/+/,'');
+          let id = f.replace(/\W/g,'_')
+          imports.push(`import ${id} from "$lib/${f}.svelte";`)
+          components.push(`{ id:'${id}', component:${id} }`)
+        })
+
+        let output = `// This file is auto-generated by SvelteCMS at /admin/components.\n`+
+          `${imports.join('\n')}\n\n`+
+          `export const components = [\n`+
+          `  ${components.join(',\n  ')}\n`+
+          `]\n\n`+
+          `export default components;`
+
+        let fs = await getFs('opts.databaseName')
+        let filepath = `${getBasedir()}/${cms.conf.configPath}.components.ts`
+        await fs.writeFile(filepath, output)
+
+        // @ts-ignore TODO: remove sveltekit/vite-specific code
+        return Object.keys(await import.meta.glob(`$lib/**/*.svelte`))
+      }
+    },
+  ]
 }
 
 export default plugin

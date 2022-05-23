@@ -11,6 +11,7 @@ export class Component implements ConfigurableEntity, TypedEntity {
   id: string
   type: string
   component: Object
+  plugin?:string
   options?: ConfigSetting
   constructor(conf:string|ComponentConfigSetting, cms:SvelteCMS) {
     let componentType = typeof conf === 'string' ? cms.components[conf] : (cms.components[conf?.type] || cms.components[conf?.id])

@@ -12,6 +12,7 @@ export class Collection implements EntityType, FieldableEntity {
   id:string
   type:string
   admin?:boolean
+  plugin?:string
   isFieldable=true
   fields:{[id:string]:Field}
   constructor(conf:CollectionConfigSetting, cms:SvelteCMS) {

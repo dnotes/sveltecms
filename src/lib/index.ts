@@ -92,6 +92,7 @@ export type CMSConfigSetting = {
   widgets?: {[key:string]: WidgetConfigSetting}
   collections?: {[key:string]: CollectionConfigSetting}
   transformers?: {[key:string]: TransformerConfigSetting}
+  components?: {[key:string]: ComponentConfigSetting}
 }
 
 export default class SvelteCMS {
@@ -126,7 +127,7 @@ export default class SvelteCMS {
     });
 
     // Initialize all of the stores, widgets, and transformers specified in config
-    ['contentStores', 'mediaStores', 'transformers'].forEach(objectType => {
+    ['contentStores', 'mediaStores', 'transformers', 'components'].forEach(objectType => {
       if (conf?.[objectType]) {
         Object.entries(conf[objectType]).forEach(([k,settings]) => {
 

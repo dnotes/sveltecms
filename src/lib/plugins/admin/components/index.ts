@@ -1,3 +1,4 @@
+import CMSComponentList from './CMSComponentList.svelte'
 import CMSConfigView from './CMSConfigView.svelte'
 import CMSContentEdit from './CMSContentEdit.svelte'
 import CMSContentList from './CMSContentList.svelte'
@@ -9,6 +10,7 @@ import CMSConfigContentType from './CMSConfigContentType.svelte'
 import CMSConfigContentTypeList from './CMSConfigContentTypeList.svelte'
 
 export {
+  CMSComponentList,
   CMSConfigView,
   CMSContentEdit,
   CMSContentList,
