@@ -32,29 +32,20 @@ import { pad, formatTimezoneOffset } from 'sveltecms/utils/date'
       // This is what happens when we first load the widget with a value
       else if (value && !initialized) {
         initialized = true
-        let date,time,match,calc
+        let date,time,calc
 
         // Get the date from a unix timestamp
         if (typeof value === 'string' && value.match(/^\d+$/)) calc = new Date(parseInt(value) * 1000)
         else if (typeof value === 'number') calc = new Date(value * 1000)
 
         // For a date or string, continue
-        else calc = value
+        else calc = new Date(value)
 
-        if (typeof calc === 'string') {
-          // Parse an ISO string or MySQL DATETIME type
-          match = calc.match(/(\d{4}-\d{2}-\d{2})(?:(?:T| )?(\d{2}:\d{2}(?::\d{2})?))?/)
-          if (match) [,date,time] = match
-          else calc = new Date(calc)// Try to get a date from freeform text (here be dragons)
+        try {
+          date = `${pad(calc.getFullYear(),4)}-${pad(calc.getMonth()+1)}-${pad(calc.getDate())}`
+          time = `${pad(calc.getHours())}:${pad(calc.getMinutes())}${opts.seconds ? ':' + pad(calc.getSeconds()) : ''}`
         }
-
-        if (!date) { // If we still don't have a date, then calc should be a Date object...
-          try {
-            date = `${pad(calc.getFullYear(),4)}-${pad(calc.getMonth()+1)}-${pad(calc.getDate())}`
-            time = `${pad(calc.getHours())}:${pad(calc.getMinutes())}:${pad(calc.getSeconds())}`
-          }
-          catch(e) {} // ...it's not a date.
-        }
+        catch(e) {} // ...it's not a date.
 
         // OK by now we either have a date and time, or we have nothing.
         splitValue = { date: date ?? '', time: time ?? '' }
