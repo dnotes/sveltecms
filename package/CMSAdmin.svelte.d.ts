@@ -3,6 +3,8 @@ import type SvelteCMS from "sveltecms";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
+        adminPath: string;
+        data?: Object;
     };
     events: {
         [evt: string]: CustomEvent<any>;

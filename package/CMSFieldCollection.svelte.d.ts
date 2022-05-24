@@ -1,14 +1,15 @@
 import { SvelteComponentTyped } from "svelte";
 import type SvelteCMS from 'sveltecms';
-import type { CMSWidgetField } from 'sveltecms';
+import type { FieldableEntity } from 'sveltecms';
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
-        fieldList: {
-            [id: string]: CMSWidgetField;
-        };
-        values: any;
-        contentTypeID: string;
+        values?: {};
+        errors?: {};
+        touched?: {};
+        id?: string;
+        collection: FieldableEntity;
+        widgetFieldCollection?: import("sveltecms").WidgetFieldCollection;
     };
     events: {
         [evt: string]: CustomEvent<any>;

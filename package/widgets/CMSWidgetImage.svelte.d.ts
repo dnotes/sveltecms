@@ -9,10 +9,10 @@ export declare type CMSImage = {
 export declare type CMSPreviewImage = CMSImage & {
     title: string;
 };
-import type { CMSWidgetField } from "..";
+import type { WidgetField } from "..";
 declare const __propDef: {
     props: {
-        field: CMSWidgetField;
+        field: WidgetField;
         id: string;
         value?: string | CMSImage | string[] | CMSImage[] | {};
         files?: any;

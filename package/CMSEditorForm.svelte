@@ -1,22 +1,25 @@
 <script>import CmsFieldCollection from './CMSFieldCollection.svelte';
-import DisplayResult from './components/DisplayResult.svelte';
+import DisplayResult from 'sveltecms/ui/DisplayResult.svelte';
 import { cloneDeep } from 'lodash-es';
-import { onDestroy, onMount } from 'svelte';
+import Button from './ui/Button.svelte';
 export let cms;
 export let contentTypeID;
-export let previewComponent = undefined;
 export let result = undefined;
 export let values = {};
 export let errors = {};
 export let touched = {};
 export let disabled = false;
 export let submitOptions = {};
-export let action = '';
-export let method = 'POST';
-export let contentType = undefined; // in case someone wants to log / debug
-contentType = cms.getContentType(contentTypeID);
-let collection = cms.getWidgetFields(contentType, { values, errors, touched });
+export let isNew = undefined;
+export const contentType = cms.getContentType(contentTypeID);
+let widgetFieldCollection = cms.getWidgetFields(contentType, { values, errors, touched });
+export let action = contentType?.form?.action ?? '';
+export let method = contentType?.form?.method ?? 'POST';
+export let previewComponent = contentType?.previewComponent;
+// @ts-ignore this is a type check
+let component = cms?.components?.[previewComponent?.component] || cms?.components?.[previewComponent];
 const initialValues = cloneDeep(values);
+let oldSlug = values?.['_slug'] ?? '';
 // export let validator:Validator.Validator<Object> = cms.getValidator(contentTypeID, values)
 // $: if (values) {
 //   disabled = validator.fails()
@@ -37,25 +40,6 @@ export let submit = async (event) => {
         }
     }
 };
-let form;
-onMount(() => {
-    collection.eventListeners?.forEach(conf => {
-        form.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.addEventListener(conf.on, (event) => {
-            // TODO: Why are event and el not available when the function is executed?
-            conf.function.fn(conf.function.vars, conf.function.options, event, el);
-        }));
-    });
-});
-onDestroy(() => {
-    collection.eventListeners?.forEach(conf => {
-        form?.querySelectorAll(`[name="${conf.id}"]`).forEach(el => el.removeEventListener(conf.on, (event) => {
-            conf.function.fn(conf.function.vars, conf.function.options, event, el);
-        }));
-    });
-});
-// This is necessary for conditional/computed fields
-$: if (values || errors || touched)
-    collection = collection;
 </script>
 
 <div>
@@ -63,31 +47,34 @@ $: if (values || errors || touched)
     <div class="cms-editor-form">
       <slot name="header">
         <h2>
-          {#if initialValues === {}}
-            Edit
-          {:else}
+          {#if isNew || initialValues === {}}
             New
+          {:else}
+            Edit
           {/if}
-          {collection?.label}
+          {widgetFieldCollection?.label}
         </h2>
       </slot>
-      <form on:submit="{submit}" bind:this={form} {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} {contentTypeID} {values} fieldList={collection.fields} />
-        <button
-          type="submit"
-          class="primary"
+      <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
+        <CmsFieldCollection {cms} {values} collection={contentType} />
+
+        <input type="hidden" name="_slug" bind:value={oldSlug}>
+
+        <Button
+          submit
+          primary
           {disabled}
         >
           <slot name="submit">Submit</slot>
-        </button>
+        </Button>
 
         <DisplayResult bind:result />
 
       </form>
     </div>
-    {#if previewComponent}
+    {#if component}
       <div class="cms-editor-preview">
-        <svelte:component this={previewComponent} item={cms.preMount(cms.getContentType(contentTypeID), values)} ></svelte:component>
+        <svelte:component this={component.component} item={cms.preMount(cms.getContentType(contentTypeID), values)} ></svelte:component>
       </div>
     {/if}
   </div>

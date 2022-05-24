@@ -22,11 +22,14 @@ const pluginBuilder = (config) => {
         fieldTypes: [
             {
                 id: 'markdown',
-                defaultValue: '',
-                defaultWidget: 'textarea',
-                defaultPreMount: ['markdown']
+                default: '',
+                widget: 'textarea',
+                preMount: ['markdown'],
             },
         ],
+        fieldWidgets: {
+            markdown: ['textarea']
+        },
     };
     return plugin;
 };

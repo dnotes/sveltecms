@@ -1,6 +1,8 @@
-import type { default as SvelteCMS, CMSContentField, CMSContentType } from '..';
-export declare function collapseFormItem(cms: SvelteCMS, contentType: CMSContentType, fields: {
-    [id: string]: CMSContentField;
+import type SvelteCMS from 'sveltecms';
+import type ContentType from 'sveltecms/core/ContentType';
+import type Field from 'sveltecms/core/Field';
+export declare function collapseFormItem(cms: SvelteCMS, contentType: ContentType, fields: {
+    [id: string]: Field;
 }, data: any, prefix?: string): Promise<any>;
 /**
  * Converts FormData into an object to be saved to a content store.
@@ -8,5 +10,5 @@ export declare function collapseFormItem(cms: SvelteCMS, contentType: CMSContent
  * @param contentType CMSContentType
  * @param formdata FormData
  */
-export declare function formDataHandler(cms: SvelteCMS, contentType: string | CMSContentType, formdata: FormData): Promise<any>;
+export declare function formDataHandler(cms: SvelteCMS, contentType: string | ContentType, formdata: FormData): Promise<any>;
 export default formDataHandler;

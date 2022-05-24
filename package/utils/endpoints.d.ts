@@ -1,9 +1,10 @@
-import type { CMSContentType } from "sveltecms";
+import type { ContentType } from "sveltecms/core/ContentType";
 import type SvelteCMS from "sveltecms";
-declare function parseRequest(cms: SvelteCMS, contentType: string | CMSContentType, request: Request): Promise<{
+import type { Content } from "sveltecms/core/ContentStore";
+declare function parseRequest(cms: SvelteCMS, contentType: string | ContentType, request: Request): Promise<{
     format: string;
     data: any;
 }>;
-declare function saveContentEndpoint(cms: SvelteCMS, contentType: string | CMSContentType, request: Request, options?: {}): Promise<any>;
-declare function deleteContentEndpoint(cms: SvelteCMS, contentType: string | CMSContentType, request: Request, options?: {}): Promise<any>;
+declare function saveContentEndpoint(cms: SvelteCMS, contentType: string | ContentType, request: Request, options?: {}): Promise<Content>;
+declare function deleteContentEndpoint(cms: SvelteCMS, contentType: string | ContentType, request: Request, options?: {}): Promise<Content>;
 export { parseRequest, saveContentEndpoint, deleteContentEndpoint, };

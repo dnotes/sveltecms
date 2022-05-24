@@ -1,29 +1,40 @@
-import { getLabelFromID } from "./utils";
-import transformers from './transformers';
-import fieldTypes from './fieldTypes';
-import widgetTypes from './widgetTypes';
-import { functions, parseFieldFunctionScript, CMSFieldFunctionConfig } from './fieldFunctions';
-import { cloneDeep, mergeWith, get as getProp, has as hasProp, union } from 'lodash-es';
+import { AdminPage } from './core/AdminPage';
+import { Field, fieldTypes } from './core/Field';
+import { widgetTypes } from './core/Widget';
+import { ContentType } from "./core/ContentType";
+import { Collection } from './core/Collection';
+import { transformers } from './core/Transformer';
+import { ScriptFunction, scriptFunctions } from './core/ScriptFunction';
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles';
-import { default as Validator, Rules } from 'validatorjs';
+import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es';
+// import { default as Validator, Rules } from 'validatorjs'
 const splitter = /\s*,\s*/g;
-export const CMSContentFieldPropsAllowFunctions = [
-    'label', 'tooltip', 'required', 'disabled',
-    'hidden', 'class', 'default', 'value',
-    'collapsible', 'collapsed',
+export const FieldPropsAllowFunctions = [
+    'label', 'helptext', 'required', 'disabled',
+    'hidden', 'class', 'default',
     'multiple', 'multipleLabel', 'multipleMin', 'multipleMax',
 ];
-export const cmsConfigurables = ['adminStore', 'types', 'lists', 'contentStores', 'mediaStores', 'fields', 'widgets', 'collections', 'transformers'];
+export const cmsConfigurables = [
+    'adminStore',
+    'types',
+    'lists',
+    'contentStores',
+    'mediaStores',
+    'fields',
+    'widgets',
+    'collections',
+    'transformers'
+];
 export default class SvelteCMS {
     constructor(conf, plugins = []) {
         this.conf = {};
-        this.adminPaths = {};
+        this.adminPages = {};
         this.adminCollections = {};
         this.fields = {};
         this.collections = {};
         this.components = {};
         this.widgets = {};
-        this.fieldFunctions = functions;
+        this.scriptFunctions = scriptFunctions;
         this.fieldTypes = fieldTypes;
         this.widgetTypes = widgetTypes;
         this.transformers = transformers;
@@ -43,7 +54,7 @@ export default class SvelteCMS {
                 this.lists[key] = list;
         });
         // Initialize all of the stores, widgets, and transformers specified in config
-        ['contentStores', 'mediaStores', 'transformers'].forEach(objectType => {
+        ['contentStores', 'mediaStores', 'transformers', 'components'].forEach(objectType => {
             if (conf?.[objectType]) {
                 Object.entries(conf[objectType]).forEach(([k, settings]) => {
                     // config can:
@@ -52,7 +63,7 @@ export default class SvelteCMS {
                     // - create a new item based on an existing item (`conf.widgetTypes.longtext = { type:"text", ... })
                     const type = conf[objectType][k].type || conf[objectType][k].id || k;
                     // we merge all of the following
-                    this[objectType][type] = this.mergeConfigOptions(
+                    this[objectType][k] = this.mergeConfigOptions(
                     // the base item of this type
                     cloneDeep(this[objectType][type] || {}), 
                     // the config item
@@ -69,17 +80,16 @@ export default class SvelteCMS {
         });
         if (conf.collections) {
             Object.entries(conf.collections).forEach(([id, conf]) => {
-                let collection = new Collection(conf, this);
                 // @ts-ignore - this is a type check
-                if (collection.admin)
-                    this.adminCollections[collection.id] = collection;
+                if (conf.admin)
+                    this.adminCollections[conf.id] = conf;
                 else
-                    this.collections[collection.id] = collection;
+                    this.collections[conf.id] = conf;
             });
         }
         // Build out config for the content types
         Object.entries(conf?.types || {}).forEach(([id, conf]) => {
-            this.types[id] = new CMSContentType(id, conf, this);
+            this.types[id] = new ContentType(id, conf, this);
         });
         let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json';
         if (typeof adminStore === 'string') {
@@ -88,7 +98,7 @@ export default class SvelteCMS {
             if (!['json', 'yml', 'yaml'].includes(fileExtension))
                 throw new Error('adminStore must end in .json, .yml, or .yaml.');
             adminStore = {
-                id: 'staticFiles',
+                type: 'staticFiles',
                 options: {
                     prependContentTypeIdAs: '',
                     contentDirectory,
@@ -96,7 +106,7 @@ export default class SvelteCMS {
                 }
             };
         }
-        this.admin = new CMSContentType('admin', {
+        this.admin = new ContentType('admin', {
             label: 'Admin',
             contentStore: adminStore,
             slug: {
@@ -111,7 +121,7 @@ export default class SvelteCMS {
     }
     use(plugin, config) {
         // TODO: allow function that returns plugin
-        ['fieldTypes', 'widgetTypes', 'transformers', 'contentStores', 'mediaStores', 'lists', 'adminPaths', 'components'].forEach(k => {
+        ['fieldTypes', 'widgetTypes', 'transformers', 'contentStores', 'mediaStores', 'lists', 'adminPages', 'components', 'collections'].forEach(k => {
             plugin?.[k]?.forEach(conf => {
                 try {
                     this[k][conf.id] = conf;
@@ -122,13 +132,10 @@ export default class SvelteCMS {
                 }
             });
         });
-        plugin?.collections?.forEach((conf) => {
-            let collection = new Collection(conf, this);
-            // @ts-ignore - this is a type check
-            if (collection.admin)
-                this.adminCollections[collection.id] = collection;
-            else
-                this.collections[collection.id] = collection;
+        // This allows plugins to update existing widgets to work with provided fields. See markdown plugin.
+        Object.entries(plugin?.fieldWidgets || {}).forEach(([fieldTypeID, widgetTypeIDs]) => {
+            widgetTypeIDs.forEach(id => { if (!this.widgetTypes[id].fieldTypes.includes(fieldTypeID))
+                this.widgetTypes[id].fieldTypes.push(fieldTypeID); });
         });
     }
     preMount(container, values) {
@@ -146,13 +153,14 @@ export default class SvelteCMS {
                         res[id] = this.preMount(field, values?.[id]);
                 }
                 else
-                    res[id] = this.doTransforms('preMount', field, this.doTransforms('preSave', field, values?.[id]));
+                    res[id] = this.doFieldTransforms('preMount', field, this.doFieldTransforms('preSave', field, values?.[id]));
             }
             catch (e) {
                 e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`;
                 throw e;
             }
         });
+        res['_slug'] = values['_slug'];
         return res;
     }
     preSave(container, values) {
@@ -170,23 +178,24 @@ export default class SvelteCMS {
                         res[id] = this.preSave(field, values?.[id]);
                 }
                 else
-                    res[id] = this.doTransforms('preSave', field, values?.[id]);
+                    res[id] = this.doFieldTransforms('preSave', field, values?.[id]);
             }
             catch (e) {
                 e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`;
                 throw e;
             }
         });
+        res['_slug'] = values['_slug'];
         return res;
     }
-    doTransforms(op, field, value) {
+    doFieldTransforms(op, field, value) {
         try {
             if (field[op] && field[op].length && value !== undefined && value !== null) {
                 field[op].forEach((functionConfig) => {
                     if (Array.isArray(value))
-                        value = value.map(v => this.runFunction('transformers', functionConfig, v));
+                        value = value.map(v => this.transform(v, functionConfig));
                     else
-                        value = this.runFunction('transformers', functionConfig, value);
+                        value = this.transform(value, functionConfig);
                 });
             }
             return value;
@@ -196,51 +205,80 @@ export default class SvelteCMS {
             throw e;
         }
     }
-    getConfigTypes(path, arg) {
-        switch (path) {
+    listEntities(type, includeAdmin, arg) {
+        switch (type) {
             case 'fields':
                 return this.getFieldTypes();
             case 'widgets':
                 return this.getFieldTypeWidgets(arg);
+            case 'fieldTypes':
+            case 'widgetTypes':
             case 'types':
             case 'lists':
             case 'contentStores':
             case 'mediaStores':
             case 'collections':
             case 'transformers':
-                return Object.keys(this[path]);
+            case 'components':
+                return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']));
             default:
-                return [];
+                return [
+                    'adminPages',
+                    'collections',
+                    'adminCollections',
+                    'components',
+                    'contentStores',
+                    'fields',
+                    'scriptFunctions',
+                    'mediaStores',
+                    'transformers',
+                    'types',
+                    'widgets',
+                ];
         }
+    }
+    getEntity(type, id) {
+        if (!type || !id)
+            return;
+        if (type === 'fields' || type === 'field')
+            return this.fields[id] ?? this.fieldTypes[id];
+        if (type === 'widgets' || type === 'widget')
+            return this.widgets[id] ?? this.widgetTypes[id];
+        return this?.[type]?.[id];
+    }
+    getEntityParent(type, id) {
+        if (!type || !id)
+            return;
+        if (type === 'fields' || type === 'field')
+            return this.fields[id] ?? this.fieldTypes[id];
+        if (type === 'widgets' || type === 'widget')
+            return this.widgets[id] ?? this.widgetTypes[id];
+        return this?.[type]?.[id];
+    }
+    getEntityType(type, id) {
+        if (!type || !id)
+            return;
+        if (type === 'fields')
+            return this.fieldTypes[id] || this.getEntityType('fields', this.fields?.[id]?.['type']);
+        if (type === 'widgets')
+            return this.widgetTypes[id] || this.getEntityType('widgets', this.widgets?.[id]?.['type']);
+        let entityType = this?.[type]?.[id];
+        if (!entityType?.type || entityType?.type === entityType?.id)
+            return entityType;
+        return this.getEntityType(type, entityType?.type);
     }
     getFieldTypes() {
         return union(Object.keys(this.fieldTypes || {}), Object.keys(this.fields || {}));
     }
     getFieldTypeWidgets(fieldType) {
         if (!fieldType)
-            return;
-        return union(Object.entries(this.widgetTypes).map(([id, w]) => {
-            if (!w.hidden && w.fieldTypes.includes(fieldType))
-                return id;
-        }).filter(Boolean), Object.entries(this.widgets).map(([id, w]) => {
-            if (this.widgetTypes[w.type].fieldTypes.includes(fieldType))
-                return id;
-        }).filter(Boolean));
+            return union(Object.keys(this.widgetTypes || {}).filter(k => !this.widgetTypes[k].admin), Object.keys(this.widgets || {}));
+        return union(Object.keys(this.widgetTypes).filter(k => !this.widgetTypes[k].admin && this.widgetTypes[k].fieldTypes.includes(fieldType)), Object.keys(this.widgets).filter(k => this.widgetTypes[this.widgets[k].type].fieldTypes.includes(fieldType)));
     }
     getContentType(contentType) {
         if (!this.types[contentType])
             throw new Error(`Content type not found: ${contentType}`);
         return this.types[contentType];
-    }
-    getCollection(contentType, valuePath) {
-        if (!this.types[contentType])
-            throw new Error(`Content type not found: ${contentType}`);
-        let type = this.types[contentType];
-        let configPath = getConfigPathFromValuePath(valuePath);
-        let field = getProp(type, configPath);
-        if (!field || !(field?.type === 'collection') || !(field?.fields))
-            throw new Error(`${contentType}.${configPath} is not a valid collection`);
-        return field;
     }
     getContentStore(contentType) {
         const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
@@ -249,7 +287,7 @@ export default class SvelteCMS {
     slugifyContent(content, contentType, force) {
         if (Array.isArray(content)) {
             content.forEach(c => {
-                c._slug = this.getSlug(content, contentType, force);
+                c._slug = this.getSlug(c, contentType, force);
             });
         }
         else {
@@ -260,17 +298,20 @@ export default class SvelteCMS {
     getSlug(content, contentType, force) {
         if (content._slug && !force)
             return content._slug;
-        let newSlug = contentType.slug.fields.map(id => { return getProp(content, id); }).filter(Boolean).join(contentType.slug.separator);
-        return this.runFunction('transformers', contentType.slug.slugify, newSlug);
+        return contentType.slug.fields
+            .map(id => getProp(content, id))
+            .filter(value => typeof value !== 'undefined')
+            .map(value => this.transform(value, contentType.slug.slugify))
+            .join(contentType.slug.separator);
     }
     async listContent(contentType, options = {}) {
-        const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
+        contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         Object.assign(db.options, options);
-        const rawContent = await db.listContent(type, db.options);
+        const rawContent = await db.listContent(contentType, db.options);
         if (!rawContent)
             return;
-        this.slugifyContent(rawContent, type);
+        this.slugifyContent(rawContent, contentType);
         if (options.getRaw)
             return rawContent;
         // @ts-ignore contentType has by now been type checked
@@ -311,28 +352,33 @@ export default class SvelteCMS {
         Object.assign(db.options, options);
         return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options);
     }
-    runFunction(functionType, conf, value) {
-        let id = typeof conf === 'string' ? conf : conf.id;
-        let func = this[functionType][id];
-        if (!func)
-            throw new Error(`${functionType}.${id} does not exist!`);
-        let fn = func.fn;
-        if (!fn)
-            throw new Error(`${functionType}.${id}.fn does not exist!`);
-        let opts;
-        try {
-            if (func?.optionFields) {
-                opts = this.getConfigOptionsFromFields(func.optionFields);
-                // @ts-ignore
-                if (conf?.options)
-                    opts = this.mergeConfigOptions(opts, conf.options);
+    transform(value, conf) {
+        if (!Array.isArray(conf))
+            conf = [conf];
+        conf.forEach(conf => {
+            let id = typeof conf === 'string' ? conf : conf.type;
+            let func = this.transformers[id];
+            if (!func)
+                throw new Error(`transfomers.${id} does not exist!`);
+            let fn = func.fn;
+            if (!fn)
+                throw new Error(`transformers.${id}.fn does not exist!`);
+            let opts;
+            try {
+                if (func?.optionFields) {
+                    opts = this.getConfigOptionsFromFields(func.optionFields);
+                    // @ts-ignore
+                    if (conf?.options)
+                        opts = this.mergeConfigOptions(opts, conf.options);
+                }
+                value = fn(value, opts);
             }
-            return fn(value, opts);
-        }
-        catch (e) {
-            e.message = `${id} : ${e.message}`;
-            throw e;
-        }
+            catch (e) {
+                e.message = `${id} : ${e.message}`;
+                throw e;
+            }
+        });
+        return value;
     }
     getConfigOptionValue(value) {
         if (typeof value !== 'string' || !value.match(/^\$lists\./))
@@ -361,10 +407,8 @@ export default class SvelteCMS {
         });
         return options;
     }
-    getValidator(typeID, values) {
-        let contentType = this.types[typeID];
-        let conf = this.getValidatorConfig(contentType.fields);
-        return new Validator(values, conf);
+    getInstanceOptions(entityType, conf = { type: '' }) {
+        return this.mergeConfigOptions((entityType.optionFields ? this.getConfigOptionsFromFields(entityType.optionFields || {}) : {}), entityType.options || {}, conf?.['options'] || {}, (typeof conf === 'string' ? {} : conf));
     }
     getWidgetFields(collection, vars) {
         let c = cloneDeep(collection);
@@ -382,7 +426,7 @@ export default class SvelteCMS {
         field.values = vars?.values || {};
         field.errors = vars?.errors || {};
         field.touched = vars?.touched || {};
-        CMSContentFieldPropsAllowFunctions.forEach(prop => {
+        FieldPropsAllowFunctions.forEach(prop => {
             let func = getProp(field, prop);
             if (func?.function && typeof func.function === 'string') {
                 this.initializeFunction(field, prop, { ...vars, field });
@@ -393,14 +437,14 @@ export default class SvelteCMS {
             return {
                 on: e.on,
                 id: vars.id,
-                function: new CMSFieldFunction(e.function, { ...vars, field }, this)
+                function: new ScriptFunction(e.function, { ...vars, field }, this)
             };
         });
         if (field.widget.options)
             this.initializeConfigOptions(field.widget.options, { ...vars, field });
     }
     /**
-     * Converts an object property (e.g. on a CMSContentField or an options object) into a getter which runs
+     * Converts an object property (e.g. on a Field or an options object) into a getter which runs
      * one of the available functions.
      * @param obj The object on which the property is to be defined
      * @param prop The name of the property
@@ -409,7 +453,7 @@ export default class SvelteCMS {
     initializeFunction(obj, prop, vars) {
         let conf = cloneDeep(getProp(obj, prop));
         // console.log({name:'preInitializeFunction', obj, prop, conf:cloneDeep(conf)}) // debug functions
-        let func = new CMSFieldFunction(conf, vars, this);
+        let func = new ScriptFunction(conf, vars, this);
         // special case for the function that only runs once
         let parentPath = prop.replace(/(?:(?:^|\.)[^\.]+|\[[^\]]\])$/, '');
         let propPath = prop.replace(/^.+\./, '');
@@ -436,29 +480,69 @@ export default class SvelteCMS {
             }
         });
     }
-    getValidatorConfig(fieldset) {
-        let configValues = {};
-        Object.keys(fieldset).forEach(k => {
-            if (fieldset[k]?.fields)
-                configValues[k] = this.getValidatorConfig(fieldset[k].fields);
-            else
-                configValues[k] = fieldset[k].validator;
-            if (configValues[k] && fieldset[k]?.multiple)
-                configValues[k] = [configValues[k]];
-        });
-        return configValues;
-    }
-    getAdminPath(path) {
+    // getValidator(typeID:string, values:Object):Validator.Validator<Object> {
+    //   let contentType = this.types[typeID]
+    //   let conf = this.getValidatorConfig(contentType.fields)
+    //   return new Validator(values, conf)
+    // }
+    // getValidatorConfig(fieldset:{[id:string]:Field}):Rules {
+    //   let configValues = {}
+    //   Object.keys(fieldset).forEach(k => {
+    //     if (fieldset[k]?.fields) configValues[k] = this.getValidatorConfig(fieldset[k].fields)
+    //     else configValues[k] = fieldset[k].validator
+    //     if (configValues[k] && fieldset[k]?.multiple) configValues[k] = [configValues[k]]
+    //   })
+    //   return configValues
+    // }
+    getAdminPage(path) {
         let pathArray = path.replace(/(^\/|\/$)/g, '').split('/');
         path = pathArray.join('/');
-        if (this.adminPaths[path])
-            return this.adminPaths[path];
+        if (this.adminPages[path])
+            return new AdminPage(this.adminPages[path], this);
         for (let i = pathArray.length - 1; i > 0; i--) {
             pathArray[i] = '*';
             path = pathArray.join('/');
-            if (this.adminPaths[path])
-                return this.adminPaths[path];
+            if (this.adminPages[path])
+                return new AdminPage(this.adminPages[path], this);
         }
+    }
+    getEntityConfig(type, id, options) {
+        if (!type || !id)
+            return;
+        if (!options) {
+            options = Object.keys((this.getEntityType(type, id))?.optionFields ?? {});
+            if (!options)
+                return {};
+        }
+        let entity = this.getEntity(type, id);
+        return {
+            // the entity config of the parent (recursive)
+            ...(this.getEntityConfig(type, entity?.[type], options) ?? {}),
+            // the entity config of the parent's optionFields (if it is an entityType)
+            ...(this.getConfigOptionsFromFields(entity?.optionFields ?? {})),
+            // any options written directly into the entity config, e.g. in a ConfigurableEntityConfigSetting
+            ...(Object.fromEntries(options.filter(k => entity?.hasOwnProperty(k)).map(k => ([k, entity?.[k]])))),
+            // the options, e.g. in a ConfigurableEntity
+            ...(entity?.options || {}),
+        };
+    }
+    getEntityConfigCollection(type, id) {
+        let entityType = this.getEntityType(type, id);
+        // Check that there are option fields, otherwise it's moot
+        if (!entityType?.optionFields)
+            return new Collection({ id: `entityType_${type}`, fields: {} }, this);
+        // Clone the optionFields so that we can change the default values
+        let optionFields = Object.assign({}, entityType.optionFields);
+        // Get a list of options
+        let options = Object.keys(optionFields);
+        // Get the options from the parent element
+        let defaults = this.getEntityConfig(type, id, options);
+        // Set the defaults for optionFields
+        options.forEach(k => { optionFields[k].default = defaults[k]; });
+        return new Collection({
+            id: `entityType_${type}`,
+            fields: optionFields,
+        }, this);
     }
     get defaultMediaStore() {
         let k = (Object.keys(this.mediaStores || {}))[0];
@@ -466,209 +550,27 @@ export default class SvelteCMS {
             throw new Error('CMS has no mediaStores, but one is required by a field');
         return k;
     }
-}
-export class CMSSlugConfig {
-    constructor(conf, cms) {
-        this.separator = '-';
-        this.slugify = 'slugify';
-        if (typeof conf === 'string') {
-            this.fields = conf.split(splitter);
-        }
-        else if (Array.isArray(conf)) {
-            this.fields = conf;
-        }
-        else {
-            this.fields = typeof conf.fields === 'string' ? conf.fields.split(splitter) : conf.fields;
-            if (conf.slugify)
-                this.slugify = conf.slugify;
-        }
-        return this;
-    }
-}
-export class CMSContentType {
-    constructor(id, conf, cms) {
-        this.label = '';
-        this.fields = {};
-        this.id = id;
-        this.label = conf.label || getLabelFromID(this.id);
-        this.contentStore = new CMSContentStore(conf?.contentStore, cms);
-        this.mediaStore = conf.mediaStore;
-        Object.entries(conf.fields).forEach(([id, conf]) => {
-            this.fields[id] = new CMSContentField(id, conf, cms, this);
+    get scriptFunctionHelp() {
+        if (this._scriptFunctionHelp)
+            return this._scriptFunctionHelp;
+        this._scriptFunctionHelp = Object.keys(this.scriptFunctions)
+            .sort()
+            .map(id => {
+            let fn = this.scriptFunctions[id];
+            return {
+                id,
+                helptext: fn.helptext || '',
+                params: Object.entries(fn.optionFields || {})
+                    .map(([id, param]) => {
+                    return {
+                        id,
+                        multiple: param.multiple,
+                        helptext: param.helptext
+                    };
+                }),
+            };
         });
-        let slugConf = conf.slug || Object.keys(conf.fields)?.[0] || '';
-        this.slug = new CMSSlugConfig(slugConf, cms);
-    }
-}
-export class CMSContentField {
-    constructor(id, conf, cms, contentType) {
-        this.tooltip = '';
-        this.class = '';
-        // Items that are only used when initialized for an entry form
-        this.values = {}; // all form values
-        this.errors = {}; // all form errors
-        this.touched = {}; // all touched form elements
-        // Set the field's id. This identifies the instance, not the field type;
-        // in values objects, the key would be this id, e.g. values[id] = 'whatever'
-        this.id = id;
-        // Sort out the type first, because if it doesn't exist that's an error
-        conf = typeof conf === 'string' ? { type: conf } : conf;
-        let field = cms.fields[conf.type];
-        field = typeof field === 'string' ? { type: field } : field;
-        // @ts-ignore TODO: figure out why this is complainey
-        if (field)
-            conf = cms.mergeConfigOptions(field, conf, { type: field.type });
-        if (typeof conf !== 'string') { // Always true; see above. TODO: figure out how to change type mid-function, and remove if statement
-            let fieldType = cms.fieldTypes?.[conf.type];
-            if (!fieldType)
-                throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`);
-            this.type = conf.type;
-            this.label = parseFieldFunctionScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)); // text is required
-            this.value = parseFieldFunctionScript(conf.value) ?? conf.value;
-            this.tooltip = parseFieldFunctionScript(conf.value) ?? (typeof conf.tooltip === 'string' ? conf.tooltip : '');
-            if (conf.multiple) {
-                if (hasProp(conf.multiple, 'label') || hasProp(conf.multiple, 'max') || hasProp(conf.multiple, 'min')) {
-                    this.multiple = true;
-                    this.multipleLabel = conf.multiple?.['label'];
-                    this.multipleMin = conf.multiple?.['min'];
-                    this.multipleMax = conf.multiple?.['max'];
-                }
-                else
-                    this.multiple = parseFieldFunctionScript(conf.multiple) ?? (conf.multiple ? true : false);
-            }
-            if (conf.events) {
-                if (!Array.isArray(conf.events))
-                    conf.events = [conf.events];
-                this.events = conf.events.map(e => {
-                    return { on: e.on, function: parseFieldFunctionScript(e.function) };
-                }).filter(e => e.on && e.function);
-            }
-            this.default = parseFieldFunctionScript(conf.default) ?? conf.default ?? fieldType.defaultValue;
-            this.required = parseFieldFunctionScript(conf.required) ?? (typeof conf.required === 'boolean' ? conf.required : false);
-            this.disabled = parseFieldFunctionScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false);
-            this.hidden = parseFieldFunctionScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false);
-            this.collapsible = parseFieldFunctionScript(conf.collapsible) ?? (typeof conf.collapsible === 'boolean' ? conf.collapsible : false);
-            this.collapsed = parseFieldFunctionScript(conf.collapsed) ?? (typeof conf.collapsed === 'boolean' ? conf.collapsed : false);
-            this.widget = new CMSWidget(conf.widget || fieldType.defaultWidget, cms);
-            if (conf?.widgetOptions)
-                this.widget.options = cms.mergeConfigOptions(this.widget.options, conf.widgetOptions);
-            this.validator = conf.validator ?? fieldType.defaultValidator;
-            this.preSave = conf.preSave ? (Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave]) : fieldType.defaultPreSave;
-            this.preMount = conf.preMount ? (Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount]) : fieldType.defaultPreMount;
-            this.class = parseFieldFunctionScript(conf.class) ?? (typeof conf.class === 'string' ? conf.class : '');
-            if (conf.fields) {
-                this.fields = {};
-                Object.entries(conf.fields).forEach(([id, conf]) => {
-                    this.fields[id] = new CMSContentField(id, conf, cms, contentType);
-                });
-            }
-            if (this.widget.handlesMedia) {
-                this.mediaStore = new CMSMediaStore((conf?.['mediaStore'] || contentType?.mediaStore || cms.defaultMediaStore), cms);
-            }
-        }
-    }
-}
-export class CMSWidget {
-    constructor(conf, cms) {
-        // TODO: change per CMSContentField changes
-        conf = typeof conf === 'string' ? { type: conf } : conf;
-        let widget = cms.widgets[conf.type];
-        widget = typeof widget === 'string' ? { type: widget } : widget;
-        // @ts-ignore TODO: figure out how to specify that mergeConfigOptions returns the same type as the parameter
-        if (widget)
-            conf = cms.mergeConfigOptions(widget, conf, { type: widget.type });
-        let widgetType = cms.widgetTypes[conf['type']];
-        this.type = widgetType?.id;
-        this.widget = widgetType?.widget;
-        this.handlesMultiple = widgetType?.handlesMultiple || false;
-        this.handlesMedia = widgetType?.handlesMedia || false;
-        if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
-            this.formDataHandler = widgetType.formDataHandler;
-        }
-        if (widgetType?.optionFields) {
-            this.options = cms.getConfigOptionsFromFields(widgetType.optionFields);
-            if (conf['options']) {
-                this.options = cms.mergeConfigOptions(this.options, conf['options']);
-            }
-        }
-    }
-}
-const noStore = async () => {
-    // @ts-ignore
-    console.error(`Store not found: (${this?.['id'] || ''})`);
-};
-export class CMSContentStore {
-    constructor(conf, cms) {
-        let store = typeof conf === 'string' ? cms.contentStores[conf] : cms.contentStores[conf?.id];
-        if (!store)
-            store = Object.values(cms.contentStores)[0];
-        this.id = store?.id;
-        this.listContent = store?.listContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return []; });
-        this.getContent = store?.getContent || noStore;
-        this.saveContent = store?.saveContent || noStore;
-        this.deleteContent = store?.deleteContent || noStore;
-        this.options = cms.mergeConfigOptions(cms.getConfigOptionsFromFields(store?.optionFields || {}), store?.options || {}, conf?.['options'] || {});
-    }
-}
-export class CMSMediaStore {
-    constructor(conf, cms) {
-        let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf?.id];
-        if (!store)
-            store = Object.values(cms.mediaStores)[0];
-        this.id = store?.id;
-        this.listMedia = store?.listMedia ? store.listMedia.bind(this) : async () => { console.error(store?.id ? `No function 'listMedia' for store '${this.id}'` : `Store ${this.id} not found`); };
-        this.getMedia = store?.getMedia ? store.getMedia.bind(this) : async () => { console.error(store?.id ? `No function 'getMedia' for store '${this.id}'` : `Store ${this.id} not found`); };
-        this.saveMedia = store?.saveMedia ? store.saveMedia.bind(this) : async () => { console.error(store?.id ? `No function 'saveMedia' for store '${this.id}'` : `Store ${this.id} not found`); };
-        this.deleteMedia = store?.deleteMedia ? store.deleteMedia.bind(this) : async () => { console.error(store?.id ? `No function 'deleteMedia' for store '${this.id}'` : `Store ${this.id} not found`); };
-        // this.getPreview = store?.getPreview ? store.getPreview.bind(this) : undefined
-        // this.deletePreview = store?.deletePreview ? store.deletePreview.bind(this) : undefined
-        this.options = cms.mergeConfigOptions(cms.getConfigOptionsFromFields(store?.optionFields || {}), store?.options || {}, conf?.['options'] || {});
-        this.immediateUpload = Boolean(this.options.immediateUpload) || store.immediateUpload;
-    }
-}
-export class CMSFieldFunction {
-    constructor(conf, vars, cms) {
-        if (typeof conf === 'string')
-            conf = parseFieldFunctionScript(conf); // this should be rare, but just in case...
-        let func = cms.fieldFunctions[conf.function];
-        if (!func)
-            throw `field function not found for ${conf}`; // this will also happen if the config is bad
-        this.id = func.id;
-        this.vars = { ...vars, cms };
-        this.fn = func.fn;
-        // @ts-ignore
-        this.options = cms.getConfigOptionsFromFields(func?.optionFields || {});
-        if (Array.isArray(conf.params)) {
-            let params = cloneDeep(conf.params);
-            let lastKey;
-            Object.keys(func?.optionFields || {}).forEach((k, i) => {
-                // @ts-ignore
-                if (params.length)
-                    this.options[k] = params.shift();
-                lastKey = k;
-            });
-            // for functions where the last param is an array
-            if (func?.optionFields?.[lastKey]?.multiple) {
-                // @ts-ignore
-                if (!Array.isArray(this.options[lastKey]))
-                    this.options[lastKey] = [this.options[lastKey]];
-                while (params.length) {
-                    // @ts-ignore
-                    this.options[lastKey].push(params.shift());
-                }
-            }
-        }
-        // }
-        cms.initializeConfigOptions(this.options, vars);
-        // for transformers
-        if (this.id === 'transform') {
-            this.options.transformer = cms.transformers[this.options?.transformer?.toString()];
-            if (this.options.transformer)
-                this.options.transformer.options = cms.getConfigOptionsFromFields(this.options.transformer);
-        }
-    }
-    run() {
-        this.fn(this.vars, this.options);
+        return this._scriptFunctionHelp;
     }
 }
 /**
@@ -678,20 +580,3 @@ export class CMSFieldFunction {
 export function getConfigPathFromValuePath(path) {
     return 'fields.' + path.replace(/\[\d+\]/g, '').replace(/\./g, '.fields.');
 }
-export class Collection {
-    constructor(conf, cms) {
-        this.id = conf.id;
-        this.component = conf.component;
-        this.admin = conf.admin;
-        this.fields = Object.fromEntries(Object.entries(conf.fields).map(([id, conf]) => {
-            return [id, new CMSContentField(id, conf, cms)];
-        }));
-    }
-}
-// export type CMSFieldValidator = {
-//   id:string
-//   fn:(value:any,opts:ConfigSetting,fieldConf:CMSFieldInstance) => string|Error|void
-//   optionFields?:{[key:string]:CMSConfigFieldConfigSetting}
-//   noBrowser?:boolean
-//   noServer?:boolean
-// }

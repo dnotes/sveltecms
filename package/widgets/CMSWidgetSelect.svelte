@@ -3,7 +3,7 @@ export let id;
 export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '');
 //@ts-ignore
 let opts = field.widget.options;
-$: options = Array.isArray(opts.options) ? Object.fromEntries(opts.options.map(o => { return [o, o]; })) : opts.options;
+$: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => { return [o, o]; })) : opts.items;
 </script>
 
 {#if field.multiple}
@@ -13,7 +13,7 @@ $: options = Array.isArray(opts.options) ? Object.fromEntries(opts.options.map(o
     </span>
     <select
       name={id}
-      title={field.tooltip}
+      title={field.helptext}
       bind:value
       size={opts?.size || 0}
       multiple
@@ -32,7 +32,7 @@ $: options = Array.isArray(opts.options) ? Object.fromEntries(opts.options.map(o
     </span>
     <select
       name={id}
-      title={field.tooltip}
+      title={field.helptext}
       bind:value
       size={opts.size || 0}
       disabled={field.disabled}

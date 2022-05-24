@@ -1,6 +1,8 @@
 import { get, set } from 'lodash-es';
 export async function collapseFormItem(cms, contentType, fields, data, prefix) {
+    // Get all fields, as promises (some formDataHandler functions are async)
     let promises = Object.entries(fields).map(async ([id, field]) => {
+        // This function is recursive, and the prefix is provided for nested levels of a data object
         let formPath = [prefix, id].filter(Boolean).join('.');
         let item = get(data, id);
         if (typeof item === 'undefined')
@@ -46,15 +48,19 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
             if (!field.multiple && Array.isArray(value))
                 value = value[0];
         }
+        // If it is a singular field with a formDataHandler
         else if (field.widget.formDataHandler) {
             value = await field.widget.formDataHandler(item, cms, contentType, field);
         }
+        // If it is a singular field without a formDataHandler
         else {
             value = itemIsArray ? item[0] : item;
         }
         return [id, value];
     });
     const result = await Promise.all(promises);
+    // Now any special data not provided by a Field
+    result.push(['_slug', data._slug[0]]);
     return Object.fromEntries(result);
 }
 /**

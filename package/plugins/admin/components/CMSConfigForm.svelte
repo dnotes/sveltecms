@@ -1,0 +1,30 @@
+<script>import { get, set, isEqual } from 'lodash-es';
+import Button from "sveltecms/ui/Button.svelte";
+export let cms;
+export let data;
+export let adminPath;
+export let options;
+let opts = Object.assign({}, options);
+let component = cms.getEntity('components', opts.component);
+opts.configPath = data ?? opts.configPath ?? adminPath.replace(/\//, '.');
+if (!opts.configType)
+    opts.configType = opts.configPath.replace(/\..+/, '');
+let conf = get(cms.conf, opts.configPath, {});
+// Variables for diffing
+let oldConf = Object.assign({}, get(cms.conf, opts.configPath, {}));
+$: unsaved = !isEqual(oldConf, conf) || !isEqual(Object.keys(oldConf), Object.keys(conf));
+export let saveConfig = async () => {
+    set(cms.conf, opts.configPath, conf);
+    return fetch('/admin/config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cms.conf),
+    });
+};
+</script>
+<form method="dialog" on:submit|preventDefault={saveConfig}>
+  <svelte:component {cms} bind:data={conf} this={component.component} options={{...opts, ...component.options}} {adminPath} />
+  <Button submit disabled={!unsaved}>Save</Button>
+</form>

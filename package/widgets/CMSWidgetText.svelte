@@ -11,7 +11,7 @@ let opts = field.widget.options;
   </span>
   <input
     name={id}
-    title={field.tooltip}
+    title={field.helptext}
     type="text"
     bind:value
     placeholder="{opts?.placeholder ?? ''}"

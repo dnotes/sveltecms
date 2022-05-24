@@ -1,18 +1,10 @@
-import type { CMSConfigFieldConfigSetting, CollectionConfigSetting, ConfigSetting } from 'sveltecms';
-export declare type AdminPath = {
-    id: string;
-    component: Object;
-    configPath?: string;
-    title?: string;
-    fields?: {
-        [id: string]: string | CMSConfigFieldConfigSetting;
-    };
-    options?: ConfigSetting;
-};
-export declare const adminPaths: AdminPath[];
-export declare const collections: CollectionConfigSetting[];
+import * as components from './components';
 declare const _default: {
-    adminPaths: AdminPath[];
-    collections: CollectionConfigSetting[];
+    components: {
+        id: string;
+        component: typeof components.CMSConfigForm | typeof components.CMSComponentList | typeof components.CMSConfigView | typeof components.CMSContentEdit | typeof components.CMSContentList | typeof components.CMSContentTypeList | typeof components.CMSConfigEntityList | typeof components.CMSConfigFieldList | typeof components.CMSConfigContentType | typeof components.CMSConfigContentTypeList;
+        admin: boolean;
+    }[];
+    adminPages: import("sveltecms/core/AdminPage").AdminPageConfig[];
 };
 export default _default;

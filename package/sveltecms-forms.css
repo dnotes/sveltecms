@@ -1,0 +1,153 @@
+html {
+  --cms-background: white;
+  --cms-main: rgb(113, 155, 155);
+  --cms-link: rgb(113, 155, 155);
+  --cms-text: #222;
+  --cms-tooltip: lightgoldenrodyellow;
+  --cms-button: rgb(113, 155, 155);
+  --cms-danger: indianred;
+  --cms-font: sans-serif;
+}
+
+@media (prefers-color-scheme:dark) {
+  html {
+    --cms-background: #222;
+    --cms-text: white;
+    --cms-tooltip: darkslategrey;
+  }
+}
+
+/* Styles for all forms */
+
+.cms-helptext { display:none; }
+label:focus-within+.cms-helptext,
+td:focus-within>.cms-helptext,
+label:hover+.cms-helptext,
+td:hover>.cms-helptext {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  background: var(--cms-tooltip);
+  color: var(--cms-text);
+  padding: 13px 21px;
+  border-radius: 1em;
+  max-width: 600px;
+  margin: 1px 0 0 24px;
+  box-shadow: 0 0 2px var(--cms-text);
+}
+label+.cms-helptext:hover,
+td>.cms-helptext:hover { display:none; }
+
+/* Styles for SvelteCMS */
+
+.sveltecms {
+  background-color: var(--cms-background);
+  color: var(--cms-text);
+  border-color: var(--cms-main);
+}
+
+/* Helpers */
+.sveltecms .left, .sveltecms th { text-align:left; }
+.sveltecms .right { text-align:right; }
+.sveltecms .center { text-align:center; }
+
+/* Tables */
+.sveltecms table {
+  max-width: 1190px;
+}
+
+/* Buttons */
+
+.sveltecms a {
+  color:var(--cms-link);
+}
+.sveltecms button,
+.sveltecms a.button {
+  font-family: var(--cms-font);
+  font-size: 90%;
+  text-decoration:none;
+  cursor:pointer;
+  color:var(--cms-button);
+  border-color:var(--cms-button);
+  background:transparent;
+  padding: 0 .8em;
+  line-height: 2.2em;
+  border-radius: 1em;
+  border: 2px solid var(--cms-button);
+  display: inline-block;
+  text-transform: lowercase;
+}
+.sveltecms button.small,
+.sveltecms a.button.small {
+  font-size: 80%;
+  border-width: 1px;
+}
+
+.sveltecms .danger,
+.sveltecms a.button.danger {
+  color:var(--cms-danger);
+}
+
+.sveltecms button.link {
+  border:none;
+  background: var(--cms-background);
+  color: var(--cms-link);
+}
+
+.sveltecms button.primary,
+.sveltecms button.highlight,
+.sveltecms a.button.primary,
+.sveltecms a.button.highlight,
+.sveltecms button.danger,
+.sveltecms button[type="submit"] {
+  background: var(--cms-button);
+  color: var(--cms-background);
+  border: none;
+  padding-top: 1px;
+}
+
+.sveltecms button.primary,
+.sveltecms a.button.primary,
+.svetlecms a.button.danger,
+.sveltecms button[type="submit"] {
+  font-weight: bold;
+}
+
+.sveltecms button.danger,
+.sveltecms a.button.danger {
+  background: var(--cms-danger);
+}
+
+.disabled,
+.sveltecms button:disabled,
+.sveltecms button.primary:disabled,
+.sveltecms button.danger:disabled,
+.sveltecms button[type="submit"]:disabled {
+  cursor: default;
+  opacity: .5;
+  filter: grayscale(100%);
+}
+
+.sveltecms button.borderless,
+.sveltecms a.borderless {
+  border:none !important;
+}
+
+.sveltecms .cms-editor-form {
+  max-width: 600px;
+}
+.sveltecms div.field {
+  padding: .5em;
+}
+.sveltecms div.field label>span:first-child {
+  display: block;
+}
+.sveltecms textarea,
+.sveltecms fieldset {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
+div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; padding:16px; }
+div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; padding:16px; }

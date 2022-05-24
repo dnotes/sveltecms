@@ -1,7 +1,8 @@
 <script context="module">export {};
 </script>
 
-<script>import DisplayResult from "../components/DisplayResult.svelte";
+<script>import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
+import Button from "sveltecms/ui/Button.svelte";
 let result;
 export let field;
 export let id;
@@ -129,7 +130,7 @@ function releaseObjectUrls() {
     </span>
     <input
       name="{id}[files]"
-      title={field.tooltip}
+      title={field.helptext}
       type="file"
       bind:files
       bind:this={input}
@@ -139,7 +140,7 @@ function releaseObjectUrls() {
       on:change={handleUpload}
       style="display:none"
     />
-    <button type="button" style="display:inline-block;" on:click={()=>{input.click()}}>Upload</button>
+    <Button helptext={'Upload a new image'} on:click={()=>{input.click()}}>Upload</Button>
   </label>
 
   {#if value && value !== {} && value !== []}
@@ -201,7 +202,7 @@ function releaseObjectUrls() {
               >
             {/if}
 
-            <button type="button" class="cms-image-delete" aria-label="delete {field.label} image" on:click="{() => {deleteImage(i)}}">✖️</button>
+            <Button small danger helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
           </div>
         {/each}
       {:else}
@@ -251,7 +252,7 @@ function releaseObjectUrls() {
               >
             {/if}
 
-            <button type="button" class="cms-image-delete" aria-label="delete {field.label} image" on:click="{() => {deleteImage(i)}}">✖️</button>
+            <Button small danger helptext="Delete image {i+1}: {value['alt'] || value['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
           </div>
         {/each}
       {/if}

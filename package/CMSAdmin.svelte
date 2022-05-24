@@ -1,32 +1,55 @@
 <script>// @ts-ignore TODO: why can't it find this?
 import { page } from '$app/stores';
 import getLabelFromID from "./utils/getLabelFromID";
-import adminPlugin from 'sveltecms/plugins/admin';
+import Nav from "sveltecms/ui/Nav.svelte";
 export let cms;
-cms.use(adminPlugin);
-let basePath = $page.url.pathname.replace('/' + $page.params.adminPath, '');
-let sections = Object.values(cms.adminPaths)
+export let adminPath;
+export let data = undefined;
+let sections = Object.values(cms.adminPages)
     .filter(o => !o.id.match('/'));
-$: adminPath = cms.getAdminPath($page.params.adminPath);
-$: title = adminPath ? adminPath.title ?? getLabelFromID($page.params.adminPath.replace(/\/.+/, '')) : 'Site Admin';
+$: basePath = $page.url.pathname.replace('/' + adminPath, '');
+$: adminPage = cms.getAdminPage(adminPath);
+$: title = adminPage ? adminPath.split('/').map((t, i) => adminPage.label[i] || getLabelFromID(t)).join(' : ') : 'Site Admin';
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
 
+<div class="sveltecms">
+
+<Nav {cms} {adminPath} {basePath} />
+
+<div class="cms-admin">
+
 <h1>{title}</h1>
 
-{#if adminPath}
-  <svelte:component this={adminPath.component} {cms} {adminPath} />
+{#if adminPage}
+  <svelte:component
+    this={adminPage.component.component}
+    {cms}
+    {adminPath}
+    {adminPage}
+    {basePath}
+    {data}
+    options={adminPage?.component?.options || {}}
+  />
 {:else}
   <ul>
     {#each sections as section}
       <li>
-        <a href="{basePath}/{section.id}">{section.title || getLabelFromID(section.id)}</a>
+        <a href="{basePath}/{section.id}">{section.label || getLabelFromID(section.id)}</a>
       </li>
     {:else}
-      Can't find any admin sections! Did you remember to <code>cms.use(adminPlugin)</code>?
+      Can't find any admin sections! If you are not using the default administrative interface ('sveltecms/CMSAdmin.svelte'), did you remember to <code>cms.use(adminPlugin)</code>?
     {/each}
   </ul>
 {/if}
+
+</div>
+</div>
+
+<style global>
+  @import "sveltecms/sveltecms-forms.css";
+  :global(.cms-admin) { padding:0 20px; }
+</style>

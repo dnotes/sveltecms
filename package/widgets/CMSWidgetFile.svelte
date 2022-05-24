@@ -33,7 +33,8 @@ export class CMSFile {
 }
 </script>
 
-<script>import DisplayResult from "../components/DisplayResult.svelte";
+<script>import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
+import Button from "sveltecms/ui/Button.svelte";
 export let field;
 export let id;
 //@ts-ignore
@@ -171,7 +172,7 @@ function releaseObjectUrls() {
                 <td>{file['displaySize'] || 'unknown'}</td>
                 <td>{file['displayDate'] || 'unknown'}</td>
               {/if}
-              <td><button type="button" on:click={()=>{deleteFile(i)}}>✖️</button></td>
+              <td><Button small danger helptext="Delete file {i+1}: {value[i]['title'] || value[i]['filename']}" on:click={()=>{deleteFile(i)}}>✖️</Button></td>
             {/each}
           {:else}
             <td class="item">
@@ -190,7 +191,7 @@ function releaseObjectUrls() {
               <td>{value['displaySize'] || 'unknown'}</td>
               <td>{value['displayDate'] || 'unknown'}</td>
             {/if}
-            <td><button type="button" on:click={()=>{deleteFile()}}>✖️</button></td>
+            <td><Button small danger helptext="Delete file: {value['title'] || value['filename']}" on:click={()=>{deleteFile()}}>✖️</Button></td>
           {/if}
 
         </tbody>
@@ -201,7 +202,7 @@ function releaseObjectUrls() {
 
     <input
       name="{id}[files]"
-      title={field.tooltip}
+      title={field.helptext}
       type="file"
       bind:files
       bind:this={input}
@@ -211,7 +212,7 @@ function releaseObjectUrls() {
       on:change={handleUpload}
       style="display:none"
     />
-    <button type="button" style="display:inline-block;" on:click={()=>{input.click()}}>Upload</button>
+    <Button on:click={()=>{input.click()}}>Upload</Button>
   </label>
 
   {#if result}

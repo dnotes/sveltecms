@@ -4,9 +4,8 @@ let parentField;
 let parentID = '';
 export { parentField as field, parentID as id };
 export let cms;
-export let contentTypeID;
 let opts = parentField.widget.options;
-let collection = cms.getWidgetFields(cms.getCollection(contentTypeID, parentID), {
+let collection = cms.getWidgetFields(parentField, {
     values: parentField.values,
     errors: parentField.errors,
     touched: parentField.touched,
@@ -30,7 +29,6 @@ $: if (parentField.values || parentField.errors || parentField.touched)
           id={`${parentID}.${id}`}
           bind:value={value[id]}
           {cms}
-          {contentTypeID}
         />
       {:else if field.widget.type === 'collection'}
         <svelte:self
@@ -38,7 +36,6 @@ $: if (parentField.values || parentField.errors || parentField.touched)
           id={`${parentID}.${id}`}
           bind:value={value[id]}
           {cms}
-          {contentTypeID}
         />
       {:else}
         <svelte:component
@@ -47,6 +44,9 @@ $: if (parentField.values || parentField.errors || parentField.touched)
           id={`${parentID}.${id}`}
           bind:value={value[id]}
         />
+      {/if}
+      {#if field.helptext}
+        <p class="cms-helptext">{field.helptext}</p>
       {/if}
     {/if}
   </div>

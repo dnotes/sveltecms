@@ -1,1 +1,1 @@
-export default function SplitTags(delimiter?: string, allowSpace?: boolean): (text: any) => any;
+export default function SplitTags(delimiter?: string, allowSpacesInItems?: boolean): (text: any) => any;

@@ -25,51 +25,65 @@ const firestoreBuilder = (options) => {
     const optionFields = {
         collection: {
             type: "text",
-            default: ''
+            default: '',
+            helptext: 'The firestore collection into which this content type will be saved.',
         },
         server: {
             type: "text",
             default: '',
+            helptext: 'An alternate firestore server to use other than the default, https://firestore.googleapis.com.'
         },
         listFields: {
             type: "tags",
             default: [],
+            helptext: 'The fields to get in cms.listContent queries for this type.'
         },
         listQuery: {
             type: "collection",
             multiple: true,
             default: [],
+            helptext: 'The field query to use when listing content: see https://firebase.google.com/docs/firestore/query-data/queries.',
             fields: {
                 field: {
                     type: "text",
+                    helptext: 'The name of the field on which to filter.',
                     default: "",
                     required: true,
                 },
                 op: {
                     type: "text",
+                    helptext: 'The comparison operator.',
                     default: "",
                     required: true,
-                    widget: "select",
-                    widgetOptions: {
-                        options: operators
+                    widget: {
+                        type: "select",
+                        options: {
+                            items: operators
+                        }
                     }
                 },
                 valueType: {
                     type: "text",
+                    helptext: 'The firestore data type for the field.',
                     default: "stringValue",
                     required: true,
-                    widget: "select",
-                    widgetOptions: {
-                        stringValue: "string",
-                        nullValue: "null",
-                        booleanValue: "boolean",
-                        integerValue: "integer",
-                        doubleValue: "double",
-                        timestampValue: "timestamp",
+                    widget: {
+                        type: "select",
+                        options: {
+                            items: {
+                                stringValue: "string",
+                                nullValue: "null",
+                                booleanValue: "boolean",
+                                integerValue: "integer",
+                                doubleValue: "double",
+                                timestampValue: "timestamp",
+                            }
+                        }
                     }
                 },
                 value: {
                     type: "text",
+                    helptext: 'The value against which to compare the field content.',
                     default: "",
                     required: true,
                 },
@@ -78,30 +92,40 @@ const firestoreBuilder = (options) => {
         firebaseConfig: {
             type: "collection",
             default: {},
+            helptext: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
             fields: {
                 apiKey: {
                     type: "text",
                     default: firebaseConfig?.apiKey ?? "",
+                    helptext: 'The API key for your firebase project. Compared to most API keys, ' +
+                        'Firebase API keys do not have the same security implications, and do not need to be kept secret. However, ' +
+                        'in some cases it will be necessary to take other security measures for the integrity of your project.' +
+                        'See https://firebase.google.com/docs/projects/api-keys.',
                 },
                 authDomain: {
                     type: "text",
                     default: firebaseConfig?.authDomain ?? "",
+                    helptext: 'The authDomain for your Firebase app.',
                 },
                 projectId: {
                     type: "text",
                     default: firebaseConfig?.projectId ?? "",
+                    helptext: 'The projectID for your Firebase app.',
                 },
                 storageBucket: {
                     type: "text",
                     default: firebaseConfig?.storageBucket ?? "",
+                    helptext: 'The storageBucket for your Firebase app.',
                 },
                 messagingSenderId: {
                     type: "text",
                     default: firebaseConfig?.messagingSenderId ?? "",
+                    helptext: 'The messagingSenderID for your Firebase app.',
                 },
                 appId: {
                     type: "text",
                     default: firebaseConfig?.appId ?? "",
+                    helptext: 'The appId for your Firebase app.',
                 },
             }
         }
@@ -123,64 +147,86 @@ const firestoreBuilder = (options) => {
                 id: 'firebaseFirestore',
                 optionFields,
                 listContent: async (contentType, opts) => {
-                    let headers = {};
-                    // Set auth token if provided
-                    if (opts.bearerToken)
-                        headers['Authorization'] = `Bearer ${opts.token}`;
-                    let body = JSON.stringify({ structuredQuery: {
-                            from: [{
-                                    collectionId: opts.collection || contentType.id,
-                                }],
-                            select: parseListFields(opts.listFields),
-                            orderBy: opts.orderBy || undefined,
-                            offset: opts.offset || undefined,
-                            limit: opts.limit || undefined,
-                            where: parseListQuery(opts.listQuery),
-                        } }, null, 2);
-                    let url = getUrl(opts.firebaseConfig, 'runQuery').replace('/runQuery', ':runQuery');
-                    const res = await fetch(url, { method: 'POST', headers, body });
-                    if (!res.ok) {
-                        console.error(body);
-                        return resError(res);
+                    try {
+                        let headers = {};
+                        // Set auth token if provided
+                        if (opts.bearerToken)
+                            headers['Authorization'] = `Bearer ${opts.token}`;
+                        let body = JSON.stringify({ structuredQuery: {
+                                from: [{
+                                        collectionId: opts.collection || contentType.id,
+                                    }],
+                                select: parseListFields(opts.listFields),
+                                orderBy: opts.orderBy || undefined,
+                                offset: opts.offset || undefined,
+                                limit: opts.limit || undefined,
+                                where: parseListQuery(opts.listQuery),
+                            } }, null, 2);
+                        let url = getUrl(opts.firebaseConfig, 'runQuery').replace('/runQuery', ':runQuery');
+                        const res = await fetch(url, { method: 'POST', headers, body });
+                        if (!res.ok)
+                            throw new Error(await res.text());
+                        const json = await res.json();
+                        return json.map(document => decode(document.document));
                     }
-                    const json = await res.json();
-                    return json.map(document => decode(document.document));
+                    catch (e) {
+                        e.message = `Error listing content ${contentType.id}:\n${e.message}`;
+                        throw e;
+                    }
                 },
                 getContent: async (contentType, opts, slug = '') => {
-                    let headers = {};
-                    // Set auth token if provided
-                    if (opts.bearerToken)
-                        headers['Authorization'] = `Bearer ${opts.bearerToken}`;
-                    const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug.toString()), { headers });
-                    if (!res.ok)
-                        return resError(res);
-                    const json = await res.json();
-                    return (Array.isArray(json.documents)) ? json.documents.map(decode) : decode(json);
+                    try {
+                        let headers = {};
+                        // Set auth token if provided
+                        if (opts.bearerToken)
+                            headers['Authorization'] = `Bearer ${opts.bearerToken}`;
+                        const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug.toString()), { headers });
+                        if (!res.ok)
+                            throw new Error(await res.text());
+                        const json = await res.json();
+                        return (Array.isArray(json.documents)) ? json.documents.map(decode) : decode(json);
+                    }
+                    catch (e) {
+                        e.message = `Error getting content ${contentType.id}/${slug}:\n${e.message}`;
+                        throw e;
+                    }
                 },
                 saveContent: async (content, contentType, opts) => {
                     let headers = {};
-                    // Set auth token if provided
-                    if (opts.bearerToken)
-                        headers['Authorization'] = `Bearer ${opts.bearerToken}`;
-                    let body = JSON.stringify(jsonToDocument(content).mapValue, null, 2);
-                    if (!body || !body.length)
-                        throw new Error(`Bad conversion to Firestore Document format.`);
-                    let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), (opts.slug || content.slug || '')), { method: 'PATCH', headers, body });
-                    if (!res.ok) {
-                        console.error(body);
-                        return resError(res);
+                    let slug = opts?.slug || content?._slug;
+                    try {
+                        if (!slug)
+                            throw new Error(`Tried to save content without a slug.`);
+                        // Set auth token if provided
+                        if (opts.bearerToken)
+                            headers['Authorization'] = `Bearer ${opts.bearerToken}`;
+                        let body = JSON.stringify(jsonToDocument(content).mapValue, null, 2);
+                        if (!body || !body.length)
+                            throw new Error(`Bad conversion to Firestore Document format.`);
+                        let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), slug), { method: 'PATCH', headers, body });
+                        if (!res.ok)
+                            throw new Error(await res.text());
+                        return content;
                     }
-                    return res;
+                    catch (e) {
+                        e.message = `Error saving content ${contentType.id}/${slug}:\n${e.message}`;
+                        throw e;
+                    }
                 },
                 deleteContent: async (content, contentType, opts) => {
-                    let headers = {};
-                    // Set auth token if provided
-                    if (opts.bearerToken)
-                        headers['Authorization'] = `Bearer ${opts.bearerToken}`;
-                    let res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, content.slug), { method: 'DELETE', headers });
-                    if (!res.ok)
-                        return resError(res);
-                    return res;
+                    try {
+                        let headers = {};
+                        // Set auth token if provided
+                        if (opts.bearerToken)
+                            headers['Authorization'] = `Bearer ${opts.bearerToken}`;
+                        let res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, opts.slug || content._slug), { method: 'DELETE', headers });
+                        if (!res.ok)
+                            throw new Error(await res.text());
+                        return content;
+                    }
+                    catch (e) {
+                        throw e;
+                    }
                 },
             }
         ],
@@ -257,11 +303,6 @@ export function parseListQuery(listQuery, useClientSDK = false) {
             })
         }
     };
-}
-async function resError(res) {
-    console.log(res);
-    let err = await (res.json());
-    throw err.error;
 }
 function decode(json) {
     let document = Object.assign({

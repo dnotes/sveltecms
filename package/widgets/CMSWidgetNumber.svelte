@@ -12,7 +12,7 @@ let opts = field.widget.options;
   <input
     name="{id}"
     type="number"
-    title="{field.tooltip}"
+    title="{field.helptext}"
     bind:value
     min={opts?.min}
     max={opts?.max}

@@ -1,6 +1,6 @@
-import formDataHandler from 'sveltecms/utils/formDataHandler';
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
 import bytes from 'bytes';
+import { cloneDeep } from 'lodash-es';
 const fs = {};
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
 function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/'); }
@@ -22,7 +22,7 @@ export async function getFs(databaseName) {
 export const databaseNameField = {
     type: 'text',
     default: '',
-    tooltip: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
+    helptext: 'The name used for saving files in-browser. This is required if you are using the browser-based filesystem. ' +
         'It should be globally unique and generally should be the same across one site or app; your site url might be a good choice. ' +
         'At the moment, if you are using something like isomorphic-git, you must import content into the browser filesystem yourself.',
 };
@@ -30,102 +30,68 @@ export const staticFilesContentOptionFields = {
     contentDirectory: {
         type: 'text',
         default: 'content',
-        tooltip: 'The directory for local content files relative to the project root.',
+        helptext: 'The directory for local content files relative to the project root.',
     },
     prependContentTypeIdAs: {
         type: 'text',
-        widget: 'select',
-        widgetOptions: {
+        widget: {
+            type: 'select',
             options: {
-                '': 'None',
-                'directory': 'Directory',
-                'filename': 'Filename prefix'
+                items: {
+                    '': 'None',
+                    'directory': 'Directory',
+                    'filename': 'Filename prefix'
+                },
             },
         },
         default: 'directory',
-        tooltip: 'Include the content type id as part of the path',
+        helptext: 'Include the content type id as part of the path',
     },
     fileExtension: {
         type: 'text',
-        widget: 'select',
         default: 'md',
         required: true,
-        widgetOptions: {
+        widget: {
+            type: 'select',
             options: {
-                'md': '.md (Markdown)',
-                'json': '.json (JSON)',
-                'yml': '.yml (YAML)',
-                'yaml': '.yaml (YAML)',
+                items: {
+                    'md': '.md (Markdown)',
+                    'json': '.json (JSON)',
+                    'yml': '.yml (YAML)',
+                    'yaml': '.yaml (YAML)',
+                }
             }
         },
-        tooltip: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',
+        helptext: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',
     },
     markdownBodyField: {
         type: 'text',
         default: 'body',
-        tooltip: 'Which field should be used as the body of the Markdown file',
+        helptext: 'Which field should be used as the body of the Markdown file',
     },
 };
 export const staticFilesMediaOptionFields = {
     staticDirectory: {
         type: 'text',
         default: 'static',
-        tooltip: 'The directory for static files relative to the project root. For SvelteKit projects this is "static" by default.'
+        helptext: 'The directory for static files relative to the project root. For SvelteKit projects this is "static" by default.'
     },
     mediaDirectory: {
         type: 'text',
         default: '',
-        tooltip: 'The directory for media files relative to the static directory.',
+        helptext: 'The directory for media files relative to the static directory.',
     },
     allowMediaTypes: {
         type: 'tags',
         default: 'image/*',
-        tooltip: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
     },
     maxUploadSize: {
         type: 'text',
         default: "",
-        tooltip: 'The maximum file size allowed for media uploads, e.g. "10MB". Empty or 0 for unlimited.'
+        helptext: 'The maximum file size allowed for media uploads, e.g. "10MB". Empty or 0 for unlimited.'
     },
 };
-export async function saveContentEndpoint(cms, contentTypeID, request, options = {}) {
-    let content;
-    try {
-        let formdata = await request.formData();
-        content = await formDataHandler(cms, contentTypeID, formdata);
-        let response = await cms.saveContent(contentTypeID, content, options);
-        return response;
-    }
-    catch (error) {
-        return {
-            status: 500,
-            body: {
-                message: error.message,
-                stack: error.stack.split('\n'),
-                content,
-            }
-        };
-    }
-}
-export async function deleteContentEndpoint(cms, contentTypeID, request, options = {}) {
-    let content;
-    try {
-        let formdata = await request.formData();
-        content = await formDataHandler(cms, contentTypeID, formdata);
-        let response = await cms.deleteContent(contentTypeID, content, options);
-        return response;
-    }
-    catch (error) {
-        return {
-            status: 500,
-            body: {
-                message: error.message,
-                stack: error.stack.split('\n'),
-                content,
-            }
-        };
-    }
-}
 export async function parseFileStoreContentItem(_filepath, content, opts) {
     let ext = extname(_filepath);
     if (ext === 'json')
@@ -135,7 +101,7 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
         if (ext === 'yml' || ext === 'yaml')
             return { ...yaml.load(content), _filepath, };
         else if (ext === 'md') {
-            let sections = content.split(/^---$/g);
+            let sections = content.split(/^---\n/gm);
             if (sections.length > 2 && sections.shift() === '') {
                 let data;
                 try {
@@ -143,13 +109,20 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
                 }
                 catch (e) { } // The yaml would not load.
                 if (data)
-                    return { ...data, _filepath };
+                    return { ...data, [opts.markdownBodyField]: sections[0], _filepath };
                 else
                     return { [opts.markdownBodyField]: content, _filepath };
             }
         }
-        throw new Error('Extension for file stores must be md, json, yml or yaml.');
+        else
+            throw new Error('Extension for file stores must be md, json, yml or yaml.');
     }
+}
+export function getSlugFromFilepath(filepath, contentTypeID, opts) {
+    let slug = filepath.replace(/.+\//, '').replace(/\.[^\.]*$/, '');
+    if (opts.prependContentTypeIdAs === 'filename' && slug.indexOf(contentTypeID) === 0)
+        slug = slug.slice(contentTypeID.length);
+    return slug;
 }
 const plugin = {
     contentStores: [
@@ -157,7 +130,7 @@ const plugin = {
             id: 'staticFiles',
             optionFields: { databaseName: databaseNameField, ...staticFilesContentOptionFields },
             listContent: async (contentType, opts) => {
-                const fs = await getFs(opts.databaseName);
+                const fs = await getFs('opts.databaseName');
                 let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
@@ -165,17 +138,23 @@ const plugin = {
                         `*.${opts.fileExtension}`; // file extensions
                 glob = glob.replace(/\/+/g, '/');
                 const { default: fg } = await import('fast-glob');
-                const items = await fg(glob, { fs });
-                const files = items.map(async (f) => {
+                const items = await fg(glob);
+                if (!opts.full)
+                    return items.map(filepath => {
+                        return {
+                            _filepath: filepath,
+                            _slug: getSlugFromFilepath(filepath, contentType.id, opts)
+                        };
+                    });
+                let files = await Promise.all(items.map(async (f) => {
                     let item = await fs.readFile(f, { encoding: 'utf8' });
                     return parseFileStoreContentItem(f, item, opts);
-                });
-                await Promise.all(files);
+                }));
                 return files;
             },
             getContent: async (contentType, opts, slug = '') => {
                 slug = slug || opts.slug || '*';
-                const fs = await getFs(opts.databaseName);
+                const fs = await getFs('opts.databaseName');
                 let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
@@ -183,7 +162,7 @@ const plugin = {
                         `${slug}.${opts.fileExtension}`; // file extensions
                 glob = glob.replace(/\/+/g, '/');
                 const { default: fg } = await import('fast-glob');
-                const items = await fg(glob, { fs });
+                const items = await fg(glob);
                 const files = items.map(async (f) => {
                     let item = await fs.readFile(f, { encoding: 'utf8' });
                     return parseFileStoreContentItem(f, item, opts);
@@ -195,7 +174,7 @@ const plugin = {
                 let slug = opts.slug ?? content._slug ?? content.slug;
                 if (!slug && !opts.filepath)
                     throw new Error(`Content to be saved must have a slug or a provided filepath: ${contentType.label}\n - opts.slug: ${opts.slug}\n - content._slug: ${content._slug}\n - content.slug: ${content.slug}`);
-                const fs = await getFs(opts.databaseName);
+                const fs = await getFs('opts.databaseName');
                 const base = `${getBasedir()}/${opts.contentDirectory}/`;
                 let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
@@ -203,34 +182,27 @@ const plugin = {
                             contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
                         `${slug}.${opts.fileExtension}`; // file extensions
                 let body = '';
-                console.log(filepath);
+                let saveContent = cloneDeep(content);
                 switch (opts.fileExtension) {
                     case "json":
-                        content = JSON.stringify(content, null, 2);
+                        saveContent = JSON.stringify(saveContent, null, 2);
                         break;
                     case "md":
-                        body = content[opts.markdownBodyField] || '';
-                        delete (content[opts.markdownBodyField]);
+                        body = saveContent[opts.markdownBodyField] || '';
+                        delete (saveContent[opts.markdownBodyField]);
                     case "yml":
                     case "yaml":
                         let yaml = await import('js-yaml');
-                        content = yaml.dump(content);
+                        saveContent = yaml.dump(saveContent).trim();
                         if (opts.fileExtension === 'md')
-                            content = `---\n${content}\n---\n${body}`;
+                            saveContent = `---\n${saveContent}\n---\n${body}`;
                         break;
                     default:
                         throw new Error('Extension for file stores must be md, json, yml or yaml.');
                 }
                 try {
-                    await fs.writeFile(filepath, content);
-                    return {
-                        status: 200,
-                        body: {
-                            action: 'saved',
-                            filepath,
-                            content,
-                        }
-                    };
+                    await fs.writeFile(filepath, saveContent);
+                    return content;
                 }
                 catch (e) {
                     e.message = `Error writing ${filepath}:\n${e.message}`;
@@ -241,7 +213,7 @@ const plugin = {
                 let slug = opts.slug ?? content._slug ?? content.slug;
                 if (!slug && !opts.filepath)
                     throw new Error(`Content to be deleted must have a slug or a provided filepath: ${contentType.label}`);
-                const fs = await getFs(opts.databaseName);
+                const fs = await getFs('opts.databaseName');
                 let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
                     `${getBasedir()}/${opts.contentDirectory}/` + // base dir
                         `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
@@ -249,14 +221,7 @@ const plugin = {
                         `${slug}.${opts.fileExtension}`; // file extensions
                 try {
                     await fs.unlink(filepath);
-                    return {
-                        status: 200,
-                        body: {
-                            action: 'deleted',
-                            filepath,
-                            content
-                        }
-                    };
+                    return content;
                 }
                 catch (e) {
                     e.message = `Error deleting ${filepath}:\n${e.message}`;
@@ -281,7 +246,7 @@ const plugin = {
                 if (maxUploadSize && file.size > maxUploadSize)
                     throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`);
                 // Get file system
-                const fs = await getFs(opts.databaseName);
+                const fs = await getFs('opts.databaseName');
                 const filepath = `${getBasedir()}/${opts.staticDirectory}/${opts.mediaDirectory}/${file.name}`.replace(/\/+/g, '/');
                 // TODO: determine what to do if files exist
                 let fileStats;
@@ -303,10 +268,46 @@ const plugin = {
                 }
             },
             deleteMedia: async (file, opts) => {
-                const fs = await getFs(opts.databaseName);
+                const fs = await getFs('opts.databaseName');
+                throw new Error('Deleting local media is not yet implemented');
                 return '';
             },
         }
     ],
+    adminPages: [
+        {
+            id: 'components',
+            component: 'CMSComponentList',
+            get: async () => {
+                // @ts-ignore TODO: remove sveltekit/vite-specific code
+                let files = await import.meta.glob(`$lib/**/*.svelte`);
+                return Object.keys(files);
+            },
+            post: async ({ cms, event }) => {
+                let values = await event.request.json();
+                let saveComponents = Object.keys(values)
+                    .filter(k => values[k])
+                    .filter(f => f.match(/^[a-zA-Z0-9_\/]+$/)); // no filenames with ".", and no saving files above $lib
+                let imports = [], components = [];
+                saveComponents.forEach(f => {
+                    f = f.replace(/^\/+/, '');
+                    let id = f.replace(/\W/g, '_');
+                    imports.push(`import ${id} from "../../${f}.svelte";`);
+                    components.push(`{ id:'${id}', component:${id} }`);
+                });
+                let output = `// This file is auto-generated by SvelteCMS at /admin/components.\n` +
+                    `${imports.join('\n')}\n\n` +
+                    `export const components = [\n` +
+                    `  ${components.join(',\n  ')}\n` +
+                    `]\n\n` +
+                    `export default components;`;
+                let fs = await getFs('opts.databaseName');
+                let filepath = `${getBasedir()}/${cms.conf.configPath}.components.ts`;
+                await fs.writeFile(filepath, output);
+                // @ts-ignore TODO: remove sveltekit/vite-specific code
+                return Object.keys(await import.meta.glob(`$lib/**/*.svelte`));
+            }
+        },
+    ]
 };
 export default plugin;

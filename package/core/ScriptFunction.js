@@ -1,4 +1,4 @@
-import { get, has, isEqual, set } from 'lodash-es';
+import { get, has, isEqual, set, cloneDeep } from 'lodash-es';
 function getFullPath(path, id) {
     if (!path)
         return id;
@@ -6,7 +6,109 @@ function getFullPath(path, id) {
         return path;
     return `${path}.${id}`;
 }
-export const functions = {
+export class ScriptFunction {
+    constructor(conf, vars, cms) {
+        if (typeof conf === 'string')
+            conf = parseScript(conf); // this should be rare, but just in case...
+        let func = cms.scriptFunctions[conf.function];
+        if (!func)
+            throw `Script function not found for ${conf}`; // this will also happen if the config is bad
+        this.id = func.id;
+        this.vars = { ...vars, cms };
+        this.fn = func.fn;
+        // @ts-ignore
+        this.options = cms.getConfigOptionsFromFields(func?.optionFields || {});
+        if (Array.isArray(conf.params)) {
+            let params = cloneDeep(conf.params);
+            let lastKey;
+            Object.keys(func?.optionFields || {}).forEach((k, i) => {
+                // @ts-ignore
+                if (params.length)
+                    this.options[k] = params.shift();
+                lastKey = k;
+            });
+            // for functions where the last param is an array
+            if (func?.optionFields?.[lastKey]?.multiple) {
+                // @ts-ignore
+                if (!Array.isArray(this.options[lastKey]))
+                    this.options[lastKey] = [this.options[lastKey]];
+                while (params.length) {
+                    // @ts-ignore
+                    this.options[lastKey].push(params.shift());
+                }
+            }
+        }
+        // }
+        cms.initializeConfigOptions(this.options, vars);
+    }
+    run() {
+        this.fn(this.vars, this.options);
+    }
+}
+export class ScriptError extends Error {
+    constructor(message, state, tail) {
+        super(message);
+        this.state = state;
+        this.tail = tail || '';
+        return this;
+    }
+}
+export class ScriptFunctionConfig {
+    constructor(conf) {
+        this.function = '';
+        this.params = [];
+        this.setFunction(conf?.function || '');
+        this.params = conf?.params || [];
+    }
+    get alias() {
+        let aliases = {
+            'getValue': '$values',
+            'isError': '$errors',
+            'isTouched': '$touched',
+            'getProperty': '$props',
+        };
+        let alias = aliases[this.function];
+        if (alias) {
+            if (!this.params[0] || this.params[0] === '$id')
+                alias = alias.replace(/s$/, '');
+            return alias;
+        }
+        return this.function;
+    }
+    setFunction(name) {
+        if (name.match(/^values?$/))
+            this.function = 'getValue';
+        else if (name.match(/^props?$/))
+            this.function = 'getProperty';
+        else if (name.match(/^errors?$/))
+            this.function = 'isError';
+        else if (name.match(/^touched$/))
+            this.function = 'isTouched';
+        else
+            this.function = name;
+    }
+    push(param) {
+        this.params.push(param);
+    }
+    toString() {
+        let string = "";
+        if (['getValue', 'isError', 'isTouched', 'getProperty'].includes(this.function)) {
+            if (!this.params[0] || this.params[0] === '$id')
+                return this.alias;
+            else if (typeof this.params[0] === 'string')
+                return `${this.alias}.${this.params[0]}`;
+        }
+        else
+            return `$${this.function}(${this.params.map(p => {
+                if (p === null)
+                    return 'null';
+                if (typeof p === 'string' && p.match(/[,"\(\)]/))
+                    return `"${p.replace(/"/g, '""')}"`;
+                return p;
+            }).join(',')})`;
+    }
+}
+export const scriptFunctions = {
     now: {
         id: 'now',
         fn: () => {
@@ -22,10 +124,12 @@ export const functions = {
             textOrArray: {
                 type: 'text',
                 default: '',
+                helptext: 'A string or array which may or may not contain the value.'
             },
             searchFor: {
                 type: 'text',
                 default: '',
+                helptext: 'The value for which to test.'
             },
         }
     },
@@ -38,29 +142,32 @@ export const functions = {
             function: {
                 type: 'text',
                 default: null,
+                helptext: 'A function to run once.'
             }
         }
     },
     transform: {
         id: 'transform',
         fn: (vars, opts) => {
-            return opts.transformer.fn(opts.value, opts.transformer.options);
+            return vars.cms.transform(opts.value, opts.transformer);
         },
         optionFields: {
-            transformer: {
-                type: 'text',
-                default: null
-            },
             value: {
                 type: 'text',
                 default: {
                     function: 'getValue'
-                }
-            }
+                },
+                helptext: 'The value to be transformed.',
+            },
+            transformer: {
+                type: 'text',
+                default: null,
+                helptext: 'The ID of the transformer to run.'
+            },
         }
     },
-    getFieldProperty: {
-        id: 'getFieldProperty',
+    getProperty: {
+        id: 'getProperty',
         fn: (vars, opts) => {
             return get(vars.field, opts.property);
         },
@@ -68,6 +175,7 @@ export const functions = {
             property: {
                 type: 'text',
                 default: '',
+                helptext: 'The name of the property to get.'
             }
         }
     },
@@ -85,8 +193,8 @@ export const functions = {
     //     }
     //   }
     // },
-    setFieldProperty: {
-        id: 'setFieldProperty',
+    setProperty: {
+        id: 'setProperty',
         fn: (vars, opts) => {
             vars.field[opts.property] = opts.value;
         },
@@ -94,10 +202,12 @@ export const functions = {
             property: {
                 type: 'text',
                 default: '',
+                helptext: 'The name of the field property to set.',
             },
             value: {
                 type: 'text',
                 default: '',
+                helptext: 'The value to set.'
             },
         }
     },
@@ -118,9 +228,10 @@ export const functions = {
         optionFields: {
             fieldID: {
                 type: 'text',
+                helptext: 'The name of the item field to get.',
                 default: {
                     function: 'id',
-                }
+                },
             }
         }
     },
@@ -136,12 +247,14 @@ export const functions = {
         optionFields: {
             fieldID: {
                 type: 'text',
+                helptext: 'The name of the item field which should be set to a value.',
                 default: {
                     function: 'id',
                 }
             },
             value: {
                 type: 'text',
+                helptext: 'The value to set.',
                 default: '',
             }
         }
@@ -157,6 +270,7 @@ export const functions = {
         optionFields: {
             fieldID: {
                 type: 'text',
+                helptext: 'The name of the item field to check for errors.',
                 default: {
                     function: 'id'
                 },
@@ -174,6 +288,7 @@ export const functions = {
         optionFields: {
             fieldID: {
                 type: 'text',
+                helptext: 'The name of the item field to check if it was touched.',
                 default: {
                     function: 'id'
                 },
@@ -188,6 +303,7 @@ export const functions = {
         optionFields: {
             value: {
                 type: 'text',
+                helptext: 'The value to be tested for "truthiness"--returns true for: false, 0, null, undefined, and empty strings.',
                 default: {
                     function: 'getValue'
                 },
@@ -202,14 +318,17 @@ export const functions = {
         optionFields: {
             condition: {
                 type: 'text',
-                default: '',
+                helptext: '',
+                default: 'The condition to be tested.',
             },
             ifTrue: {
                 type: 'text',
+                helptext: 'The function to run or value to return if true.',
                 default: true,
             },
             ifFalse: {
                 type: 'text',
+                helptext: 'The function to run or value to return if false.',
                 default: false,
             }
         }
@@ -223,6 +342,7 @@ export const functions = {
         optionFields: {
             conditions: {
                 type: 'text',
+                helptext: 'The conditions or values to be tested for truthiness.',
                 multiple: true,
                 default: [],
             }
@@ -237,6 +357,7 @@ export const functions = {
         optionFields: {
             conditions: {
                 type: 'text',
+                helptext: 'The conditions or values to be tested for truthiness.',
                 multiple: true,
                 default: [],
             }
@@ -255,6 +376,7 @@ export const functions = {
         optionFields: {
             values: {
                 type: 'text',
+                helptext: 'The values to be tested for equality, using isEqual from lodash.',
                 multiple: true,
                 default: [],
             }
@@ -268,14 +390,17 @@ export const functions = {
         optionFields: {
             value: {
                 type: 'text',
+                helptext: 'The base value.',
                 default: '',
             },
             isLessThan: {
                 type: 'text',
+                helptext: 'The test value. Returns true if test value is less than the base value.',
                 default: '',
             },
             orEqual: {
                 type: 'boolean',
+                helptext: 'If true, returns true if the test value is equal to the base value.',
                 default: false,
             }
         }
@@ -288,14 +413,17 @@ export const functions = {
         optionFields: {
             value: {
                 type: 'text',
+                helptext: 'The base value.',
                 default: '',
             },
             isGreaterThan: {
                 type: 'text',
+                helptext: 'The test value. Returns true if test value is greater than the base value.',
                 default: '',
             },
             orEqual: {
                 type: 'boolean',
+                helptext: 'If true, returns true if the test value is equal to the base value.',
                 default: false,
             }
         }
@@ -308,6 +436,7 @@ export const functions = {
         optionFields: {
             value: {
                 type: 'text',
+                helptext: 'The test value. Returns true if test value is null or undefined.',
                 default: {
                     function: 'getValue'
                 },
@@ -324,104 +453,23 @@ export const functions = {
                 type: 'text',
                 multiple: true,
                 default: '',
-                tooltip: 'List of strings to concatenate',
-            }
-        }
-    },
-    cmsFieldList: {
-        id: 'cmsFieldList',
-        fn: (vars, opts) => {
-            return vars.cms.getFieldTypes();
-        }
-    },
-    cmsWidgets: {
-        id: 'cmsWidgetList',
-        fn: (vars, opts) => {
-            return vars.cms.getFieldTypeWidgets(opts.fieldType);
-        },
-        optionFields: {
-            fieldType: {
-                type: 'text',
-                default: '',
-                widget: {
-                    type: 'select',
-                    options: {
-                        options: {
-                            function: '$cmsFieldList()'
-                        }
-                    }
-                }
+                helptext: 'List of strings to concatenate.',
             }
         }
     },
 };
-export class CMSFieldFunctionConfig {
-    constructor(conf) {
-        this.function = '';
-        this.params = [];
-        this.setFunction(conf?.function || '');
-        this.params = conf?.params || [];
-    }
-    get alias() {
-        let aliases = {
-            'getValue': '$values',
-            'isError': '$errors',
-            'isTouched': '$touched',
-            'getFieldProperty': '$field',
-        };
-        let alias = aliases[this.function];
-        if (alias) {
-            if (!this.params[0] || this.params[0] === '$id')
-                alias = alias.replace(/s$/, '');
-            return alias;
-        }
-        return this.function;
-    }
-    setFunction(name) {
-        if (name.match(/^values?$/))
-            this.function = 'getValue';
-        else if (name.match(/^field$/))
-            this.function = 'getFieldProperty';
-        else if (name.match(/^errors?$/))
-            this.function = 'isError';
-        else if (name.match(/^touched$/))
-            this.function = 'isTouched';
-        else
-            this.function = name;
-    }
-    push(param) {
-        this.params.push(param);
-    }
-    toString() {
-        let string = "";
-        if (['getValue', 'isError', 'isTouched', 'getFieldProperty'].includes(this.function)) {
-            if (!this.params[0] || this.params[0] === '$id')
-                return this.alias;
-            else if (typeof this.params[0] === 'string')
-                return `${this.alias}.${this.params[0]}`;
-        }
-        else
-            return `$${this.function}(${this.params.map(p => {
-                if (p === null)
-                    return 'null';
-                if (typeof p === 'string' && p.match(/[,"\(\)]/))
-                    return `"${p.replace(/"/g, '""')}"`;
-                return p;
-            }).join(',')})`;
-    }
-}
 // Some changeless regexes
-const valueRegex = /^\$(field|values?|errors?|touched)\b/;
+const valueRegex = /^\$(props?|values?|errors?|touched)\b/;
 const propRegex = /^\.([a-zA-Z0-9\.\[\]]+)/; // TODO: evaluate allowed characters restrictions - could we just use [^\n\s\),]?
 const endScriptRegex = /^[\n\s]*$/;
-export function parseFieldFunctionScript(config, functionNames = Object.keys(functions)) {
+export function parseScript(config, functionNames = Object.keys(scriptFunctions)) {
     // PRE-FLIGHT
     if (!config)
         return;
     // (note: no errors yet, as this function will be used to test if a string will parse as a script)
     // In case we are passed a valid config setting
     if (functionNames.includes(config?.['function']) && (!config?.['params'] || Array.isArray(config?.['params']))) {
-        return new CMSFieldFunctionConfig(config);
+        return new ScriptFunctionConfig(config);
     }
     // If it is not a string, exit
     if (typeof config !== 'string')
@@ -494,9 +542,9 @@ export function parseFieldFunctionScript(config, functionNames = Object.keys(fun
             case 'base':
                 // Begin Command (if parsing is "base" or "params")
                 if (tail[0] === '$') {
-                    // Initialize new CMSFieldFunctionConfig
+                    // Initialize new CMSScriptFunctionConfig
                     // deepcode ignore MissingArgument: <this works, and I don't understand what's missing>
-                    stack.push(new CMSFieldFunctionConfig);
+                    stack.push(new ScriptFunctionConfig);
                     // Set parsing (but don't advance, as the $ is part of the command syntax)
                     parsing = 'command';
                 }
@@ -524,7 +572,7 @@ export function parseFieldFunctionScript(config, functionNames = Object.keys(fun
                         i += match[0].length;
                     }
                     else {
-                        throw new Error(`Script error: Function not found at ${tail}`);
+                        throw new ScriptError(`Script error: Function not found at ${tail}`, parsing, tail);
                     }
                 }
                 break;
@@ -667,4 +715,4 @@ export function parseFieldFunctionScript(config, functionNames = Object.keys(fun
         return stack[0];
     // If we haven't returned something by now, it's not a script
 }
-export default functions;
+export default ScriptFunction;

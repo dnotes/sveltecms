@@ -1,10 +1,15 @@
 import { SvelteComponentTyped } from "svelte";
 import type SvelteCMS from "sveltecms";
-import type { CMSContentFieldConfigSetting } from "sveltecms";
+import { type FieldConfigSetting } from "sveltecms/core/Field";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
-        items: Array<[string, string | CMSContentFieldConfigSetting]>;
+        data?: {
+            [id: string]: string | FieldConfigSetting;
+        };
+        options?: {
+            id?: string;
+        };
     };
     events: {
         [evt: string]: CustomEvent<any>;

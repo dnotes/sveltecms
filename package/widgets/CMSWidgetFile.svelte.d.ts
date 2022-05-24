@@ -21,10 +21,10 @@ export declare class CMSFile {
     get displayDate(): string;
     get displaySize(): any;
 }
-import type { CMSWidgetField } from "..";
+import type { WidgetField } from "..";
 declare const __propDef: {
     props: {
-        field: CMSWidgetField;
+        field: WidgetField;
         id: string;
         value: string | CMSFile | Array<string | CMSFile>;
         files: any;

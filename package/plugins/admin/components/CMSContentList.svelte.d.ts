@@ -4,6 +4,8 @@ declare const __propDef: {
     props: {
         cms: SvelteCMS;
         adminPath: string;
+        basePath: string;
+        data?: any[];
     };
     events: {
         [evt: string]: CustomEvent<any>;

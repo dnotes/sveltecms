@@ -1,7 +1,6 @@
 <script>import yaml from 'js-yaml';
 import { onMount } from "svelte";
 export let cms;
-export let adminPath;
 let format;
 let content;
 onMount(() => { format = cms?.admin?.contentStore?.options?.fileExtension?.toString() || 'json'; });
@@ -10,7 +9,6 @@ const encoders = {
     yaml: v => { return yaml.dump(v); },
     yml: v => { return yaml.dump(v); },
 };
-$: console.log(format);
 $: content = encoders?.[format] ? encoders[format](cms.conf) : '';
 </script>
 
