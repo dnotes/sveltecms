@@ -3,7 +3,7 @@ import cms from '$lib/cms'
 export async function get(event) {
 
   const { params } = event
-  const [ contentTypeID, slug ] = params.route.split('/')
+  const [ contentTypeID, slug ] = params.path.split('/')
 
   let content
   try {
