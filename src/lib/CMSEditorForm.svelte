@@ -67,7 +67,7 @@ import Button from './ui/Button.svelte';
         </h2>
       </slot>
       <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} {values} collection={contentType} />
+        <CmsFieldCollection {cms} bind:values collection={contentType} />
 
         <input type="hidden" name="_slug" bind:value={oldSlug}>
 
