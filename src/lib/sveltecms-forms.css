@@ -133,6 +133,11 @@ td>.cms-helptext:hover { display:none; }
   border:none !important;
 }
 
+/* Layout */
+
+.sveltecms .cms-admin {
+  padding: 0 20px;
+}
 .sveltecms .cms-editor-form {
   max-width: 600px;
 }

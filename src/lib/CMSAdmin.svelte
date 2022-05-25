@@ -54,8 +54,3 @@ import Nav from "sveltecms/ui/Nav.svelte";
 
 </div>
 </div>
-
-<style global>
-  @import "sveltecms/sveltecms-forms.css";
-  .cms-admin { padding:0 20px; }
-</style>
