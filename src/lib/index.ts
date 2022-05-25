@@ -403,17 +403,17 @@ export default class SvelteCMS {
    * @param contentType string
    * The id of the content type
    * @param slug string
-   * The text slug for an individual piece of content (optional)
-   * If null or omitted, then all content of the type will be returned
+   * The text slug for an individual piece of content
    * @param options object
-   * @returns object|object[]
+   * @returns object
    */
-  async getContent(contentType:string|ContentType, slug?:string|number|null, options:{[key:string]:any} = {}):Promise<Content|Content[]> {
+  async getContent(contentType:string|ContentType, slug:string|number|null, options:{[key:string]:any} = {}):Promise<Content> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
-    const rawContent = await db.getContent(contentType, db.options, slug)
+    let rawContent = await db.getContent(contentType, db.options, slug)
     if (!rawContent) return
+    if (Array.isArray(rawContent)) rawContent = rawContent.find(item => item._slug === slug) || rawContent[0]
     this.slugifyContent(rawContent, contentType)
     if (options.getRaw) return rawContent
     // @ts-ignore contentType has by now been type checked
