@@ -22,7 +22,6 @@ import Button from './ui/Button.svelte';
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
   export let previewComponent = contentType?.previewComponent || contentType?.displayComponent || undefined
-  console.log(previewComponent)
   // @ts-ignore this is a type check
   let component = cms?.components?.[previewComponent?.component] || cms?.components?.[previewComponent] || previewComponent || cms.components['content']
 
