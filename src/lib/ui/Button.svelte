@@ -13,6 +13,9 @@
   // This is easier than making a Link component or using goto.
   export let href:string = undefined
 
+  // This is for the <slot> default
+  export let text:string = ''
+
 </script>
 
 {#if href}
@@ -29,7 +32,7 @@
   class:borderless
   class:highlight
 >
-<slot></slot>
+<slot>{text}</slot>
 </a>
 
 {:else}
@@ -46,7 +49,7 @@
   class:borderless
   class:highlight
 >
-<slot></slot>
+<slot>{text}</slot>
 </button>
 
 {/if}
