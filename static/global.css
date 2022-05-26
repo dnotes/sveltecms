@@ -1,15 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;400;700&display=swap');
+
 html {
   background-color: var(--cms-background);
   color: var(--cms-text);
   border-color: var(--cms-main);
 }
 
-body {
+html body {
   margin:0; padding:0;
+  --cms-font: Roboto, sans-serif;
+  font-family: var(--cms-font);
 }
 
 a {
   color: var(--cms-link);
+  text-decoration: none;
 }
 
 a.action {
