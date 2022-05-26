@@ -7,7 +7,8 @@ import type { Content, ContentStoreConfigSetting, ContentStoreType } from './cor
 import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection } from './core/Collection'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
-import type { ComponentType, ComponentConfigSetting } from './core/Component'
+import type { ComponentType, ComponentConfigSetting, Component } from 'sveltecms/core/Component'
+import { displayComponents, type DisplayConfigSetting } from 'sveltecms/core/Display'
 
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
 import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es'
@@ -117,6 +118,9 @@ export default class SvelteCMS {
 
     this.conf = conf
     this.use(staticFilesPlugin)
+    displayComponents.forEach(c => {
+      this.components[c.id] = c
+    })
     plugins.forEach(p => this.use(p))
 
     // Build out config for the lists
@@ -353,6 +357,12 @@ export default class SvelteCMS {
       Object.keys(this.widgetTypes).filter(k => !this.widgetTypes[k].admin && this.widgetTypes[k].fieldTypes.includes(fieldType)),
       Object.keys(this.widgets).filter(k => this.widgetTypes[this.widgets[k].type].fieldTypes.includes(fieldType))
     )
+  }
+
+  getDisplayComponent(display:string|DisplayConfigSetting, fallback:string='field_element'):Component|ComponentType {
+    let id = typeof display === 'string' ? display : (display?.type || display?.id)
+    if (!id) return
+    return this.components[id] || this.components[fallback]
   }
 
   getContentType(contentType:string):ContentType {

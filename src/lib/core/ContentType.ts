@@ -14,7 +14,8 @@ export type ContentTypeConfigSetting = ConfigSetting & {
   contentStore: string|ContentStoreConfigSetting
   mediaStore?: string|MediaStoreConfigSetting
   slug?: string|string[]|SlugConfigSetting
-  previewComponent?:string
+  previewComponent?:string|ComponentConfigSetting
+  displayComponent?:string|ComponentConfigSetting
   form?:{
     method?:'post'|'get'
     action?:string
@@ -29,6 +30,7 @@ export class ContentType implements FieldableEntity, LabeledEntity {
   contentStore:ContentStore
   mediaStore?:string|MediaStoreConfigSetting
   previewComponent?:string|ComponentConfigSetting
+  displayComponent?:string|ComponentConfigSetting
   fields:{[key:string]:Field} = {}
   form: {
     method?:'post'|'get'
@@ -40,6 +42,7 @@ export class ContentType implements FieldableEntity, LabeledEntity {
     this.contentStore = new ContentStore(conf?.contentStore, cms)
     this.mediaStore = conf.mediaStore
     this.previewComponent = conf.previewComponent
+    this.displayComponent = conf.displayComponent
     this.form = {
       method:conf?.form?.method,
       action:conf?.form?.action,

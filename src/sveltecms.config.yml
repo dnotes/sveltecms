@@ -7,7 +7,7 @@ types:
       date: date
       image: image
       body: body
-    previewComponent: content_BlogPost
+    displayComponent: content_BlogPost
 contentStores: {}
 mediaStores:
   images:

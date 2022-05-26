@@ -5,8 +5,8 @@ import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
 import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction'
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
+import type { DisplayConfigSetting } from './Display'
 
-import { has as hasProp } from 'lodash-es'
 import { getLabelFromID } from 'sveltecms/utils'
 
 export type FieldConfigSetting = {
@@ -42,6 +42,7 @@ export type ConfigFieldConfigSetting = FieldConfigSetting & {
 export type FieldType = EntityType & {
   default: any
   widget: string|WidgetConfigSetting
+  display: string|DisplayConfigSetting
   preSave?: Array<string|TransformerConfigSetting>
   preMount?: Array<string|TransformerConfigSetting>
   admin?: boolean
@@ -75,6 +76,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   // validator?: Rules
   fields?: {[key:string]:Field}
   widget: Widget
+  display?: string|DisplayConfigSetting
   preSave?: (string|TransformerConfigSetting)[]
   preMount?: (string|TransformerConfigSetting)[]
   mediaStore?: MediaStore
@@ -121,6 +123,8 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
+      this.display = conf?.['display'] ?? fieldType.display
+
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave
       this.preMount = conf.preMount ? ( Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount] ) : fieldType.preMount
@@ -146,63 +150,80 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'text',
     default: '',
     widget: 'text',
+    display: 'span',
     preSave: ['toString'],
   },
   date: {
     id: 'date',
     default: new Date(),
     widget: 'date',
+    display: 'span',
     preSave: ['date'],
   },
   image: {
     id: 'image',
     default: [],
     widget: 'image',
+    display: 'field_image',
   },
   file: {
     id: 'file',
     default: [],
     widget: 'file',
+    display: 'field_file',
   },
   html: {
     id: 'html',
     default: '',
     widget: 'textarea',
+    display: {
+      type: 'div',
+      html: true
+    },
     preMount: ['html'],
   },
   collection: {
     id: 'collection',
     default: {},
     widget: 'collection',
+    display: 'div',
   },
   number: {
     id: 'number',
     default: null,
     widget: 'number',
+    display: 'span',
     preSave: ['parseInt'],
   },
   float: {
     id: 'float',
     default: null,
     widget: 'text',
+    display: 'span',
     preSave: ['parseFloat'],
   },
   boolean: {
     id: 'boolean',
     default: null,
     widget: 'checkbox',
+    display: 'boolean',
     preSave: ['boolean'],
   },
   tags: {
     id: 'tags',
     default: [],
     widget: 'text', // @todo: add tags widget
+    display: {
+      type: 'li',
+      wrapper: 'ul',
+    },
     preSave: ['tags']
   },
   value: {
     id: 'value',
     default: undefined,
     widget: 'value',
+    display: '',
   }
   // password: {
   //   id: 'password',

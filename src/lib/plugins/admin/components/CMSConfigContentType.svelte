@@ -86,20 +86,36 @@ import { getLabelFromID } from "sveltecms/utils";
 
 <!-- svelte-ignore a11y-label-has-associated-control -->
 <div class="field"><label>
+  <span>Display component</span>
+  <CmsWidgetConfigurableEntity
+    {cms}
+    type="components"
+    id="displayComponent"
+    items={components}
+    unset="- default -"
+    bind:value={data.displayComponent} />
+  </label>
+  <div class="cms-helptext">
+    The component used for displaying this type of content.
+  </div>
+</div>
+
+
+<!-- svelte-ignore a11y-label-has-associated-control -->
+<div class="field"><label>
   <span>Preview component</span>
   <CmsWidgetConfigurableEntity
     {cms}
     type="components"
     id="previewComponent"
     items={components}
-    unset="- no preview -"
+    unset="- default -"
     bind:value={data.previewComponent} />
-</label>
-<div class="cms-helptext">
-  The component used for previewing content of this type during editing.
+  </label>
+  <div class="cms-helptext">
+    The component used for previewing content of this type during editing.
+  </div>
 </div>
-</div>
-
 
 
 <div class="field"><label>

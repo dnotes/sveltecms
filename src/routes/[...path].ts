@@ -24,7 +24,10 @@ export async function get(event) {
   }
   return {
     status: 200,
-    body: { content }
+    body: {
+      contentTypeID,
+      content,
+    }
   }
 
 }
