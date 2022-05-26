@@ -62,6 +62,7 @@ export class ScriptError extends Error {
 }
 
 export type ScriptFunctionType = ConfigurableEntityType & {
+  admin?:boolean
   helptext?:string
   fn:(vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
 }
@@ -458,6 +459,25 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
         default: '',
         helptext: 'List of strings to concatenate.',
       }
+    }
+  },
+  listEntities: {
+    id: 'listEntities',
+    admin: true,
+    fn: (vars, opts) => {
+      return vars.cms.listEntities(opts.entityType, opts.includeAdmin)
+    },
+    optionFields: {
+      entityType: {
+        type: 'text',
+        default: 'fields',
+        helptext: 'The type of entity to list',
+      },
+      includeAdmin: {
+        type: 'boolean',
+        default: 'fields',
+        helptext: 'Whether to include entities tagged as admin',
+      },
     }
   },
 }
