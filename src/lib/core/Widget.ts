@@ -94,11 +94,16 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     isFieldable: true,
     widget: CMSWidgetCollection,
     optionFields: {
+      configurable: {
+        type: 'boolean',
+        default: false,
+        helptext: 'whether the collection can be chosen from a list',
+      },
       oneline: {
         type: 'boolean',
         default: false,
         helptext: 'add the "oneline" class to a collection fieldset',
-      }
+      },
     }
   },
   number: {
@@ -397,6 +402,11 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         widget: 'text',
         default: 0,
         helptext: 'The maximum number of items shown in the dropdown area of a select box.'
+      },
+      unset: {
+        type: 'text',
+        default: '',
+        helptext: 'The title text to use for a blank entry. If this is provided, or if the field is not required, a blank value will be available. The default title for the blank value is "- none -".'
       },
       items: { // TODO: replace this with a List widget when one is available
         type: 'collection',

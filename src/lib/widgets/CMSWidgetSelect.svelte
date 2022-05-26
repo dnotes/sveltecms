@@ -7,7 +7,11 @@ import type { WidgetField } from "..";
   export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '')
 
   //@ts-ignore
-  let opts:{size:number, items:string[]|{[key:string|number]:string}} = field.widget.options
+  let opts:{
+    size:number,
+    unset:string,
+    items:string[]|{[key:string|number]:string}
+  } = field.widget.options
 
   $: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => { return [o,o] })) : opts.items
 
@@ -27,6 +31,9 @@ import type { WidgetField } from "..";
       disabled={field.disabled}
       required={field.required}
     >
+      {#if !field.required || opts.unset}
+        <option value="">{opts.unset || '- none -'}</option>
+      {/if}
       {#each Object.entries(options || {}) as [value,title]}
         <option {value}>{title}</option>
       {/each}
