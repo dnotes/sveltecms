@@ -6,6 +6,7 @@ import type { Content } from "sveltecms/core/ContentStore";
 import type { FieldConfigSetting } from "sveltecms/core/Field";
 
 import Field from 'sveltecms/display/Field.svelte'
+import Wrapper from "./Wrapper.svelte";
 
   export let cms:SvelteCMS
   export let entity:FieldableEntity|FieldableEntityConfigSetting|FieldConfigSetting = undefined
@@ -16,66 +17,24 @@ import Field from 'sveltecms/display/Field.svelte'
 
 </script>
 
-{#each fields as [id, field], i}
-  {#if field.display && content[id] && (!Array.isArray(content[id]) || content[id]?.['length'])}
-    {#if field.display?.['wrapper']}
+{#each fields as [id, field]}
+  {#if content[id] && (!Array.isArray(content[id]) || content[id]?.['length'])}
+    {#if field?.display?.wrapper}
+
+      <Wrapper {cms} display={field.display.wrapper}>
+        <Field
+          {cms}
+          value={content[id]}
+          {field}/>
+      </Wrapper>
+
+    {:else if field?.display}
 
       <Field
         {cms}
         value={content[id]}
-        component={cms.getDisplayComponent(field.display)}
-        {field}>
-
-        {#if Array.isArray(content[id])}
-
-          {#each content[id] as value}
-
-            <Field
-              {cms}
-              {value}
-              component={cms.getDisplayComponent(field.display)}
-              {field}/>
-
-          {/each}
-
-        {:else}
-
-          <Field
-            {cms}
-            value={content[id]}
-            component={cms.getDisplayComponent(field.display)}
-            {field}/>
-
-        {/if}
-
-      </Field>
-
-    {:else}
-
-      {#if Array.isArray(content[id])}
-
-        {#each content[id] as value}
-
-          <Field
-            {cms}
-            {value}
-            component={cms.getDisplayComponent(field.display)}
-            {field}/>
-
-        {/each}
-
-      {:else}
-
-        <Field
-          {cms}
-          value={content[id]}
-          component={cms.getDisplayComponent(field.display)}
-          {field}/>
-
-      {/if}
+        {field}/>
 
     {/if}
-
   {/if}
-
 {/each}

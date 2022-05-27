@@ -130,4 +130,13 @@ export const adminPages:AdminPageConfig[] = [
       if (event) return saveContentEndpoint(cms, cms.admin, event.request)
     }
   },
+  {
+    id: 'collections',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigEntityList',
+      }
+    }
+  }
 ]

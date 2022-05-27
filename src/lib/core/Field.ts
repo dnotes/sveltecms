@@ -5,9 +5,10 @@ import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
 import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction'
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
-import type { DisplayConfigSetting } from './Display'
+import { DisplayConfig, type DisplayConfigSetting } from './Display'
 
 import { getLabelFromID } from 'sveltecms/utils'
+import type { AdminCollectionConfigSetting } from './Collection'
 
 export type FieldConfigSetting = {
   type: string
@@ -24,6 +25,7 @@ export type FieldConfigSetting = {
   multipleMax?: number|ScriptFunctionConfigSetting
   fields?: {[key:string]:string|FieldConfigSetting}
   widget?: string|WidgetConfigSetting
+  display?: string|DisplayConfigSetting
   // validator?: Rules // TODO
   preSave?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   preMount?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
@@ -33,10 +35,36 @@ export type FieldConfigSetting = {
 }
 
 export type ConfigFieldConfigSetting = FieldConfigSetting & {
-  type: 'text'|'number'|'boolean'|'date'|'collection'|'tags'
+  type: 'text'|'number'|'boolean'|'date'|'collection'|'tags'|'entity'
+  entity?: string
   default: any
   helptext: string
   fields?: {[key:string]:ConfigFieldConfigSetting}
+}
+
+export const configField:AdminCollectionConfigSetting = {
+  id: 'configField',
+  admin: true,
+  fields: {
+    id: {
+      type: 'text',
+      required: true,
+      default: '',
+      helptext: 'The ID for the field.',
+    },
+    type: {
+      type: 'text',
+      required: true,
+      widget: {
+        type: 'configurableEntity',
+        options: {
+          entityType: 'fields',
+        }
+      },
+      default: '',
+      helptext: 'The type for the field. The type can be the ID of any other field.',
+    },
+  }
 }
 
 export type FieldType = EntityType & {
@@ -76,7 +104,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   // validator?: Rules
   fields?: {[key:string]:Field}
   widget: Widget
-  display?: string|DisplayConfigSetting
+  display?: DisplayConfig
   preSave?: (string|TransformerConfigSetting)[]
   preMount?: (string|TransformerConfigSetting)[]
   mediaStore?: MediaStore
@@ -123,7 +151,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
-      this.display = conf?.['display'] ?? fieldType.display
+      if (conf.display || fieldType.display) this.display = new DisplayConfig(conf?.['display'] ?? fieldType.display, cms)
 
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave
@@ -186,7 +214,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'collection',
     default: {},
     widget: 'collection',
-    display: 'div',
+    display: 'field_collection',
   },
   number: {
     id: 'number',
@@ -223,6 +251,13 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'value',
     default: undefined,
     widget: 'value',
+    display: '',
+  },
+  configurableEntity: {
+    id: 'configurableEntity',
+    admin: true,
+    default: undefined,
+    widget: 'configurableEntity',
     display: '',
   }
   // password: {

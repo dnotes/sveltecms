@@ -2,7 +2,7 @@
 import type SvelteCMS from './index';
 import CmsFieldCollection from './CMSFieldCollection.svelte';
 import DisplayResult from 'sveltecms/ui/DisplayResult.svelte'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, debounce } from 'lodash-es'
 import Button from './ui/Button.svelte';
 
   export let cms:SvelteCMS
@@ -27,6 +27,10 @@ import Button from './ui/Button.svelte';
 
   const initialValues = cloneDeep(values)
   let oldSlug = values?.['_slug'] ?? ''
+
+  let previewContent = cms.preMount(cms.getContentType(contentTypeID), values)
+  let updatePreviewContent = debounce(()=>{previewContent = cms.preMount(cms.getContentType(contentTypeID), values)}, 500)
+  $: if (values) updatePreviewContent()
 
   // export let validator:Validator.Validator<Object> = cms.getValidator(contentTypeID, values)
 
@@ -85,7 +89,7 @@ import Button from './ui/Button.svelte';
     </div>
     {#if component}
       <div class="cms-editor-preview">
-        <svelte:component this={component.component} {cms} {contentTypeID} content={cms.preMount(cms.getContentType(contentTypeID), values)} ></svelte:component>
+        <svelte:component this={component.component} {cms} {contentTypeID} content={previewContent} ></svelte:component>
       </div>
     {/if}
   </div>

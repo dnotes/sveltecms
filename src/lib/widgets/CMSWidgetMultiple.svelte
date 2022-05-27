@@ -4,6 +4,7 @@ import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
 import type { WidgetField } from "..";
 import type SvelteCMS from "..";
 import Button from "sveltecms/ui/Button.svelte";
+import { cloneDeep } from "lodash-es";
 
   export let field:WidgetField
   export let id:string
@@ -16,7 +17,7 @@ import Button from "sveltecms/ui/Button.svelte";
   let formItems:{[key:number]:HTMLElement} = {}
 
   async function addItem() {
-    value = [...value, field.default]
+    value = [...value, cloneDeep(field.default)]
     await tick()
     formItems[value.length-1].getElementsByTagName('label')[0].focus()
   }
@@ -44,11 +45,18 @@ import Button from "sveltecms/ui/Button.svelte";
           bind:value={v}
         />
       {/if}
-      <Button small helptext="Remove {field.label} item" on:click={(e) => {
-        value.splice(i,1); value=value;
-      }}>✖️</Button>
+      <div class="close">
+        <Button cancel
+          helptext="Remove {field.label} item"
+          on:click={(e) => { value.splice(i,1); value=value; }}>&times;</Button>
+      </div>
     </div>
   {/each}
-<Button small helptext="Add {field.label} item" on:click={addItem}>+ add {field.label.toLowerCase()} item</Button>
+  <Button small helptext="Add {field.label} item" on:click={addItem}>+ add {field.label.toLowerCase()} item</Button>
 
 </fieldset>
+
+<style>
+  div.cms-multiple-item { position:relative; }
+  div.close { position:absolute; top:5px; right:5px; }
+</style>

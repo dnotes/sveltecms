@@ -8,6 +8,20 @@ types:
       image: image
       body: body
     displayComponent: content_BlogPost
+  landingPage:
+    fields:
+      title: title
+      blocks:
+        type: collection
+        multiple: true
+        widget:
+          type: collection
+          options:
+            collectionTypes: block
+    contentStore:
+      type: staticFiles
+      fileExtension: yml
+    slug: title
 contentStores: {}
 mediaStores:
   images:
@@ -18,6 +32,7 @@ fields:
   title:
     type: text
     required: true
+    display: h1
   date:
     type: date
     required: true
@@ -25,6 +40,25 @@ fields:
   image:
     type: image
     mediaStore: images
+  button:
+    type: collection
+    display: element_Button
+    fields:
+      href:
+        type: text
+        helptext: If provided, the button will be rendered as a link that looks like a button.
+      text:
+        type: text
+        helptext: The text that appears inside the <button> or <link> element.
+      helptext:
+        type: text
+        helptext: Any help text that should be shown for screen readers or when hovering over the element.
+      primary: boolean
+      small: boolean
+      borderless: boolean
+      highlight: boolean
+      danger: boolean
+      submit: boolean
 widgets:
   date:
     type: date
@@ -35,4 +69,17 @@ widgets:
     rows: 15
     cols: 0
     autosize: false
+collections:
+  hero:
+    type: block
+    fields:
+      image: image
+      title: title
+      subtitle:
+        type: title
+        display: h2
+  quoteBlock:
+    type: block
+    fields:
+      quote: markdown
 _slug: sveltecms.config

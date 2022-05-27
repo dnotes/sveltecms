@@ -2,6 +2,7 @@ import type SvelteCMS from 'sveltecms'
 import type ContentType from 'sveltecms/core/ContentType'
 import type Field from 'sveltecms/core/Field'
 import { get, set } from 'lodash-es'
+import Collection from 'sveltecms/core/Collection'
 
 export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, fields:{[id:string]:Field}, data:any, prefix?:string):Promise<any> {
 
@@ -21,12 +22,19 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
     if (field.type === 'collection') {
       if (field.multiple && itemIsArray) {
         let promises = Object.entries(item).map(async ([i,item]) => {
-          return collapseFormItem(cms, contentType, field.fields, item, formPath)
+          let fields = item?.['_collectionType']?.[0] ? new Collection(item?.['_collectionType']?.[0], cms).fields : field.fields
+          return collapseFormItem(cms, contentType, fields, item, formPath)
         })
         value = await Promise.all(promises)
       }
       else if (itemIsArray) {
         value = await collapseFormItem(cms, contentType, field.fields, item['0'], formPath)
+      }
+      else if (item?._collectionType?.[0]) {
+        let collection = new Collection(item?._collectionType[0], cms)
+        if (collection) {
+          value = await collapseFormItem(cms, contentType, collection.fields, item, formPath)
+        }
       }
       else { // This should not happen, but
         value = await collapseFormItem(cms, contentType, field.fields, item, formPath)
@@ -76,7 +84,8 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
   const result = await Promise.all(promises)
 
   // Now any special data not provided by a Field
-  result.push(['_slug', data._slug[0]])
+  if (data?._slug?.[0]) result.push(['_slug', data._slug[0]])
+  if (data?._collectionType?.[0]) result.push(['_collectionType', data._collectionType[0]])
 
   return Object.fromEntries(result)
 

@@ -247,7 +247,11 @@ let result
               >
             {/if}
 
-            <Button small danger helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
+            <Button cancel
+              helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}"
+              on:click="{() => {deleteImage(i)}}"
+            />
+
           </div>
         {/each}
       {:else}
@@ -297,7 +301,12 @@ let result
               >
             {/if}
 
-            <Button small danger helptext="Delete image {i+1}: {value['alt'] || value['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
+            <div class="close">
+              <Button cancel
+                helptext="Delete image {i+1}: {value['alt'] || value['filename']}"
+                on:click="{() => {deleteImage(i)}}">&times;</Button>
+            </div>
+
           </div>
         {/each}
       {/if}
@@ -321,11 +330,10 @@ let result
   object-fit:cover;
   object-position:center;
 }
-.cms-image-preview button.cms-image-delete {
+div.close {
   position: absolute;
   top: 8px;
   right: 8px;
-  padding: 5px 1px 0 0;
 }
 
 </style>

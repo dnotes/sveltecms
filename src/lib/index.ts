@@ -4,7 +4,7 @@ import { widgetTypes, type WidgetType, type WidgetConfigSetting } from './core/W
 import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType"
 import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
 import type { Content, ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
-import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection } from './core/Collection'
+import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection, collectionTypes } from './core/Collection'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
 import type { ComponentType, ComponentConfigSetting, Component } from 'sveltecms/core/Component'
@@ -121,6 +121,9 @@ export default class SvelteCMS {
     displayComponents.forEach(c => {
       this.components[c.id] = c
     })
+    collectionTypes.forEach(c => {
+      this.collections[c.id] = c
+    })
     plugins.forEach(p => this.use(p))
 
     // Build out config for the lists
@@ -131,25 +134,25 @@ export default class SvelteCMS {
     });
 
     // Initialize all of the stores, widgets, and transformers specified in config
-    ['contentStores', 'mediaStores', 'transformers', 'components'].forEach(objectType => {
+    ['contentStores', 'mediaStores', 'transformers', 'components', 'collections'].forEach(objectType => {
       if (conf?.[objectType]) {
-        Object.entries(conf[objectType]).forEach(([k,settings]) => {
+        Object.entries(conf[objectType]).forEach(([id,settings]) => {
 
           // config can:
           // - create a new item (`conf.widgetTypes.newItem = ...`)
           // - modify an existing item (`conf.widgetTypes.text = ...`)
           // - create a new item based on an existing item (`conf.widgetTypes.longtext = { type:"text", ... })
-          const type = conf[objectType][k].type || conf[objectType][k].id || k
+          const type = conf[objectType][id].type || conf[objectType][id].id || id
 
           // we merge all of the following
-          this[objectType][k] = this.mergeConfigOptions(
+          this[objectType][id] = this.mergeConfigOptions(
             // the base item of this type
             cloneDeep(this[objectType][type] || {}),
             // the config item
             // @ts-ignore
             settings,
             // the config item, as a set of options (for shorthand)
-            { options: settings }
+            { id, options: settings }
           )
 
         })
@@ -159,14 +162,6 @@ export default class SvelteCMS {
     ['fields', 'widgets'].forEach(objectType => {
       if (conf?.[objectType]) this[objectType] = {...conf[objectType]}
     })
-
-    if (conf.collections) {
-      Object.entries(conf.collections).forEach(([id,conf]) => {
-        // @ts-ignore - this is a type check
-        if (conf.admin) this.adminCollections[conf.id] = conf
-        else this.collections[conf.id] = conf
-      })
-    }
 
     // Build out config for the content types
     Object.entries(conf?.types || {}).forEach(([id,conf]) => {
@@ -224,18 +219,24 @@ export default class SvelteCMS {
 
   }
 
-  preMount(container:ContentType|Field, values:Object) {
-    let res = {}
-    Object.entries(container.fields).forEach(([id,field]) => {
+  preMount(fieldableEntity:ContentType|Field|Collection, values:Object) {
+    let res = {} // variable for result
+    Object.entries(fieldableEntity?.fields || {}).forEach(([id,field]) => {
       try {
-        if (field?.fields && values?.[id]) {
+        // For collections, or other fieldable field types (e.g. possibly image)
+        if ((field.type === 'collection' || field?.fields) && values?.[id]) {
           if (Array.isArray(values[id])) {
             res[id] = []
             for (let i=0;i<values[id].length;i++) {
-              res[id][i] = this.preMount(field, values[id][i])
+              // find the actual fields, in case it is a collection that can be selected on the widget during editing
+              let container = values[id][i]._collectionType ? new Collection(values[id][i]._collectionType, this) : field
+              res[id][i] = this.preMount(container, values[id][i])
             }
           }
-          else res[id] = this.preMount(field, values?.[id])
+          else {
+            let container = values[id]._collectionType ? new Collection(values[id]._collectionType, this) : field
+            res[id] = this.preMount(container, values?.[id])
+          }
         }
         else res[id] = this.doFieldTransforms('preMount', field, this.doFieldTransforms('preSave', field, values?.[id]))
       }
@@ -244,22 +245,29 @@ export default class SvelteCMS {
         throw e
       }
     })
-    res['_slug'] = values['_slug']
+    // Pass on CMS-specific items like _slug (beginning with _)
+    Object.keys(values).filter(k => k.match(/^_/)).forEach(k => res[k] = values[k])
     return res
   }
 
-  preSave(container:ContentType|Field, values:Object) {
+  preSave(fieldableEntity:ContentType|Field|Collection, values:Object) {
     let res = {}
-    Object.entries(container.fields).forEach(([id,field]) => {
+    Object.entries(fieldableEntity?.fields || {}).forEach(([id,field]) => {
       try {
-        if (field?.fields && values[id]) {
+        // For collections (as above)
+        if ((field.type === 'collection' || field?.fields) && values?.[id]) {
           res[id] = []
           if (Array.isArray(values[id])) {
             for (let i=0;i<values[id].length;i++) {
-              res[id][i] = this.preSave(field, values[id][i])
+              // find the actual fields, in case it is a collection that can be selected on the widget during editing
+              let container = values[id][i]._collectionType ? new Collection(values[id][i]._collectionType, this) : field
+              res[id][i] = this.preSave(container, values[id][i])
             }
           }
-          else res[id] = this.preSave(field, values?.[id])
+          else {
+            let container = values[id]._collectionType ? new Collection(values[id]._collectionType, this) : field
+            res[id] = this.preSave(container, values?.[id])
+          }
         }
         else res[id] = this.doFieldTransforms('preSave', field, values?.[id])
       }
@@ -268,7 +276,7 @@ export default class SvelteCMS {
         throw e
       }
     })
-    res['_slug'] = values['_slug']
+    Object.keys(values).filter(k => k.match(/^_/)).forEach(k => res[k] = values[k])
     return res
   }
 
@@ -511,7 +519,9 @@ export default class SvelteCMS {
     let c = cloneDeep(collection)
     // @ts-ignore
     c.eventListeners = []
-    Object.keys(c.fields).forEach(id => {
+    Object.keys(c?.fields || {}).forEach(id => {
+      // @ts-ignore (this is a type check)
+      if (!c.fields[id]?.values) c.fields[id] = new Field(id, c.fields[id], this)
       this.initializeContentField(c.fields[id], {...vars, id})
       // @ts-ignore
       c.fields[id].events?.forEach(e => c.eventListeners.push(e))
