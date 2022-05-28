@@ -431,7 +431,7 @@ export default class SvelteCMS {
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
     let rawContent = await db.getContent(contentType, db.options, slug)
-    if (!rawContent) return
+    if (!rawContent || (Array.isArray(rawContent) && !rawContent.length)) return
     if (Array.isArray(rawContent)) rawContent = rawContent.find(item => item._slug === slug) || rawContent[0]
     this.slugifyContent(rawContent, contentType)
     if (options.getRaw) return rawContent
