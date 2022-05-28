@@ -18,7 +18,7 @@ export async function get(event) {
     else if (contentTypeID) {
       // If there is a root content type, try to get content from it
       if (cms?.conf?.settings?.rootContentType) {
-        if (contentTypeID === cms?.conf?.settings?.homePageSlug) return { status:301, location:'/' }
+        if (contentTypeID === cms?.conf?.settings?.frontPageSlug?.toString()) return { status:301, headers: { location: '/' } }
         content = await cms.getContent(cms?.conf?.settings?.rootContentType.toString(), contentTypeID)
         if (content) contentTypeID = cms.conf.settings.rootContentType.toString()
       }
