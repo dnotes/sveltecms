@@ -146,9 +146,6 @@ td>.cms-helptext:hover { display:none; }
 .sveltecms .cms-admin {
   padding: 0 20px;
 }
-.sveltecms .cms-editor-form {
-  max-width: 600px;
-}
 .sveltecms div.field {
   padding: .5em;
 }
@@ -162,5 +159,5 @@ td>.cms-helptext:hover { display:none; }
 }
 
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
-div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; padding:16px; }
-div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; padding:16px; }
+div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; }
+div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; }

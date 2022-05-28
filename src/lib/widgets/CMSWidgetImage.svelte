@@ -182,6 +182,7 @@ let result
       {multiple}
       disabled={field.disabled}
       required={field.required}
+      on:click|stopPropagation
       on:change={handleUpload}
       style="display:none"
     />

@@ -1,0 +1,44 @@
+{
+  "title": "Welcome",
+  "slug": "front",
+  "blocks": [
+    {
+      "slides": [
+        {
+          "heading": "CMS",
+          "text": "SvelteCMS lives in your repository and runs on your website."
+        },
+        {
+          "heading": "content",
+          "text": "SvelteCMS stores your content in markdown files, JSON objects, or databases. Mix, match, and even migrate[*](#_) providers with ease."
+        },
+        {
+          "heading": "hosting",
+          "text": "Build static, dynamic, or mixed sites for any provider that supports SvelteKit."
+        },
+        {
+          "heading": "media",
+          "text": "SvelteCMS integrates seamlessly[*](#_)  with many[*](#_) storage and streaming providers, taking the hassle out of managing your media."
+        },
+        {
+          "heading": "prototyping",
+          "text": "SvelteCMS builds speedy web apps with complex custom data structures--*no coding necessary*[*](#_)."
+        },
+        {
+          "heading": "plugins",
+          "text": "Extend SvelteCMS functionality with an ecosystem[*](#_) of plugins, or use its stable[*](#_) and elegant[*](#_) API to build your own."
+        },
+        {
+          "heading": "language",
+          "text": "For styling, SvelteCMS will accept Svelte components, markdown, tailwind[*](#_), sass[*](#_), or even plain old CSS."
+        },
+        {
+          "heading": "budget",
+          "text": "SvelteCMS is *100% free and open source*--and it always will be!"
+        }
+      ],
+      "_collectionType": "frontslides"
+    }
+  ],
+  "_slug": "front"
+}

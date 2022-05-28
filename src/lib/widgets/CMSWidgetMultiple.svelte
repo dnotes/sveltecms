@@ -26,14 +26,14 @@ import { cloneDeep } from "lodash-es";
 
 <fieldset class="cms-multiple" on:click|preventDefault>
   <!-- svelte-ignore a11y-label-has-associated-control -->
-  <label for="{id}[0]">{field.label}<label>
+  <label for="{id}[0]"><span>{field.label}</span></label>
   {#each value as v,i}
     <div class="cms-multiple-item" bind:this={formItems[i]}>
       {#if field.widget.type === 'collection'}
         <svelte:component
           this={CmsWidgetCollection}
           {field}
-          id={`${id}[${i}]`}
+          id="{id}[{i}]"
           bind:value={v}
           {cms}
         />
@@ -41,7 +41,7 @@ import { cloneDeep } from "lodash-es";
         <svelte:component
           this={field.widget.widget}
           {field}
-          id={`${id}[${i}]`}
+          id="{id}[{i}]"
           bind:value={v}
         />
       {/if}

@@ -57,14 +57,17 @@ const split = splitTags()
 <fieldset class="collection" class:oneline={opts?.oneline}>
 
   {#if isSelectable}
-    <select
-      name="{parentID}._collectionType"
-      bind:value={value['_collectionType']}
-    >
-      {#each collectionTypes as [id,collection]}
-        <option value="{id}">{id}</option>
-      {/each}
-    </select>
+    <label>
+      Collection:
+      <select
+        name="{parentID}._collectionType"
+        bind:value={value['_collectionType']}
+      >
+        {#each collectionTypes as [id,collection]}
+          <option value="{id}">{id}</option>
+        {/each}
+      </select>
+    </label>
   {/if}
 
   {#each Object.entries(collection?.fields || {}) as [id, field] }
@@ -72,18 +75,18 @@ const split = splitTags()
   <div class="field field-{field.id} {field?.class || ''}">
     {#if !field.hidden}
       {#if !field.widget.widget}
-        <CmsWidgetUndefined {field} id={`${parentID}.${id}`} />
+        <CmsWidgetUndefined {field} id="{parentID}.{id}" />
       {:else if field.multiple && !field.widget.handlesMultiple}
         <CmsWidgetMultiple
           {field}
-          id="{parentID}.{id}}"
+          id="{parentID}.{id}"
           bind:value={value[id]}
           {cms}
         />
       {:else if field.widget.type === 'collection'}
         <svelte:self
           {field}
-          id={`${parentID}.${id}`}
+          id="{parentID}.{id}"
           bind:value={value[id]}
           {cms}
         />
@@ -91,7 +94,7 @@ const split = splitTags()
         <svelte:component
           this={field.widget.widget}
           {field}
-          id={`${parentID}.${id}`}
+          id="{parentID}.{id}"
           bind:value={value[id]}
         />
       {/if}

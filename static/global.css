@@ -10,6 +10,8 @@ html body {
   margin:0; padding:0;
   --cms-font: Roboto, sans-serif;
   font-family: var(--cms-font);
+  --dark: #222;
+  --light: white;
 }
 
 a {

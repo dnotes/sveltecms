@@ -1,8 +1,9 @@
 <script lang="ts">
   import cms from '$lib/cms' // TODO: pare this down; we shouldn't need the full CMS
+  import type { Content } from 'sveltecms/core/ContentStore';
   export let contentTypeID
-  export let content
-  let contentType = cms.getContentType(contentTypeID)
+  export let content:Content
+  let contentType = cms.getContentType(contentTypeID || cms?.conf?.settings?.rootContentType?.toString())
   let displayComponent = cms.getDisplayComponent(contentType.displayComponent?.['type'] || contentType.displayComponent, 'content')
 </script>
 

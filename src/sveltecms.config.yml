@@ -1,4 +1,7 @@
 configPath: src/sveltecms.config.yml
+settings:
+  rootContentType: landingPage
+  frontPageSlug: front
 types:
   blog:
     slug: date,title
@@ -9,19 +12,23 @@ types:
       body: body
     displayComponent: content_BlogPost
   landingPage:
+    displayComponent: content_LandingPage
     fields:
-      title: title
+      title:
+        type: title
+        display: false
+      slug: slug
       blocks:
         type: collection
         multiple: true
         widget:
           type: collection
           options:
-            collectionTypes: block
+            collectionTypes: fullwidth
     contentStore:
       type: staticFiles
-      fileExtension: yml
-    slug: title
+      fileExtension: json
+    slug: slug
 contentStores: {}
 mediaStores:
   images:
@@ -37,49 +44,81 @@ fields:
     type: date
     required: true
   body: markdown
+  slideText:
+    type: markdown
+    widget: slideText
+  slug:
+    type: text
+    display: false
+  h1:
+    type: text
+    display: h1
   image:
     type: image
     mediaStore: images
+  style:
+    type: text
+    display: false
+    helptext: |-
+      This value will go within a style tag.
+      Example: "top:5%; width:30%; text-align:center;"
   button:
     type: collection
     display: element_Button
     fields:
       href:
         type: text
+        required: true
         helptext: If provided, the button will be rendered as a link that looks like a button.
       text:
         type: text
+        required: true
         helptext: The text that appears inside the <button> or <link> element.
       helptext:
         type: text
+        required: true
         helptext: Any help text that should be shown for screen readers or when hovering over the element.
-      primary: boolean
-      small: boolean
-      borderless: boolean
-      highlight: boolean
-      danger: boolean
-      submit: boolean
 widgets:
   date:
     type: date
     time: editable
   textarea:
     type: textarea
-    placeholder: ''
     rows: 15
     cols: 0
     autosize: false
+  slideText:
+    type: textarea
+    rows: 5
+    autosize: true
+  imageOnly:
+    type: image
+    altField: false
 collections:
   hero:
-    type: block
+    type: fullwidth
     fields:
-      image: image
-      title: title
-      subtitle:
-        type: title
-        display: h2
+      image:
+        type: image
+        widget: imageOnly
+      imageFilter: text
+      heading:
+        type: slideText
+        widget:
+          type: textarea
+          rows: 2
+      text: slideText
+      textStyle: style
+  frontslides:
+    type: fullwidth
+    fields:
+      slides:
+        type: collection
+        multiple: true
+        fields:
+          heading: text
+          text: slideText
   quoteBlock:
-    type: block
     fields:
       quote: markdown
 _slug: sveltecms.config

@@ -84,6 +84,7 @@ export type ConfigurableEntityType = EntityType & {
 
 export type CMSConfigSetting = {
   configPath?:string
+  settings?:ConfigSetting
   adminStore?:string|ContentStoreConfigSetting
   types?: {[key:string]: ContentTypeConfigSetting}
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
