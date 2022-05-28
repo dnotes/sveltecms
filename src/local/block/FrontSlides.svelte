@@ -14,7 +14,7 @@ import { onDestroy } from 'svelte';
     setTimeout(populate, 500)
   }
 
-  function next() {
+  function autonext() {
     if (i === slides.length - 1) i = -5
     else i++
   }
@@ -24,12 +24,13 @@ import { onDestroy } from 'svelte';
     text = slides?.[i]?.text || ''
   }
 
-  const interval = setInterval(next, 4200)
+  const timing = 4200
+  let interval = setInterval(autonext, timing)
   onDestroy(() => { clearInterval(interval) })
 
 </script>
 
-<section class="hero">
+<section class="hero" on:pointerenter="{()=>{clearInterval(interval)}}" on:pointerleave="{()=>{interval = setInterval(autonext, timing)}}">
 
   <div class="hero-content">
 
@@ -38,7 +39,7 @@ import { onDestroy } from 'svelte';
     <div class="hero-title">
       <div transition:fade>
         <h1>SvelteCMS</h1>
-        <h3 class="red big">It's&nbsp;<wbr/>really&nbsp;<wbr/>yours.</h3>
+        <h3 class="red big">it's&nbsp;<wbr/>really&nbsp;<wbr/>yours.</h3>
       </div>
     </div>
     {:else if i > -1}
@@ -53,7 +54,7 @@ import { onDestroy } from 'svelte';
     {/if}
 
     {#if text}
-      <div class="text" transition:fade|local>{@html text}</div>
+      <div class="text" transition:fade|local>{@html text.replace(/sveltecms/i, '<span class="red">SvelteCMS</span>')}</div>
     {/if}
 
     <!-- <Button {button}/> -->
@@ -61,7 +62,7 @@ import { onDestroy } from 'svelte';
 
   </div>
 
-  <div id="_">* statements are to some degree aspirational</div>
+  <div id="_"><span class="fn">*</span>&nbsp; statements are in some measure aspirational</div>
 </section>
 
 <style>
@@ -118,7 +119,14 @@ import { onDestroy } from 'svelte';
     position: absolute;
     right: 0;
     font-size: 5vh;
-    margin-top:-.5vh;
+    margin-top: -.5vh;
+  }
+  :global(.fn) {
+    display: inline-block;
+    position: absolute;
+    font-size: 80%;
+    margin-top: -.15em;
+    margin-left: -.1em;
   }
   #_ {
     position: absolute;
