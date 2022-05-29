@@ -24,3 +24,10 @@ a.action {
   border-color: var(--cms-action);
 }
 
+/* Some form items */
+.field-icon>fieldset { display:flex; flex-wrap:wrap; align-items:center; }
+.field-icon .cms-image-preview { display:block; }
+.field-icon .cms-image-preview>div { width:auto; height:auto; display:flex; align-items:center; }
+.field-icon .cms-image-preview img { width:24px; height:24px; }
+.field-icon .cms-image-preview .delete { position:static; }
+.field-icon .cms-image-preview input { flex-grow:1; }

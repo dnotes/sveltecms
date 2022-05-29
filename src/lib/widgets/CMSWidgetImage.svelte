@@ -302,7 +302,7 @@ let result
               >
             {/if}
 
-            <div class="close">
+            <div class="delete">
               <Button cancel
                 helptext="Delete image {i+1}: {value['alt'] || value['filename']}"
                 on:click="{() => {deleteImage(i)}}">&times;</Button>
@@ -318,7 +318,7 @@ let result
 
 </fieldset>
 
-<style>
+<style global>
 
 .cms-image-preview>div {
   position: relative;
@@ -331,7 +331,7 @@ let result
   object-fit:cover;
   object-position:center;
 }
-div.close {
+.cms-image-preview .delete {
   position: absolute;
   top: 8px;
   right: 8px;
