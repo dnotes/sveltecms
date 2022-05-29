@@ -1,5 +1,5 @@
 <script lang="ts">
-import { tick } from "svelte";
+import { onMount, tick } from "svelte";
 import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
 import type { WidgetField } from "..";
 import type SvelteCMS from "..";
@@ -12,7 +12,11 @@ import { cloneDeep } from "lodash-es";
   export let cms:SvelteCMS
 
   // For multiple collections, it is necessary to set the value to {}, otherwise SSR causes infinite loop
-  export let value = [field.fields ? {} : field.default]
+  export let value = [field.type === 'collection' ? {} : field.default]
+
+  let collectionsCollapsed = []
+  // We defer this so that child widgets can measure their height, e.g. for autosizing textareas
+  onMount(()=>{ collectionsCollapsed = value.map(i=>true)})
 
   let formItems:{[key:number]:HTMLElement} = {}
 
@@ -25,8 +29,9 @@ import { cloneDeep } from "lodash-es";
 </script>
 
 <fieldset class="cms-multiple" on:click|preventDefault>
-  <!-- svelte-ignore a11y-label-has-associated-control -->
-  <label for="{id}[0]"><span>{field.label}</span></label>
+
+  <legend>{field.label}</legend>
+
   {#each value as v,i}
     <div class="cms-multiple-item" bind:this={formItems[i]}>
       {#if field.widget.type === 'collection'}
@@ -36,6 +41,7 @@ import { cloneDeep } from "lodash-es";
           id="{id}[{i}]"
           bind:value={v}
           {cms}
+          bind:collapsed={collectionsCollapsed[i]}
         />
       {:else}
         <svelte:component
@@ -45,7 +51,7 @@ import { cloneDeep } from "lodash-es";
           bind:value={v}
         />
       {/if}
-      <div class="close">
+      <div class="delete">
         <Button cancel
           helptext="Remove {field.label} item"
           on:click={(e) => { value.splice(i,1); value=value; }}>&times;</Button>
@@ -56,7 +62,7 @@ import { cloneDeep } from "lodash-es";
 
 </fieldset>
 
-<style>
-  div.cms-multiple-item { position:relative; }
-  div.close { position:absolute; top:5px; right:5px; }
+<style global>
+  .sveltecms .cms-multiple-item { position:relative; }
+  .sveltecms .cms-multiple-item>.delete { position:absolute; top:.5em; right:.5em; }
 </style>

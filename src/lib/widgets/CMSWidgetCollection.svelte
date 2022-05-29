@@ -3,8 +3,10 @@ import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
 import type { WidgetField, WidgetFieldCollection } from "sveltecms";
 import type SvelteCMS from 'sveltecms';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, get } from 'lodash-es';
 import splitTags from 'sveltecms/utils/splitTags'
+import Field from 'sveltecms/display/Field.svelte';
+import Button from 'sveltecms/ui/Button.svelte';
 const split = splitTags()
 
   let parentField:WidgetField
@@ -12,6 +14,7 @@ const split = splitTags()
   export { parentField as field, parentID as id }
   export let cms:SvelteCMS
   export let value = {}
+  export let collapsed
 
   let originalValue = Object.assign({}, value)
 
@@ -31,6 +34,11 @@ const split = splitTags()
   let collection:WidgetFieldCollection
 
   let isSelectable = [...opts.collections, ...opts.collectionTypes].length
+
+  let label = parentField.label
+  $: if (parentField.multipleLabelFields && value) label = Array.isArray(parentField.multipleLabelFields) ?
+    parentField.multipleLabelFields.map(s=>s?.toString()) :
+    split(parentField?.multipleLabelFields?.toString()).map(id => get(value, id) ?? id).join(', ')
 
   $: collectionTypes = Object.entries(cms.collections)
     .filter(([id,collection])=>opts.collectionTypes.includes(collection?.['type']) || opts.collections.includes(id))
@@ -54,11 +62,13 @@ const split = splitTags()
 
 </script>
 
-<fieldset class="collection" class:oneline={opts?.oneline}>
+<fieldset class="collection" class:oneline={opts?.oneline} class:collapsed>
+
+  <legend><Button highlight on:click={()=>{collapsed=!collapsed}}>{label}</Button></legend>
 
   {#if isSelectable}
-    <label>
-      Collection:
+    <label class="collection-type">
+      Collection Type:
       <select
         name="{parentID}._collectionType"
         bind:value={value['_collectionType']}
@@ -107,3 +117,25 @@ const split = splitTags()
   {/each}
 
 </fieldset>
+
+<style global>
+  .sveltecms fieldset.collection>.collection-type {
+    background: var(--cms-main);
+    color: var(--cms-background);
+  }
+  .sveltecms fieldset.collection {
+    background: var(--cms-main);
+  }
+  .sveltecms fieldset.collection .field {
+    background: var(--cms-background);
+  }
+  .sveltecms fieldset.collection.collapsed {
+    background: transparent;
+    border-top: 3px solid var(--cms-main);
+  }
+  .sveltecms fieldset.collection>legend { padding: .4em; }
+  .sveltecms fieldset.collection.collapsed .field,
+  .sveltecms fieldset.collection.collapsed>.collection-type {
+    display: none;
+  }
+</style>

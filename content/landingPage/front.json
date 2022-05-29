@@ -6,35 +6,67 @@
       "slides": [
         {
           "heading": "CMS",
-          "text": "SvelteCMS lives in your repository and runs on your website."
+          "text": "SvelteCMS lives in your repository and runs on your website.",
+          "icon": {
+            "src": "/images/icons/device-desktop.png",
+            "alt": "SvelteCMS is your content management system"
+          }
         },
         {
           "heading": "content",
-          "text": "SvelteCMS stores your content in markdown files, JSON objects, or databases; mix, match, and even migrate[*](#_){.fn} between providers with ease."
+          "text": "SvelteCMS stores your content in markdown files, JSON objects, or databases; mix, match, and even migrate[*](#_){.fn} between providers with ease.",
+          "icon": {
+            "src": "/images/icons/file-description.png",
+            "alt": "SvelteCMS stores your data"
+          }
         },
         {
           "heading": "hosting",
-          "text": "Build static, dynamic, or hybrid sites for any provider that supports SvelteKit."
+          "text": "Build static, dynamic, or hybrid sites that can be hosted on any provider.",
+          "icon": {
+            "src": "/images/icons/server-2.png",
+            "alt": "SvelteCMS lets you choose your hosting provider"
+          }
         },
         {
           "heading": "media",
-          "text": "SvelteCMS integrates seamlessly[*](#_){.fn}  with many[*](#_){.fn} storage and streaming providers, taking the hassle out of managing your media."
+          "text": "SvelteCMS integrates seamlessly[*](#_){.fn}  with many[*](#_){.fn} storage and streaming providers, taking the hassle out of managing your media.",
+          "icon": {
+            "src": "/images/icons/photo.png",
+            "alt": "SvelteCMS helps you manage your media"
+          }
         },
         {
           "heading": "prototypes",
-          "text": "SvelteCMS builds speedy web apps with complex custom data structures --- *no[*](#_){.fn} coding necessary*."
+          "text": "SvelteCMS builds speedy web apps with complex custom data structures --- *no[*](#_){.fn} coding necessary*.",
+          "icon": {
+            "src": "/images/icons/layout-board.png",
+            "alt": "SvelteCMS gets your project up and running quickly"
+          }
         },
         {
           "heading": "plugins",
-          "text": "Extend SvelteCMS functionality with an ecosystem[*](#_){.fn} of plugins, or use its stable[*](#_){.fn} and elegant[*](#_){.fn} API to build your own."
+          "text": "Extend SvelteCMS functionality with an ecosystem[*](#_){.fn} of plugins, or use its stable[*](#_){.fn} and elegant[*](#_){.fn} API to build your own.",
+          "icon": {
+            "src": "/images/icons/plug-connected.png",
+            "alt": "SvelteCMS has a powerful system for plugins"
+          }
         },
         {
-          "heading": "tools",
-          "text": "For styling and layout, SvelteCMS uses Svelte components, markdown, tailwind[*](#_){.fn}, sass[*](#_){.fn}, or even plain old CSS."
+          "heading": "tooling",
+          "text": "SvelteCMS lets you use the tools you know: Svelte components, markdown, tailwind[*](#_){.fn}, sass[*](#_){.fn}, or even plain old HTML and CSS.",
+          "icon": {
+            "src": "/images/icons/code.png",
+            "alt": "SvelteCMS lets you use your coding tools"
+          }
         },
         {
           "heading": "budget",
-          "text": "SvelteCMS is *100% free and open source* --- and it always[*](#_){.fn} will be!"
+          "text": "SvelteCMS is *100% free and open source* --- and it always will be!",
+          "icon": {
+            "src": "/images/icons/cash-banknote.png",
+            "alt": "SvelteCMS fits your budget"
+          }
         }
       ],
       "_collectionType": "frontslides"

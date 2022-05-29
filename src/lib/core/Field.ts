@@ -7,7 +7,7 @@ import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } f
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
 import { DisplayConfig, type DisplayConfigSetting } from './Display'
 
-import { getLabelFromID } from 'sveltecms/utils'
+import { getLabelFromID, splitTags } from 'sveltecms/utils'
 import type { AdminCollectionConfigSetting } from './Collection'
 
 export type FieldConfigSetting = {
@@ -20,7 +20,7 @@ export type FieldConfigSetting = {
   disabled?: boolean|ScriptFunctionConfigSetting
   hidden?: boolean|ScriptFunctionConfigSetting
   multiple?: boolean|ScriptFunctionConfigSetting
-  multipleLabel?: string|ScriptFunctionConfigSetting
+  multipleLabelFields?: string|string[]|ScriptFunctionConfigSetting
   multipleMin?: number|ScriptFunctionConfigSetting
   multipleMax?: number|ScriptFunctionConfigSetting
   fields?: {[key:string]:string|FieldConfigSetting}
@@ -96,7 +96,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   // implemented only in Multiple and Collection widgets
   // implement as needed in custom widgets
   multiple?: boolean|ScriptFunctionConfig
-  multipleLabel?: boolean|ScriptFunctionConfig
+  multipleLabelFields?: string|string[]|ScriptFunctionConfig
   multipleMin?: number|ScriptFunctionConfig
   multipleMax?: number|ScriptFunctionConfig
 
@@ -135,7 +135,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.value = parseScript(conf.value) ?? conf.value
       this.helptext = parseScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '')
       this.multiple = parseScript(conf.multiple) ?? (conf.multiple ? true : false)
-      this.multipleLabel = parseScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false)
+      this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? conf.multipleLabelFields
       this.multipleMin = parseScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))
       this.multipleMax = parseScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax))
 

@@ -21,6 +21,7 @@ types:
       blocks:
         type: collection
         multiple: true
+        multipleLabelFields: _collectionType
         widget:
           type: collection
           options:
@@ -35,6 +36,10 @@ mediaStores:
     type: staticFiles
     mediaDirectory: images
     allowMediaTypes: image/jpeg, image/png, image/gif
+  icons:
+    type: staticFiles
+    mediaDirectory: images/icons
+    allowMediaTypes: image/png
 fields:
   title:
     type: text
@@ -115,9 +120,13 @@ collections:
       slides:
         type: collection
         multiple: true
+        multipleLabelFields: heading
         fields:
           heading: text
           text: slideText
+          icon:
+            type: image
+            mediaStore: icons
   quoteBlock:
     fields:
       quote: markdown

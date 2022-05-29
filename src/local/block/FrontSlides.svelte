@@ -1,5 +1,5 @@
 <script lang="ts">
-import { fade, fly } from 'svelte/transition'
+import { fade, fly, slide } from 'svelte/transition'
 import { onDestroy } from 'svelte';
 
   export let slides
@@ -31,6 +31,21 @@ import { onDestroy } from 'svelte';
 </script>
 
 <section class="hero" on:pointerenter="{()=>{clearInterval(interval)}}" on:pointerleave="{()=>{interval = setInterval(autonext, timing)}}">
+
+  <div class="hero-links">
+    {#each slides as slide, idx}
+      {#if slide?.icon?.src}
+        <img
+          on:click={()=>{ clearInterval(interval); i=idx; }}
+          class:on={idx === i}
+          src="{slide.icon.src}"
+          alt="{slide.icon?.alt || ''}"
+          title="{slide.icon?.alt || ''}"
+        >
+      {/if}
+    {/each}
+    &nbsp;<span class="red">SvelteCMS</span>
+  </div>
 
   <div class="hero-content">
 
@@ -84,6 +99,24 @@ import { onDestroy } from 'svelte';
 
     background-image: url(/images/pexels-andrea-piacquadio-3861923.jpg);
     filter: contrast(1.3) saturate(1.2);
+  }
+  .hero-links {
+    position: absolute;
+    bottom: 1.4em;
+    right: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .hero-links img {
+    height: 24px;
+    width: 24px;
+    opacity: .5;
+    cursor: pointer;
+  }
+  .hero-links .on {
+    filter:invert(.44) sepia() saturate(2.1) hue-rotate(-55deg);
+    opacity: 1;
   }
   .hero-content {
     position: absolute;

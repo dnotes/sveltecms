@@ -20,7 +20,7 @@ const splitter = /\s*,\s*/g
 export const FieldPropsAllowFunctions = [
   'label', 'helptext', 'required', 'disabled',
   'hidden', 'class', 'default', // TODO: 'value',
-  'multiple', 'multipleLabel', 'multipleMin', 'multipleMax',
+  'multiple', 'multipleLabelFields', 'multipleMin', 'multipleMax',
 ]
 
 export const cmsConfigurables = [

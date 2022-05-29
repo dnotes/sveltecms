@@ -158,6 +158,17 @@ td>.cms-helptext:hover { display:none; }
   width: 100%;
 }
 
+.sveltecms fieldset {
+  border: none;
+  margin: .4em 0;
+  border-radius: .5em;
+}
+.sveltecms fieldset.collapsed { border-radius: 0; }
+.sveltecms fieldset>legend {
+  padding: .2em;
+  border-radius: .3em .3em 0 0;
+}
+
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
 div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; }
 div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; }

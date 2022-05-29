@@ -461,6 +461,19 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
       }
     }
   },
+  length: {
+    id: 'length',
+    fn: (vars, opts) => {
+      return opts?.value?.length || 0
+    },
+    optionFields: {
+      value: {
+        type: 'text',
+        default: '',
+        helptext: 'A string or array for which to get the number of characters or items.'
+      }
+    }
+  },
   listEntities: {
     id: 'listEntities',
     admin: true,
