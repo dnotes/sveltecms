@@ -64,6 +64,15 @@ export const adminPages:AdminPageConfig[] = [
     }
   },
   {
+    id: 'widgets',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigEntityList',
+      },
+    },
+  },
+  {
     id: 'fields',
     component: {
       type: 'CMSConfigForm',
@@ -73,13 +82,13 @@ export const adminPages:AdminPageConfig[] = [
     },
   },
   {
-    id: 'widgets',
+    id: 'fieldgroups',
     component: {
       type: 'CMSConfigForm',
       options: {
         component: 'CMSConfigEntityList',
-      },
-    },
+      }
+    }
   },
   {
     id: 'contentTypes',
@@ -130,13 +139,4 @@ export const adminPages:AdminPageConfig[] = [
       if (event) return saveContentEndpoint(cms, cms.admin, event.request)
     }
   },
-  {
-    id: 'fieldgroups',
-    component: {
-      type: 'CMSConfigForm',
-      options: {
-        component: 'CMSConfigEntityList',
-      }
-    }
-  }
 ]
