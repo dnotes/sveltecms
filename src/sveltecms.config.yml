@@ -25,7 +25,7 @@ contentTypes:
         widget:
           type: fieldgroup
           options:
-            fieldgroups: fullwidth
+            fieldgroupTypes: fullwidth
     contentStore:
       type: staticFiles
       fileExtension: json
