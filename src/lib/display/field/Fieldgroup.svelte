@@ -2,15 +2,15 @@
 import type SvelteCMS from "sveltecms";
 import type { Field,FieldConfigSetting } from "sveltecms/core/Field";
 import Content from 'sveltecms/display/Content.svelte';
-import Collection from "sveltecms/core/Collection";
+import Fieldgroup from "sveltecms/core/Fieldgroup";
 
   export let cms:SvelteCMS
   export let field:Field|FieldConfigSetting
   export let value
 
-  $: collectionType = value?._collectionType || false
-  $: entity = collectionType ?
-              new Collection(collectionType, cms) :
+  $: fieldgroup = value?._fieldgroup || false
+  $: entity = fieldgroup ?
+              new Fieldgroup(fieldgroup, cms) :
               field
 
 </script>

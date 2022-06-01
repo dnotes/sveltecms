@@ -1,4 +1,4 @@
-import type { CMSPluginBuilder } from 'sveltecms'
+import type { CMSPlugin, CMSPluginBuilder } from 'sveltecms'
 import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field'
 import type { MediaStoreType } from 'sveltecms/core/MediaStore'
 import { initializeApp } from 'firebase/app'
@@ -31,7 +31,7 @@ const defaultOptions = {
 }
 
 
-const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:MediaStoreType[]} => {
+const storageBuilder:CMSPluginBuilder = (options:PluginOptions):CMSPlugin => {
 
   const opts = merge({}, defaultOptions, options)
 
@@ -42,7 +42,7 @@ const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:Med
       helptext: 'The path, within your storage bucket, at which to save or retrieve content.',
     },
     firebaseConfig: {
-      type: "collection",
+      type: "fieldgroup",
       default: {},
       helptext: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
       fields: {
@@ -94,6 +94,7 @@ const storageBuilder:CMSPluginBuilder = (options:PluginOptions):{mediaStores:Med
   }
 
   return {
+    id: 'firebaseStorage',
     mediaStores: [
       {
         id: 'firebaseStorage',

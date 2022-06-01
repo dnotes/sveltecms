@@ -37,7 +37,7 @@ export const transformers:{[id:string]:Transformer} = {
   //       helptext: "The locale to display the date, e.g. 'en-US', or empty to display in client's locale."
   //     },
   //     dateFormatOptions: {
-  //       type: 'collection',
+  //       type: 'fieldgroup',
   //       default: {},
   //       fields: {
   //         timeZone: {

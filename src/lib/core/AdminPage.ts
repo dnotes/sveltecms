@@ -101,7 +101,7 @@ export const adminPages:AdminPageConfig[] = [
   //   configPath: 'lists',
   //   component: CMSConfigList,
   //   options: {
-  //     collection: 'listConfig',
+  //     fieldgroup: 'listConfig',
   //     stringField: 'tags',
   //   }
   // },
@@ -131,7 +131,7 @@ export const adminPages:AdminPageConfig[] = [
     }
   },
   {
-    id: 'collections',
+    id: 'fieldgroups',
     component: {
       type: 'CMSConfigForm',
       options: {

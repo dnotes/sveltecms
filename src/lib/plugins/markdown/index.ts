@@ -21,6 +21,7 @@ const pluginBuilder:CMSPluginBuilder = (config:{
   }
 
   const plugin:CMSPlugin = {
+    id: 'markdown',
     transformers: [
       {
         id: 'markdown',

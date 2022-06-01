@@ -19,8 +19,8 @@ import frontslides from '$lib/block/FrontSlides.svelte'
 
 {#if content.blocks && Array.isArray(content.blocks)}
   {#each content.blocks as item}
-    {#if components[item?.['_collectionType']]}
-      <svelte:component this={components[item['_collectionType']]} {...item} />
+    {#if components[item?.['_fieldgroup']]}
+      <svelte:component this={components[item['_fieldgroup']]} {...item} />
     {/if}
   {/each}
 {/if}

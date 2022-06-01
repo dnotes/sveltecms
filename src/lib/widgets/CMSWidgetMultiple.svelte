@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount, tick } from "svelte";
-import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
+import CmsWidgetFieldgroup from "./CMSWidgetFieldgroup.svelte";
 import type { WidgetField } from "..";
 import type SvelteCMS from "..";
 import Button from "sveltecms/ui/Button.svelte";
@@ -11,12 +11,12 @@ import { cloneDeep } from "lodash-es";
 
   export let cms:SvelteCMS
 
-  // For multiple collections, it is necessary to set the value to {}, otherwise SSR causes infinite loop
-  export let value = [field.type === 'collection' ? {} : field.default]
+  // For multiple fieldgroups, it is necessary to set the value to {}, otherwise SSR causes infinite loop
+  export let value = [field.type === 'fieldgroup' ? {} : field.default]
 
-  let collectionsCollapsed = []
+  let fieldgroupsCollapsed = []
   // We defer this so that child widgets can measure their height, e.g. for autosizing textareas
-  onMount(()=>{ collectionsCollapsed = value.map(i=>true)})
+  onMount(()=>{ fieldgroupsCollapsed = value.map(i=>true)})
 
   let formItems:{[key:number]:HTMLElement} = {}
 
@@ -34,14 +34,14 @@ import { cloneDeep } from "lodash-es";
 
   {#each value as v,i}
     <div class="cms-multiple-item" bind:this={formItems[i]}>
-      {#if field.widget.type === 'collection'}
+      {#if field.widget.type === 'fieldgroup'}
         <svelte:component
-          this={CmsWidgetCollection}
+          this={CmsWidgetFieldgroup}
           {field}
           id="{id}[{i}]"
           bind:value={v}
           {cms}
-          bind:collapsed={collectionsCollapsed[i]}
+          bind:collapsed={fieldgroupsCollapsed[i]}
         />
       {:else}
         <svelte:component

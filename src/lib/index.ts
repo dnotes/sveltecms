@@ -4,7 +4,7 @@ import { widgetTypes, type WidgetType, type WidgetConfigSetting } from './core/W
 import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType"
 import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
 import type { Content, ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
-import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection, collectionTypes } from './core/Collection'
+import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, fieldgroups } from './core/Fieldgroup'
 import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
 import type { ComponentType, ComponentConfigSetting, Component } from 'sveltecms/core/Component'
@@ -31,7 +31,7 @@ export const cmsConfigurables = [
   'mediaStores',
   'fields',
   'widgets',
-  'collections',
+  'fieldgroups',
   'transformers'
 ]
 
@@ -92,7 +92,7 @@ export type CMSConfigSetting = {
   mediaStores?: {[key:string]: MediaStoreConfigSetting}
   fields?: {[key:string]: FieldConfigSetting}
   widgets?: {[key:string]: WidgetConfigSetting}
-  collections?: {[key:string]: CollectionConfigSetting}
+  fieldgroups?: {[key:string]: FieldgroupConfigSetting}
   transformers?: {[key:string]: TransformerConfigSetting}
   components?: {[key:string]: ComponentConfigSetting}
 }
@@ -102,9 +102,9 @@ export default class SvelteCMS {
   conf:CMSConfigSetting = {}
   admin: ContentType
   adminPages?: {[key:string]:AdminPageConfig} = {}
-  adminCollections?: {[key:string]:AdminCollectionConfigSetting} = {}
+  adminFieldgroups?: {[key:string]:AdminFieldgroupConfigSetting} = {}
   fields:{[key:string]:FieldConfigSetting} = {}
-  collections: {[key:string]:CollectionConfigSetting} = {}
+  fieldgroups: {[key:string]:FieldgroupConfigSetting} = {}
   components: {[key:string]:ComponentType} = {}
   widgets:{[key:string]:WidgetConfigSetting} = {}
   scriptFunctions:{[key:string]:ScriptFunctionType} = scriptFunctions
@@ -122,8 +122,8 @@ export default class SvelteCMS {
     displayComponents.forEach(c => {
       this.components[c.id] = c
     })
-    collectionTypes.forEach(c => {
-      this.collections[c.id] = c
+    fieldgroups.forEach(c => {
+      this.fieldgroups[c.id] = c
     })
     plugins.forEach(p => this.use(p))
 
@@ -135,7 +135,7 @@ export default class SvelteCMS {
     });
 
     // Initialize all of the stores, widgets, and transformers specified in config
-    ['contentStores', 'mediaStores', 'transformers', 'components', 'collections'].forEach(objectType => {
+    ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups'].forEach(objectType => {
       if (conf?.[objectType]) {
         Object.entries(conf[objectType]).forEach(([id,settings]) => {
 
@@ -192,7 +192,7 @@ export default class SvelteCMS {
       },
       fields: {
         configPath:'text',
-        ...Object.fromEntries(cmsConfigurables.map(k => [k, 'collection']))
+        ...Object.fromEntries(cmsConfigurables.map(k => [k, 'fieldgroup']))
       }
     }, this)
 
@@ -201,16 +201,16 @@ export default class SvelteCMS {
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
-    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','collections'].forEach(k => {
-      plugin?.[k]?.forEach(conf => {
-        try {
+    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups'].forEach(k => {
+      try {
+        plugin?.[k]?.forEach(conf => {
           this[k][conf.id] = conf
-        }
-        catch(e) {
-          console.error(this)
-          throw e
-        }
-      })
+        })
+      }
+      catch(e) {
+        e.message = `Plugin ${plugin.id} failed loading ${k}\n${e.message}`
+        throw e
+      }
     });
 
     // This allows plugins to update existing widgets to work with provided fields. See markdown plugin.
@@ -220,22 +220,22 @@ export default class SvelteCMS {
 
   }
 
-  preMount(fieldableEntity:ContentType|Field|Collection, values:Object) {
+  preMount(fieldableEntity:ContentType|Field|Fieldgroup, values:Object) {
     let res = {} // variable for result
     Object.entries(fieldableEntity?.fields || {}).forEach(([id,field]) => {
       try {
-        // For collections, or other fieldable field types (e.g. possibly image)
-        if ((field.type === 'collection' || field?.fields) && values?.[id]) {
+        // For fieldgroups, or other fieldable field types (e.g. possibly image)
+        if ((field.type === 'fieldgroup' || field?.fields) && values?.[id]) {
           if (Array.isArray(values[id])) {
             res[id] = []
             for (let i=0;i<values[id].length;i++) {
-              // find the actual fields, in case it is a collection that can be selected on the widget during editing
-              let container = values[id][i]._collectionType ? new Collection(values[id][i]._collectionType, this) : field
+              // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
+              let container = values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
               res[id][i] = this.preMount(container, values[id][i])
             }
           }
           else {
-            let container = values[id]._collectionType ? new Collection(values[id]._collectionType, this) : field
+            let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field
             res[id] = this.preMount(container, values?.[id])
           }
         }
@@ -251,22 +251,22 @@ export default class SvelteCMS {
     return res
   }
 
-  preSave(fieldableEntity:ContentType|Field|Collection, values:Object) {
+  preSave(fieldableEntity:ContentType|Field|Fieldgroup, values:Object) {
     let res = {}
     Object.entries(fieldableEntity?.fields || {}).forEach(([id,field]) => {
       try {
-        // For collections (as above)
-        if ((field.type === 'collection' || field?.fields) && values?.[id]) {
+        // For fieldgroups (as above)
+        if ((field.type === 'fieldgroup' || field?.fields) && values?.[id]) {
           res[id] = []
           if (Array.isArray(values[id])) {
             for (let i=0;i<values[id].length;i++) {
-              // find the actual fields, in case it is a collection that can be selected on the widget during editing
-              let container = values[id][i]._collectionType ? new Collection(values[id][i]._collectionType, this) : field
+              // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
+              let container = values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
               res[id][i] = this.preSave(container, values[id][i])
             }
           }
           else {
-            let container = values[id]._collectionType ? new Collection(values[id]._collectionType, this) : field
+            let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field
             res[id] = this.preSave(container, values?.[id])
           }
         }
@@ -309,15 +309,15 @@ export default class SvelteCMS {
       case 'lists':
       case 'contentStores':
       case 'mediaStores':
-      case 'collections':
+      case 'fieldgroups':
       case 'transformers':
       case 'components':
         return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']))
       default:
         return [
           'adminPages',
-          'collections',
-          'adminCollections',
+          'fieldgroups',
+          'adminFieldgroups',
           'components',
           'contentStores',
           'fields',
@@ -514,10 +514,10 @@ export default class SvelteCMS {
   }
 
   getWidgetFields(
-    collection:FieldableEntity,
+    fieldgroup:FieldableEntity,
     vars:{ values:any, errors:any, touched:any, id?:string },
-  ):WidgetFieldCollection {
-    let c = cloneDeep(collection)
+  ):WidgetFieldFieldgroup {
+    let c = cloneDeep(fieldgroup)
     // @ts-ignore
     c.eventListeners = []
     Object.keys(c?.fields || {}).forEach(id => {
@@ -636,10 +636,10 @@ export default class SvelteCMS {
     }
   }
 
-  getEntityConfigCollection(type:string, id:string) {
+  getEntityConfigFieldgroup(type:string, id:string) {
     let entityType = this.getEntityType(type, id)
     // Check that there are option fields, otherwise it's moot
-    if (!entityType?.optionFields) return new Collection({ id:`entityType_${type}`, fields:{} }, this)
+    if (!entityType?.optionFields) return new Fieldgroup({ id:`entityType_${type}`, fields:{} }, this)
     // Clone the optionFields so that we can change the default values
     let optionFields = Object.assign({}, entityType.optionFields)
     // Get a list of options
@@ -648,7 +648,7 @@ export default class SvelteCMS {
     let defaults = this.getEntityConfig(type, id, options)
     // Set the defaults for optionFields
     options.forEach(k => { optionFields[k].default = defaults[k] })
-    return new Collection({
+    return new Fieldgroup({
       id:`entityType_${type}`,
       fields: optionFields,
     }, this)
@@ -705,7 +705,7 @@ export type WidgetField = Field & {
   multipleMax?:number
 }
 
-export type WidgetFieldCollection = {
+export type WidgetFieldFieldgroup = {
   fields: {[id:string]: WidgetField}
   [key:string]:any
 }
@@ -724,14 +724,15 @@ export function getConfigPathFromValuePath(path:string):string {
 export type ConfigSetting = {[key:string]: string|number|boolean|null|undefined|ConfigSetting|Array<string|number|ConfigSetting>}
 
 export type CMSPlugin = {
+  id: string
   adminPages?: AdminPageConfig[]
   fieldTypes?: FieldType[]
   widgetTypes?: WidgetType[]
   transformers?: Transformer[]
   contentStores?: ContentStoreType[]
   mediaStores?: MediaStoreType[]
-  collections?: CollectionConfigSetting[]
-  adminCollections?: CollectionConfigSetting[]
+  fieldgroups?: FieldgroupConfigSetting[]
+  adminFieldgroups?: FieldgroupConfigSetting[]
   components?: Array<ComponentType|ComponentConfigSetting>
   lists?: CMSListConfig
   optionFields?:{[key:string]:ConfigFieldConfigSetting}

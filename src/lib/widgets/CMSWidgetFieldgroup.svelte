@@ -1,7 +1,7 @@
 <script lang="ts">
 import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
-import type { WidgetField, WidgetFieldCollection } from "sveltecms";
+import type { WidgetField, WidgetFieldFieldgroup } from "sveltecms";
 import type SvelteCMS from 'sveltecms';
 import { cloneDeep, get } from 'lodash-es';
 import splitTags from 'sveltecms/utils/splitTags'
@@ -14,37 +14,37 @@ const split = splitTags()
   export { parentField as field, parentID as id }
   export let cms:SvelteCMS
   export let value = {}
-  export let collapsed
+  export let collapsed = undefined
 
   let originalValue = Object.assign({}, value)
 
-  let collections = typeof parentField.widget.options.collections === 'string' ?
-    split(parentField.widget.options.collections) :
-    (parentField.widget.options.collections || [])
-  let collectionTypes = typeof parentField.widget.options.collectionTypes === 'string' ?
-    split(parentField.widget.options.collectionTypes) :
-    (parentField.widget.options.collectionTypes || [])
+  let fieldgroups = typeof parentField.widget.options.fieldgroups === 'string' ?
+    split(parentField.widget.options.fieldgroups) :
+    (parentField.widget.options.fieldgroups || [])
+  let fieldgroupTypes = typeof parentField.widget.options.fieldgroupTypes === 'string' ?
+    split(parentField.widget.options.fieldgroupTypes) :
+    (parentField.widget.options.fieldgroupTypes || [])
   let opts:{
-    collections:string[]
-    collectionTypes:string[]
+    fieldgroups:string[]
+    fieldgroupTypes:string[]
     oneline?:boolean
-  } = Object.assign({}, parentField.widget.options, { collections, collectionTypes })
+  } = Object.assign({}, parentField.widget.options, { fieldgroups, fieldgroupTypes })
 
   let parentFieldProxy:WidgetField = cloneDeep(parentField)
-  let collection:WidgetFieldCollection
+  let fieldgroup:WidgetFieldFieldgroup
 
-  let isSelectable = [...opts.collections, ...opts.collectionTypes].length
+  let isSelectable = [...opts.fieldgroups, ...opts.fieldgroupTypes].length
 
   let label = parentField.label
   $: if (parentField.multipleLabelFields && value) label = Array.isArray(parentField.multipleLabelFields) ?
     parentField.multipleLabelFields.map(s=>s?.toString()) :
     split(parentField?.multipleLabelFields?.toString()).map(id => get(value, id) ?? id).join(', ')
 
-  $: collectionTypes = Object.entries(cms.collections)
-    .filter(([id,collection])=>opts.collectionTypes.includes(collection?.['type']) || opts.collections.includes(id))
+  $: fieldgroupTypes = Object.entries(cms.fieldgroups)
+    .filter(([id,fieldgroup])=>opts.fieldgroupTypes.includes(fieldgroup?.['type']) || opts.fieldgroups.includes(id))
 
-  $: selectedFields = value?.['_collectionType'] ?
-      (cms.collections?.[value['_collectionType']]?.fields || {}) :
+  $: selectedFields = value?.['_fieldgroup'] ?
+      (cms.fieldgroups?.[value['_fieldgroup']]?.fields || {}) :
       {}
 
   $: if (selectedFields) parentFieldProxy.fields = Object.assign(
@@ -53,7 +53,7 @@ const split = splitTags()
     selectedFields || {}
   )
 
-  $: if (parentFieldProxy.fields || parentField.values || parentField.errors || parentField.touched ) collection = cms.getWidgetFields(parentFieldProxy, {
+  $: if (parentFieldProxy.fields || parentField.values || parentField.errors || parentField.touched ) fieldgroup = cms.getWidgetFields(parentFieldProxy, {
     values: parentField.values,
     errors: parentField.errors,
     touched: parentField.touched,
@@ -62,25 +62,25 @@ const split = splitTags()
 
 </script>
 
-<fieldset class="collection" class:oneline={opts?.oneline} class:collapsed>
+<fieldset class="fieldgroup" class:oneline={opts?.oneline} class:collapsed>
 
   <legend><Button highlight on:click={()=>{collapsed=!collapsed}}>{label}</Button></legend>
 
   {#if isSelectable}
-    <label class="collection-type">
-      Collection Type:
+    <label class="fieldgroup-type">
+      Fieldgroup Type:
       <select
-        name="{parentID}._collectionType"
-        bind:value={value['_collectionType']}
+        name="{parentID}._fieldgroup"
+        bind:value={value['_fieldgroup']}
       >
-        {#each collectionTypes as [id,collection]}
+        {#each fieldgroupTypes as [id,fieldgroup]}
           <option value="{id}">{id}</option>
         {/each}
       </select>
     </label>
   {/if}
 
-  {#each Object.entries(collection?.fields || {}) as [id, field] }
+  {#each Object.entries(fieldgroup?.fields || {}) as [id, field] }
 
   <div class="field field-{field.id} {field?.class || ''}">
     {#if !field.hidden}
@@ -93,7 +93,7 @@ const split = splitTags()
           bind:value={value[id]}
           {cms}
         />
-      {:else if field.widget.type === 'collection'}
+      {:else if field.widget.type === 'fieldgroup'}
         <svelte:self
           {field}
           id="{parentID}.{id}"
@@ -119,23 +119,23 @@ const split = splitTags()
 </fieldset>
 
 <style global>
-  .sveltecms fieldset.collection>.collection-type {
+  .sveltecms fieldset.fieldgroup>.fieldgroup-type {
     background: var(--cms-main);
     color: var(--cms-background);
   }
-  .sveltecms fieldset.collection {
+  .sveltecms fieldset.fieldgroup {
     background: var(--cms-main);
   }
-  .sveltecms fieldset.collection .field {
+  .sveltecms fieldset.fieldgroup .field {
     background: var(--cms-background);
   }
-  .sveltecms fieldset.collection.collapsed {
+  .sveltecms fieldset.fieldgroup.collapsed {
     background: transparent;
     border-top: 3px solid var(--cms-main);
   }
-  .sveltecms fieldset.collection>legend { padding: .4em; }
-  .sveltecms fieldset.collection.collapsed .field,
-  .sveltecms fieldset.collection.collapsed>.collection-type {
+  .sveltecms fieldset.fieldgroup>legend { padding: .4em; }
+  .sveltecms fieldset.fieldgroup.collapsed .field,
+  .sveltecms fieldset.fieldgroup.collapsed>.fieldgroup-type {
     display: none;
   }
 </style>

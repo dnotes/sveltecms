@@ -6,7 +6,7 @@ import Field from "sveltecms/display/Content.svelte"
 import Image from "sveltecms/display/field/Image.svelte"
 import File from "sveltecms/display/field/File.svelte"
 import Element from "sveltecms/display/field/Element.svelte"
-import Collection from "sveltecms/display/field/Collection.svelte"
+import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte"
 import type SvelteCMS from "sveltecms"
 
 export type DisplayConfigSetting = ConfigurableEntityConfigSetting & {
@@ -36,5 +36,5 @@ export const displayComponents:ComponentType[] = [
   { id: 'field_element', component: Element },
   { id: 'field_image', component: Image },
   { id: 'field_file', component: File },
-  { id: 'field_collection', component: Collection },
+  { id: 'field_fieldgroup', component: Fieldgroup },
 ]

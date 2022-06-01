@@ -3,7 +3,7 @@ import type { ConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntity
 import type SvelteCMS from "sveltecms";
 import Modal from 'sveltecms/ui/Modal.svelte'
 import Button from 'sveltecms/ui/Button.svelte'
-import CmsFieldCollection from "sveltecms/CMSFieldCollection.svelte";
+import CmsFieldGroup from "sveltecms/CMSFieldGroup.svelte";
 import { isEqual, isNull } from "lodash-es";
 import { createEventDispatcher } from "svelte";
 import yaml from 'js-yaml';
@@ -33,7 +33,7 @@ import yaml from 'js-yaml';
   const dispatch = createEventDispatcher()
 
   // opens the modal configuration window
-  let collection
+  let fieldgroup
 
   // variable to hold the option values
   let optionValues
@@ -45,7 +45,7 @@ import yaml from 'js-yaml';
 
   function openOptions() {
     optionValues = Object.fromEntries(optionFields.filter(k => value.hasOwnProperty(k)).map(k => ([ k, value?.[k] ])))
-    collection = cms.getEntityConfigCollection(type, entityID)
+    fieldgroup = cms.getEntityConfigFieldgroup(type, entityID)
   }
 
   // Whenever the modal is closed, set the real value
@@ -67,7 +67,7 @@ import yaml from 'js-yaml';
     // And dispatch the change event
     dispatch('change', { value })
     // Close the Modal and unset the optionValues
-    collection=undefined
+    fieldgroup=undefined
     optionValues=undefined
   }
 
@@ -110,11 +110,11 @@ import yaml from 'js-yaml';
 
 <Button small on:click={openOptions}>...</Button>
 
-{#if collection}
+{#if fieldgroup}
   <Modal on:cancel={saveOptions}>
     <h2>Configure {type}.{value?.['type'] ?? value}</h2>
     <form on:submit|preventDefault={saveOptions}>
-      <CmsFieldCollection {cms} {collection} bind:values={optionValues} />
+      <CmsFieldGroup {cms} {fieldgroup} bind:values={optionValues} />
     </form>
     <Button primary on:click={saveOptions}>Close</Button>
   </Modal>

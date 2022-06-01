@@ -1,6 +1,6 @@
 <script lang="ts">
 import type SvelteCMS from './index';
-import CmsFieldCollection from './CMSFieldCollection.svelte';
+import CmsFieldGroup from './CMSFieldGroup.svelte';
 import DisplayResult from 'sveltecms/ui/DisplayResult.svelte'
 import { cloneDeep, debounce } from 'lodash-es'
 import Button from './ui/Button.svelte';
@@ -17,7 +17,7 @@ import Button from './ui/Button.svelte';
   export let isNew = undefined
 
   export const contentType = cms.getContentType(contentTypeID)
-  let widgetFieldCollection = cms.getWidgetFields(contentType, { values, errors, touched })
+  let widgetFieldGroup = cms.getWidgetFields(contentType, { values, errors, touched })
 
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
@@ -67,11 +67,11 @@ import Button from './ui/Button.svelte';
           {:else}
             Edit
           {/if}
-          {widgetFieldCollection?.label}
+          {widgetFieldGroup?.label}
         </h2>
       </slot>
       <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} bind:values collection={contentType} />
+        <CmsFieldGroup {cms} bind:values {widgetFieldGroup} />
 
         <input type="hidden" name="_slug" bind:value={oldSlug}>
 

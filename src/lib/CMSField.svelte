@@ -1,6 +1,6 @@
 <script lang="ts">
 import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
-import CmsWidgetCollection from './widgets/CMSWidgetCollection.svelte';
+import CmsWidgetFieldgroup from './widgets/CMSWidgetFieldgroup.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
 import type SvelteCMS from 'sveltecms';
 import type { WidgetField } from 'sveltecms';
@@ -23,8 +23,8 @@ export let value
         bind:value
         {cms}
       />
-    {:else if field.widget.type === 'collection'}
-      <CmsWidgetCollection
+    {:else if field.widget.type === 'fieldgroup'}
+      <CmsWidgetFieldgroup
         {field}
         {id}
         bind:value

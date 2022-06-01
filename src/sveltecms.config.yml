@@ -19,13 +19,13 @@ types:
         display: false
       slug: slug
       blocks:
-        type: collection
+        type: fieldgroup
         multiple: true
-        multipleLabelFields: _collectionType
+        multipleLabelFields: _fieldgroup
         widget:
-          type: collection
+          type: fieldgroup
           options:
-            collectionTypes: fullwidth
+            fieldgroups: fullwidth
     contentStore:
       type: staticFiles
       fileExtension: json
@@ -68,7 +68,7 @@ fields:
       This value will go within a style tag.
       Example: "top:5%; width:30%; text-align:center;"
   button:
-    type: collection
+    type: fieldgroup
     display: element_Button
     fields:
       href:
@@ -99,7 +99,7 @@ widgets:
   imageOnly:
     type: image
     altField: false
-collections:
+fieldgroups:
   hero:
     type: fullwidth
     fields:
@@ -118,7 +118,7 @@ collections:
     type: fullwidth
     fields:
       slides:
-        type: collection
+        type: fieldgroup
         multiple: true
         multipleLabelFields: heading
         fields:

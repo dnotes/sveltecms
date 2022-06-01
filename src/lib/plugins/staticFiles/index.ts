@@ -144,6 +144,7 @@ export function getSlugFromFilepath(filepath:string, contentTypeID:string, opts:
 }
 
 const plugin:CMSPlugin = {
+  id: 'staticFiles',
   contentStores: [
     {
       id: 'staticFiles',

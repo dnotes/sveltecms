@@ -8,7 +8,7 @@ import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
 import { DisplayConfig, type DisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
-import type { AdminCollectionConfigSetting } from './Collection'
+import type { AdminFieldgroupConfigSetting } from './Fieldgroup'
 
 export type FieldConfigSetting = {
   type: string
@@ -35,14 +35,14 @@ export type FieldConfigSetting = {
 }
 
 export type ConfigFieldConfigSetting = FieldConfigSetting & {
-  type: 'text'|'number'|'boolean'|'date'|'collection'|'tags'|'entity'
+  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'tags'|'entity'
   entity?: string
   default: any
   helptext: string
   fields?: {[key:string]:ConfigFieldConfigSetting}
 }
 
-export const configField:AdminCollectionConfigSetting = {
+export const configField:AdminFieldgroupConfigSetting = {
   id: 'configField',
   admin: true,
   fields: {
@@ -93,7 +93,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   value?: any
   events?: {on:string,function:ScriptFunctionConfig}[]
 
-  // implemented only in Multiple and Collection widgets
+  // implemented only in Multiple and Fieldgroup widgets
   // implement as needed in custom widgets
   multiple?: boolean|ScriptFunctionConfig
   multipleLabelFields?: string|string[]|ScriptFunctionConfig
@@ -210,11 +210,11 @@ export const fieldTypes:{[key:string]:FieldType} = {
     },
     preMount: ['html'],
   },
-  collection: {
-    id: 'collection',
+  fieldgroup: {
+    id: 'fieldgroup',
     default: {},
-    widget: 'collection',
-    display: 'field_collection',
+    widget: 'fieldgroup',
+    display: 'field_fieldgroup',
   },
   number: {
     id: 'number',
@@ -253,13 +253,6 @@ export const fieldTypes:{[key:string]:FieldType} = {
     widget: 'value',
     display: '',
   },
-  configurableEntity: {
-    id: 'configurableEntity',
-    admin: true,
-    default: undefined,
-    widget: 'configurableEntity',
-    display: '',
-  }
   // password: {
   //   id: 'password',
   //   default: null,

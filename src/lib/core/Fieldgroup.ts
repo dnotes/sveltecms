@@ -2,8 +2,8 @@ import type { FieldableEntityConfigSetting, EntityType, FieldableEntity, TypedEn
 import type SvelteCMS from "sveltecms"
 import Field, { type ConfigFieldConfigSetting, type FieldConfigSetting } from "./Field"
 
-const configCollection:AdminCollectionConfigSetting = {
-  id: 'configCollection',
+const configFieldgroup:AdminFieldgroupConfigSetting = {
+  id: 'configFieldgroup',
   type: 'config',
   admin: true,
   fields: {
@@ -11,18 +11,18 @@ const configCollection:AdminCollectionConfigSetting = {
       type: 'text',
       label: 'ID',
       default: '',
-      helptext: 'The ID for the collection',
-      disabled: '$equal($value,$values.type)'
+      helptext: 'The ID for the fieldgroup',
+      disabled: '$equal($value,$values.type)',
     },
     type: {
       type: 'text',
       default: '',
-      helptext: 'The type of collection. To create a new type, leave this blank and it will be the same as the ID. '+
-                'The collection "type" is used to filter options when content editors can choose a field collection.',
+      helptext: 'The type of fieldgroup. To create a new type, leave this blank and it will be the same as the ID. '+
+                'The fieldgroup "type" is used to filter options when content editors can choose a field fieldgroup.',
       widget: {
         type: 'select',
         options: {
-          items: '$listEntities(collection)',
+          items: '$listEntities(fieldgroup)',
           unset: '- new type -'
         }
       }
@@ -30,23 +30,23 @@ const configCollection:AdminCollectionConfigSetting = {
   }
 }
 
-export type CollectionConfigSetting = FieldableEntityConfigSetting & EntityType & {
+export type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & {
   admin?:boolean
   type?:string
 }
-export type AdminCollectionConfigSetting = CollectionConfigSetting & {
+export type AdminFieldgroupConfigSetting = FieldgroupConfigSetting & {
   admin:true
   fields:{[id:string]:ConfigFieldConfigSetting}
 }
-export class Collection implements EntityType, FieldableEntity {
+export class Fieldgroup implements EntityType, FieldableEntity {
   id:string
   type:string
   admin?:boolean
   plugin?:string
   isFieldable=true
   fields:{[id:string]:Field}
-  constructor(conf:string|CollectionConfigSetting, cms:SvelteCMS) {
-    conf = typeof conf === 'string' ? cms.collections[conf] : conf
+  constructor(conf:string|FieldgroupConfigSetting, cms:SvelteCMS) {
+    conf = typeof conf === 'string' ? cms.fieldgroups[conf] : conf
     this.id = conf.id
     this.admin = conf.admin
     this.type = conf.type || conf.id
@@ -55,9 +55,9 @@ export class Collection implements EntityType, FieldableEntity {
     }))
   }
 }
-export type AdminCollection = Collection & { admin:true }
+export type AdminFieldgroup = Fieldgroup & { admin:true }
 
-export const collectionTypes = [
+export const fieldgroups = [
   {
     id: 'block',
     fields: {},
@@ -73,4 +73,4 @@ export const collectionTypes = [
   }
 ]
 
-export default Collection
+export default Fieldgroup

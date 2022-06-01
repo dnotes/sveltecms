@@ -3,7 +3,7 @@ import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigS
 import type ContentType from "sveltecms/core/ContentType"
 import type Field from "sveltecms/core/Field"
 
-import CMSWidgetCollection from 'sveltecms/widgets/CMSWidgetCollection.svelte'
+import CMSWidgetFieldgroup from 'sveltecms/widgets/CMSWidgetFieldgroup.svelte'
 import CMSWidgetMultiple from 'sveltecms/widgets/CMSWidgetMultiple.svelte'
 import CMSWidgetNumber from 'sveltecms/widgets/CMSWidgetNumber.svelte'
 import CMSWidgetRange from 'sveltecms/widgets/CMSWidgetRange.svelte'
@@ -88,21 +88,16 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       }
     }
   },
-  collection: {
-    id: 'collection',
-    fieldTypes: ['collection'],
+  fieldgroup: {
+    id: 'fieldgroup',
+    fieldTypes: ['fieldgroup'],
     isFieldable: true,
-    widget: CMSWidgetCollection,
-    optionFields: {
-      configurable: {
-        type: 'boolean',
-        default: false,
-        helptext: 'whether the collection can be chosen from a list',
-      },
+    widget: CMSWidgetFieldgroup,
+    optionFields: { // TODO: add "fieldgroups" and "fieldgroupTypes" to the options
       oneline: {
         type: 'boolean',
         default: false,
-        helptext: 'add the "oneline" class to a collection fieldset',
+        helptext: 'add the "oneline" class to a fieldgroup fieldset',
       },
     }
   },
@@ -167,14 +162,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         widget: {
           type: 'select',
           default: 'editable',
-          options: {
-            items: {
-              '': 'None',
-              'hidden': 'Hidden',
-              'editable': 'Editable',
-              'timeonly': 'Time only (no date)',
-            },
-          }
+          unset: '- none - ',
+          items: {
+            'hidden': 'Hidden',
+            'editable': 'Editable',
+            'timeonly': 'Time only (no date)',
+          },
         }
       },
       minDate: {
@@ -409,12 +402,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         helptext: 'The title text to use for a blank entry. If this is provided, or if the field is not required, a blank value will be available. The default title for the blank value is "- none -".'
       },
       items: { // TODO: replace this with a List widget when one is available
-        type: 'collection',
+        type: 'fieldgroup',
         helptext: '',
         multiple: true,
         default: {},
         widget: {
-          type: 'collection',
+          type: 'fieldgroup',
           options: {
             oneline: true
           }
@@ -439,7 +432,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     id:'value',
     fieldTypes: [],
     widget: CMSWidgetValue,
-  }
+  },
   // {
   //   id: 'options', // i.e. radios or checkboxes
   //   fieldTypes: 'text,number,date',
