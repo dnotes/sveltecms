@@ -82,12 +82,12 @@ export const adminPages:AdminPageConfig[] = [
     },
   },
   {
-    id: 'types',
+    id: 'contentTypes',
     label: 'Content Types',
     component: 'CMSConfigContentTypeList',
   },
   {
-    id: 'types/*',
+    id: 'contentTypes/*',
     label: 'Content Types',
     component: {
       type: 'CMSConfigForm',

@@ -25,7 +25,7 @@ export const FieldPropsAllowFunctions = [
 
 export const cmsConfigurables = [
   'adminStore',
-  'types',
+  'contentTypes',
   'lists',
   'contentStores',
   'mediaStores',
@@ -86,7 +86,7 @@ export type CMSConfigSetting = {
   configPath?:string
   settings?:ConfigSetting
   adminStore?:string|ContentStoreConfigSetting
-  types?: {[key:string]: ContentTypeConfigSetting}
+  contentTypes?: {[key:string]: ContentTypeConfigSetting}
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
   contentStores?: {[key:string]: ContentStoreConfigSetting}
   mediaStores?: {[key:string]: MediaStoreConfigSetting}
@@ -113,7 +113,7 @@ export default class SvelteCMS {
   transformers:{[key:string]:Transformer} = transformers
   contentStores:{[key:string]:ContentStoreType} = {}
   mediaStores:{[key:string]:MediaStoreType} = {}
-  types:{[key:string]:ContentType} = {}
+  contentTypes:{[key:string]:ContentType} = {}
   lists:CMSListConfig = {}
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
@@ -165,8 +165,8 @@ export default class SvelteCMS {
     })
 
     // Build out config for the content types
-    Object.entries(conf?.types || {}).forEach(([id,conf]) => {
-      this.types[id] = new ContentType(id, conf, this)
+    Object.entries(conf?.contentTypes || {}).forEach(([id,conf]) => {
+      this.contentTypes[id] = new ContentType(id, conf, this)
     });
 
     let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json'
@@ -305,7 +305,7 @@ export default class SvelteCMS {
         return this.getFieldTypeWidgets(arg)
       case 'fieldTypes':
       case 'widgetTypes':
-      case 'types':
+      case 'contentTypes':
       case 'lists':
       case 'contentStores':
       case 'mediaStores':
@@ -324,7 +324,7 @@ export default class SvelteCMS {
           'scriptFunctions',
           'mediaStores',
           'transformers',
-          'types',
+          'contentTypes',
           'widgets',
         ]
     }
@@ -375,8 +375,8 @@ export default class SvelteCMS {
   }
 
   getContentType(contentType:string):ContentType {
-    if (!this.types[contentType]) throw new Error (`Content type not found: ${contentType}`)
-    return this.types[contentType]
+    if (!this.contentTypes[contentType]) throw new Error (`Content type not found: ${contentType}`)
+    return this.contentTypes[contentType]
   }
 
   getContentStore(contentType:string|ContentType) {
@@ -591,7 +591,7 @@ export default class SvelteCMS {
   }
 
   // getValidator(typeID:string, values:Object):Validator.Validator<Object> {
-  //   let contentType = this.types[typeID]
+  //   let contentType = this.contentTypes[typeID]
   //   let conf = this.getValidatorConfig(contentType.fields)
   //   return new Validator(values, conf)
   // }

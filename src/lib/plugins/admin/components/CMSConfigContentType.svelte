@@ -15,7 +15,7 @@ import { getLabelFromID } from "sveltecms/utils";
   let contentTypeID = adminPath.replace(/.+\//, '')
   let contentStores = cms.listEntities('contentStores')
   let mediaStores = cms.listEntities('mediaStores')
-  let contentTypes = cms.listEntities('types')
+  let contentTypes = cms.listEntities('contentTypes')
   let components = cms.listEntities('components')
 
   let defaultContentStore = (Object.keys(cms.contentStores || {}) || [])[0]

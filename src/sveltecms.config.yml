@@ -2,7 +2,7 @@ configPath: src/sveltecms.config.yml
 settings:
   rootContentType: landingPage
   frontPageSlug: front
-types:
+contentTypes:
   blog:
     slug: date,title
     fields:
