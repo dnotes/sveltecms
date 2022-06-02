@@ -60,7 +60,7 @@ import ScriptableButton from "sveltecms/ui/ScriptableButton.svelte";
     let parentField = cms.fields[field.type] || {}
 
     // The fieldTypes ancestor of the field
-    let fieldType = cms.getEntityType('fields', field.type)
+    let fieldType = cms.getEntityRoot('fields', field.type)
 
     // A list of widgets available for the field type
     let widgetList = cms.getFieldTypeWidgets(fieldType?.id)

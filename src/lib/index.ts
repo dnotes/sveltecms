@@ -344,13 +344,13 @@ export default class SvelteCMS {
     return this?.[type]?.[id]
   }
 
-  getEntityType(type:string, id:string) {
+  getEntityRoot(type:string, id:string) {
     if (!type || !id) return
-    if (type === 'fields') return this.fieldTypes[id] || this.getEntityType('fields', this.fields?.[id]?.['type'])
-    if (type === 'widgets') return this.widgetTypes[id] || this.getEntityType('widgets', this.widgets?.[id]?.['type'])
+    if (type === 'fields') return this.fieldTypes[id] || this.getEntityRoot('fields', this.fields?.[id]?.['type'])
+    if (type === 'widgets') return this.widgetTypes[id] || this.getEntityRoot('widgets', this.widgets?.[id]?.['type'])
     let entityType = this?.[type]?.[id]
     if (!entityType?.type || entityType?.type === entityType?.id) return entityType
-    return this.getEntityType(type, entityType?.type)
+    return this.getEntityRoot(type, entityType?.type)
   }
 
   getFieldTypes() {
@@ -620,7 +620,7 @@ export default class SvelteCMS {
   getEntityConfig(type:string, id:string, options?:string[]) {
     if (!type || !id) return
     if (!options) {
-      options = Object.keys((this.getEntityType(type, id))?.optionFields ?? {})
+      options = Object.keys((this.getEntityRoot(type, id))?.optionFields ?? {})
       if (!options) return {}
     }
     let entity = this.getEntity(type, id)
@@ -637,11 +637,11 @@ export default class SvelteCMS {
   }
 
   getEntityConfigFieldgroup(type:string, id:string) {
-    let entityType = this.getEntityType(type, id)
+    let entityRoot = this.getEntityRoot(type, id)
     // Check that there are option fields, otherwise it's moot
-    if (!entityType?.optionFields) return new Fieldgroup({ id:`entityType_${type}`, fields:{} }, this)
+    if (!entityRoot?.optionFields) return new Fieldgroup({ id:`entity_${type}`, fields:{} }, this)
     // Clone the optionFields so that we can change the default values
-    let optionFields = Object.assign({}, entityType.optionFields)
+    let optionFields = Object.assign({}, entityRoot.optionFields)
     // Get a list of options
     let options = Object.keys(optionFields)
     // Get the options from the parent element
@@ -649,7 +649,7 @@ export default class SvelteCMS {
     // Set the defaults for optionFields
     options.forEach(k => { optionFields[k].default = defaults[k] })
     return new Fieldgroup({
-      id:`entityType_${type}`,
+      id:`entity_${type}`,
       fields: optionFields,
     }, this)
   }
@@ -722,6 +722,10 @@ export function getConfigPathFromValuePath(path:string):string {
  * All "Setting" types must fit the pattern of ConfigSetting
  */
 export type ConfigSetting = {[key:string]: string|number|boolean|null|undefined|ConfigSetting|Array<string|number|ConfigSetting>}
+export type EntityConfigSetting = ConfigSetting & {
+  id?:string
+  type?:string
+}
 
 export type CMSPlugin = {
   id: string

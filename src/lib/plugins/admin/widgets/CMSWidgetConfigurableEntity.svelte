@@ -40,7 +40,7 @@ import yaml from 'js-yaml';
 
   // check if there is anything to configure
   $: entityID = forceEntityID || value?.['type'] || value
-  $: entityType = cms.getEntityType(type, entityID)
+  $: entityType = cms.getEntityRoot(type, entityID)
   $: optionFields = Object.keys(entityType?.optionFields ?? {})
 
   function openOptions() {
