@@ -16,6 +16,7 @@ import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
+import { Entity, type EntityTemplate } from "./EntityTemplate"
 
 
 export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:ContentType, field:Field)=>Promise<any>
@@ -23,39 +24,52 @@ export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentT
 export type WidgetConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting & {
 }
 
+export const templateWidget:EntityTemplate = {
+  id: 'widget',
+  label: 'Widget',
+  labelPlural: 'Widgets',
+  typeField: true,
+  typeInherits: true,
+  typeRequired: true,
+  typeRestricted: true,
+  isConfigurable: true,
+}
+
 export type WidgetType = ConfigurableEntityType & {
   widget: Object // TODO: get svelte component object type
   fieldTypes: string[]
   handlesMultiple?: boolean
   handlesMedia?: boolean
-  isFieldable?: boolean
+  handlesFields?: boolean
   admin?: boolean
   formDataHandler?:FormDataHandler
 }
 
-export class Widget implements ConfigurableEntity {
+export class Widget extends Entity implements ConfigurableEntity {
   type: string
   widget: Object
   handlesMultiple: boolean
   handlesMedia: boolean
-  isFieldable: boolean
+  handlesFields: boolean
   options?: ConfigSetting
   formDataHandler?:FormDataHandler
   constructor(conf:string|WidgetConfigSetting, cms:SvelteCMS) {
+    super(templateWidget)
     // TODO: change per CMSContentField changes
     conf = typeof conf === 'string' ? { type: conf } : conf
-    let widget = cms.widgets[conf.type]
-    widget = typeof widget === 'string' ? { type: widget } : widget
+
+    let parent = cms.widgets[conf.type]
+    parent = typeof parent === 'string' ? { type: parent } : parent
 
     // @ts-ignore TODO: figure out how to specify that mergeConfigOptions returns the same type as the parameter
-    if (widget) conf = cms.mergeConfigOptions(widget, conf, { type: widget.type })
+    if (parent) conf = cms.mergeConfigOptions(parent, conf, { type: parent.type })
 
     let widgetType = cms.widgetTypes[conf['type']]
     this.type = widgetType?.id
     this.widget = widgetType?.widget
     this.handlesMultiple = widgetType?.handlesMultiple || false
     this.handlesMedia = widgetType?.handlesMedia || false
-    this.isFieldable = widgetType?.isFieldable || false
+    this.handlesFields = widgetType?.handlesFields || false
     if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
       this.formDataHandler = widgetType.formDataHandler
     }
@@ -91,7 +105,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   fieldgroup: {
     id: 'fieldgroup',
     fieldTypes: ['fieldgroup'],
-    isFieldable: true,
+    handlesFields: true,
     widget: CMSWidgetFieldgroup,
     optionFields: { // TODO: add "fieldgroups" and "fieldgroupTypes" to the options
       oneline: {

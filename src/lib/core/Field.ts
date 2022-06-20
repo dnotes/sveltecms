@@ -8,63 +8,40 @@ import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
 import { DisplayConfig, type DisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
-import type { AdminFieldgroupConfigSetting } from './Fieldgroup'
+import { Entity, type EntityTemplate } from './EntityTemplate'
 
 export type FieldConfigSetting = {
   type: string
   label?: string|ScriptFunctionConfigSetting
   default?: any
-  value?: any
+  // value?: any
   helptext?: string|ScriptFunctionConfigSetting
   required?: boolean|ScriptFunctionConfigSetting
   disabled?: boolean|ScriptFunctionConfigSetting
   hidden?: boolean|ScriptFunctionConfigSetting
   multiple?: boolean|ScriptFunctionConfigSetting
+  multipleOrSingle?:boolean
   multipleLabelFields?: string|string[]|ScriptFunctionConfigSetting
-  multipleMin?: number|ScriptFunctionConfigSetting
-  multipleMax?: number|ScriptFunctionConfigSetting
+  // multipleMin?: number|ScriptFunctionConfigSetting
+  // multipleMax?: number|ScriptFunctionConfigSetting
   fields?: {[key:string]:string|FieldConfigSetting}
   widget?: string|WidgetConfigSetting
-  display?: string|DisplayConfigSetting
+  display?: string|false|DisplayConfigSetting
   // validator?: Rules // TODO
   preSave?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   preMount?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   class?: string
   events?: {on:string,function:ScriptFunctionConfigSetting}|{on:string,function:ScriptFunctionConfigSetting}[]
   mediaStore?: string|MediaStoreConfigSetting
+  [id:string]:string|number|boolean|ConfigSetting|ScriptFunctionConfigSetting|(string|number|ConfigSetting)[]
 }
 
 export type ConfigFieldConfigSetting = FieldConfigSetting & {
-  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'tags'|'entity'
+  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'tags'|'entity'|'entityList'
   entity?: string
   default: any
   helptext: string
   fields?: {[key:string]:ConfigFieldConfigSetting}
-}
-
-export const configField:AdminFieldgroupConfigSetting = {
-  id: 'configField',
-  admin: true,
-  fields: {
-    id: {
-      type: 'text',
-      required: true,
-      default: '',
-      helptext: 'The ID for the field.',
-    },
-    type: {
-      type: 'text',
-      required: true,
-      widget: {
-        type: 'configurableEntity',
-        options: {
-          entityType: 'fields',
-        }
-      },
-      default: '',
-      helptext: 'The type for the field. The type can be the ID of any other field.',
-    },
-  }
 }
 
 export type FieldType = EntityType & {
@@ -76,9 +53,151 @@ export type FieldType = EntityType & {
   admin?: boolean
 }
 
-export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
+export const templateField:EntityTemplate = {
+  id: 'field',
+  label: 'Field',
+  labelPlural: 'Fields',
+  typeField: true,
+  typeInherits: true,
+  typeRequired: true,
+  typeRestricted: true,
+  isConfigurable: true,
+  isFieldable: true,
+  listFields: ['widget'],
+  scriptableProps:[
+    'label','helptext','default',
+    'multiple','multipleLabelFields','multipleMin','multipleMax',
+    'required','disabled','hidden','class'
+  ],
+  configFields: {
+    label: {
+      type:'text',
+      default:'',
+      helptext: 'The label for the field.'
+    },
+    widget: {
+      type:'entity',
+      default:'',
+      helptext:'The form widget used for data input for this field.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'widget',
+          fieldType: {
+            function: 'getValue',
+            params: ['type'],
+          }
+        },
+      }
+    },
+    display: {
+      type:'entity',
+      default:'',
+      helptext:'The element or component used to display this field.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'display',
+        },
+      }
+    },
+    mediaStore: {
+      type:'entity',
+      default:'',
+      helptext:'Where any media uploaded to this field will be stored. Only applies if the widget handles media.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'mediaStore',
+        },
+      }
+    },
+    helptext: {
+      type: 'text',
+      default: '',
+      helptext: 'The help text to describe the purpose of the field for content editors.'
+    },
+    class: {
+      type: 'text',
+      default: '',
+      helptext: 'Any classes to add to the form and display.'
+    },
+    required: {
+      type: 'boolean',
+      default: false,
+      helptext: 'Whether the field is required.'
+    },
+    hidden: {
+      type: 'boolean',
+      default: false,
+      helptext: 'Whether the field is hidden.'
+    },
+    disabled: {
+      type: 'boolean',
+      default: false,
+      helptext: 'Whether the field is disabled.'
+    },
+    multiple: {
+      type: 'boolean',
+      default: false,
+      helptext: 'Whether the field takes multiple values.'
+    },
+    multipleOrSingle: {
+      type: 'boolean',
+      default: false,
+      helptext: 'Whether the field will allow storing a single value instead of a single-item array.',
+      hidden: '$not($values.multiple)',
+    },
+    // multipleMin: {
+    //   type: 'number',
+    //   default: undefined,
+    //   helptext: 'The minimum number of values for a multiple field.',
+    //   hidden: '$not($values.multiple)',
+    // },
+    // multipleMax: {
+    //   type: 'number',
+    //   default: undefined,
+    //   helptext: 'The maximum number of values for a multiple field.',
+    //   hidden: '$not($values.multiple)',
+    // },
+    multipleLabelFields: {
+      type: 'text',
+      default: '',
+      helptext: 'For fieldgroups, the fields ',
+      hidden: '$not($values.multiple)',
+    },
+    preSave: {
+      type: 'entity',
+      multiple: true,
+      default: '',
+      helptext: 'Any transformers to apply before the field is saved to storage.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'transformer',
+        }
+      }
+    },
+    preMount: {
+      type: 'entity',
+      multiple: true,
+      default: '',
+      helptext: 'Any transformers to apply before the field is displayed on the page.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'transformer',
+        }
+      }
+    },
+
+  }
+}
+
+export class Field extends Entity implements FieldableEntity, TypedEntity, LabeledEntity {
   id: string
   type: string
+  template:EntityTemplate = templateField
 
   // should be implemented by every widget
   label: string|ScriptFunctionConfig
@@ -96,6 +215,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   // implemented only in Multiple and Fieldgroup widgets
   // implement as needed in custom widgets
   multiple?: boolean|ScriptFunctionConfig
+  multipleOrSingle?: boolean
   multipleLabelFields?: string|string[]|ScriptFunctionConfig
   multipleMin?: number|ScriptFunctionConfig
   multipleMax?: number|ScriptFunctionConfig
@@ -114,6 +234,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   errors: {[key:string]:any} = {} // all form errors
   touched: {[key:string]:any} = {} // all touched form elements
   constructor(id, conf:string|FieldConfigSetting, cms:SvelteCMS, contentType?:ContentType) {
+    super(templateField)
 
     // Set the field's id. This identifies the instance, not the field type;
     // in values objects, the key would be this id, e.g. values[id] = 'whatever'
@@ -136,6 +257,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.helptext = parseScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '')
       this.multiple = parseScript(conf.multiple) ?? (conf.multiple ? true : false)
       this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? conf.multipleLabelFields
+      this.multipleOrSingle = conf.multipleOrSingle ?? false
       this.multipleMin = parseScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))
       this.multipleMax = parseScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax))
 
@@ -169,7 +291,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
     }
   }
 
-  get isFieldable():boolean { return this.widget.isFieldable }
+  get isFieldable():boolean { return this.widget.handlesFields }
 
 }
 
@@ -183,7 +305,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
   },
   date: {
     id: 'date',
-    default: new Date(),
+    default: '',
     widget: 'date',
     display: 'span',
     preSave: ['date'],

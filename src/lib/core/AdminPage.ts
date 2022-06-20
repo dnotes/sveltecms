@@ -77,7 +77,7 @@ export const adminPages:AdminPageConfig[] = [
     component: {
       type: 'CMSConfigForm',
       options: {
-        component: 'CMSConfigFieldList',
+        component: 'CMSConfigEntityList',
       },
     },
   },
@@ -93,7 +93,12 @@ export const adminPages:AdminPageConfig[] = [
   {
     id: 'contentTypes',
     label: 'Content Types',
-    component: 'CMSConfigContentTypeList',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigEntityList',
+      }
+    }
   },
   {
     id: 'contentTypes/*',

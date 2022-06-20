@@ -1,6 +1,7 @@
 import type SvelteCMS from 'sveltecms'
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
 import type { ContentType } from 'sveltecms/core/ContentType'
+import type { EntityTemplate } from './EntityTemplate'
 
 export type MediaStoreType = EntityType & ConfigurableEntityType & {
   listMedia?:(path:string|null, opts:ConfigSetting) => Promise<string[]>
@@ -11,6 +12,17 @@ export type MediaStoreType = EntityType & ConfigurableEntityType & {
 }
 
 export type MediaStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting
+
+export const templateMediaStore:EntityTemplate = {
+  id: 'mediaStore',
+  label: 'Media Store',
+  labelPlural: 'Media Stores',
+  typeField: true,
+  typeInherits: true,
+  typeRequired: true,
+  typeRestricted: true,
+  isConfigurable: true,
+}
 
 export class MediaStore implements ConfigurableEntity, TypedEntity {
   id:string

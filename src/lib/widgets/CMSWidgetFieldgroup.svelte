@@ -133,8 +133,7 @@ const split = splitTags()
     background: transparent;
     border-top: 3px solid var(--cms-main);
   }
-  .sveltecms fieldset.fieldgroup>legend { padding: .4em; }
-  .sveltecms fieldset.fieldgroup.collapsed .field,
+  .sveltecms fieldset.fieldgroup.collapsed>div>.field,
   .sveltecms fieldset.fieldgroup.collapsed>.fieldgroup-type {
     display: none;
   }

@@ -162,11 +162,31 @@ td>.cms-helptext:hover { display:none; }
   border: none;
   margin: .4em 0;
   border-radius: .5em;
+  padding: .8em .5em;
 }
-.sveltecms fieldset.collapsed { border-radius: 0; }
+.sveltecms fieldset.fieldgroup>legend {
+  background: var(--cms-main);
+}
+.sveltecms fieldset.multiple>legend {
+  padding:0;
+}
+.sveltecms fieldset>legend button {
+  line-height: 1em;
+  padding:0;
+}
+.sveltecms fieldset.collapsed {
+  border-radius: 0;
+  padding:0 .5em;
+}
+.sveltecms fieldset.collapsed>div {
+  display:none;
+}
+.sveltecms fieldset.fieldgroup>legend>label>span:first-child { display:none; }
 .sveltecms fieldset>legend {
-  padding: .2em;
-  border-radius: .3em .3em 0 0;
+  padding: .7em 1.4em;
+  border-radius: 1em;
+  display: flex;
+  gap: 1em;
 }
 
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }

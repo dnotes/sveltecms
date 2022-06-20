@@ -1,5 +1,16 @@
 import type SvelteCMS from "sveltecms";
 import type { ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntityConfigSetting, ConfigurableEntity, ConfigSetting, TypedEntity, EntityType } from "sveltecms";
+import type { EntityTemplate } from "./EntityTemplate";
+
+export const templateComponent:EntityTemplate = {
+  id: 'component',
+  label: 'Component',
+  labelPlural: 'Components',
+  typeField: true,
+  typeInherits: true,
+  typeRestricted: true,
+  isConfigurable: true,
+}
 
 export type ComponentType = EntityType & ConfigurableEntityType & {
   component:Object // TODO: find type for svelte component

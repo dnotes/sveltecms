@@ -1,6 +1,7 @@
 import type SvelteCMS from 'sveltecms'
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
 import type { ContentType } from 'sveltecms/core/ContentType'
+import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
 const noStore = async () => {
   // @ts-ignore
@@ -21,6 +22,17 @@ export type ContentStoreType = EntityType & ConfigurableEntityType & {
 }
 
 export type ContentStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting
+
+export const templateContentStore:EntityTemplate = {
+  id: 'contentStore',
+  label: 'Content Store',
+  labelPlural: 'Content Stores',
+  typeField: true,
+  typeInherits: true,
+  typeRequired: true,
+  typeRestricted: true,
+  isConfigurable: true,
+}
 
 export class ContentStore implements ConfigurableEntity, TypedEntity {
   id:string

@@ -35,6 +35,7 @@ export let value
         this={field.widget.widget}
         {field}
         {id}
+        {cms}
         bind:value
       />
     {/if}

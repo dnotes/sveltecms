@@ -1,17 +1,18 @@
 import { AdminPage, type AdminPageConfig } from './core/AdminPage'
-import { Field, fieldTypes, type FieldType, type FieldConfigSetting, type ConfigFieldConfigSetting } from './core/Field'
-import { widgetTypes, type WidgetType, type WidgetConfigSetting } from './core/Widget'
-import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType"
-import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore'
-import type { Content, ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore'
-import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, fieldgroups } from './core/Fieldgroup'
-import { transformers, type Transformer, type TransformerConfigSetting } from './core/Transformer'
-import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
-import type { ComponentType, ComponentConfigSetting, Component } from 'sveltecms/core/Component'
-import { displayComponents, type DisplayConfigSetting } from 'sveltecms/core/Display'
-
+import { Field, templateField, fieldTypes, type FieldType, type FieldConfigSetting, type ConfigFieldConfigSetting } from './core/Field'
+import { widgetTypes, templateWidget, type WidgetType, type WidgetConfigSetting } from './core/Widget'
+import { ContentType, templateContentType, type ContentTypeConfigSetting } from "./core/ContentType"
+import { type MediaStoreType, type MediaStoreConfigSetting, templateMediaStore } from './core/MediaStore'
+import { templateContentStore, type Content, type ContentStoreConfigSetting, type ContentStoreType } from './core/ContentStore'
+import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, templateFieldgroup } from './core/Fieldgroup'
+import { transformers, templateTransformer, type Transformer, type TransformerConfigSetting } from './core/Transformer'
+import { ScriptFunction, scriptFunctions, parseScript, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
+import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
+import { displayComponents, templateDisplay, type DisplayConfigSetting } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
 import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es'
+import type { EntityTemplate } from './core/EntityTemplate'
+import { templateSlug } from './core/Slug'
 
 // import { default as Validator, Rules } from 'validatorjs'
 
@@ -24,9 +25,10 @@ export const FieldPropsAllowFunctions = [
 ]
 
 export const cmsConfigurables = [
+  'settings',
   'adminStore',
   'contentTypes',
-  'lists',
+  // 'lists',
   'contentStores',
   'mediaStores',
   'fields',
@@ -100,6 +102,18 @@ export type CMSConfigSetting = {
 export default class SvelteCMS {
 
   conf:CMSConfigSetting = {}
+  entityTypes = {
+    component: templateComponent,
+    contentStore: templateContentStore,
+    contentType: templateContentType,
+    display: templateDisplay,
+    field: templateField,
+    fieldgroup: templateFieldgroup,
+    mediaStore: templateMediaStore,
+    slug: templateSlug,
+    transformer: templateTransformer,
+    widget: templateWidget,
+  }
   admin: ContentType
   adminPages?: {[key:string]:AdminPageConfig} = {}
   adminFieldgroups?: {[key:string]:AdminFieldgroupConfigSetting} = {}
@@ -108,7 +122,7 @@ export default class SvelteCMS {
   components: {[key:string]:ComponentType} = {}
   widgets:{[key:string]:WidgetConfigSetting} = {}
   scriptFunctions:{[key:string]:ScriptFunctionType} = scriptFunctions
-  fieldTypes:{[key:string]:FieldType} = fieldTypes
+  fieldTypes:{[key:string]:FieldType & { widgetTypes?:string[] }} = fieldTypes
   widgetTypes:{[key:string]:WidgetType} = widgetTypes
   transformers:{[key:string]:Transformer} = transformers
   contentStores:{[key:string]:ContentStoreType} = {}
@@ -121,9 +135,6 @@ export default class SvelteCMS {
     this.use(staticFilesPlugin)
     displayComponents.forEach(c => {
       this.components[c.id] = c
-    })
-    fieldgroups.forEach(c => {
-      this.fieldgroups[c.id] = c
     })
     plugins.forEach(p => this.use(p))
 
@@ -267,7 +278,12 @@ export default class SvelteCMS {
           }
           else {
             let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field
-            res[id] = this.preSave(container, values?.[id])
+            // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
+            // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
+            // When saving config, the "fieldgroup" fields will not have a "fields" prop, and must still be saved.
+            // @TODO: Evaluate this for security, and probably fix it, since at the moment it will try to save
+            // almost any value to the configuration, albeit serialized.
+            res[id] = container?.fields ? this.preSave(container, values?.[id]) : values[id]
           }
         }
         else res[id] = this.doFieldTransforms('preSave', field, values?.[id])
@@ -297,12 +313,13 @@ export default class SvelteCMS {
     }
   }
 
-  listEntities(type:string, includeAdmin?:boolean, arg?:string):string[] {
+  listEntities(type:string, includeAdmin?:boolean, entityID?:string):string[] {
+    if (!type.match(/s$/)) type += 's'
     switch (type) {
       case 'fields':
-        return this.getFieldTypes()
+        return this.getFieldTypes(includeAdmin)
       case 'widgets':
-        return this.getFieldTypeWidgets(arg)
+        return this.getFieldTypeWidgets(includeAdmin, entityID)
       case 'fieldTypes':
       case 'widgetTypes':
       case 'contentTypes':
@@ -330,6 +347,10 @@ export default class SvelteCMS {
     }
   }
 
+  getEntityType(type:string):EntityTemplate {
+    return this?.entityTypes?.[type] ?? this?.entityTypes?.[type?.replace(/s$/,'')]
+  }
+
   getEntity(type:string, id:string) {
     if (!type || !id) return
     if (type === 'fields' || type === 'field') return this.fields[id] ?? this.fieldTypes[id]
@@ -353,18 +374,21 @@ export default class SvelteCMS {
     return this.getEntityRoot(type, entityType?.type)
   }
 
-  getFieldTypes() {
-    return union(Object.keys(this.fieldTypes || {}), Object.keys(this.fields || {}))
+  getFieldTypes(includeAdmin?:boolean) {
+    return union(
+      Object.keys(this.fieldTypes || {}).filter(k => includeAdmin || !this.fieldTypes[k].admin),
+      Object.keys(this.fields || {}).filter(k => includeAdmin || !this.fields[k].admin),
+    )
   }
 
-  getFieldTypeWidgets(fieldType) {
-    if (!fieldType) return union(
-      Object.keys(this.widgetTypes || {}).filter(k => !this.widgetTypes[k].admin),
-      Object.keys(this.widgets || {})
-    )
+  getFieldTypeWidgets(includeAdmin?:boolean, fieldTypeID?:string) {
+    let widgetTypes = Object.keys(this.widgetTypes || {}).filter(k => includeAdmin || !this.widgetTypes[k].admin)
+    let widgets = Object.keys(this.widgets || {})
+    let fieldTypeRoot = this.getEntityRoot('fields', fieldTypeID)
+    if (!fieldTypeID || !fieldTypeRoot) return union(widgetTypes, widgets)
     return union(
-      Object.keys(this.widgetTypes).filter(k => !this.widgetTypes[k].admin && this.widgetTypes[k].fieldTypes.includes(fieldType)),
-      Object.keys(this.widgets).filter(k => this.widgetTypes[this.widgets[k].type].fieldTypes.includes(fieldType))
+      widgetTypes.filter(k => this.widgetTypes[k].fieldTypes.includes(fieldTypeRoot.id)),
+      widgets.filter(k => this.widgetTypes[this.widgets[k].type].fieldTypes.includes(fieldTypeRoot.id)),
     )
   }
 
@@ -504,20 +528,11 @@ export default class SvelteCMS {
     return options
   }
 
-  getInstanceOptions(entityType:ConfigurableEntityType, conf:string|ConfigurableEntityConfigSetting = { type:'' }):ConfigSetting {
-    return this.mergeConfigOptions(
-      (entityType.optionFields ? this.getConfigOptionsFromFields(entityType.optionFields || {}) : {}),
-      entityType.options || {},
-      conf?.['options'] || {},
-      (typeof conf === 'string' ? {} : conf)
-    )
-  }
-
   getWidgetFields(
     fieldgroup:FieldableEntity,
     vars:{ values:any, errors:any, touched:any, id?:string },
   ):WidgetFieldFieldgroup {
-    let c = cloneDeep(fieldgroup)
+    let c = cloneDeep(fieldgroup) || { id:'temp', fields: {} }
     // @ts-ignore
     c.eventListeners = []
     Object.keys(c?.fields || {}).forEach(id => {
@@ -617,40 +632,127 @@ export default class SvelteCMS {
     }
   }
 
-  getEntityConfig(type:string, id:string, options?:string[]) {
-    if (!type || !id) return
+  // @todo: replace this with getEntityConfig
+  getInstanceOptions(entityType:ConfigurableEntityType, conf:string|ConfigurableEntityConfigSetting = { type:'' }):ConfigSetting {
+    return this.mergeConfigOptions(
+      (entityType.optionFields ? this.getConfigOptionsFromFields(entityType.optionFields || {}) : {}),
+      entityType.options || {},
+      conf?.['options'] || {},
+      (typeof conf === 'string' ? {} : conf)
+    )
+  }
+
+  /**
+   * Get the full config setting for a particular entity
+   * @param type The Entity Type, e.g. 'field'
+   * @param id The id of a specific entity
+   * @param options The list of options and properties for the entity (so they aren't looked up more than once)
+   * @param pastIDs For recursive calls, the IDs that have been looked up before
+   * @returns ConfigSetting
+   */
+  getEntityConfig(type:string, id:string, options?:string[], pastCalls:string[]=[]):ConfigSetting {
+    if (!type || !id) return {}
+    if (pastCalls.includes(`${type}:${id}`)) {
+      if (type.match(/^fields?$/)) type = 'fieldTypes'
+      else if (type.match(/^widgets?$/)) type = 'widgetTypes'
+      else return {} // Should stop recursive errors (TODO: test)
+    }
     if (!options) {
-      options = Object.keys((this.getEntityRoot(type, id))?.optionFields ?? {})
+      options = Object.keys(this.getEntityConfigFields(type, id) || {})
       if (!options) return {}
     }
     let entity = this.getEntity(type, id)
+
+    // the default properties for the EntityType
+    let configOptions = this.getConfigOptionsFromFields(this.getEntityType(type)?.configFields ?? {})
+    // the entity config of the parent (recursive)
+    let entityConfig = this.getEntityConfig(type, entity?.['type'], options, [...pastCalls, `${type}:${id}`])
+    // the entity config of the parent's optionFields (if it is an entityType)
+    let optionsFromFields = this.getConfigOptionsFromFields(entity?.optionFields ?? {})
+    // any options written directly into the entity config, e.g. in a ConfigurableEntityConfigSetting
+    let setOptions = Object.fromEntries(options.filter(k=>entity?.hasOwnProperty(k)).map(k => ([ k, entity?.[k] ]) ))
+
     return {
-      // the entity config of the parent (recursive)
-      ...(this.getEntityConfig(type, entity?.[type], options) ?? {}),
-      // the entity config of the parent's optionFields (if it is an entityType)
-      ...(this.getConfigOptionsFromFields(entity?.optionFields ?? {})),
-      // any options written directly into the entity config, e.g. in a ConfigurableEntityConfigSetting
-      ...(Object.fromEntries(options.filter(k=>entity?.hasOwnProperty(k)).map(k => ([ k, entity?.[k] ]) ))),
-      // the options, e.g. in a ConfigurableEntity
-      ...(entity?.options || {}),
+      ...configOptions,
+      ...entityConfig,
+      ...optionsFromFields,
+      ...setOptions,
     }
   }
 
-  getEntityConfigFieldgroup(type:string, id:string) {
+  /**
+   * Get the list of configuration fields for a specific object
+   * @param type The Entity Type, e.g. 'field'
+   * @param id The ID of a specific entity
+   * @returns An object whose values are ConfigFieldConfigSettings
+   */
+  getEntityConfigFields(type:string, id?:string):{[id:string]:ConfigFieldConfigSetting} {
+
+    // Get the entity type
+    if (!type.match(/s$/)) type += 's'
+    let entityType = this.getEntityType(type)
+    if (!entityType) return
+
+    // Get the configuration fields for the entity type...
+    let configFields = entityType.configFields || {}
+
+    // ...add the "fields" configuration if necessary...
+    if (entityType?.isFieldable && !type.match(/^fields?$/i)) configFields.fields = {
+      type: 'entityList',
+      default: undefined,
+      helptext: `The Fields for this ${entityType.label}`,
+      widget: {
+        type: 'entityList',
+        options: {
+          entityType: 'field',
+        }
+      }
+    }
+
+    // ...and get the root entity
     let entityRoot = this.getEntityRoot(type, id)
-    // Check that there are option fields, otherwise it's moot
-    if (!entityRoot?.optionFields) return new Fieldgroup({ id:`entity_${type}`, fields:{} }, this)
-    // Clone the optionFields so that we can change the default values
-    let optionFields = Object.assign({}, entityRoot.optionFields)
-    // Get a list of options
-    let options = Object.keys(optionFields)
+
+    // bail if there is no root entity
+    if (!entityRoot) return configFields
+
+    // Check for a particular entity, and bail if there are no optionFields
+    if (!entityRoot?.optionFields) return configFields
+
+    // Return the full set of fields.
+    // TODO: decide whether optionFields should override configFields (powerful, but care needed) or vice versa (will not break things)
+    // TODO: check that this adequately clones the fields, e.g. that optionFields.disabled:text doesn't overwrite configField.disabled for other fields, etc.
+    return {
+      ...configFields,
+      ...entityRoot.optionFields,
+    }
+
+  }
+
+  /**
+   * Get the full Fieldgroup object for configuring an entity.
+   * @param type The Entity Type
+   * @param id The Entity ID (needed for option fields)
+   * @returns Fieldgroup
+   */
+  getEntityConfigFieldgroup(type:string, id?:string):Fieldgroup {
+
+    // Get the full field list, but clone the object since we will be setting defaults
+    let fields = cloneDeep(this.getEntityConfigFields(type, id))
+    if (!fields) return
+
+    // Get the list of options
+    let options = Object.keys(fields)
+
     // Get the options from the parent element
     let defaults = this.getEntityConfig(type, id, options)
+
     // Set the defaults for optionFields
-    options.forEach(k => { optionFields[k].default = defaults[k] })
+    options.forEach(k => { fields[k].default = defaults?.[k] })
+
+    // Return the new fieldgroup
     return new Fieldgroup({
       id:`entity_${type}`,
-      fields: optionFields,
+      fields // This has already been cloned
     }, this)
   }
 

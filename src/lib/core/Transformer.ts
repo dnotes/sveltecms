@@ -4,6 +4,16 @@ import slugify from '@sindresorhus/slugify'
 
 export type TransformerConfigSetting = ConfigurableEntityConfigSetting
 
+export const templateTransformer = {
+  id: 'transformer',
+  label: 'Transformer',
+  labelPlural: 'Transformers',
+  typeField: true,
+  typeInherits: true,
+  typeRestricted: true,
+  isConfigurable: true,
+}
+
 export type Transformer = ConfigurableEntityType & {
   fn:(value:any, opts?:ConfigSetting) => any
 }

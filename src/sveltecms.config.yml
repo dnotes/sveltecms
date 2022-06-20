@@ -24,8 +24,7 @@ contentTypes:
         multipleLabelFields: _fieldgroup
         widget:
           type: fieldgroup
-          options:
-            fieldgroupTypes: fullwidth
+          fieldgroupTypes: fullwidth
     contentStore:
       type: staticFiles
       fileExtension: json

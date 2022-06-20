@@ -1,9 +1,11 @@
-<div>
-  <slot></slot>
-</div>
+<fieldset class="fieldgroup collapsed">
+  <legend>
+    <slot></slot>
+  </legend>
+</fieldset>
 
 <style>
-  div {
+  legend {
     display:flex;
     align-items:center;
     gap:.6em;

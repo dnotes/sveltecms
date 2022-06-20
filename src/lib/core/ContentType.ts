@@ -4,9 +4,84 @@ import { SlugConfig, type SlugConfigSetting } from 'sveltecms/core/Slug'
 import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/ContentStore'
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore'
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field'
+import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
 import { getLabelFromID } from 'sveltecms/utils';
 import type { ComponentConfigSetting } from './Component';
+
+export const templateContentType:EntityTemplate = {
+  id: 'contentType',
+  label: 'Content Type',
+  labelPlural: 'Content Types',
+  typeField: false,
+  isFieldable: true,
+  isConfigurable: true,
+  configFields: {
+    label: {
+      type: 'text',
+      default: '',
+      helptext: 'The label for the content type.',
+    },
+    contentStore: {
+      type: 'entity',
+      required: true,
+      default: undefined,
+      helptext: 'The content store which will hold the content.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'contentStore',
+        }
+      }
+    },
+    mediaStore: {
+      type: 'entity',
+      required: true,
+      default: undefined,
+      helptext: 'The content store which will hold the content.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'mediaStore',
+        }
+      }
+    },
+    slug: {
+      type: 'entity',
+      required: true,
+      default: '',
+      helptext: 'The fields used for the slug of the content type.',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'slug',
+        }
+      }
+    },
+    previewComponent: {
+      type: 'entity',
+      default: undefined,
+      helptext: '',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'component'
+        }
+      }
+    },
+    displayComponent: {
+      type: 'entity',
+      default: undefined,
+      helptext: '',
+      widget: {
+        type: 'entity',
+        options: {
+          entityType: 'component'
+        }
+      }
+    },
+  }
+}
 
 export type ContentTypeConfigSetting = ConfigSetting & {
   label: string
