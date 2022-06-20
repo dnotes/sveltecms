@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 import cp from 'cp-file'
+import fs from 'fs'
+
+let packageJSON = JSON.parse(
+  await fs.readFileSync(
+    new URL('../package/package.json', import.meta.url)
+  )
+)
+
 const files = [
   ['src/routes/[...path].svelte', 'package/routes/[...path].svelte'],
   ['src/routes/[...path].ts', 'package/routes/[...path].ts'],
@@ -17,3 +25,9 @@ files.forEach(([file,dest]) => {
     throw e
   }
 })
+
+packageJSON.scripts = {
+  postinstall: "scripts/copy-routes.js"
+}
+
+fs.writeFileSync('package/package.json', JSON.stringify(packageJSON, null, 2))

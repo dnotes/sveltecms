@@ -5,7 +5,7 @@
     "dev": "svelte-kit dev",
     "build": "svelte-kit build",
     "preview": "svelte-kit preview",
-    "package": "svelte-kit package && ./scripts/package-routes.js",
+    "package": "svelte-kit package && ./scripts/postpackage.js",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "postinstall": "node scripts/copy-routes.js",

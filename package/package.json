@@ -148,5 +148,8 @@
     "./widgets/CMSWidgetUndefined.svelte": "./widgets/CMSWidgetUndefined.svelte",
     "./widgets/CMSWidgetValue.svelte": "./widgets/CMSWidgetValue.svelte"
   },
-  "svelte": "./index.js"
+  "svelte": "./index.js",
+  "scripts": {
+    "postinstall": "scripts/copy-routes.js"
+  }
 }
