@@ -118,6 +118,7 @@
     "./plugins/firebaseStorage": "./plugins/firebaseStorage/index.js",
     "./plugins/markdown": "./plugins/markdown/index.js",
     "./plugins/staticFiles": "./plugins/staticFiles/index.js",
+    "./scripts/postinstall": "./scripts/postinstall.js",
     "./sveltecms-forms.css": "./sveltecms-forms.css",
     "./ui/AddItemLine.svelte": "./ui/AddItemLine.svelte",
     "./ui/Button.svelte": "./ui/Button.svelte",

@@ -8,6 +8,7 @@
     "package": "svelte-kit package",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
+    "postinstall": "node scripts/postinstall.js",
     "test": "jest"
   },
   "dependencies": {
