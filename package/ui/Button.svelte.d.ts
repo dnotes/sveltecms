@@ -2,6 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 declare const __propDef: {
     props: {
         submit?: boolean;
+        cancel?: boolean;
         disabled?: boolean;
         small?: boolean;
         borderless?: boolean;
@@ -10,6 +11,7 @@ declare const __propDef: {
         danger?: boolean;
         helptext?: string;
         href?: string;
+        text?: string;
     };
     events: {
         click: MouseEvent;

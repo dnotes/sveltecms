@@ -1,4 +1,4 @@
-import CMSWidgetCollection from 'sveltecms/widgets/CMSWidgetCollection.svelte';
+import CMSWidgetFieldgroup from 'sveltecms/widgets/CMSWidgetFieldgroup.svelte';
 import CMSWidgetMultiple from 'sveltecms/widgets/CMSWidgetMultiple.svelte';
 import CMSWidgetNumber from 'sveltecms/widgets/CMSWidgetNumber.svelte';
 import CMSWidgetRange from 'sveltecms/widgets/CMSWidgetRange.svelte';
@@ -11,21 +11,33 @@ import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte';
 import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte';
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte';
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte";
-export class Widget {
+import { Entity } from "./EntityTemplate";
+export const templateWidget = {
+    id: 'widget',
+    label: 'Widget',
+    labelPlural: 'Widgets',
+    typeField: true,
+    typeInherits: true,
+    typeRequired: true,
+    typeRestricted: true,
+    isConfigurable: true,
+};
+export class Widget extends Entity {
     constructor(conf, cms) {
+        super(templateWidget);
         // TODO: change per CMSContentField changes
         conf = typeof conf === 'string' ? { type: conf } : conf;
-        let widget = cms.widgets[conf.type];
-        widget = typeof widget === 'string' ? { type: widget } : widget;
+        let parent = cms.widgets[conf.type];
+        parent = typeof parent === 'string' ? { type: parent } : parent;
         // @ts-ignore TODO: figure out how to specify that mergeConfigOptions returns the same type as the parameter
-        if (widget)
-            conf = cms.mergeConfigOptions(widget, conf, { type: widget.type });
+        if (parent)
+            conf = cms.mergeConfigOptions(parent, conf, { type: parent.type });
         let widgetType = cms.widgetTypes[conf['type']];
         this.type = widgetType?.id;
         this.widget = widgetType?.widget;
         this.handlesMultiple = widgetType?.handlesMultiple || false;
         this.handlesMedia = widgetType?.handlesMedia || false;
-        this.isFieldable = widgetType?.isFieldable || false;
+        this.handlesFields = widgetType?.handlesFields || false;
         if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
             this.formDataHandler = widgetType.formDataHandler;
         }
@@ -58,17 +70,17 @@ export const widgetTypes = {
             }
         }
     },
-    collection: {
-        id: 'collection',
-        fieldTypes: ['collection'],
-        isFieldable: true,
-        widget: CMSWidgetCollection,
+    fieldgroup: {
+        id: 'fieldgroup',
+        fieldTypes: ['fieldgroup'],
+        handlesFields: true,
+        widget: CMSWidgetFieldgroup,
         optionFields: {
             oneline: {
                 type: 'boolean',
                 default: false,
-                helptext: 'add the "oneline" class to a collection fieldset',
-            }
+                helptext: 'add the "oneline" class to a fieldgroup fieldset',
+            },
         }
     },
     number: {
@@ -132,14 +144,12 @@ export const widgetTypes = {
                 widget: {
                     type: 'select',
                     default: 'editable',
-                    options: {
-                        items: {
-                            '': 'None',
-                            'hidden': 'Hidden',
-                            'editable': 'Editable',
-                            'timeonly': 'Time only (no date)',
-                        },
-                    }
+                    unset: '- none - ',
+                    items: {
+                        'hidden': 'Hidden',
+                        'editable': 'Editable',
+                        'timeonly': 'Time only (no date)',
+                    },
                 }
             },
             minDate: {
@@ -365,13 +375,18 @@ export const widgetTypes = {
                 default: 0,
                 helptext: 'The maximum number of items shown in the dropdown area of a select box.'
             },
+            unset: {
+                type: 'text',
+                default: '',
+                helptext: 'The title text to use for a blank entry. If this is provided, or if the field is not required, a blank value will be available. The default title for the blank value is "- none -".'
+            },
             items: {
-                type: 'collection',
+                type: 'fieldgroup',
                 helptext: '',
                 multiple: true,
                 default: {},
                 widget: {
-                    type: 'collection',
+                    type: 'fieldgroup',
                     options: {
                         oneline: true
                     }
@@ -396,7 +411,7 @@ export const widgetTypes = {
         id: 'value',
         fieldTypes: [],
         widget: CMSWidgetValue,
-    }
+    },
     // {
     //   id: 'options', // i.e. radios or checkboxes
     //   fieldTypes: 'text,number,date',

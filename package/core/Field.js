@@ -1,10 +1,152 @@
 import MediaStore, {} from "sveltecms/core/MediaStore";
 import { parseScript, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
 import Widget, {} from 'sveltecms/core/Widget';
-import { has as hasProp } from 'lodash-es';
-import { getLabelFromID } from 'sveltecms/utils';
-export class Field {
+import { DisplayConfig } from './Display';
+import { getLabelFromID, splitTags } from 'sveltecms/utils';
+import { Entity } from './EntityTemplate';
+export const templateField = {
+    id: 'field',
+    label: 'Field',
+    labelPlural: 'Fields',
+    typeField: true,
+    typeInherits: true,
+    typeRequired: true,
+    typeRestricted: true,
+    isConfigurable: true,
+    isFieldable: true,
+    listFields: ['widget'],
+    scriptableProps: [
+        'label', 'helptext', 'default',
+        'multiple', 'multipleLabelFields', 'multipleMin', 'multipleMax',
+        'required', 'disabled', 'hidden', 'class'
+    ],
+    configFields: {
+        label: {
+            type: 'text',
+            default: '',
+            helptext: 'The label for the field.'
+        },
+        widget: {
+            type: 'entity',
+            default: '',
+            helptext: 'The form widget used for data input for this field.',
+            widget: {
+                type: 'entity',
+                options: {
+                    entityType: 'widget',
+                    fieldType: {
+                        function: 'getValue',
+                        params: ['type'],
+                    }
+                },
+            }
+        },
+        display: {
+            type: 'entity',
+            default: '',
+            helptext: 'The element or component used to display this field.',
+            widget: {
+                type: 'entity',
+                options: {
+                    entityType: 'display',
+                },
+            }
+        },
+        mediaStore: {
+            type: 'entity',
+            default: '',
+            helptext: 'Where any media uploaded to this field will be stored. Only applies if the widget handles media.',
+            widget: {
+                type: 'entity',
+                options: {
+                    entityType: 'mediaStore',
+                },
+            }
+        },
+        helptext: {
+            type: 'text',
+            default: '',
+            helptext: 'The help text to describe the purpose of the field for content editors.'
+        },
+        class: {
+            type: 'text',
+            default: '',
+            helptext: 'Any classes to add to the form and display.'
+        },
+        required: {
+            type: 'boolean',
+            default: false,
+            helptext: 'Whether the field is required.'
+        },
+        hidden: {
+            type: 'boolean',
+            default: false,
+            helptext: 'Whether the field is hidden.'
+        },
+        disabled: {
+            type: 'boolean',
+            default: false,
+            helptext: 'Whether the field is disabled.'
+        },
+        multiple: {
+            type: 'boolean',
+            default: false,
+            helptext: 'Whether the field takes multiple values.'
+        },
+        multipleOrSingle: {
+            type: 'boolean',
+            default: false,
+            helptext: 'Whether the field will allow storing a single value instead of a single-item array.',
+            hidden: '$not($values.multiple)',
+        },
+        // multipleMin: {
+        //   type: 'number',
+        //   default: undefined,
+        //   helptext: 'The minimum number of values for a multiple field.',
+        //   hidden: '$not($values.multiple)',
+        // },
+        // multipleMax: {
+        //   type: 'number',
+        //   default: undefined,
+        //   helptext: 'The maximum number of values for a multiple field.',
+        //   hidden: '$not($values.multiple)',
+        // },
+        multipleLabelFields: {
+            type: 'text',
+            default: '',
+            helptext: 'For fieldgroups, the fields ',
+            hidden: '$not($values.multiple)',
+        },
+        preSave: {
+            type: 'entity',
+            multiple: true,
+            default: '',
+            helptext: 'Any transformers to apply before the field is saved to storage.',
+            widget: {
+                type: 'entity',
+                options: {
+                    entityType: 'transformer',
+                }
+            }
+        },
+        preMount: {
+            type: 'entity',
+            multiple: true,
+            default: '',
+            helptext: 'Any transformers to apply before the field is displayed on the page.',
+            widget: {
+                type: 'entity',
+                options: {
+                    entityType: 'transformer',
+                }
+            }
+        },
+    }
+};
+export class Field extends Entity {
     constructor(id, conf, cms, contentType) {
+        super(templateField);
+        this.template = templateField;
         this.helptext = '';
         this.class = '';
         // Items that are only used when initialized for an entry form
@@ -30,7 +172,8 @@ export class Field {
             this.value = parseScript(conf.value) ?? conf.value;
             this.helptext = parseScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '');
             this.multiple = parseScript(conf.multiple) ?? (conf.multiple ? true : false);
-            this.multipleLabel = parseScript(conf.multipleLabel) ?? (conf.multipleLabel ? true : false);
+            this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? conf.multipleLabelFields;
+            this.multipleOrSingle = conf.multipleOrSingle ?? false;
             this.multipleMin = parseScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin));
             this.multipleMax = parseScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax));
             if (conf.events) {
@@ -45,6 +188,8 @@ export class Field {
             this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false);
             this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false);
             this.widget = new Widget(conf.widget || fieldType.widget, cms);
+            if (conf.display || fieldType.display)
+                this.display = new DisplayConfig(conf?.['display'] ?? fieldType.display, cms);
             // this.validator = conf.validator ?? fieldType.defaultValidator
             this.preSave = conf.preSave ? (Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave]) : fieldType.preSave;
             this.preMount = conf.preMount ? (Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount]) : fieldType.preMount;
@@ -61,71 +206,88 @@ export class Field {
             }
         }
     }
-    get isFieldable() { return this.widget.isFieldable; }
+    get isFieldable() { return this.widget.handlesFields; }
 }
 export const fieldTypes = {
     text: {
         id: 'text',
         default: '',
         widget: 'text',
+        display: 'span',
         preSave: ['toString'],
     },
     date: {
         id: 'date',
-        default: new Date(),
+        default: '',
         widget: 'date',
+        display: 'span',
         preSave: ['date'],
     },
     image: {
         id: 'image',
         default: [],
         widget: 'image',
+        display: 'field_image',
     },
     file: {
         id: 'file',
         default: [],
         widget: 'file',
+        display: 'field_file',
     },
     html: {
         id: 'html',
         default: '',
         widget: 'textarea',
+        display: {
+            type: 'div',
+            html: true
+        },
         preMount: ['html'],
     },
-    collection: {
-        id: 'collection',
+    fieldgroup: {
+        id: 'fieldgroup',
         default: {},
-        widget: 'collection',
+        widget: 'fieldgroup',
+        display: 'field_fieldgroup',
     },
     number: {
         id: 'number',
         default: null,
         widget: 'number',
+        display: 'span',
         preSave: ['parseInt'],
     },
     float: {
         id: 'float',
         default: null,
         widget: 'text',
+        display: 'span',
         preSave: ['parseFloat'],
     },
     boolean: {
         id: 'boolean',
         default: null,
         widget: 'checkbox',
+        display: 'boolean',
         preSave: ['boolean'],
     },
     tags: {
         id: 'tags',
         default: [],
         widget: 'text',
+        display: {
+            type: 'li',
+            wrapper: 'ul',
+        },
         preSave: ['tags']
     },
     value: {
         id: 'value',
         default: undefined,
         widget: 'value',
-    }
+        display: '',
+    },
     // password: {
     //   id: 'password',
     //   default: null,

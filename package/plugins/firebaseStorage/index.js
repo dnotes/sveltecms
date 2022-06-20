@@ -22,7 +22,7 @@ const storageBuilder = (options) => {
             helptext: 'The path, within your storage bucket, at which to save or retrieve content.',
         },
         firebaseConfig: {
-            type: "collection",
+            type: "fieldgroup",
             default: {},
             helptext: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
             fields: {
@@ -72,6 +72,7 @@ const storageBuilder = (options) => {
         return storage;
     }
     return {
+        id: 'firebaseStorage',
         mediaStores: [
             {
                 id: 'firebaseStorage',

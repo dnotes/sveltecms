@@ -39,6 +39,7 @@ export declare class ScriptError extends Error {
     constructor(message: string, state: string, tail?: string);
 }
 export declare type ScriptFunctionType = ConfigurableEntityType & {
+    admin?: boolean;
     helptext?: string;
     fn: (vars: {
         cms: SvelteCMS;

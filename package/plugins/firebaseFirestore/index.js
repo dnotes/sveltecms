@@ -7,7 +7,7 @@ const defaultOptions = {
         messagingSenderId: "",
         appId: "",
     },
-    collection: "",
+    fieldgroup: "",
     listFields: [],
     listQuery: [],
     useEmulators: false,
@@ -23,10 +23,10 @@ const firestoreBuilder = (options) => {
         appId: "",
     }, options?.firebaseConfig ?? {});
     const optionFields = {
-        collection: {
+        fieldgroup: {
             type: "text",
             default: '',
-            helptext: 'The firestore collection into which this content type will be saved.',
+            helptext: 'The firestore fieldgroup into which this content type will be saved.',
         },
         server: {
             type: "text",
@@ -39,7 +39,7 @@ const firestoreBuilder = (options) => {
             helptext: 'The fields to get in cms.listContent queries for this type.'
         },
         listQuery: {
-            type: "collection",
+            type: "fieldgroup",
             multiple: true,
             default: [],
             helptext: 'The field query to use when listing content: see https://firebase.google.com/docs/firestore/query-data/queries.',
@@ -90,7 +90,7 @@ const firestoreBuilder = (options) => {
             }
         },
         firebaseConfig: {
-            type: "collection",
+            type: "fieldgroup",
             default: {},
             helptext: 'The Firebase configuration as provided on the "Project settings" page of your Firebase project at https://console.firebase.google.com.',
             fields: {
@@ -130,7 +130,7 @@ const firestoreBuilder = (options) => {
             }
         }
     };
-    function getUrl(firebaseConfig, collection, path = '', database = '(default)') {
+    function getUrl(firebaseConfig, fieldgroup, path = '', database = '(default)') {
         let base = 'https://firestore.googleapis.com';
         if (options.useEmulators) {
             console.log('firebaseFirestore: using emulator');
@@ -138,9 +138,10 @@ const firestoreBuilder = (options) => {
         }
         else if (options?.server)
             base = options.server.replace(/\/+$/, '');
-        return `${base}/v1/projects/${firebaseConfig.projectId}/databases/${database}/documents/${collection}/${path}?key=${firebaseConfig.apiKey}`.replace(/\/+\?/, '?');
+        return `${base}/v1/projects/${firebaseConfig.projectId}/databases/${database}/documents/${fieldgroup}/${path}?key=${firebaseConfig.apiKey}`.replace(/\/+\?/, '?');
     }
     return {
+        id: 'firebaseFirestore',
         optionFields,
         contentStores: [
             {
@@ -154,7 +155,7 @@ const firestoreBuilder = (options) => {
                             headers['Authorization'] = `Bearer ${opts.token}`;
                         let body = JSON.stringify({ structuredQuery: {
                                 from: [{
-                                        collectionId: opts.collection || contentType.id,
+                                        fieldgroupId: opts.fieldgroup || contentType.id,
                                     }],
                                 select: parseListFields(opts.listFields),
                                 orderBy: opts.orderBy || undefined,
@@ -180,7 +181,7 @@ const firestoreBuilder = (options) => {
                         // Set auth token if provided
                         if (opts.bearerToken)
                             headers['Authorization'] = `Bearer ${opts.bearerToken}`;
-                        const res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, slug.toString()), { headers });
+                        const res = await fetch(getUrl(opts.firebaseConfig, opts.fieldgroup || contentType.id, slug.toString()), { headers });
                         if (!res.ok)
                             throw new Error(await res.text());
                         const json = await res.json();
@@ -203,7 +204,7 @@ const firestoreBuilder = (options) => {
                         let body = JSON.stringify(jsonToDocument(content).mapValue, null, 2);
                         if (!body || !body.length)
                             throw new Error(`Bad conversion to Firestore Document format.`);
-                        let res = await fetch(getUrl(opts.firebaseConfig, (opts.collection || contentType.id), slug), { method: 'PATCH', headers, body });
+                        let res = await fetch(getUrl(opts.firebaseConfig, (opts.fieldgroup || contentType.id), slug), { method: 'PATCH', headers, body });
                         if (!res.ok)
                             throw new Error(await res.text());
                         return content;
@@ -219,7 +220,7 @@ const firestoreBuilder = (options) => {
                         // Set auth token if provided
                         if (opts.bearerToken)
                             headers['Authorization'] = `Bearer ${opts.bearerToken}`;
-                        let res = await fetch(getUrl(opts.firebaseConfig, opts.collection || contentType.id, opts.slug || content._slug), { method: 'DELETE', headers });
+                        let res = await fetch(getUrl(opts.firebaseConfig, opts.fieldgroup || contentType.id, opts.slug || content._slug), { method: 'DELETE', headers });
                         if (!res.ok)
                             throw new Error(await res.text());
                         return content;

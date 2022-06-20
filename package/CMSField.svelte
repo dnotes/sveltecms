@@ -1,5 +1,5 @@
 <script>import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
-import CmsWidgetCollection from './widgets/CMSWidgetCollection.svelte';
+import CmsWidgetFieldgroup from './widgets/CMSWidgetFieldgroup.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
 export let cms;
 export let id;
@@ -18,8 +18,8 @@ export let value;
         bind:value
         {cms}
       />
-    {:else if field.widget.type === 'collection'}
-      <CmsWidgetCollection
+    {:else if field.widget.type === 'fieldgroup'}
+      <CmsWidgetFieldgroup
         {field}
         {id}
         bind:value
@@ -30,6 +30,7 @@ export let value;
         this={field.widget.widget}
         {field}
         {id}
+        {cms}
         bind:value
       />
     {/if}

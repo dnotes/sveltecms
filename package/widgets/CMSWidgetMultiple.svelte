@@ -1,45 +1,103 @@
-<script>import { tick } from "svelte";
-import CmsWidgetCollection from "./CMSWidgetCollection.svelte";
+<script>import { onMount, tick } from "svelte";
+import CmsWidgetFieldgroup from "./CMSWidgetFieldgroup.svelte";
 import Button from "sveltecms/ui/Button.svelte";
+import { cloneDeep } from "lodash-es";
 export let field;
 export let id;
 export let cms;
-// For multiple collections, it is necessary to set the value to {}, otherwise SSR causes infinite loop
-export let value = [field.fields ? {} : field.default];
+// For multiple fieldgroups, it is necessary to set the value to {}, otherwise SSR causes infinite loop
+export let value = [field.type === 'fieldgroup' ? {} : field.default];
+if (!Array.isArray(value) && !field?.multipleOrSingle)
+    value = [value];
+let fieldgroupsCollapsed = [];
+// We defer this so that child widgets can measure their height, e.g. for autosizing textareas
+onMount(() => { fieldgroupsCollapsed = Array.isArray(value) ? value?.map(i => true) : [true]; });
 let formItems = {};
 async function addItem() {
-    value = [...value, field.default];
+    if (!Array.isArray(value))
+        value = [value];
+    if (value.length === 0 && field?.multipleOrSingle)
+        value = cloneDeep(field.default);
+    else
+        value = [...value, cloneDeep(field.default)];
     await tick();
     formItems[value.length - 1].getElementsByTagName('label')[0].focus();
 }
+async function removeItem(i) {
+    if (!Array.isArray(value))
+        value = [];
+    else {
+        value.splice(i, 1);
+        if (value.length === 1 && field?.multipleOrSingle)
+            value = value[0];
+        else
+            value = value;
+    }
+}
 </script>
 
-<fieldset class="cms-multiple" on:click|preventDefault>
-  <!-- svelte-ignore a11y-label-has-associated-control -->
-  <label for="{id}[0]">{field.label}<label>
-  {#each value as v,i}
-    <div class="cms-multiple-item" bind:this={formItems[i]}>
-      {#if field.widget.type === 'collection'}
-        <svelte:component
-          this={CmsWidgetCollection}
+<fieldset class="multiple" on:click|preventDefault>
+
+  <legend>{field.label}</legend>
+
+  {#if Array.isArray(value)}
+    {#each value as v,i}
+      <div class="multiple-item" bind:this={formItems[i]}>
+        {#if field.widget.type === 'fieldgroup'}
+          <CmsWidgetFieldgroup
+            {field}
+            id="{id}[{i}]"
+            bind:value={v}
+            {cms}
+            bind:collapsed={fieldgroupsCollapsed[i]}
+          />
+        {:else}
+          <svelte:component
+            this={field.widget.widget}
+            {field}
+            id="{id}[{i}]"
+            bind:value={v}
+            {cms}
+          />
+        {/if}
+        <div class="delete">
+          <Button cancel
+            helptext="Remove {field.label} item"
+            on:click={removeItem}>&times;</Button>
+        </div>
+      </div>
+    {/each}
+  {:else}
+    <div class="multiple-item single" bind:this={formItems[0]}>
+      {#if field.widget.type === 'fieldgroup'}
+        <CmsWidgetFieldgroup
           {field}
-          id={`${id}[${i}]`}
-          bind:value={v}
+          id="{id}"
+          bind:value
           {cms}
+          bind:collapsed={fieldgroupsCollapsed[0]}
         />
       {:else}
         <svelte:component
           this={field.widget.widget}
           {field}
-          id={`${id}[${i}]`}
-          bind:value={v}
+          id="{id}"
+          bind:value
+          {cms}
         />
       {/if}
-      <Button small helptext="Remove {field.label} item" on:click={(e) => {
-        value.splice(i,1); value=value;
-      }}>✖️</Button>
+      <div class="delete">
+        <Button cancel
+          helptext="Remove {field.label} item"
+          on:click={removeItem}>&times;</Button>
+      </div>
     </div>
-  {/each}
-<Button small helptext="Add {field.label} item" on:click={addItem}>+ add {field.label.toLowerCase()} item</Button>
+  {/if}
+  <Button small helptext="Add {field.label} item" on:click={addItem}>+ add {field.label.toLowerCase()} item</Button>
 
 </fieldset>
+
+<style global>
+  :global(.sveltecms) :global(.multiple-item) { position:relative; }
+  :global(.sveltecms) :global(.multiple-item)>:global(.delete) { position:absolute; top:.25em; right:.5em; }
+</style>

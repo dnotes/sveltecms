@@ -1,4 +1,13 @@
 import slugify from '@sindresorhus/slugify';
+export const templateTransformer = {
+    id: 'transformer',
+    label: 'Transformer',
+    labelPlural: 'Transformers',
+    typeField: true,
+    typeInherits: true,
+    typeRestricted: true,
+    isConfigurable: true,
+};
 export const transformers = {
     toString: {
         id: 'toString',
@@ -28,7 +37,7 @@ export const transformers = {
     //       helptext: "The locale to display the date, e.g. 'en-US', or empty to display in client's locale."
     //     },
     //     dateFormatOptions: {
-    //       type: 'collection',
+    //       type: 'fieldgroup',
     //       default: {},
     //       fields: {
     //         timeZone: {

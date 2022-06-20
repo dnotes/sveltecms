@@ -457,6 +457,38 @@ export const scriptFunctions = {
             }
         }
     },
+    length: {
+        id: 'length',
+        fn: (vars, opts) => {
+            return opts?.value?.length || 0;
+        },
+        optionFields: {
+            value: {
+                type: 'text',
+                default: '',
+                helptext: 'A string or array for which to get the number of characters or items.'
+            }
+        }
+    },
+    listEntities: {
+        id: 'listEntities',
+        admin: true,
+        fn: (vars, opts) => {
+            return vars.cms.listEntities(opts.entityType, opts.includeAdmin);
+        },
+        optionFields: {
+            entityType: {
+                type: 'text',
+                default: 'fields',
+                helptext: 'The type of entity to list',
+            },
+            includeAdmin: {
+                type: 'boolean',
+                default: 'fields',
+                helptext: 'Whether to include entities tagged as admin',
+            },
+        }
+    },
 };
 // Some changeless regexes
 const valueRegex = /^\$(props?|values?|errors?|touched)\b/;

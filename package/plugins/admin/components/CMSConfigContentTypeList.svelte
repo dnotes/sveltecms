@@ -6,12 +6,12 @@ export let cms;
 export let basePath;
 export let adminPath;
 let configPath = adminPath.replace(/\/.+/, '');
-let contentTypes = cms.listEntities('types');
+let contentTypes = cms.listEntities('contentTypes');
 let fields = Object.keys(cms.fields);
 let addID, addLink;
 let removeType, confirmRemoveType;
 async function doRemove() {
-    delete cms.conf.types[removeType];
+    delete cms.conf.contentTypes[removeType];
     contentTypes = contentTypes.filter(t => t !== removeType);
     removeType = undefined;
     confirmRemoveType = undefined;
@@ -58,8 +58,8 @@ async function listContent(id) {
     {#each contentTypes as id}
       <tr>
         <td>{id}</td>
-        <td>{cms.types[id].label || getLabelFromID(id)}</td>
-        <td>{Object.keys(cms.types[id].fields || {}).join(', ')}</td>
+        <td>{cms.contentTypes[id].label || getLabelFromID(id)}</td>
+        <td>{Object.keys(cms.contentTypes[id].fields || {}).join(', ')}</td>
         <td>
           <a href="{basePath}/{configPath}/{id}" class="button small">configure</a>
           <Button small on:click={()=>{removeType=id}}>delete</Button>

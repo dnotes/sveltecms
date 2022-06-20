@@ -137,6 +137,7 @@ function releaseObjectUrls() {
       {multiple}
       disabled={field.disabled}
       required={field.required}
+      on:click|stopPropagation
       on:change={handleUpload}
       style="display:none"
     />
@@ -202,7 +203,11 @@ function releaseObjectUrls() {
               >
             {/if}
 
-            <Button small danger helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
+            <Button cancel
+              helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}"
+              on:click="{() => {deleteImage(i)}}"
+            />
+
           </div>
         {/each}
       {:else}
@@ -252,7 +257,12 @@ function releaseObjectUrls() {
               >
             {/if}
 
-            <Button small danger helptext="Delete image {i+1}: {value['alt'] || value['filename']}" on:click="{() => {deleteImage(i)}}">✖️</Button>
+            <div class="delete">
+              <Button cancel
+                helptext="Delete image {i+1}: {value['alt'] || value['filename']}"
+                on:click="{() => {deleteImage(i)}}">&times;</Button>
+            </div>
+
           </div>
         {/each}
       {/if}
@@ -263,24 +273,23 @@ function releaseObjectUrls() {
 
 </fieldset>
 
-<style>
+<style global>
 
-.cms-image-preview>div {
+:global(.cms-image-preview)>:global(div) {
   position: relative;
   width: 144px;
   height: 144px;
 }
-.cms-image-preview img {
+:global(.cms-image-preview) :global(img) {
   width: 144px;
   height: 112px;
   object-fit:cover;
   object-position:center;
 }
-.cms-image-preview button.cms-image-delete {
+:global(.cms-image-preview) :global(.delete) {
   position: absolute;
   top: 8px;
   right: 8px;
-  padding: 5px 1px 0 0;
 }
 
 </style>

@@ -48,8 +48,3 @@ $: title = adminPage ? adminPath.split('/').map((t, i) => adminPage.label[i] || 
 
 </div>
 </div>
-
-<style global>
-  @import "sveltecms/sveltecms-forms.css";
-  :global(.cms-admin) { padding:0 20px; }
-</style>

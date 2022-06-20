@@ -45,7 +45,7 @@ $: defaults = Object.fromEntries(items.map(([id, conf]) => {
     // The parent field, if it is not a direct descendant of a field type (TODO: is this needed?)
     let parentField = cms.fields[field.type] || {};
     // The fieldTypes ancestor of the field
-    let fieldType = cms.getEntityType('fields', field.type);
+    let fieldType = cms.getEntityRoot('fields', field.type);
     // A list of widgets available for the field type
     let widgetList = cms.getFieldTypeWidgets(fieldType?.id);
     // Whether the item is a default configuration (i.e. a string)

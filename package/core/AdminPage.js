@@ -51,15 +51,6 @@ export const adminPages = [
         }
     },
     {
-        id: 'fields',
-        component: {
-            type: 'CMSConfigForm',
-            options: {
-                component: 'CMSConfigFieldList',
-            },
-        },
-    },
-    {
         id: 'widgets',
         component: {
             type: 'CMSConfigForm',
@@ -69,12 +60,35 @@ export const adminPages = [
         },
     },
     {
-        id: 'types',
-        label: 'Content Types',
-        component: 'CMSConfigContentTypeList',
+        id: 'fields',
+        component: {
+            type: 'CMSConfigForm',
+            options: {
+                component: 'CMSConfigEntityList',
+            },
+        },
     },
     {
-        id: 'types/*',
+        id: 'fieldgroups',
+        component: {
+            type: 'CMSConfigForm',
+            options: {
+                component: 'CMSConfigEntityList',
+            }
+        }
+    },
+    {
+        id: 'contentTypes',
+        label: 'Content Types',
+        component: {
+            type: 'CMSConfigForm',
+            options: {
+                component: 'CMSConfigEntityList',
+            }
+        }
+    },
+    {
+        id: 'contentTypes/*',
         label: 'Content Types',
         component: {
             type: 'CMSConfigForm',
@@ -88,7 +102,7 @@ export const adminPages = [
     //   configPath: 'lists',
     //   component: CMSConfigList,
     //   options: {
-    //     collection: 'listConfig',
+    //     fieldgroup: 'listConfig',
     //     stringField: 'tags',
     //   }
     // },

@@ -1,6 +1,7 @@
 import type SvelteCMS from 'sveltecms';
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms';
 import type { ContentType } from 'sveltecms/core/ContentType';
+import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
 export declare type Content = {
     _slug?: string;
     [id: string]: string | number | boolean | null | undefined | Date | Array<string | number | boolean | null | undefined | Date | Content> | Content;
@@ -12,6 +13,7 @@ export declare type ContentStoreType = EntityType & ConfigurableEntityType & {
     deleteContent?: (content: Content, contentType: ContentType, opts: ConfigSetting) => Promise<Content>;
 };
 export declare type ContentStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
+export declare const templateContentStore: EntityTemplate;
 export declare class ContentStore implements ConfigurableEntity, TypedEntity {
     id: string;
     type: string;

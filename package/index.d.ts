@@ -2,12 +2,14 @@ import { AdminPage, type AdminPageConfig } from './core/AdminPage';
 import { Field, type FieldType, type FieldConfigSetting, type ConfigFieldConfigSetting } from './core/Field';
 import { type WidgetType, type WidgetConfigSetting } from './core/Widget';
 import { ContentType, type ContentTypeConfigSetting } from "./core/ContentType";
-import type { MediaStoreType, MediaStoreConfigSetting } from './core/MediaStore';
-import type { Content, ContentStoreConfigSetting, ContentStoreType } from './core/ContentStore';
-import { type CollectionConfigSetting, type AdminCollectionConfigSetting, Collection } from './core/Collection';
+import { type MediaStoreType, type MediaStoreConfigSetting } from './core/MediaStore';
+import { type Content, type ContentStoreConfigSetting, type ContentStoreType } from './core/ContentStore';
+import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup } from './core/Fieldgroup';
 import { type Transformer, type TransformerConfigSetting } from './core/Transformer';
 import { type ScriptFunctionType } from './core/ScriptFunction';
-import type { ComponentType, ComponentConfigSetting } from './core/Component';
+import { type ComponentType, type ComponentConfigSetting, type Component } from 'sveltecms/core/Component';
+import { type DisplayConfigSetting } from 'sveltecms/core/Display';
+import type { EntityTemplate } from './core/EntityTemplate';
 export declare const FieldPropsAllowFunctions: string[];
 export declare const cmsConfigurables: string[];
 export declare type TypedEntity = {
@@ -56,8 +58,9 @@ export declare type ConfigurableEntityType = EntityType & {
 };
 export declare type CMSConfigSetting = {
     configPath?: string;
+    settings?: ConfigSetting;
     adminStore?: string | ContentStoreConfigSetting;
-    types?: {
+    contentTypes?: {
         [key: string]: ContentTypeConfigSetting;
     };
     lists?: {
@@ -78,8 +81,8 @@ export declare type CMSConfigSetting = {
     widgets?: {
         [key: string]: WidgetConfigSetting;
     };
-    collections?: {
-        [key: string]: CollectionConfigSetting;
+    fieldgroups?: {
+        [key: string]: FieldgroupConfigSetting;
     };
     transformers?: {
         [key: string]: TransformerConfigSetting;
@@ -90,18 +93,38 @@ export declare type CMSConfigSetting = {
 };
 export default class SvelteCMS {
     conf: CMSConfigSetting;
+    entityTypes: {
+        component: EntityTemplate;
+        contentStore: EntityTemplate;
+        contentType: EntityTemplate;
+        display: EntityTemplate;
+        field: EntityTemplate;
+        fieldgroup: EntityTemplate;
+        mediaStore: EntityTemplate;
+        slug: EntityTemplate;
+        transformer: {
+            id: string;
+            label: string;
+            labelPlural: string;
+            typeField: boolean;
+            typeInherits: boolean;
+            typeRestricted: boolean;
+            isConfigurable: boolean;
+        };
+        widget: EntityTemplate;
+    };
     admin: ContentType;
     adminPages?: {
         [key: string]: AdminPageConfig;
     };
-    adminCollections?: {
-        [key: string]: AdminCollectionConfigSetting;
+    adminFieldgroups?: {
+        [key: string]: AdminFieldgroupConfigSetting;
     };
     fields: {
         [key: string]: FieldConfigSetting;
     };
-    collections: {
-        [key: string]: CollectionConfigSetting;
+    fieldgroups: {
+        [key: string]: FieldgroupConfigSetting;
     };
     components: {
         [key: string]: ComponentType;
@@ -113,7 +136,9 @@ export default class SvelteCMS {
         [key: string]: ScriptFunctionType;
     };
     fieldTypes: {
-        [key: string]: FieldType;
+        [key: string]: FieldType & {
+            widgetTypes?: string[];
+        };
     };
     widgetTypes: {
         [key: string]: WidgetType;
@@ -127,21 +152,23 @@ export default class SvelteCMS {
     mediaStores: {
         [key: string]: MediaStoreType;
     };
-    types: {
+    contentTypes: {
         [key: string]: ContentType;
     };
     lists: CMSListConfig;
     constructor(conf: CMSConfigSetting, plugins?: CMSPlugin[]);
     use(plugin: CMSPlugin, config?: any): void;
-    preMount(container: ContentType | Field, values: Object): {};
-    preSave(container: ContentType | Field, values: Object): {};
+    preMount(fieldableEntity: ContentType | Field | Fieldgroup, values: Object): {};
+    preSave(fieldableEntity: ContentType | Field | Fieldgroup, values: Object): {};
     doFieldTransforms(op: 'preSave' | 'preMount', field: Field, value: any): any;
-    listEntities(type: string, includeAdmin?: boolean, arg?: string): string[];
+    listEntities(type: string, includeAdmin?: boolean, entityID?: string): string[];
+    getEntityType(type: string): EntityTemplate;
     getEntity(type: string, id: string): any;
     getEntityParent(type: string, id: string): any;
-    getEntityType(type: string, id: string): any;
-    getFieldTypes(): string[];
-    getFieldTypeWidgets(fieldType: any): string[];
+    getEntityRoot(type: string, id: string): any;
+    getFieldTypes(includeAdmin?: boolean): string[];
+    getFieldTypeWidgets(includeAdmin?: boolean, fieldTypeID?: string): string[];
+    getDisplayComponent(display: string | DisplayConfigSetting, fallback?: string): Component | ComponentType;
     getContentType(contentType: string): ContentType;
     getContentStore(contentType: string | ContentType): import("./core/ContentStore").ContentStore;
     slugifyContent(content: any, contentType: ContentType, force?: boolean): any;
@@ -155,14 +182,13 @@ export default class SvelteCMS {
      * @param contentType string
      * The id of the content type
      * @param slug string
-     * The text slug for an individual piece of content (optional)
-     * If null or omitted, then all content of the type will be returned
+     * The text slug for an individual piece of content
      * @param options object
-     * @returns object|object[]
+     * @returns object
      */
-    getContent(contentType: string | ContentType, slug?: string | number | null, options?: {
+    getContent(contentType: string | ContentType, slug: string | number | null, options?: {
         [key: string]: any;
-    }): Promise<Content | Content[]>;
+    }): Promise<Content>;
     saveContent(contentType: string | ContentType, content: any, options?: {
         [key: string]: any;
     }): Promise<Content>;
@@ -175,13 +201,12 @@ export default class SvelteCMS {
         [id: string]: ConfigFieldConfigSetting;
     }): ConfigSetting;
     mergeConfigOptions(options1: ConfigSetting, ...optionsAll: Array<string | ConfigSetting>): ConfigSetting;
-    getInstanceOptions(entityType: ConfigurableEntityType, conf?: string | ConfigurableEntityConfigSetting): ConfigSetting;
-    getWidgetFields(collection: FieldableEntity, vars: {
+    getWidgetFields(fieldgroup: FieldableEntity, vars: {
         values: any;
         errors: any;
         touched: any;
         id?: string;
-    }): WidgetFieldCollection;
+    }): WidgetFieldFieldgroup;
     initializeContentField(field: Field, vars: {
         values: any;
         errors: any;
@@ -212,8 +237,32 @@ export default class SvelteCMS {
         id?: string;
     }): void;
     getAdminPage(path: string): AdminPage;
-    getEntityConfig(type: string, id: string, options?: string[]): any;
-    getEntityConfigCollection(type: string, id: string): Collection;
+    getInstanceOptions(entityType: ConfigurableEntityType, conf?: string | ConfigurableEntityConfigSetting): ConfigSetting;
+    /**
+     * Get the full config setting for a particular entity
+     * @param type The Entity Type, e.g. 'field'
+     * @param id The id of a specific entity
+     * @param options The list of options and properties for the entity (so they aren't looked up more than once)
+     * @param pastIDs For recursive calls, the IDs that have been looked up before
+     * @returns ConfigSetting
+     */
+    getEntityConfig(type: string, id: string, options?: string[], pastCalls?: string[]): ConfigSetting;
+    /**
+     * Get the list of configuration fields for a specific object
+     * @param type The Entity Type, e.g. 'field'
+     * @param id The ID of a specific entity
+     * @returns An object whose values are ConfigFieldConfigSettings
+     */
+    getEntityConfigFields(type: string, id?: string): {
+        [id: string]: ConfigFieldConfigSetting;
+    };
+    /**
+     * Get the full Fieldgroup object for configuring an entity.
+     * @param type The Entity Type
+     * @param id The Entity ID (needed for option fields)
+     * @returns Fieldgroup
+     */
+    getEntityConfigFieldgroup(type: string, id?: string): Fieldgroup;
     get defaultMediaStore(): string;
     _scriptFunctionHelp: any;
     get scriptFunctionHelp(): Array<{
@@ -238,7 +287,7 @@ export declare type WidgetField = Field & {
     multipleMin?: number;
     multipleMax?: number;
 };
-export declare type WidgetFieldCollection = {
+export declare type WidgetFieldFieldgroup = {
     fields: {
         [id: string]: WidgetField;
     };
@@ -255,15 +304,20 @@ export declare function getConfigPathFromValuePath(path: string): string;
 export declare type ConfigSetting = {
     [key: string]: string | number | boolean | null | undefined | ConfigSetting | Array<string | number | ConfigSetting>;
 };
+export declare type EntityConfigSetting = ConfigSetting & {
+    id?: string;
+    type?: string;
+};
 export declare type CMSPlugin = {
+    id: string;
     adminPages?: AdminPageConfig[];
     fieldTypes?: FieldType[];
     widgetTypes?: WidgetType[];
     transformers?: Transformer[];
     contentStores?: ContentStoreType[];
     mediaStores?: MediaStoreType[];
-    collections?: CollectionConfigSetting[];
-    adminCollections?: CollectionConfigSetting[];
+    fieldgroups?: FieldgroupConfigSetting[];
+    adminFieldgroups?: FieldgroupConfigSetting[];
     components?: Array<ComponentType | ComponentConfigSetting>;
     lists?: CMSListConfig;
     optionFields?: {

@@ -1,27 +1,28 @@
 import type SvelteCMS from 'sveltecms';
-import type { LabeledEntity, TypedEntity, EntityType, FieldableEntity } from "sveltecms";
+import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity } from "sveltecms";
 import type { TransformerConfigSetting } from "sveltecms/core/Transformer";
 import type ContentType from 'sveltecms/core/ContentType';
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore";
 import { type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget';
+import { DisplayConfig, type DisplayConfigSetting } from './Display';
+import { Entity, type EntityTemplate } from './EntityTemplate';
 export declare type FieldConfigSetting = {
     type: string;
     label?: string | ScriptFunctionConfigSetting;
     default?: any;
-    value?: any;
     helptext?: string | ScriptFunctionConfigSetting;
     required?: boolean | ScriptFunctionConfigSetting;
     disabled?: boolean | ScriptFunctionConfigSetting;
     hidden?: boolean | ScriptFunctionConfigSetting;
     multiple?: boolean | ScriptFunctionConfigSetting;
-    multipleLabel?: string | ScriptFunctionConfigSetting;
-    multipleMin?: number | ScriptFunctionConfigSetting;
-    multipleMax?: number | ScriptFunctionConfigSetting;
+    multipleOrSingle?: boolean;
+    multipleLabelFields?: string | string[] | ScriptFunctionConfigSetting;
     fields?: {
         [key: string]: string | FieldConfigSetting;
     };
     widget?: string | WidgetConfigSetting;
+    display?: string | false | DisplayConfigSetting;
     preSave?: string | TransformerConfigSetting | (string | TransformerConfigSetting)[];
     preMount?: string | TransformerConfigSetting | (string | TransformerConfigSetting)[];
     class?: string;
@@ -33,9 +34,11 @@ export declare type FieldConfigSetting = {
         function: ScriptFunctionConfigSetting;
     }[];
     mediaStore?: string | MediaStoreConfigSetting;
+    [id: string]: string | number | boolean | ConfigSetting | ScriptFunctionConfigSetting | (string | number | ConfigSetting)[];
 };
 export declare type ConfigFieldConfigSetting = FieldConfigSetting & {
-    type: 'text' | 'number' | 'boolean' | 'date' | 'collection' | 'tags';
+    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'tags' | 'entity' | 'entityList';
+    entity?: string;
     default: any;
     helptext: string;
     fields?: {
@@ -45,13 +48,16 @@ export declare type ConfigFieldConfigSetting = FieldConfigSetting & {
 export declare type FieldType = EntityType & {
     default: any;
     widget: string | WidgetConfigSetting;
+    display: string | DisplayConfigSetting;
     preSave?: Array<string | TransformerConfigSetting>;
     preMount?: Array<string | TransformerConfigSetting>;
     admin?: boolean;
 };
-export declare class Field implements FieldableEntity, TypedEntity, LabeledEntity {
+export declare const templateField: EntityTemplate;
+export declare class Field extends Entity implements FieldableEntity, TypedEntity, LabeledEntity {
     id: string;
     type: string;
+    template: EntityTemplate;
     label: string | ScriptFunctionConfig;
     helptext?: string | ScriptFunctionConfig;
     required?: boolean | ScriptFunctionConfig;
@@ -65,13 +71,15 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
         function: ScriptFunctionConfig;
     }[];
     multiple?: boolean | ScriptFunctionConfig;
-    multipleLabel?: boolean | ScriptFunctionConfig;
+    multipleOrSingle?: boolean;
+    multipleLabelFields?: string | string[] | ScriptFunctionConfig;
     multipleMin?: number | ScriptFunctionConfig;
     multipleMax?: number | ScriptFunctionConfig;
     fields?: {
         [key: string]: Field;
     };
     widget: Widget;
+    display?: DisplayConfig;
     preSave?: (string | TransformerConfigSetting)[];
     preMount?: (string | TransformerConfigSetting)[];
     mediaStore?: MediaStore;

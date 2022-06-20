@@ -1,4 +1,5 @@
 <script>export let submit = undefined;
+export let cancel = undefined;
 export let disabled = undefined;
 export let small = undefined;
 export let borderless = undefined;
@@ -9,6 +10,8 @@ export let helptext = '';
 // Some buttons navigate.
 // This is easier than making a Link component or using goto.
 export let href = undefined;
+// This is for the <slot> default
+export let text = '';
 </script>
 
 {#if href}
@@ -19,13 +22,14 @@ export let href = undefined;
   aria-label="{helptext}"
   {href}
   class:disabled
+  class:cancel
   class:primary
   class:danger
   class:small
   class:borderless
   class:highlight
 >
-<slot></slot>
+<slot>{text}</slot>
 </a>
 
 {:else}
@@ -37,12 +41,13 @@ export let href = undefined;
   type={ submit ? 'submit' : 'button'}
   {disabled}
   class:primary
+  class:cancel
   class:danger
   class:small
   class:borderless
   class:highlight
 >
-<slot></slot>
+<slot>{text}</slot>
 </button>
 
 {/if}

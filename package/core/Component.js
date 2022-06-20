@@ -1,3 +1,12 @@
+export const templateComponent = {
+    id: 'component',
+    label: 'Component',
+    labelPlural: 'Components',
+    typeField: true,
+    typeInherits: true,
+    typeRestricted: true,
+    isConfigurable: true,
+};
 export class Component {
     constructor(conf, cms) {
         let componentType = typeof conf === 'string' ? cms.components[conf] : (cms.components[conf?.type] || cms.components[conf?.id]);

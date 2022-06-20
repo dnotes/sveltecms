@@ -1,6 +1,6 @@
-<script>import CmsFieldCollection from './CMSFieldCollection.svelte';
+<script>import CmsFieldGroup from './CMSFieldGroup.svelte';
 import DisplayResult from 'sveltecms/ui/DisplayResult.svelte';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, debounce } from 'lodash-es';
 import Button from './ui/Button.svelte';
 export let cms;
 export let contentTypeID;
@@ -12,14 +12,18 @@ export let disabled = false;
 export let submitOptions = {};
 export let isNew = undefined;
 export const contentType = cms.getContentType(contentTypeID);
-let widgetFieldCollection = cms.getWidgetFields(contentType, { values, errors, touched });
+let widgetFieldGroup = cms.getWidgetFields(contentType, { values, errors, touched });
 export let action = contentType?.form?.action ?? '';
 export let method = contentType?.form?.method ?? 'POST';
-export let previewComponent = contentType?.previewComponent;
+export let previewComponent = contentType?.previewComponent || contentType?.displayComponent || undefined;
 // @ts-ignore this is a type check
-let component = cms?.components?.[previewComponent?.component] || cms?.components?.[previewComponent];
+let component = cms?.components?.[previewComponent?.component] || cms?.components?.[previewComponent] || previewComponent || cms.components['content'];
 const initialValues = cloneDeep(values);
 let oldSlug = values?.['_slug'] ?? '';
+let previewContent = cms.preMount(cms.getContentType(contentTypeID), values);
+let updatePreviewContent = debounce(() => { previewContent = cms.preMount(cms.getContentType(contentTypeID), values); }, 500);
+$: if (values)
+    updatePreviewContent();
 // export let validator:Validator.Validator<Object> = cms.getValidator(contentTypeID, values)
 // $: if (values) {
 //   disabled = validator.fails()
@@ -52,11 +56,11 @@ export let submit = async (event) => {
           {:else}
             Edit
           {/if}
-          {widgetFieldCollection?.label}
+          {widgetFieldGroup?.label}
         </h2>
       </slot>
       <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
-        <CmsFieldCollection {cms} {values} collection={contentType} />
+        <CmsFieldGroup {cms} bind:values {widgetFieldGroup} />
 
         <input type="hidden" name="_slug" bind:value={oldSlug}>
 
@@ -74,7 +78,7 @@ export let submit = async (event) => {
     </div>
     {#if component}
       <div class="cms-editor-preview">
-        <svelte:component this={component.component} item={cms.preMount(cms.getContentType(contentTypeID), values)} ></svelte:component>
+        <svelte:component this={component.component} {cms} {contentTypeID} content={previewContent} ></svelte:component>
       </div>
     {/if}
   </div>

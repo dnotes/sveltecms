@@ -11,6 +11,7 @@ const pluginBuilder = (config) => {
         md = new MarkdownIT(config.commonmark ? 'commonmark' : 'default');
     }
     const plugin = {
+        id: 'markdown',
         transformers: [
             {
                 id: 'markdown',
@@ -24,6 +25,10 @@ const pluginBuilder = (config) => {
                 id: 'markdown',
                 default: '',
                 widget: 'textarea',
+                display: {
+                    type: 'div',
+                    html: true,
+                },
                 preMount: ['markdown'],
             },
         ],

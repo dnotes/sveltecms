@@ -1,23 +1,26 @@
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
 import bytes from 'bytes';
 import { cloneDeep } from 'lodash-es';
+import { dirname } from 'sveltecms/utils/path';
 const fs = {};
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
 function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/'); }
 export async function getFs(databaseName) {
-    if (isBrowser || isWebWorker) {
-        if (!fs[databaseName]) {
-            const { default: FS } = await import('@isomorphic-git/lightning-fs');
-            let _fs = new FS(databaseName);
-            fs[databaseName] = _fs.promises;
-        }
+    if (fs[databaseName])
         return fs[databaseName];
+    if (isBrowser || isWebWorker) {
+        const { default: FS } = await import('@isomorphic-git/lightning-fs');
+        let _fs = new FS(databaseName);
+        fs[databaseName] = _fs.promises;
     }
-    if (isJsDom)
-        console.warn('Use of jsdom is untested and unsupported by SvelteCMS');
-    const { promises } = await import('fs');
-    // @ts-ignore: todo: how to get the type for fs/promises
-    return promises;
+    else {
+        if (isJsDom)
+            console.warn('Use of jsdom is untested and unsupported by SvelteCMS');
+        const { promises } = await import('fs');
+        // @ts-ignore: todo: how to get the type for fs/promises
+        fs[databaseName] = promises;
+    }
+    return fs[databaseName];
 }
 export const databaseNameField = {
     type: 'text',
@@ -125,6 +128,7 @@ export function getSlugFromFilepath(filepath, contentTypeID, opts) {
     return slug;
 }
 const plugin = {
+    id: 'staticFiles',
     contentStores: [
         {
             id: 'staticFiles',
@@ -201,6 +205,7 @@ const plugin = {
                         throw new Error('Extension for file stores must be md, json, yml or yaml.');
                 }
                 try {
+                    await mkdirp(fs, dirname(filepath));
                     await fs.writeFile(filepath, saveContent);
                     return content;
                 }
@@ -258,6 +263,7 @@ const plugin = {
                         fileStats = false;
                 }
                 try {
+                    await mkdirp(fs, dirname(filepath));
                     const buffer = await file.arrayBuffer();
                     const uint8 = new Uint8Array(buffer);
                     await fs.writeFile(filepath, uint8);
@@ -310,4 +316,34 @@ const plugin = {
         },
     ]
 };
+/**
+ * taken from https://github.com/isaacs/node-mkdirp
+ * @param path
+ * @param fs a filesystem adapter, either node's fs or a lightning-fs
+ * @returns
+ */
+async function mkdirp(fs, path, opts, made) {
+    const parent = dirname(path);
+    if (parent === path) {
+        return fs.mkdir(path).catch(er => {
+            // swallowed by recursive implementation on posix systems
+            // any other error is a failure
+            if (er.code !== 'EISDIR')
+                throw er;
+        });
+    }
+    return fs.mkdir(path).then(() => made || path, er => {
+        if (er.code === 'ENOENT')
+            return mkdirp(fs, parent, opts)
+                .then(made => mkdirp(fs, path, opts, made));
+        if (er.code !== 'EEXIST' && er.code !== 'EROFS')
+            throw er;
+        return fs.stat(path).then(st => {
+            if (st.isDirectory())
+                return made;
+            else
+                throw er;
+        }, () => { throw er; });
+    });
+}
 export default plugin;

@@ -133,8 +133,18 @@ td>.cms-helptext:hover { display:none; }
   border:none !important;
 }
 
-.sveltecms .cms-editor-form {
-  max-width: 600px;
+.sveltecms button.cancel,
+.sveltecms a.button.cancel {
+  font-size:22px;
+  line-height: 24px;
+  padding: 0 7px 2px;
+  background: var(--cms-background);
+}
+
+/* Layout */
+
+.sveltecms .cms-admin {
+  padding: 0 20px;
 }
 .sveltecms div.field {
   padding: .5em;
@@ -148,6 +158,37 @@ td>.cms-helptext:hover { display:none; }
   width: 100%;
 }
 
+.sveltecms fieldset {
+  border: none;
+  margin: .4em 0;
+  border-radius: .5em;
+  padding: .8em .5em;
+}
+.sveltecms fieldset.fieldgroup>legend {
+  background: var(--cms-main);
+}
+.sveltecms fieldset.multiple>legend {
+  padding:0;
+}
+.sveltecms fieldset>legend button {
+  line-height: 1em;
+  padding:0;
+}
+.sveltecms fieldset.collapsed {
+  border-radius: 0;
+  padding:0 .5em;
+}
+.sveltecms fieldset.collapsed>div {
+  display:none;
+}
+.sveltecms fieldset.fieldgroup>legend>label>span:first-child { display:none; }
+.sveltecms fieldset>legend {
+  padding: .7em 1.4em;
+  border-radius: 1em;
+  display: flex;
+  gap: 1em;
+}
+
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
-div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; padding:16px; }
-div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; padding:16px; }
+div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; }
+div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; }

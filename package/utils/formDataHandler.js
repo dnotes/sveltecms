@@ -1,4 +1,5 @@
 import { get, set } from 'lodash-es';
+import Fieldgroup from 'sveltecms/core/Fieldgroup';
 export async function collapseFormItem(cms, contentType, fields, data, prefix) {
     // Get all fields, as promises (some formDataHandler functions are async)
     let promises = Object.entries(fields).map(async ([id, field]) => {
@@ -9,16 +10,23 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
             return [id, undefined];
         let value;
         let itemIsArray = Array.isArray(item);
-        // Collection fields must be collapsed recursively
-        if (field.type === 'collection') {
+        // Fieldgroup fields must be collapsed recursively
+        if (field.type === 'fieldgroup') {
             if (field.multiple && itemIsArray) {
                 let promises = Object.entries(item).map(async ([i, item]) => {
-                    return collapseFormItem(cms, contentType, field.fields, item, formPath);
+                    let fields = item?.['_fieldgroup']?.[0] ? new Fieldgroup(item?.['_fieldgroup']?.[0], cms).fields : field.fields;
+                    return collapseFormItem(cms, contentType, fields, item, formPath);
                 });
                 value = await Promise.all(promises);
             }
             else if (itemIsArray) {
                 value = await collapseFormItem(cms, contentType, field.fields, item['0'], formPath);
+            }
+            else if (item?._fieldgroup?.[0]) {
+                let fieldgroup = new Fieldgroup(item?._fieldgroup[0], cms);
+                if (fieldgroup) {
+                    value = await collapseFormItem(cms, contentType, fieldgroup.fields, item, formPath);
+                }
             }
             else { // This should not happen, but
                 value = await collapseFormItem(cms, contentType, field.fields, item, formPath);
@@ -60,7 +68,10 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
     });
     const result = await Promise.all(promises);
     // Now any special data not provided by a Field
-    result.push(['_slug', data._slug[0]]);
+    if (data?._slug?.[0])
+        result.push(['_slug', data._slug[0]]);
+    if (data?._fieldgroup?.[0])
+        result.push(['_fieldgroup', data._fieldgroup[0]]);
     return Object.fromEntries(result);
 }
 /**

@@ -4,7 +4,9 @@ import { SlugConfig, type SlugConfigSetting } from 'sveltecms/core/Slug';
 import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/ContentStore';
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore';
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field';
+import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
 import type { ComponentConfigSetting } from './Component';
+export declare const templateContentType: EntityTemplate;
 export declare type ContentTypeConfigSetting = ConfigSetting & {
     label: string;
     fields: {
@@ -13,7 +15,8 @@ export declare type ContentTypeConfigSetting = ConfigSetting & {
     contentStore: string | ContentStoreConfigSetting;
     mediaStore?: string | MediaStoreConfigSetting;
     slug?: string | string[] | SlugConfigSetting;
-    previewComponent?: string;
+    previewComponent?: string | ComponentConfigSetting;
+    displayComponent?: string | ComponentConfigSetting;
     form?: {
         method?: 'post' | 'get';
         action?: string;
@@ -27,6 +30,7 @@ export declare class ContentType implements FieldableEntity, LabeledEntity {
     contentStore: ContentStore;
     mediaStore?: string | MediaStoreConfigSetting;
     previewComponent?: string | ComponentConfigSetting;
+    displayComponent?: string | ComponentConfigSetting;
     fields: {
         [key: string]: Field;
     };

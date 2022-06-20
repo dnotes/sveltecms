@@ -23,6 +23,8 @@ declare const __propDef: {
         deleteImage?: (previewIndex: any) => void;
     };
     events: {
+        click: MouseEvent;
+    } & {
         [evt: string]: CustomEvent<any>;
     };
     slots: {

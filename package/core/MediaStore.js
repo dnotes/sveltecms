@@ -1,3 +1,13 @@
+export const templateMediaStore = {
+    id: 'mediaStore',
+    label: 'Media Store',
+    labelPlural: 'Media Stores',
+    typeField: true,
+    typeInherits: true,
+    typeRequired: true,
+    typeRestricted: true,
+    isConfigurable: true,
+};
 export class MediaStore {
     constructor(conf, cms) {
         let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf?.id];
