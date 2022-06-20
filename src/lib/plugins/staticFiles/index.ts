@@ -361,7 +361,7 @@ const plugin:CMSPlugin = {
  * @param fs a filesystem adapter, either node's fs or a lightning-fs
  * @returns
  */
- async function mkdirp(fs:PromisifiedFS, path:string, opts?:MKDirOptions, made?:boolean) {
+export async function mkdirp(fs:PromisifiedFS, path:string, opts?:MKDirOptions, made?:boolean) {
   const parent = dirname(path)
   if (parent === path) {
     return fs.mkdir(path).catch(er => {
