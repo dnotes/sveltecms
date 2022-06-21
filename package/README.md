@@ -4,6 +4,7 @@ You can start up a SvelteKit app as you usually would. However, be aware that
 SvelteCMS will require some additional tinkering if you are not using TypeScript.
 Therefore, we recommend using TypeScript for your SvelteKit app if you can.
 
+
 ## Installation
 
 Install SvelteCMS into your SvelteKit app using the package manager of your choice:
@@ -17,6 +18,7 @@ the script manually from the command line:
 
 `node ./node_modules/sveltecms/scripts/postinstall.js`
 
+
 ### Optional: Use plain JS
 
 **If you are not using TypeScript**, you will at present need to manually modify
@@ -25,6 +27,7 @@ the install files copied by SvelteCMS to conform to plain JS syntax.
 * change filename extensions from `.ts` to `.js`
 * in `.svelte` files, remove `lang="ts"` from the script tags
 * remove all TypeScript-specific syntax from `.js` and `.svelte` files
+
 
 ### Optional: Setup YAML for configuration
 
@@ -52,6 +55,7 @@ you will want to install and configure `@rollup/plugin-yaml`.
 * Configure SvelteCMS to use the correct file in `src/lib/cms.ts`: \
     ~~`import conf from './sveltecms.config.json'`~~ \
     **`import conf from './sveltecms.config.yml'`**
+
 
 ## Usage
 
