@@ -150,6 +150,6 @@
   },
   "svelte": "./index.js",
   "scripts": {
-    "postinstall": "scripts/copy-routes.js"
+    "postinstall": "./scripts/copy-routes.js"
   }
 }

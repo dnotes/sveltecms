@@ -27,7 +27,7 @@ files.forEach(([file,dest]) => {
 })
 
 packageJSON.scripts = {
-  postinstall: "scripts/copy-routes.js"
+  postinstall: "./scripts/copy-routes.js"
 }
 
 fs.writeFileSync('package/package.json', JSON.stringify(packageJSON, null, 2))
