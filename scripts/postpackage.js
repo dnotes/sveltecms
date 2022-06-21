@@ -34,3 +34,4 @@ packageJSON.scripts = {
 }
 
 fs.writeFileSync('package/package.json', JSON.stringify(packageJSON, null, 2))
+fs.chmodSync('package/scripts/postinstall.js', 0o755)
