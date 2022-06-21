@@ -17,7 +17,7 @@ const files = [
 ];
 files.forEach(([file, dest]) => {
     try {
-        cp.sync(file, dest);
+        cp.sync(file, dest, { overwrite: false });
         console.log(`copied ${file} -> ${dest}`);
     }
     catch (e) {
