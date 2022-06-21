@@ -21,6 +21,7 @@ const md = new MarkdownIT({
 const cms = new CMS(conf, [
   markdownPlugin({ md }),
   {
+    id: 'customComponents',
     components
   }
 ])

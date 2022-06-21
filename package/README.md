@@ -1,39 +1,64 @@
-## Functions of a CMS
+## Pre-install: Setup SvelteKit app
 
-[ ] Allow external users to create and edit content
+You can start up a SvelteKit app as you usually would. However, be aware that
+SvelteCMS will require some additional tinkering if you are not using TypeScript.
+Therefore, we recommend using TypeScript for your SvelteKit app if you can.
 
-    At the moment, most small SvelteKit sites either use Markdown files that live in the repository
-    or else collect content maintained in other systems. The content is contributed by the developer.
-    Svelte CMS provides configurable tools for users--not developers--to create and edit content, and
-    easy pluggable integrations for saving content to a database, external API, git repository, etc.
+## Installation
 
-[ ] Rebuild the site when necessary
+Install SvelteCMS into your SvelteKit app using the package manager of your choice:
 
-    The site build must either be triggered by the developer or be automated by an external service.
-    Svelte CMS plans to provide configurable, pluggable integrations for triggering automated build
-    processes, either as content is added or according to a schedule.
+`npm install sveltecms`
 
-[ ] Sanitize user-submitted content for display in browsers
+SvelteCMS uses an npm postinstall script to copy a few files into your repository,
+including config files and routes for the admin interface and content display.
+If you are installing SvelteCMS with the `--ignore-scripts` flag, you can run
+the script manually from the command line:
 
-    Since most content for small SvelteKit sites is contributed by the developer, content security is
-    not really a consideration. Svelte CMS provides configurable tools for sanitizing user-submitted
-    content.
+`node ./node_modules/sveltecms/scripts/postinstall.js`
 
-[ ] Manage content authorship and role-based editing permissions
+### Optional: Use plain JS
 
-    Svelte CMS configuration should be able to work with any authentication system to manage content
-    authorship and simple role-based permissions.
+**If you are not using TypeScript**, you will at present need to manually modify
+the install files copied by SvelteCMS to conform to plain JS syntax.
 
-[ ] Manage users as content
+* change filename extensions from `.ts` to `.js`
+* in `.svelte` files, remove `lang="ts"` from the script tags
+* remove all TypeScript-specific syntax from `.js` and `.svelte` files
 
-    Svelte CMS can also manage a small user base, like an editing team, providing authentication with
-    serverless functions or containerized endpoints.
+### Optional: Setup YAML for configuration
 
-[ ] Manage content based on data structure and configuration
+**If you want to use YAML** instead of JSON for storing SvelteCMS configuration,
+you will want to install and configure `@rollup/plugin-yaml`.
 
+* Install the plugin: \
+    `npm install @rollup/plugin-yaml`
 
+* Configure Vite to use the plugin in `svelte.config.js`:
+    ```
+    import yaml from '@rollup/plugin-yaml'
+    ...
+    const config = {
+        kit: {
+            vite: {
+                plugins: [
+                    yaml();
+                ]
+            }
+        }
+    }
+    ```
 
-[ ] Allow users to configure the CMS
+* Configure SvelteCMS to use the correct file in `src/lib/cms.ts`: \
+    ~~`import conf from './sveltecms.config.json'`~~ \
+    **`import conf from './sveltecms.config.yml'`**
 
-    Because it uses declarative configuration, Svelte CMS can provide a web front-end for configuration,
-    allowing privileged users to configure the CMS without accessing the git repository.
+## Usage
+
+SvelteCMS is now a part of your SvelteKit app. For local development, you can
+run SvelteKit as you normally would:
+
+`npm run dev`
+
+Then go to the admin interface in your browser, which is located by default at
+[//localhost:3000/admin](//localhost:3000/admin).

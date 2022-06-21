@@ -9,11 +9,14 @@ let packageJSON = JSON.parse(
 )
 
 const files = [
-  ['src/routes/[...path].svelte', 'package/routes/[...path].svelte'],
-  ['src/routes/[...path].ts', 'package/routes/[...path].ts'],
-  ['src/routes/admin/[...adminPath].svelte', 'package/routes/admin/[...adminPath].svelte'],
-  ['src/routes/admin/[...adminPath].ts', 'package/routes/admin/[...adminPath].ts'],
-  ['src/routes/admin/__layout.svelte', 'package/routes/admin/__layout.svelte'],
+  ['src/routes/[...path].svelte',             'package/install/routes/[...path].svelte'],
+  ['src/routes/[...path].ts',                 'package/install/routes/[...path].ts'],
+  ['src/routes/admin/[...adminPath].svelte',  'package/install/routes/admin/[...adminPath].svelte'],
+  ['src/routes/admin/[...adminPath].ts',      'package/install/routes/admin/[...adminPath].ts'],
+  ['src/routes/admin/__layout.svelte',        'package/install/routes/admin/__layout.svelte'],
+  ['src/install/cms.ts',                      'package/install/cms.ts'],
+  ['src/install/sveltecms.config.json',       'package/install/sveltecms.config.json'],
+  ['src/install/sveltecms.config.yml',        'package/install/sveltecms.config.yml'],
 ]
 files.forEach(([file,dest]) => {
   try {
@@ -27,7 +30,7 @@ files.forEach(([file,dest]) => {
 })
 
 packageJSON.scripts = {
-  postinstall: "./scripts/copy-routes.js"
+  postinstall: "./scripts/postinstall.js"
 }
 
 fs.writeFileSync('package/package.json', JSON.stringify(packageJSON, null, 2))
