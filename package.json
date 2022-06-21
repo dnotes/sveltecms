@@ -8,7 +8,7 @@
     "package": "svelte-kit package && ./scripts/postpackage.js",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
-    "postinstall": "node ./package/scripts/copy-routes.js",
+    "postinstall": "node ./package/scripts/postinstall.js",
     "test": "jest"
   },
   "dependencies": {
