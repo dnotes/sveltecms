@@ -23,7 +23,6 @@ files.forEach(([file,dest]) => {
     console.log(`copied ${file} -> ${dest}`)
   }
   catch(e) {
-    e.message = `Error copying SvelteCMS file "${file}" -> "${dest}":\n${e.message}`
-    throw e
+    console.error(`Error copying SvelteCMS file "${file}" -> "${dest}":\n${e.message}`)
   }
 })
