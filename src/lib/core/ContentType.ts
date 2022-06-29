@@ -13,6 +13,7 @@ export const templateContentType:EntityTemplate = {
   id: 'contentType',
   label: 'Content Type',
   labelPlural: 'Content Types',
+  description: `Content Types are the basic data structures of SvelteCMS. Each Content Type specifies how to enter, save, retrieve, display, and delete a document of its type.`,
   typeField: false,
   isFieldable: true,
   isConfigurable: true,

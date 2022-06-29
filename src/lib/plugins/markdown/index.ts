@@ -25,6 +25,7 @@ const pluginBuilder:CMSPluginBuilder = (config:{
     transformers: [
       {
         id: 'markdown',
+        description: `Converts Markdown text to HTML using a Markdown processor (by default markdown-it).`,
         fn: (value) => {
           return md.render(value)
         },

@@ -5,7 +5,8 @@ export type EntityTemplate = {
   id:string     // The ID for the template, i.e. the lowercase name of the class, like "widget"
   label:string, // The label for the Entity Type, like "Widget"
   labelPlural:string,         // Plural form of the Entity Type label
-  typeField:string|boolean,  // Whether the field has a "type" field. If true, a "type" field will be created. If a string is specified, which configField should be considered the "type" field, e.g. for SlugConfig.
+  description:string,         // A brief description of the Entity Type
+  typeField:string|boolean,   // Whether the field has a "type" field. If true, a "type" field will be created. If a string is specified, which configField should be considered the "type" field, e.g. for SlugConfig.
   typeInherits?:boolean,      // Whether the "type" inherits properties and options from its parent
   typeRequired?:boolean,      // Whether a "type" is required for entities of this Entity Type
   typeRestricted?:boolean,    // Whether the "type" is restricted to existing entity ids (e.g. Fields, Widgets) or can be anything (e.g. Fieldgroups)

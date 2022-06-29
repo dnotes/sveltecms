@@ -27,6 +27,7 @@ export const templateContentStore:EntityTemplate = {
   id: 'contentStore',
   label: 'Content Store',
   labelPlural: 'Content Stores',
+  description: `A Content Store connects with some type of database or file system to provide storage for content managed by SvelteCMS.`,
   typeField: true,
   typeInherits: true,
   typeRequired: true,

@@ -57,6 +57,7 @@ export const templateField:EntityTemplate = {
   id: 'field',
   label: 'Field',
   labelPlural: 'Fields',
+  description: `Fields are the basic data structures of SvelteCMS, used to compose Content Types and Fieldgroups. Each field stores a particular type of data, which is input using an applicable Widget.`,
   typeField: true,
   typeInherits: true,
   typeRequired: true,
@@ -163,13 +164,14 @@ export const templateField:EntityTemplate = {
     multipleLabelFields: {
       type: 'text',
       default: '',
-      helptext: 'For fieldgroups, the fields ',
+      helptext: 'For fieldgroups, the fields to concatenate when creating a label for each item.',
       hidden: '$not($values.multiple)',
     },
     preSave: {
       type: 'entity',
       multiple: true,
-      default: '',
+      multipleOrSingle: true,
+      default: [],
       helptext: 'Any transformers to apply before the field is saved to storage.',
       widget: {
         type: 'entity',
@@ -181,7 +183,8 @@ export const templateField:EntityTemplate = {
     preMount: {
       type: 'entity',
       multiple: true,
-      default: '',
+      multipleOrSingle: true,
+      default: [],
       helptext: 'Any transformers to apply before the field is displayed on the page.',
       widget: {
         type: 'entity',

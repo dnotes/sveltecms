@@ -8,6 +8,7 @@ export const templateTransformer = {
   id: 'transformer',
   label: 'Transformer',
   labelPlural: 'Transformers',
+  description: `Transformers modify a Field's data before saving to the database (preSave) or displaying in the browser (preMount).`,
   typeField: true,
   typeInherits: true,
   typeRestricted: true,
@@ -15,20 +16,24 @@ export const templateTransformer = {
 }
 
 export type Transformer = ConfigurableEntityType & {
+  description:string
   fn:(value:any, opts?:ConfigSetting) => any
 }
 
 export const transformers:{[id:string]:Transformer} = {
   toString: {
     id: 'toString',
+    description: 'Converts a Field value to a string.',
     fn: (v) => v?.toString()
   },
   date: {
     id: 'date',
+    description: 'Converts a Field value to a Date.',
     fn: (v) => new Date(v)
   },
   removeTimestamp: {
     id: 'removeTimestamp',
+    description: 'Removes the timestamp from a Date field value.',
     fn: (v) => {
       v = v instanceof Date ? v.toISOString() : v
       return typeof v === 'string' ? v?.replace(/(T| )\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|(-|\+)\d{2}:?\d{2})/g, '') : v
@@ -60,22 +65,27 @@ export const transformers:{[id:string]:Transformer} = {
   // },
   boolean: {
     id: 'boolean',
+    description: 'Converts a Field value to Boolean.',
     fn: (v) => Boolean(v)
   },
   parseInt: {
     id: 'parseInt',
+    description: 'Converts a Field value to a number using parseInt.',
     fn: (v) => parseInt(v)
   },
   parseFloat: {
     id: 'parseFloat',
+    description: 'Converts a Field value to a number using parseFloat.',
     fn: (v) => parseFloat(v)
   },
   delete: {
     id: 'delete',
+    description: 'Removes a Field value from the Fieldgroup or Content Type.',
     fn: (v) => { return undefined }
   },
   tags: {
     id: 'tags',
+    description: 'Converts a text Field value to an array of strings, like tags.',
     fn: function parseTags(v,opts) {
       let regex = opts.splitOnSpaces ? new RegExp(`(?:\s|${opts.delimiter})+`, 'g') : new RegExp(`${opts.delimiter}`, 'g')
       let items = v?.toString()?.split(regex) || v
@@ -105,6 +115,7 @@ export const transformers:{[id:string]:Transformer} = {
   },
   slugify: {
     id: 'slugify',
+    description: 'Converts a Field value to a slugified string.',
     fn: (v,opts) => {
       if (Array.isArray(opts?.customReplacements) && opts.customReplacements.length) {
         // @ts-ignore
@@ -154,6 +165,7 @@ export const transformers:{[id:string]:Transformer} = {
   },
   getFilename: {
     id: 'getFilename',
+    description: 'Gets a filename from a Field value; useful for Fields that handle media.',
     fn: (v) => {
       return v.replace(/.+\//, '').replace(/\.[^\.]*$/, '')
     }
