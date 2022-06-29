@@ -2,7 +2,7 @@
 import CmsField from 'sveltecms/CMSField.svelte';
 import type SvelteCMS from 'sveltecms';
 import type { FieldableEntity } from 'sveltecms';
-import { onMount, onDestroy } from 'svelte'
+import { onMount, onDestroy, createEventDispatcher } from 'svelte'
 
 export let cms:SvelteCMS
 
@@ -12,12 +12,13 @@ export let touched = {}
 
 export let id:string = undefined
 
+let dispatch = createEventDispatcher()
+
 // One of the below is required; widgetFieldGroup overrides fieldgroup
 export let fieldgroup:FieldableEntity = undefined
 export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, touched, id })
 
   let root:HTMLElement
-
 
   onMount(() => {
     widgetFieldGroup.eventListeners?.forEach(conf => {
@@ -37,6 +38,7 @@ export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, 
 
   // This is necessary for conditional/computed fields
   $: if (values || errors || touched) widgetFieldGroup = widgetFieldGroup
+  $: if (values) dispatch('change', { values })
 
 </script>
 
