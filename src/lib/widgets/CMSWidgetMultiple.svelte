@@ -29,7 +29,7 @@ import { cloneDeep } from "lodash-es";
     formItems[value.length-1].getElementsByTagName('label')[0].focus()
   }
 
-  async function removeItem(i) {
+  async function removeItem(i:number) {
     if (!Array.isArray(value)) value = []
     else {
       value.splice(i,1)
@@ -67,7 +67,7 @@ import { cloneDeep } from "lodash-es";
         <div class="delete">
           <Button cancel
             helptext="Remove {field.label} item"
-            on:click={removeItem}>&times;</Button>
+            on:click={()=>{removeItem(i)}}>&times;</Button>
         </div>
       </div>
     {/each}
@@ -93,7 +93,7 @@ import { cloneDeep } from "lodash-es";
       <div class="delete">
         <Button cancel
           helptext="Remove {field.label} item"
-          on:click={removeItem}>&times;</Button>
+          on:click={()=>{removeItem(0)}}>&times;</Button>
       </div>
     </div>
   {/if}
