@@ -53,7 +53,7 @@ fields:
     widget: slideText
   slug:
     type: text
-    display: false
+    display: none
   h1:
     type: text
     display: h1
@@ -62,7 +62,7 @@ fields:
     mediaStore: images
   style:
     type: text
-    display: false
+    display: none
     helptext: |-
       This value will go within a style tag.
       Example: "top:5%; width:30%; text-align:center;"
@@ -73,7 +73,9 @@ fields:
       href:
         type: text
         required: true
-        helptext: If provided, the button will be rendered as a link that looks like a button.
+        helptext: >-
+          If provided, the button will be rendered as a link that looks like a
+          button.
       text:
         type: text
         required: true
@@ -81,7 +83,9 @@ fields:
       helptext:
         type: text
         required: true
-        helptext: Any help text that should be shown for screen readers or when hovering over the element.
+        helptext: >-
+          Any help text that should be shown for screen readers or when hovering
+          over the element.
 widgets:
   date:
     type: date
