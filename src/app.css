@@ -1,0 +1,12 @@
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Some styles are needed because of tailwind resets */
+input,
+select,
+textarea {
+  border: 1px solid var(--cms-main);
+  border-bottom-width: 2px;
+}
