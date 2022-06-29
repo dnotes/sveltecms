@@ -20,6 +20,7 @@ export const templateDisplay:EntityTemplate = {
   id: 'display',
   label: 'Display',
   labelPlural: 'Displays',
+  description: 'A Display configuration determines how SvelteCMS will display a field by default.',
   typeField: true,
   configFields: {
     type: {
@@ -48,8 +49,8 @@ export class DisplayConfig  {
   isComponent: boolean = false
   wrapper?: DisplayConfig
   html?: boolean
-  constructor(conf:false|string|DisplayConfigSetting, cms:SvelteCMS) {
-    if (!conf) return
+  constructor(conf:string|DisplayConfigSetting, cms:SvelteCMS) {
+    if (typeof conf === 'string' && ['','none','hidden'].includes(conf)) return
     conf = typeof conf === 'string' ? { type:conf } : conf
     this.type = conf.type
     this.isComponent = cms.components[this.type] ? true : false
