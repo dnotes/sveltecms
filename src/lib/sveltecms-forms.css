@@ -46,6 +46,13 @@ td>.cms-helptext:hover { display:none; }
   border-color: var(--cms-main);
 }
 
+.sveltecms input,
+.sveltecms select {
+  background-color: var(--cms-background);
+  color: var(--cms-text);
+}
+
+
 /* Helpers */
 .sveltecms .left, .sveltecms th { text-align:left; }
 .sveltecms .right { text-align:right; }
