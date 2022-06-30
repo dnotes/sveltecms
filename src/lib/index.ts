@@ -305,7 +305,7 @@ export default class SvelteCMS {
         else res[id] = this.doFieldTransforms('preSave', field, values?.[id])
       }
       catch(e) {
-        e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
+        e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreSave/${field.id} : ${e.message}`
         throw e
       }
     })
