@@ -14,6 +14,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
   export let id:string
   export let value:string|EntityConfigSetting
   export let field:WidgetField = undefined
+  export let nested:boolean = false
   // @ts-ignore
   export let options:{
     entityType:string   // The type of entity being configured
@@ -32,13 +33,28 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
   // The entity type template. See EntityTemplate.ts
   let entityType = cms.getEntityType(opts.entityType)
 
+  // Whether the entity has a type field
+  let isTyped = entityType.typeField ? true : false
+
+  // Whether the entity is multiple
+  let isMultiple = field?.multiple
+
   // The main "type" field for the entityType -- usually "type", but may be another field
   // This is the field that will be populated if a configuration value is a string
   let entityTypeFieldID = typeof entityType?.typeField === 'string' ? entityType.typeField : 'type'
 
   // The full config of the entity
   value = value ?? field?.default
-  let conf:EntityConfigSetting = typeof value === 'string' ? { [entityTypeFieldID]:value } : (value ? cloneDeep(value) : { [entityTypeFieldID]:field?.default })
+  let conf:EntityConfigSetting|EntityConfigSetting[]
+
+  // For Arrays, we leave them exactly as is, as these will be handled by the nested element
+  if (Array.isArray(value)) conf = value
+  // For strings, we make an EntityConfigSetting object
+  else if (typeof value === 'string') conf = { [entityTypeFieldID]:value }
+  // For EntityConfigSetting object, we clone it
+  else if (value) conf = cloneDeep(value)
+  // For other (e.g. undefined) values, we create an EntityConfigSetting object
+  else conf = { [entityTypeFieldID]:field?.default }
 
   // Type options
   let typeOptions = cms.listEntities(opts.entityType, false, opts.fieldType) // TODO: ensure no circular dependencies are choices
@@ -54,28 +70,67 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 
   // Whenever the type changes, set the entity, inherited config, and value
   function setType() {
-    let type = conf[entityTypeFieldID]?.toString()
-    defaults = cms.getEntityConfig(opts.entityType, type)
-    widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, id })
+    if (!Array.isArray(conf)) {
+      let type = conf[entityTypeFieldID]?.toString()
+      defaults = entityID === type
+        ? cms.getEntityConfig(opts.entityType, entityID, true)
+        : cms.getEntityConfig(opts.entityType, type)
+      widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, id })
+    }
     setValue()
   }
   setType()
 
   // Whenever configuration changes, set the value
   function setValue() {
-    // Get any customized values // TODO: test whether we need isEqual instead of !==
-    let customizations = Object.entries(conf || {}).filter(([k,v]) => (defaults?.[k] !== v) )
-    // Set the new value, including the type and the customized properties and options
-    let newValue = Object.fromEntries([[entityTypeFieldID, value?.[entityTypeFieldID] ?? value], ...customizations])
-    // If the new value is only a type, it should be a string
-    if ( isEqual(Object.keys(newValue), [entityTypeFieldID]) ) newValue = newValue[entityTypeFieldID]
+
+    let newValue
+
+    if (Array.isArray(conf)) {
+
+      newValue = conf.filter(Boolean)
+
+    }
+
+    else {
+
+      // Get any customized values // TODO: test whether we need isEqual instead of !==
+      let customizations = Object.entries(conf || {}).filter(([k,v]) => {
+        return !isEqual(defaults?.[k], v)
+      })
+
+      // Set the type field
+      let typeField = isTyped ? [[entityTypeFieldID, value?.[entityTypeFieldID] ?? value]] : []
+
+      // Set the new value, including the type and the customized properties and options
+      newValue = Object.fromEntries([...typeField, ...customizations])
+
+      // If the new value is only a type, it should be a string
+      if ( isEqual(Object.keys(newValue), [entityTypeFieldID]) ) newValue = newValue[entityTypeFieldID]
+
+    }
     // TODO: figure out how to remove the "type" field if this is a default entity type
     // Now set the value
     value = newValue
+
     // And dispatch the change event
     dispatch('change', { value })
+
     // Close the Modal
     modalOpen = false
+
+  }
+
+  function addItem() {
+    if (Array.isArray(conf)) conf = [...conf, {}]
+  }
+
+  function removeItem(i) {
+    if (Array.isArray(conf)) {
+      conf.splice(i,1)
+      conf = conf
+      setValue()
+    }
   }
 
   // Reactive flag for whether the value is a simple string or a ConfigSetting object
@@ -86,7 +141,33 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 
 </script>
 
-{#if !isNull(entityID)}
+{#if isMultiple && Array.isArray(conf)}
+  <!-- Entity accepts multiple values, as in preSave / preMount Transformers -->
+
+  <fieldset class="multiple">
+    <legend>{field?.label || entityType?.label || 'unknown entity'}</legend>
+    {#each conf as value, i}
+      <div class="multiple-item">
+        <svelte:self
+          nested
+          {cms}
+          {field}
+          id={formBaseID[i]}
+          bind:value={conf[i]}
+          on:change={setValue}
+        />
+        <div class="delete">
+          <Button cancel
+            helptext="Remove {field.label} item"
+            on:click={()=>{removeItem(i)}}>&times;</Button>
+        </div>
+      </div>
+    {/each}
+    <Button small on:click={addItem}>+ add {entityType?.label || 'unknown entity'}</Button>
+  </fieldset>
+
+{:else if !isNull(entityID)}
+  <!-- Entity accepts an id / value pair, as in field lists -->
   <fieldset class="fieldgroup" class:collapsed>
     <legend>
       <label><em>{entityType?.label || "unknown entity"} &nbsp;</em>
@@ -123,12 +204,16 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 
     </legend>
     {#if widgetFieldGroup}
-      <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} />
+      <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} on:change={setValue} />
     {/if}
   </fieldset>
 {:else}
+  <!-- Entity accepts a single value, as in a widget field -->
   <!-- svelte-ignore a11y-label-has-associated-control -->
-  <label><span>{field?.label || entityType?.label || 'unknown entity'}</span>
+  <label>
+    {#if !nested}
+      <span>{field?.label || entityType?.label || 'unknown entity'}</span>
+    {/if}
 
     {#if entityType?.typeField}
       <CmsWidgetEntityTypeField
