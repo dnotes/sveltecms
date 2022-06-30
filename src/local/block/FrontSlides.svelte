@@ -81,6 +81,7 @@ import { onDestroy } from 'svelte';
 </section>
 
 <style>
+  h1,h2,h3 { font-weight: bold; }
   .hero {
     position:relative;
     width:100%;
@@ -138,6 +139,8 @@ import { onDestroy } from 'svelte';
   }
   h3.big {
     font-size: 5vh;
+    line-height: 1em;
+    margin-top: .4em;
     user-select: none;
   }
   .text {
@@ -145,7 +148,7 @@ import { onDestroy } from 'svelte';
     margin-left: 25%;
     text-shadow: 1px 1px 2px white, -1px -1px 2px white;
   }
-  .red {
+  :global(.red) {
     color: indianred;
   }
   h2>span {
