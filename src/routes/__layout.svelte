@@ -1,5 +1,6 @@
 <script>
-import Button from "sveltecms/ui/Button.svelte";
+  import "../app.css";
+  import Button from "sveltecms/ui/Button.svelte";
 </script>
 
 <div id="page" class="sveltecms">
@@ -12,19 +13,32 @@ import Button from "sveltecms/ui/Button.svelte";
     </nav>
   </header>
   <main>
-    <slot></slot>
+    <slot />
   </main>
-  <footer>
-  </footer>
+  <footer />
 </div>
 
 <style>
   @import "sveltecms/sveltecms-forms.css";
-  #page { display:flex; flex-direction:column; min-height:100vh; width:100vw; }
-  main { flex-grow:1; }
-  nav { font-size: 1.6vh; }
-  ul li { display: inline-block; padding: .3em .7em; }
-  @media (orientation:landscape) and (max-height:400px) {
-    nav { font-size: 1.7vw; }
+  #page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100vw;
+  }
+  main {
+    flex-grow: 1;
+  }
+  nav {
+    font-size: 1.6vh;
+  }
+  ul li {
+    display: inline-block;
+    padding: 0.3em 0.7em;
+  }
+  @media (orientation: landscape) and (max-height: 400px) {
+    nav {
+      font-size: 1.7vw;
+    }
   }
 </style>
