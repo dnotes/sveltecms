@@ -140,7 +140,7 @@ import { onDestroy } from 'svelte';
   h3.big {
     font-size: 5vh;
     line-height: 1em;
-    margin-top: .4em;
+    margin-top: 1.2em;
     user-select: none;
   }
   .text {
