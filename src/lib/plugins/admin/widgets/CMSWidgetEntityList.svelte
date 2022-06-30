@@ -27,18 +27,19 @@ import Modal from "sveltecms/ui/Modal.svelte";
 
   let collapsedItems = items.map(i=>true)
 
-  // Variables for the elements where new lines are added
-  let addID, addType, addIDEl
-  let focuses = {}
+  let newEntity = {}
+  let newEntityID = ""
+  let addIDEl
 
   async function addItem() {
-    if (addID && addType) {
-      items.push([addID, addType])
+    if (newEntityID) {
+      collapsedItems[items.length] = true
+      items.push([newEntityID, newEntity])
       items = items
       await tick()
-      focuses[addID]?.focus()
-      addID = ''
-      addType = ''
+      newEntityID = ''
+      newEntity = {}
+      addIDEl.focus()
     }
   }
 
@@ -82,19 +83,17 @@ import Modal from "sveltecms/ui/Modal.svelte";
     </div>
   {/each}
   <div class="multiple-item">
-    <AddItemLine>
-      <label><em>{entityType.label || 'unknown entity'}</em> &nbsp;
-        <input id="new-item" type="text" size=8 bind:value={addID} bind:this={addIDEl}>
-      </label>
-      <label>Type &nbsp;
-        <select bind:value={addType}>
-          {#each cms.listEntities(opts.entityType) as type}
-            <option value={type}>{type}</option>
-          {/each}
-        </select>
-      </label>
-      <Button primary disabled={!addID || !addType} on:click={addItem}>+ add</Button>
-    </AddItemLine>
+    <CmsWidgetEntity
+      bind:entityID={newEntityID}
+      bind:value={newEntity}
+      bind:idElement={addIDEl}
+      {cms}
+      id="_new"
+      collapsed
+      options={{ entityType:opts.entityType, skipDetail:true }}
+    >
+      <Button primary disabled={!newEntityID} on:click={addItem}>+ add</Button>
+    </CmsWidgetEntity>
   </div>
 </fieldset>
 

@@ -14,11 +14,11 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
   export let id:string
   export let value:string|EntityConfigSetting
   export let field:WidgetField = undefined
-  export let nested:boolean = false
   // @ts-ignore
   export let options:{
     entityType:string   // The type of entity being configured
     fieldType?:string    // The field "type" value, for when choosing a widget
+    skipDetail?:boolean   // Whether to skip rendering the detail fields (i.e. for a new entity in a list)
   } = field?.widget?.options || {}
   let opts = Object.assign({}, options)
 
@@ -29,6 +29,12 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 
   // In a list, this item may be collapsed
   export let collapsed = false
+
+  // Whether this is a nested EntityWidget, within an Entity field that handles multiple entries
+  export let nested:boolean = false
+
+  // The ID element, for focus operations
+  export let idElement:HTMLElement = undefined
 
   // The entity type template. See EntityTemplate.ts
   let entityType = cms.getEntityType(opts.entityType)
@@ -174,6 +180,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
         <input
           type="text"
           size=8
+          bind:this={idElement}
           bind:value={entityID}
         >
       </label>
@@ -202,8 +209,10 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
         {/if}
       {/each}
 
+      <slot></slot>
+
     </legend>
-    {#if widgetFieldGroup}
+    {#if widgetFieldGroup && !opts.skipDetail}
       <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} on:change={setValue} />
     {/if}
   </fieldset>
