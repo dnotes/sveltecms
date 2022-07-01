@@ -189,7 +189,6 @@ export default class SvelteCMS {
         })
       }
     })
-    console.log(this)
 
     // Build out config for the content types
     Object.entries(conf?.contentTypes || {}).forEach(([id,conf]) => {

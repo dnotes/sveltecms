@@ -11,12 +11,13 @@ contentTypes:
       image: image
       body: body
     displayComponent: content_BlogPost
+    label: ''
   landingPage:
     displayComponent: content_LandingPage
     fields:
       title:
         type: title
-        display: false
+        display: none
       slug: slug
       blocks:
         type: fieldgroup
@@ -29,6 +30,13 @@ contentTypes:
       type: staticFiles
       fileExtension: json
     slug: slug
+    label: ''
+  docs:
+    fields:
+      title: text
+      body: body
+    label: ''
+    slug: title
 contentStores: {}
 mediaStores:
   images:

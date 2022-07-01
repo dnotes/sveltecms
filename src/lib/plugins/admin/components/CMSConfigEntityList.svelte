@@ -32,7 +32,7 @@ import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
 
 </script>
 
-<CmsWidgetEntityList {cms} id="{opts.configType}" bind:value={data} options={{entityType:opts.configType}} />
+<CmsWidgetEntityList {cms} id="{opts.configType}" bind:value={data} options={{ entityType:opts.configType, isTopLevelEntity:true }} />
 
 {#if defaultItems.length}
   <h3>Default items:</h3>

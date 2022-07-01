@@ -19,6 +19,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
     entityType:string   // The type of entity being configured
     fieldType?:string    // The field "type" value, for when choosing a widget
     skipDetail?:boolean   // Whether to skip rendering the detail fields (i.e. for a new entity in a list)
+    isTopLevelEntity?:boolean // Whether this widget is configuring a top-level entity, e.g. cms.fields
   } = field?.widget?.options || {}
   let opts = Object.assign({}, options)
 
@@ -78,7 +79,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
   function setType() {
     if (!Array.isArray(conf)) {
       let type = conf[entityTypeFieldID]?.toString()
-      defaults = entityID === type
+      defaults = (opts.isTopLevelEntity && (entityID === type))
         ? cms.getEntityConfig(opts.entityType, entityID, true)
         : cms.getEntityConfig(opts.entityType, type)
       widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, id })

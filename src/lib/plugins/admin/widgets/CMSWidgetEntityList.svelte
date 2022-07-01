@@ -7,9 +7,9 @@ import type SvelteCMS from "sveltecms";
 import type { FieldConfigSetting } from "sveltecms/core/Field";
 
 import CmsWidgetEntity from "sveltecms/plugins/admin/widgets/CMSWidgetEntity.svelte";
-import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 import Button from "sveltecms/ui/Button.svelte";
 import Modal from "sveltecms/ui/Modal.svelte";
+import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 
   export let cms:SvelteCMS
   export let id:string
@@ -18,6 +18,7 @@ import Modal from "sveltecms/ui/Modal.svelte";
   // @ts-ignore
   export let options:{
     entityType:string,
+    isTopLevelEntity?:boolean,
   } = field?.widget?.options || {}
   let opts = Object.assign({}, options)
 
@@ -27,18 +28,19 @@ import Modal from "sveltecms/ui/Modal.svelte";
 
   let collapsedItems = items.map(i=>true)
 
-  let newEntity = {}
-  let newEntityID = ""
   let addIDEl
+  let newEntityID
+  let newEntityType
+  let newEntityTypeList = cms.listEntities(entityType.id)
 
   async function addItem() {
     if (newEntityID) {
       collapsedItems[items.length] = true
-      items.push([newEntityID, newEntity])
+      items.push([newEntityID, newEntityType])
       items = items
       await tick()
-      newEntityID = ''
-      newEntity = {}
+      newEntityID = undefined
+      newEntityType = undefined
       addIDEl.focus()
     }
   }
@@ -70,7 +72,7 @@ import Modal from "sveltecms/ui/Modal.svelte";
         {cms}
         {id}
         collapsed={collapsedItems[i]}
-        options={{ entityType:opts.entityType }}
+        options={{ entityType:opts.entityType, isTopLevelEntity:opts.isTopLevelEntity }}
       />
       <div class="delete">
         <Button cancel
@@ -83,17 +85,31 @@ import Modal from "sveltecms/ui/Modal.svelte";
     </div>
   {/each}
   <div class="multiple-item">
-    <CmsWidgetEntity
-      bind:entityID={newEntityID}
-      bind:value={newEntity}
-      bind:idElement={addIDEl}
-      {cms}
-      id="_new"
-      collapsed
-      options={{ entityType:opts.entityType, skipDetail:true }}
-    >
-      <Button primary disabled={!newEntityID} on:click={addItem}>+ add</Button>
-    </CmsWidgetEntity>
+    <fieldset class="fieldgroup collapsed">
+      <legend>
+        <label><em>{entityType.label || 'unknown entity'} &nbsp;</em>
+          <input
+            type="text"
+            name="_new[id]"
+            size=8
+            bind:this={addIDEl}
+            bind:value={newEntityID}
+          >
+        </label>
+
+        {#if entityType.typeField}
+          <CmsWidgetEntityTypeField
+            {entityType}
+            id="_new[type]"
+            bind:value={newEntityType}
+            items={newEntityTypeList}
+            required={false}
+            unset="choose"
+          />
+        {/if}
+        <Button primary disabled={!newEntityID || (entityType.typeField && !newEntityType)} on:click={addItem}>+ add</Button>
+      </legend>
+    </fieldset>
   </div>
 </fieldset>
 

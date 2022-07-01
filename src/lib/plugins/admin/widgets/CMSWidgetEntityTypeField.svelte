@@ -5,7 +5,8 @@ import type { EntityTemplate } from "sveltecms/core/EntityTemplate";
   export let items:string[] = []
   export let value:string
   export let id:string
-  export let required = entityType?.typeRequired
+  export let required:boolean = entityType?.typeRequired
+  export let unset:string = 'use default'
 
 </script>
 
@@ -17,7 +18,7 @@ import type { EntityTemplate } from "sveltecms/core/EntityTemplate";
     {required}
   >
     {#if !required}
-      <option value="">- use default -</option>
+      <option value="">- {unset} -</option>
     {/if}
     {#each items as opt}
       <option value="{opt}">{opt}</option>
