@@ -33,6 +33,10 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
   let newEntityType
   let newEntityTypeList = cms.listEntities(entityType.id)
 
+  export function addEntity(id) {
+    items = [...items, [id,id]]
+  }
+
   async function addItem() {
     if (newEntityID) {
       collapsedItems[items.length] = true
