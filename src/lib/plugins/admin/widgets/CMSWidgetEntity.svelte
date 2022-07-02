@@ -107,7 +107,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
       })
 
       // Set the type field
-      let typeField = isTyped ? [[entityTypeFieldID, value?.[entityTypeFieldID] ?? value]] : []
+      let typeField = isTyped ? [[ entityTypeFieldID, (typeof value === 'string' ? value : value?.[entityTypeFieldID]) ]] : []
 
       // Set the new value, including the type and the customized properties and options
       newValue = Object.fromEntries([...typeField, ...customizations])
