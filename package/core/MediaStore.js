@@ -2,6 +2,7 @@ export const templateMediaStore = {
     id: 'mediaStore',
     label: 'Media Store',
     labelPlural: 'Media Stores',
+    description: `A Media Store provides storage for images, audio or video, documents, or other files.`,
     typeField: true,
     typeInherits: true,
     typeRequired: true,

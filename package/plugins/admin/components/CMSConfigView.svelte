@@ -21,5 +21,4 @@ $: content = encoders?.[format] ? encoders[format](cms.conf) : '';
 </div>
 
 <style>
-  pre { padding:1em; }
-</style>
+  pre { padding:1em; }</style>

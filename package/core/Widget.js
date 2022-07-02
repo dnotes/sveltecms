@@ -16,6 +16,7 @@ export const templateWidget = {
     id: 'widget',
     label: 'Widget',
     labelPlural: 'Widgets',
+    description: `Widgets provide form inputs for entering data into fields.`,
     typeField: true,
     typeInherits: true,
     typeRequired: true,
@@ -48,18 +49,21 @@ export class Widget extends Entity {
 export const widgetTypes = {
     undefined: {
         id: 'undefined',
+        description: `The Widget that shows up when SvelteCMS can't find the proper Widget.`,
         fieldTypes: [],
         widget: CMSWidgetUndefined,
         admin: true,
     },
     multiple: {
         id: 'multiple',
+        description: `The Widget for fields that allow multiple values.`,
         fieldTypes: [],
         widget: CMSWidgetMultiple,
         admin: true,
     },
     text: {
         id: 'text',
+        description: `A plain text input.`,
         fieldTypes: ['text', 'date', 'number', 'tags'],
         widget: CMSWidgetText,
         optionFields: {
@@ -72,6 +76,7 @@ export const widgetTypes = {
     },
     fieldgroup: {
         id: 'fieldgroup',
+        description: `The Widget for fieldgroups with nested fields.`,
         fieldTypes: ['fieldgroup'],
         handlesFields: true,
         widget: CMSWidgetFieldgroup,
@@ -86,6 +91,7 @@ export const widgetTypes = {
     number: {
         id: 'number',
         fieldTypes: ['number', 'text'],
+        description: 'An HTML number input.',
         widget: CMSWidgetNumber,
         optionFields: {
             min: {
@@ -108,6 +114,7 @@ export const widgetTypes = {
     range: {
         id: 'range',
         fieldTypes: ['number', 'text'],
+        description: `An HTML range input with a slider.`,
         widget: CMSWidgetRange,
         optionFields: {
             min: {
@@ -130,6 +137,7 @@ export const widgetTypes = {
     date: {
         id: 'date',
         fieldTypes: ['text', 'date'],
+        description: `An HTML date input, with options for whether and how to store the time.`,
         widget: CMSWidgetDate,
         optionFields: {
             time: {
@@ -212,6 +220,7 @@ export const widgetTypes = {
     textarea: {
         id: 'textarea',
         fieldTypes: ['html', 'text', 'tags'],
+        description: `An HTML textarea input.`,
         widget: CMSWidgetTextarea,
         optionFields: {
             placeholder: {
@@ -251,6 +260,7 @@ export const widgetTypes = {
     checkbox: {
         id: 'checkbox',
         fieldTypes: ['boolean'],
+        description: `An HTML checkbox form element.`,
         widget: CMSWidgetCheckbox,
         optionFields: {
             labelBeforeCheckbox: {
@@ -263,6 +273,7 @@ export const widgetTypes = {
     image: {
         id: 'image',
         fieldTypes: ['image'],
+        description: `The default SvelteCMS image input. Handles multiple images with alt and title fields, but no drag and drop.`,
         widget: CMSWidgetImage,
         handlesMultiple: true,
         handlesMedia: true,
@@ -327,6 +338,7 @@ export const widgetTypes = {
     file: {
         id: 'file',
         fieldTypes: ['image'],
+        description: `The default cms file input. Handles multiple files.`,
         widget: CMSWidgetFile,
         handlesMultiple: true,
         handlesMedia: true,
@@ -366,6 +378,7 @@ export const widgetTypes = {
     select: {
         id: 'select',
         fieldTypes: ['text', 'number', 'date'],
+        description: `An HTML select box.`,
         widget: CMSWidgetSelect,
         handlesMultiple: true,
         optionFields: {
@@ -409,6 +422,7 @@ export const widgetTypes = {
     },
     value: {
         id: 'value',
+        description: 'A hidden html input element holding a value.',
         fieldTypes: [],
         widget: CMSWidgetValue,
     },

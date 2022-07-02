@@ -14,7 +14,9 @@ function cancel() {
   .modalbg {
     z-index:10;
     background:rgba(0,0,0,.4);
-    user-select:none;
+    -webkit-user-select:none;
+       -moz-user-select:none;
+            user-select:none;
     width:100vw;
     height:100vh;
     position:fixed;
@@ -32,5 +34,4 @@ function cancel() {
     max-height: 92vh;
     overflow-y:scroll;
     background:var(--cms-background);
-  }
-</style>
+  }</style>

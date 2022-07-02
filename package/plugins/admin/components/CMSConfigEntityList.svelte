@@ -9,35 +9,31 @@ export let cms;
 export let data;
 export let options;
 let opts = Object.assign({}, options);
-// All config items for the type of entities being configured, as an array
-let items = Object.entries(data);
+let entityType = cms.getEntityType(opts.configType);
+let addEntity;
 // All entities of the type being configured
 let entities = cms.listEntities(opts.configPath);
+// All config items for the type of entities being configured, as an array
+$: items = Object.entries(data);
 // A list of items that are not configured at all
-$: defaultItems = entities.filter(id => !items.find(item => item[0] === id)).map(k => [k, undefined]);
-function customizeDefaultItem(id, value) {
-    if (value)
-        items = [...items, [id, value]];
-}
+$: defaultItems = entities.filter(id => !items.find(item => item[0] === id));
 </script>
 
-<CmsWidgetEntityList {cms} id="{opts.configType}" bind:value={data} options={{entityType:opts.configType}} />
+<CmsWidgetEntityList
+  {cms}
+  id="{opts.configType}"
+  bind:value={data}
+  bind:addEntity
+  options={{ entityType:entityType.id, isTopLevelEntity:true }}
+/>
 
 {#if defaultItems.length}
-  <h3>Default items:</h3>
-  {#each defaultItems as [id, value]}
-  <div class="field">
-    <label for="{typeof value === 'string' ? id : id = '[type]'}"><span>{id}</span></label>
-      <CmsWidgetEntity
-        bind:value
-        {cms}
-        {id}
-        options={{ entityType:opts.configType }}
-        on:change={(e)=>{customizeDefaultItem(id,e?.detail?.value)}}
-      />
-    </div>
-  {/each}
+  <h3>Default {entityType.labelPlural}:</h3>
+  <fieldset class="multiple">
+    {#each defaultItems as id}
+      <div class="multiple-item">
+        {id} &nbsp; <Button small on:click={()=>{addEntity(id)}}>customize</Button>
+      </div>
+    {/each}
+  </fieldset>
 {/if}
-
-<style>
-</style>

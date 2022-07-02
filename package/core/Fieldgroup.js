@@ -4,6 +4,7 @@ export const templateFieldgroup = {
     id: 'fieldgroup',
     label: 'Field Group',
     labelPlural: 'Field Groups',
+    description: `A Field Group is a group of Fields.`,
     typeField: true,
     typeInherits: true,
     isConfigurable: true,

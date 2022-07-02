@@ -54,5 +54,4 @@ $: crumbs = adminPath.split('/').reduce((agg, val, i, arr) => {
     font-size:12px;
     padding-left:8px;
     color:var(--cms-link);
-  }
-</style>
+  }</style>

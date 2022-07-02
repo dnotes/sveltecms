@@ -4,6 +4,9 @@ export const templateSlug = {
     id: 'slug',
     label: 'Slug',
     labelPlural: 'Slugs',
+    description: `A Slug configuration specifies how SvelteCMS will create a "slug" for each piece of content. Slugs are strings of characters, ` +
+        `usually only lowercase letters and numbers, dashes, and underscores. SvelteCMS uses slugs to index and reference content. ` +
+        `Each piece of content in any content type must have a unique slug. By default, the slug will form a part of the URL at which the content is available.`,
     typeField: 'fields',
     configFields: {
         fields: {

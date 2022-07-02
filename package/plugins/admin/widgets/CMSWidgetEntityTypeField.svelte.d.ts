@@ -7,6 +7,7 @@ declare const __propDef: {
         value: string;
         id: string;
         required?: boolean;
+        unset?: string;
     };
     events: {
         change: Event;

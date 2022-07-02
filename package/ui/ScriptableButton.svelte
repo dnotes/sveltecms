@@ -135,5 +135,4 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
     display: flex;
     gap: 10px;
     justify-content: center;
-  }
-</style>
+  }</style>

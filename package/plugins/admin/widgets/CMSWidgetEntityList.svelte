@@ -1,8 +1,8 @@
 <script>import { tick } from "svelte";
 import CmsWidgetEntity from "sveltecms/plugins/admin/widgets/CMSWidgetEntity.svelte";
-import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
 import Button from "sveltecms/ui/Button.svelte";
 import Modal from "sveltecms/ui/Modal.svelte";
+import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 export let cms;
 export let id;
 export let field = undefined;
@@ -13,17 +13,22 @@ let opts = Object.assign({}, options);
 let entityType = cms.getEntityType(opts.entityType);
 let items = Object.entries(value || {});
 let collapsedItems = items.map(i => true);
-// Variables for the elements where new lines are added
-let addID, addType, addIDEl;
-let focuses = {};
+let addIDEl;
+let newEntityID;
+let newEntityType;
+let newEntityTypeList = cms.listEntities(entityType.id);
+export function addEntity(id) {
+    items = [...items, [id, id]];
+}
 async function addItem() {
-    if (addID && addType) {
-        items.push([addID, addType]);
+    if (newEntityID) {
+        collapsedItems[items.length] = true;
+        items.push([newEntityID, newEntityType]);
         items = items;
         await tick();
-        focuses[addID]?.focus();
-        addID = '';
-        addType = '';
+        newEntityID = undefined;
+        newEntityType = undefined;
+        addIDEl.focus();
     }
 }
 function removeItem(i) {
@@ -50,7 +55,7 @@ $: value = Object.fromEntries(items);
         {cms}
         {id}
         collapsed={collapsedItems[i]}
-        options={{ entityType:opts.entityType }}
+        options={{ entityType:opts.entityType, isTopLevelEntity:opts.isTopLevelEntity }}
       />
       <div class="delete">
         <Button cancel
@@ -63,19 +68,31 @@ $: value = Object.fromEntries(items);
     </div>
   {/each}
   <div class="multiple-item">
-    <AddItemLine>
-      <label><em>{entityType.label || 'unknown entity'}</em> &nbsp;
-        <input id="new-item" type="text" size=8 bind:value={addID} bind:this={addIDEl}>
-      </label>
-      <label>Type &nbsp;
-        <select bind:value={addType}>
-          {#each cms.listEntities(opts.entityType) as type}
-            <option value={type}>{type}</option>
-          {/each}
-        </select>
-      </label>
-      <Button primary disabled={!addID || !addType} on:click={addItem}>+ add</Button>
-    </AddItemLine>
+    <fieldset class="fieldgroup collapsed">
+      <legend>
+        <label><em>{entityType.label || 'unknown entity'} &nbsp;</em>
+          <input
+            type="text"
+            name="_new[id]"
+            size=8
+            bind:this={addIDEl}
+            bind:value={newEntityID}
+          >
+        </label>
+
+        {#if entityType.typeField}
+          <CmsWidgetEntityTypeField
+            {entityType}
+            id="_new[type]"
+            bind:value={newEntityType}
+            items={newEntityTypeList}
+            required={false}
+            unset="choose"
+          />
+        {/if}
+        <Button primary disabled={!newEntityID || (entityType.typeField && !newEntityType)} on:click={addItem}>+ add</Button>
+      </legend>
+    </fieldset>
   </div>
 </fieldset>
 

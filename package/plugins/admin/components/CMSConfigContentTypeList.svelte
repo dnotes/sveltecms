@@ -103,5 +103,4 @@ async function listContent(id) {
 <style>
   th {
     text-align:left;
-  }
-</style>
+  }</style>

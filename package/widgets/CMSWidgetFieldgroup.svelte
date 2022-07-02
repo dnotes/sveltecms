@@ -117,5 +117,4 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
   :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(div)>:global(.field),
   :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(.fieldgroup-type) {
     display: none;
-  }
-</style>
+  }</style>

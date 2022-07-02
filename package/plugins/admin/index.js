@@ -27,6 +27,8 @@ export const adminPlugin = {
             id: 'entity',
             fieldTypes: ['entity'],
             admin: true,
+            description: `Form element for the configuration for a single entity.`,
+            handlesMultiple: true,
             widget: CMSWidgetEntity,
             optionFields: {
                 entityType: {
@@ -52,6 +54,7 @@ export const adminPlugin = {
             id: 'entityList',
             fieldTypes: ['entityList'],
             admin: true,
+            description: `Form element for the configuration of a list of entities.`,
             widget: CMSWidgetEntityList,
             optionFields: {
                 entityType: {

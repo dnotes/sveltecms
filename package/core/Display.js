@@ -8,6 +8,7 @@ export const templateDisplay = {
     id: 'display',
     label: 'Display',
     labelPlural: 'Displays',
+    description: 'A Display configuration determines how SvelteCMS will display a field by default.',
     typeField: true,
     configFields: {
         type: {
@@ -34,7 +35,7 @@ export class DisplayConfig {
     constructor(conf, cms) {
         this.type = '';
         this.isComponent = false;
-        if (!conf)
+        if (typeof conf === 'string' && ['', 'none', 'hidden'].includes(conf))
             return;
         conf = typeof conf === 'string' ? { type: conf } : conf;
         this.type = conf.type;

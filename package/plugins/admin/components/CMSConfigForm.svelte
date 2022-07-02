@@ -1,5 +1,6 @@
 <script>import { get, set, isEqual } from 'lodash-es';
 import Button from "sveltecms/ui/Button.svelte";
+import yaml from 'js-yaml';
 export let cms;
 export let data;
 export let adminPath;
@@ -13,6 +14,8 @@ let conf = get(cms.conf, opts.configPath, {});
 // Variables for diffing
 let oldConf = Object.assign({}, get(cms.conf, opts.configPath, {}));
 $: unsaved = !isEqual(oldConf, conf) || !isEqual(Object.keys(oldConf), Object.keys(conf));
+// Variable for seeing
+$: code = yaml.dump(conf);
 export let saveConfig = async () => {
     set(cms.conf, opts.configPath, conf);
     return fetch('/admin/config', {
@@ -28,3 +31,12 @@ export let saveConfig = async () => {
   <svelte:component {cms} bind:data={conf} this={component.component} options={{...opts, ...component.options}} {adminPath} />
   <Button submit disabled={!unsaved}>Save</Button>
 </form>
+<div>
+  <pre><code>{code}</code></pre>
+</div>
+
+<style>
+  @media all and (min-width:800px) {
+    form { width:70%; display:inline-block; vertical-align:top; }
+    div { font-size: 12px; width: 28%; display:inline-block; overflow-x:scroll; }
+  }</style>

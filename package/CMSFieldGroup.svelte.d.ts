@@ -12,6 +12,8 @@ declare const __propDef: {
         widgetFieldGroup?: import("sveltecms").WidgetFieldFieldgroup;
     };
     events: {
+        change: CustomEvent<any>;
+    } & {
         [evt: string]: CustomEvent<any>;
     };
     slots: {};

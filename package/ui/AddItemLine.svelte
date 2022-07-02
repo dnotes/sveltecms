@@ -9,5 +9,4 @@
     display:flex;
     align-items:center;
     gap:.6em;
-  }
-</style>
+  }</style>

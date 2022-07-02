@@ -63,7 +63,7 @@ async function removeItem(i) {
         <div class="delete">
           <Button cancel
             helptext="Remove {field.label} item"
-            on:click={removeItem}>&times;</Button>
+            on:click={()=>{removeItem(i)}}>&times;</Button>
         </div>
       </div>
     {/each}
@@ -89,7 +89,7 @@ async function removeItem(i) {
       <div class="delete">
         <Button cancel
           helptext="Remove {field.label} item"
-          on:click={removeItem}>&times;</Button>
+          on:click={()=>{removeItem(0)}}>&times;</Button>
       </div>
     </div>
   {/if}
@@ -99,5 +99,4 @@ async function removeItem(i) {
 
 <style global>
   :global(.sveltecms) :global(.multiple-item) { position:relative; }
-  :global(.sveltecms) :global(.multiple-item)>:global(.delete) { position:absolute; top:.25em; right:.5em; }
-</style>
+  :global(.sveltecms) :global(.multiple-item)>:global(.delete) { position:absolute; top:.25em; right:.5em; }</style>

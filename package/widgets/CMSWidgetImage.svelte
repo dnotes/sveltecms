@@ -283,13 +283,13 @@ function releaseObjectUrls() {
 :global(.cms-image-preview) :global(img) {
   width: 144px;
   height: 112px;
-  object-fit:cover;
-  object-position:center;
+  -o-object-fit:cover;
+     object-fit:cover;
+  -o-object-position:center;
+     object-position:center;
 }
 :global(.cms-image-preview) :global(.delete) {
   position: absolute;
   top: 8px;
   right: 8px;
-}
-
-</style>
+}</style>

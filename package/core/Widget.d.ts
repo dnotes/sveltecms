@@ -9,6 +9,7 @@ export declare type FormDataHandler = (value: {
 export declare type WidgetConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting & {};
 export declare const templateWidget: EntityTemplate;
 export declare type WidgetType = ConfigurableEntityType & {
+    description: string;
     widget: Object;
     fieldTypes: string[];
     handlesMultiple?: boolean;

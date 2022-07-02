@@ -13,6 +13,6 @@ export declare class DisplayConfig {
     isComponent: boolean;
     wrapper?: DisplayConfig;
     html?: boolean;
-    constructor(conf: false | string | DisplayConfigSetting, cms: SvelteCMS);
+    constructor(conf: string | DisplayConfigSetting, cms: SvelteCMS);
 }
 export declare const displayComponents: ComponentType[];

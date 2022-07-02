@@ -91,13 +91,29 @@ export default class SvelteCMS {
                     // @ts-ignore
                     settings, 
                     // the config item, as a set of options (for shorthand)
-                    { id, options: settings });
+                    {
+                        id,
+                        _parent: this[objectType][type],
+                        options: settings
+                    });
                 });
             }
         });
         ['fields', 'widgets'].forEach(objectType => {
-            if (conf?.[objectType])
-                this[objectType] = { ...conf[objectType] };
+            if (conf?.[objectType]) {
+                let typesKey = objectType.replace('s', 'Types');
+                Object.entries(conf[objectType]).forEach(([id, item]) => {
+                    item = typeof item === 'string' ? { type: item } : item;
+                    let type = item['type'];
+                    if (!type || typeof type !== 'string')
+                        throw new Error(`Type is required for ${objectType}.${id} (received ${JSON.stringify(type)})`);
+                    let _parent = this[objectType][type] ?? this[typesKey][type];
+                    if (!_parent)
+                        throw new Error(`Parent not found for ${objectType}.${id}. Is "${id}" a typo? Did you define ${objectType}.${id} before ${objectType}.${item?.['type'] ?? item}?`);
+                    // @ts-ignore This has been type checked by now
+                    this[objectType][id] = { ...item, _parent };
+                });
+            }
         });
         // Build out config for the content types
         Object.entries(conf?.contentTypes || {}).forEach(([id, conf]) => {
@@ -209,7 +225,7 @@ export default class SvelteCMS {
                     res[id] = this.doFieldTransforms('preSave', field, values?.[id]);
             }
             catch (e) {
-                e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`;
+                e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreSave/${field.id} : ${e.message}`;
                 throw e;
             }
         });
@@ -268,14 +284,19 @@ export default class SvelteCMS {
         }
     }
     getEntityType(type) {
-        return this?.entityTypes?.[type] ?? this?.entityTypes?.[type?.replace(/s$/, '')];
+        if (this?.entityTypes?.[type])
+            return cloneDeep(this?.entityTypes?.[type]);
+        if (this?.entityTypes?.[type?.replace(/s$/, '')])
+            return cloneDeep(this?.entityTypes?.[type?.replace(/s$/, '')]);
     }
     getEntity(type, id) {
         if (!type || !id)
             return;
-        if (type === 'fields' || type === 'field')
+        if (!this[type])
+            type += 's';
+        if (type === 'fields')
             return this.fields[id] ?? this.fieldTypes[id];
-        if (type === 'widgets' || type === 'widget')
+        if (type === 'widgets')
             return this.widgets[id] ?? this.widgetTypes[id];
         return this?.[type]?.[id];
     }
@@ -554,43 +575,35 @@ export default class SvelteCMS {
         return this.mergeConfigOptions((entityType.optionFields ? this.getConfigOptionsFromFields(entityType.optionFields || {}) : {}), entityType.options || {}, conf?.['options'] || {}, (typeof conf === 'string' ? {} : conf));
     }
     /**
+     * Recursive helper function to get the descendant configuration from an entity object
+     * @param entity An Entity object
+     * @param options A list of options to retreive from the entity
+     * @returns
+     */
+    _getEntityConfig(entity, options) {
+        if (!entity)
+            return {};
+        return {
+            ...this._getEntityConfig(entity._parent, options),
+            ...Object.fromEntries(options.filter(k => entity?.hasOwnProperty(k)).map(k => ([k, entity?.[k]])))
+        };
+    }
+    /**
      * Get the full config setting for a particular entity
      * @param type The Entity Type, e.g. 'field'
-     * @param id The id of a specific entity
+     * @param entity The ID of the particular entity to get
      * @param options The list of options and properties for the entity (so they aren't looked up more than once)
-     * @param pastIDs For recursive calls, the IDs that have been looked up before
      * @returns ConfigSetting
      */
-    getEntityConfig(type, id, options, pastCalls = []) {
+    getEntityConfig(type, id, parentOnly = false) {
         if (!type || !id)
             return {};
-        if (pastCalls.includes(`${type}:${id}`)) {
-            if (type.match(/^fields?$/))
-                type = 'fieldTypes';
-            else if (type.match(/^widgets?$/))
-                type = 'widgetTypes';
-            else
-                return {}; // Should stop recursive errors (TODO: test)
-        }
-        if (!options) {
-            options = Object.keys(this.getEntityConfigFields(type, id) || {});
-            if (!options)
-                return {};
-        }
+        let fields = this.getEntityConfigFields(type, id) || {};
+        let options = Object.keys(fields);
         let entity = this.getEntity(type, id);
-        // the default properties for the EntityType
-        let configOptions = this.getConfigOptionsFromFields(this.getEntityType(type)?.configFields ?? {});
-        // the entity config of the parent (recursive)
-        let entityConfig = this.getEntityConfig(type, entity?.['type'], options, [...pastCalls, `${type}:${id}`]);
-        // the entity config of the parent's optionFields (if it is an entityType)
-        let optionsFromFields = this.getConfigOptionsFromFields(entity?.optionFields ?? {});
-        // any options written directly into the entity config, e.g. in a ConfigurableEntityConfigSetting
-        let setOptions = Object.fromEntries(options.filter(k => entity?.hasOwnProperty(k)).map(k => ([k, entity?.[k]])));
         return {
-            ...configOptions,
-            ...entityConfig,
-            ...optionsFromFields,
-            ...setOptions,
+            ...this.getConfigOptionsFromFields(fields),
+            ...this._getEntityConfig(parentOnly ? entity._parent : entity, options)
         };
     }
     /**
@@ -651,7 +664,7 @@ export default class SvelteCMS {
         // Get the list of options
         let options = Object.keys(fields);
         // Get the options from the parent element
-        let defaults = this.getEntityConfig(type, id, options);
+        let defaults = this.getEntityConfig(type, id);
         // Set the defaults for optionFields
         options.forEach(k => { fields[k].default = defaults?.[k]; });
         // Return the new fieldgroup

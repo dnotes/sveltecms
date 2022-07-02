@@ -10,16 +10,22 @@ declare const __propDef: {
         options?: {
             entityType: string;
             fieldType?: string;
+            skipDetail?: boolean;
+            isTopLevelEntity?: boolean;
         };
         entityID?: string | null;
         collapsed?: boolean;
+        nested?: boolean;
+        idElement?: HTMLElement;
     };
     events: {
         change: CustomEvent<any>;
     } & {
         [evt: string]: CustomEvent<any>;
     };
-    slots: {};
+    slots: {
+        default: {};
+    };
 };
 export declare type CmsWidgetEntityProps = typeof __propDef.props;
 export declare type CmsWidgetEntityEvents = typeof __propDef.events;

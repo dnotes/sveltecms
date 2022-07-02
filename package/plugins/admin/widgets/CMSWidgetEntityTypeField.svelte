@@ -3,6 +3,7 @@ export let items = [];
 export let value;
 export let id;
 export let required = entityType?.typeRequired;
+export let unset = 'use default';
 </script>
 
 {#if entityType?.typeRestricted}
@@ -13,7 +14,7 @@ export let required = entityType?.typeRequired;
     {required}
   >
     {#if !required}
-      <option value="">- use default -</option>
+      <option value="">- {unset} -</option>
     {/if}
     {#each items as opt}
       <option value="{opt}">{opt}</option>

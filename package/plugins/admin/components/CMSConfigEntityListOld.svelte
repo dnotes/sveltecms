@@ -130,5 +130,4 @@ $: data = Object.fromEntries(items);
 
 <style>
   td { vertical-align:top; }
-  pre { margin:0; }
-</style>
+  pre { margin:0; }</style>

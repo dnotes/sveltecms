@@ -2,6 +2,7 @@ export const templateComponent = {
     id: 'component',
     label: 'Component',
     labelPlural: 'Components',
+    description: `Components are .svelte files used to display content. Some are provided by plugins, but they can also be created by developers for a particular app or website.`,
     typeField: true,
     typeInherits: true,
     typeRestricted: true,

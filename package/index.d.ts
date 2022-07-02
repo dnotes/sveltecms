@@ -106,6 +106,7 @@ export default class SvelteCMS {
             id: string;
             label: string;
             labelPlural: string;
+            description: string;
             typeField: boolean;
             typeInherits: boolean;
             typeRestricted: boolean;
@@ -239,14 +240,20 @@ export default class SvelteCMS {
     getAdminPage(path: string): AdminPage;
     getInstanceOptions(entityType: ConfigurableEntityType, conf?: string | ConfigurableEntityConfigSetting): ConfigSetting;
     /**
+     * Recursive helper function to get the descendant configuration from an entity object
+     * @param entity An Entity object
+     * @param options A list of options to retreive from the entity
+     * @returns
+     */
+    _getEntityConfig(entity: any, options: string[]): ConfigSetting;
+    /**
      * Get the full config setting for a particular entity
      * @param type The Entity Type, e.g. 'field'
-     * @param id The id of a specific entity
+     * @param entity The ID of the particular entity to get
      * @param options The list of options and properties for the entity (so they aren't looked up more than once)
-     * @param pastIDs For recursive calls, the IDs that have been looked up before
      * @returns ConfigSetting
      */
-    getEntityConfig(type: string, id: string, options?: string[], pastCalls?: string[]): ConfigSetting;
+    getEntityConfig(type: string, id: string, parentOnly?: boolean): ConfigSetting;
     /**
      * Get the list of configuration fields for a specific object
      * @param type The Entity Type, e.g. 'field'

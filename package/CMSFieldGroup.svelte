@@ -1,10 +1,11 @@
 <script>import CmsField from 'sveltecms/CMSField.svelte';
-import { onMount, onDestroy } from 'svelte';
+import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 export let cms;
 export let values = {};
 export let errors = {};
 export let touched = {};
 export let id = undefined;
+let dispatch = createEventDispatcher();
 // One of the below is required; widgetFieldGroup overrides fieldgroup
 export let fieldgroup = undefined;
 export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, touched, id });
@@ -27,6 +28,8 @@ onDestroy(() => {
 // This is necessary for conditional/computed fields
 $: if (values || errors || touched)
     widgetFieldGroup = widgetFieldGroup;
+$: if (values)
+    dispatch('change', { values });
 </script>
 
 <div bind:this={root}>
