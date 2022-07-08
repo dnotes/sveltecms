@@ -1,6 +1,5 @@
 <script>
   import "../app.css";
-  import Button from "sveltecms/ui/Button.svelte";
 </script>
 
 <div id="page" class="sveltecms">
@@ -8,6 +7,7 @@
     <nav>
       <ul>
         <li><a href="/blog">Blog</a></li>
+        <li><a href="/docs">Docs</a></li>
         <li><a href="/admin">Admin</a></li>
       </ul>
     </nav>
