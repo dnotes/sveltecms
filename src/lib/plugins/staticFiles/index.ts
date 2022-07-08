@@ -5,6 +5,9 @@ import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
 import { cloneDeep } from 'lodash-es';
 import { dirname } from 'sveltecms/utils/path';
+import Fuse from 'fuse.js';
+import type { Media } from 'sveltecms/core/MediaStore';
+import type { Content } from 'sveltecms/core/ContentStore';
 const fs = {}
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
@@ -143,6 +146,36 @@ export function getSlugFromFilepath(filepath:string, contentTypeID:string, opts:
   return slug
 }
 
+async function getIndex(fs:PromisifiedFS, filepath:string):Promise<Array<Media|Content>> {
+  let index = []
+  try {
+    // @ts-ignore This should be absolutely a string
+    index = JSON.parse(await fs.readFile(filepath, 'utf8'))
+  }
+  catch(e) {
+    // if there is no file, just continue with {}
+  }
+  return index
+}
+
+async function saveIndex(fs:PromisifiedFS, filepath:string, index:Array<Media|Content>) {
+  try {
+    return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
+  }
+  catch(e) {
+    if (e.code === 'ENOENT') {
+      try {
+        await mkdirp(fs, dirname(filepath))
+        return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
+      }
+      catch(e) {
+        e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message
+        throw e
+      }
+    }
+  }
+}
+
 const plugin:CMSPlugin = {
   id: 'staticFiles',
   contentStores: [
@@ -263,6 +296,88 @@ const plugin:CMSPlugin = {
 
       },
 
+    }
+  ],
+  indexers: [
+    {
+      id: 'staticFiles',
+      optionFields: {
+        databaseName: databaseNameField,
+        contentDirectory: {
+          type: 'text',
+          default: 'content',
+          helptext: 'The directory for local content files relative to the project root.',
+        },
+      },
+      saveContent: async function (contentType, content) {
+        const fs = await getFs(this?.options?.databaseName)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
+        let item = {_slug: content._slug}
+        contentType.indexFields.forEach(k => { item[k] = content[k] })
+        let index = await getIndex(fs, filepath)
+        let i = index.findIndex(item => item._slug === content._slug)
+        if (i > -1) index[i] = item
+        else index.push(item)
+        if (content._oldSlug && (content._oldSlug !== content._slug)) {
+          i = index.findIndex(item => item._slug = content._oldSlug)
+          if (i > -1) index.splice(i, 1)
+        }
+        return saveIndex(fs, filepath, index)
+      },
+      deleteContent: async function (contentType, content) {
+        const fs = await getFs(this?.options?.databaseName)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
+        let index = await getIndex(fs, filepath)
+        let slug = content._oldSlug ?? content._slug
+        let i = index.findIndex(item => item._slug === slug)
+        if (i === -1) return
+        index.splice(i, 1)
+        return saveIndex(fs, filepath, index)
+      },
+      searchContent: async function (contentType, search, options = {}) {
+        let fs = await getFs(this?.options?.databaseName)
+        let filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
+        if (!this?._indexes) this._indexes = {}
+        if (!this._indexes[contentType.id]) this._indexes[contentType.id] = getIndex(fs, filepath).then(index => {
+          return new Fuse(
+            index,
+            options?.['keys'] ?? contentType.indexFields
+          )
+        })
+        return (await this._indexes[contentType.id]).search(search)
+      },
+      saveMedia: async function (media) {
+        const fs = await getFs(this?.options?.databaseName)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
+        let item = { src: media.src };
+        (this.mediaKeys || []).forEach(k => { item[k] = media[k] })
+        let index = await getIndex(fs, filepath)
+        let i = index.findIndex(item => item.src === media.src)
+        if (i > -1) index[i] = item
+        else index.push(item)
+        return saveIndex(fs, filepath, index)
+      },
+      deleteMedia: async function (media) {
+        const fs = await getFs(this?.options?.databaseName)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
+        let index = await getIndex(fs, filepath)
+        let i = index.findIndex(item => item.src === media.src)
+        if (i === -1) return
+        index.splice(i, 1)
+        return saveIndex(fs, filepath, index)
+      },
+      searchMedia: async function (search, options = {}) {
+        const fs = await getFs(this?.options?.databaseName)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
+        if (!this?.indexes) this._indexes = {}
+        if (!this._indexes._media) this._indexes._media = getIndex(fs, filepath).then(index => {
+          return new Fuse(
+            index,
+            options?.['keys'] ?? this.mediaKeys
+          )
+        })
+        return (await this._indexes._media).search(search)
+      },
     }
   ],
   mediaStores: [

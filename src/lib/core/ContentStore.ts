@@ -11,6 +11,7 @@ const noStore = async () => {
 
 export type Content = {
   _slug?:string
+  _oldSlug?:string
   [id:string]:string|number|boolean|null|undefined|Date|Array<string|number|boolean|null|undefined|Date|Content>|Content
 }
 
@@ -44,9 +45,12 @@ export class ContentStore implements ConfigurableEntity, TypedEntity {
   deleteContent:(content:Content, contentType:ContentType, options:ConfigSetting)=>Promise<Content>
   options:ConfigSetting
   constructor(conf:string|ContentStoreConfigSetting, cms:SvelteCMS) {
-    let store = typeof conf === 'string' ? cms.contentStores[conf] : (cms.contentStores[conf?.type] || cms.contentStores[conf?.id])
+    if (!conf) conf = { type:'staticFiles' }
+    else if (typeof conf === 'string') conf = { type:conf }
+    let store = cms.contentStores[conf?.type] || cms.contentStores[conf?.id]
     if (!store) store = Object.values(cms.contentStores)[0]
-    this.id = store?.id
+    this.id = store.id
+    this.type = conf.type
     this.listContent = store?.listContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return []; })
     this.getContent = store?.getContent || noStore
     this.saveContent = store?.saveContent || noStore

@@ -6,7 +6,7 @@ import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore'
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
-import { getLabelFromID } from 'sveltecms/utils';
+import { getLabelFromID, splitTags } from 'sveltecms/utils';
 import type { ComponentConfigSetting } from './Component';
 
 export const templateContentType:EntityTemplate = {
@@ -59,6 +59,11 @@ export const templateContentType:EntityTemplate = {
         }
       }
     },
+    indexFields: {
+      type: 'text',
+      default: '',
+      helptext: 'The fields that should be indexed, and whose values should be returned when content is listed.',
+    },
     previewComponent: {
       type: 'entity',
       default: undefined,
@@ -90,6 +95,7 @@ export type ContentTypeConfigSetting = ConfigSetting & {
   contentStore: string|ContentStoreConfigSetting
   mediaStore?: string|MediaStoreConfigSetting
   slug?: string|string[]|SlugConfigSetting
+  indexFields?: string|string[]
   previewComponent?:string|ComponentConfigSetting
   displayComponent?:string|ComponentConfigSetting
   form?:{
@@ -107,6 +113,7 @@ export class ContentType implements FieldableEntity, LabeledEntity {
   mediaStore?:string|MediaStoreConfigSetting
   previewComponent?:string|ComponentConfigSetting
   displayComponent?:string|ComponentConfigSetting
+  indexFields:string[]
   fields:{[key:string]:Field} = {}
   form: {
     method?:'post'|'get'
@@ -129,6 +136,10 @@ export class ContentType implements FieldableEntity, LabeledEntity {
 
     let slugConf = conf.slug || Object.keys(conf.fields)?.[0] || ''
     this.slug = new SlugConfig(slugConf, cms)
+
+    this.indexFields = Array.isArray(conf.indexFields)
+      ? conf.indexFields
+      : (splitTags()(conf.indexFields ?? undefined) || [])
 
   }
 }

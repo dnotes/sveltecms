@@ -3,6 +3,11 @@ import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting
 import type { ContentType } from 'sveltecms/core/ContentType'
 import type { EntityTemplate } from './EntityTemplate'
 
+export type Media = {
+  src:string,
+  [key:string]:string|number|boolean|null|undefined|Date|Array<string|number|boolean|null|undefined|Date>
+}
+
 export type MediaStoreType = EntityType & ConfigurableEntityType & {
   listMedia?:(path:string|null, opts:ConfigSetting) => Promise<string[]>
   getMedia?:(filename:string|number|null, opts:ConfigSetting) => Promise<string|string[]>

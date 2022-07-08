@@ -11,6 +11,7 @@ contentTypes:
       image: image
       body: body
     displayComponent: content_BlogPost
+    indexFields: title,date,image
     label: ''
   landingPage:
     displayComponent: content_LandingPage
@@ -31,12 +32,14 @@ contentTypes:
       fileExtension: json
     slug: slug
     label: ''
+    indexFields: ''
   docs:
     fields:
-      title: text
+      title: title
       body: body
     label: ''
     slug: title
+    indexFields: title
 contentStores: {}
 mediaStores:
   images:

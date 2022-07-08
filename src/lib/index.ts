@@ -13,6 +13,7 @@ import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
 import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es'
 import type { EntityTemplate } from './core/EntityTemplate'
 import { templateSlug } from './core/Slug'
+import { Indexer, type IndexerConfigSetting, type IndexerType } from './core/Indexer'
 
 // import { default as Validator, Rules } from 'validatorjs'
 
@@ -29,6 +30,7 @@ export const cmsConfigurables = [
   'adminStore',
   'contentTypes',
   // 'lists',
+  'indexers',
   'contentStores',
   'mediaStores',
   'fields',
@@ -100,7 +102,6 @@ export type CMSConfigSetting = {
 }
 
 export default class SvelteCMS {
-
   conf:CMSConfigSetting = {}
   entityTypes = {
     component: templateComponent,
@@ -115,6 +116,7 @@ export default class SvelteCMS {
     widget: templateWidget,
   }
   admin: ContentType
+  indexer: Indexer
   adminPages?: {[key:string]:AdminPageConfig} = {}
   adminFieldgroups?: {[key:string]:AdminFieldgroupConfigSetting} = {}
   fields:{[key:string]:FieldConfigSetting} = {}
@@ -127,6 +129,7 @@ export default class SvelteCMS {
   transformers:{[key:string]:Transformer} = transformers
   contentStores:{[key:string]:ContentStoreType} = {}
   mediaStores:{[key:string]:MediaStoreType} = {}
+  indexers:{[key:string]:IndexerType} = {}
   contentTypes:{[key:string]:ContentType} = {}
   lists:CMSListConfig = {}
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
@@ -146,7 +149,7 @@ export default class SvelteCMS {
     });
 
     // Initialize all of the stores, widgets, and transformers specified in config
-    ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups'].forEach(objectType => {
+    ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups', 'indexers'].forEach(objectType => {
       if (conf?.[objectType]) {
         Object.entries(conf[objectType]).forEach(([id,settings]) => {
 
@@ -196,7 +199,7 @@ export default class SvelteCMS {
     });
 
     let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json'
-    if (typeof adminStore === 'string') {
+    if (typeof adminStore === 'string' && !this.contentStores[adminStore]) {
       let contentDirectory = adminStore.replace(/\/[^\/]+$/, '')
       let fileExtension = adminStore.replace(/.+[\.]/, '')
       if (!['json','yml','yaml'].includes(fileExtension)) throw new Error('adminStore must end in .json, .yml, or .yaml.')
@@ -222,12 +225,14 @@ export default class SvelteCMS {
       }
     }, this)
 
+    this.indexer = new Indexer(conf?.settings?.indexer ?? 'staticFiles', this)
+
   }
 
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
-    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups'].forEach(k => {
+    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups','indexers'].forEach(k => {
       try {
         plugin?.[k]?.forEach(conf => {
           this[k][conf.id] = conf
@@ -484,7 +489,9 @@ export default class SvelteCMS {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
-    return db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
+    let savedContent = await db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
+    if (contentType?.indexFields?.length) this.indexer.saveContent(contentType, savedContent)
+    return savedContent
   }
 
   async deleteContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}):Promise<Content> {
@@ -846,6 +853,7 @@ export type CMSPlugin = {
   fieldTypes?: FieldType[]
   widgetTypes?: WidgetType[]
   transformers?: Transformer[]
+  indexers?: IndexerType[]
   contentStores?: ContentStoreType[]
   mediaStores?: MediaStoreType[]
   fieldgroups?: FieldgroupConfigSetting[]

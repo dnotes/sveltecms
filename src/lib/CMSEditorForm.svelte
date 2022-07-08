@@ -74,6 +74,7 @@ import Button from './ui/Button.svelte';
         <CmsFieldGroup {cms} bind:values {widgetFieldGroup} />
 
         <input type="hidden" name="_slug" bind:value={oldSlug}>
+        <input type="hidden" name="_oldSlug" value={oldSlug}>
 
         <Button
           submit
