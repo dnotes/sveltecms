@@ -1,27 +1,28 @@
 <script lang="ts">
 import { fade, fly, slide } from 'svelte/transition'
 import { onDestroy } from 'svelte';
+import type { Content } from 'sveltecms/core/ContentStore';
 
-  export let slides
+  export let item:Content & { slides:Content[] }
 
   let i = 0
   let heading = ''
   let text = ''
 
-  $: if (i || slides?.[i]) {
+  $: if (i || item.slides?.[i]) {
     heading = ''
     text = ''
     setTimeout(populate, 500)
   }
 
   function autonext() {
-    if (i === slides.length - 1) i = -5
+    if (i === item.slides.length - 1) i = -5
     else i++
   }
 
   function populate() {
-    heading = slides?.[i]?.heading || ''
-    text = slides?.[i]?.text || ''
+    heading = item.slides?.[i]?.heading.toString() || ''
+    text = item.slides?.[i]?.text.toString() || ''
   }
 
   const timing = 4200
@@ -33,14 +34,14 @@ import { onDestroy } from 'svelte';
 <section class="hero" on:pointerenter="{()=>{clearInterval(interval)}}" on:pointerleave="{()=>{interval = setInterval(autonext, timing)}}">
 
   <div class="hero-links">
-    {#each slides as slide, idx}
-      {#if slide?.icon?.src}
+    {#each item.slides as slide, idx}
+      {#if slide?.icon?.['src']}
         <img
           on:click={()=>{ clearInterval(interval); i=idx; }}
           class:on={idx === i}
-          src="{slide.icon.src}"
-          alt="{slide.icon?.alt || ''}"
-          title="{slide.icon?.alt || ''}"
+          src="{slide.icon['src']}"
+          alt="{slide.icon?.['alt'] || ''}"
+          title="{slide.icon?.['alt'] || ''}"
         >
       {/if}
     {/each}

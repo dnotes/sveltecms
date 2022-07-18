@@ -2,6 +2,12 @@ import type SvelteCMS from "sveltecms";
 import type { ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntityConfigSetting, ConfigurableEntity, ConfigSetting, TypedEntity, EntityType } from "sveltecms";
 import type { EntityTemplate } from "./EntityTemplate";
 
+/**
+ * Note: Components must be pre-registered for ANY type of import in SvelteKit.
+ * Dynamic import() cannot be used with a variable in the import string; this
+ * is a limitation of the bundler. See https://github.com/sveltejs/svelte/issues/6702.
+ */
+
 export const templateComponent:EntityTemplate = {
   id: 'component',
   label: 'Component',

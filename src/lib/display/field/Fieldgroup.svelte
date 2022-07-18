@@ -1,20 +1,22 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
-import type { Field,FieldConfigSetting } from "sveltecms/core/Field";
-import Content from 'sveltecms/display/Content.svelte';
+import ContentItem from 'sveltecms/display/ContentItem.svelte';
 import Fieldgroup from "sveltecms/core/Fieldgroup";
+import type { FieldableEntity } from "sveltecms";
+import type { Content } from "sveltecms/core/ContentStore";
 
   export let cms:SvelteCMS
-  export let field:Field|FieldConfigSetting
-  export let value
+  export let entity:FieldableEntity
+  export let item:Content & { _fieldgroup?:string }
 
-  $: fieldgroup = value?._fieldgroup || false
-  $: entity = fieldgroup ?
-              new Fieldgroup(fieldgroup, cms) :
-              field
+  let fieldgroupID:string
+  $: fieldgroupID = item?._fieldgroup || ''
+  $: fieldgroup = fieldgroupID ?
+              new Fieldgroup(fieldgroupID, cms) :
+              entity
 
 </script>
 
 <div>
-  <Content {cms} {entity} content={value}><slot></slot></Content>
+  <ContentItem {cms} entity={fieldgroup} {item}><slot></slot></ContentItem>
 </div>

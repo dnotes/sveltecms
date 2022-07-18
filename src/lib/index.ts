@@ -414,12 +414,6 @@ export default class SvelteCMS {
     )
   }
 
-  getDisplayComponent(display:string|DisplayConfigSetting, fallback:string='field_element'):Component|ComponentType {
-    let id = typeof display === 'string' ? display : (display?.type || display?.id)
-    if (!id) return
-    return this.components[id] || this.components[fallback]
-  }
-
   getContentType(contentType:string):ContentType {
     if (!this.contentTypes[contentType]) throw new Error (`Content type not found: ${contentType}`)
     return this.contentTypes[contentType]
@@ -858,7 +852,7 @@ export type CMSPlugin = {
   mediaStores?: MediaStoreType[]
   fieldgroups?: FieldgroupConfigSetting[]
   adminFieldgroups?: FieldgroupConfigSetting[]
-  components?: Array<ComponentType|ComponentConfigSetting>
+  components?: ComponentType[]
   lists?: CMSListConfig
   optionFields?:{[key:string]:ConfigFieldConfigSetting}
   fieldWidgets?:{[key:string]:string[]}

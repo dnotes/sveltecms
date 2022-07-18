@@ -5,7 +5,7 @@ import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
 import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction'
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
-import { DisplayConfig, type DisplayConfigSetting } from './Display'
+import { Display, type DisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
 import { Entity, type EntityTemplate } from './EntityTemplate'
@@ -227,7 +227,7 @@ export class Field extends Entity implements FieldableEntity, TypedEntity, Label
   // validator?: Rules
   fields?: {[key:string]:Field}
   widget: Widget
-  display?: DisplayConfig
+  display?: Display
   preSave?: (string|TransformerConfigSetting)[]
   preMount?: (string|TransformerConfigSetting)[]
   mediaStore?: MediaStore
@@ -276,7 +276,7 @@ export class Field extends Entity implements FieldableEntity, TypedEntity, Label
       this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
-      if (conf.display || fieldType.display) this.display = new DisplayConfig(conf?.['display'] ?? fieldType.display, cms)
+      if (conf.display || fieldType.display) this.display = new Display(conf?.['display'] ?? fieldType.display, cms)
 
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave

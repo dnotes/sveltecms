@@ -1,11 +1,11 @@
 <script lang="ts">
-  export let value:string|{
+  export let item:string|{
     src:string,
     alt?:string,
     title?:string
   }
 </script>
 
-{#if (typeof value === 'string' && value) || value?.['src']}
-  <img src={value?.['src'] ?? value} alt={value?.['alt'] ?? ''} title={value?.['title'] ?? ''} />
+{#if (typeof item === 'string' && item) || item?.['src']}
+  <img src={item?.['src'] ?? item} alt={item?.['alt'] ?? ''} title={item?.['title'] ?? ''} />
 {/if}

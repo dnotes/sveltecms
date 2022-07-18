@@ -4,6 +4,7 @@ import CmsFieldGroup from './CMSFieldGroup.svelte';
 import DisplayResult from 'sveltecms/ui/DisplayResult.svelte'
 import { cloneDeep, debounce } from 'lodash-es'
 import Button from './ui/Button.svelte';
+import ContentItem from './display/ContentItem.svelte';
 
   export let cms:SvelteCMS
   export let contentTypeID:string
@@ -21,15 +22,13 @@ import Button from './ui/Button.svelte';
 
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
-  export let previewComponent = contentType?.previewComponent || contentType?.displayComponent || undefined
-  // @ts-ignore this is a type check
-  let component = cms?.components?.[previewComponent?.component] || cms?.components?.[previewComponent] || previewComponent || cms.components['content']
+  let component = contentType?.display?.component?.component || ContentItem
 
   const initialValues = cloneDeep(values)
   let oldSlug = values?.['_slug'] ?? ''
 
-  let previewContent = cms.preMount(cms.getContentType(contentTypeID), values)
-  let updatePreviewContent = debounce(()=>{previewContent = cms.preMount(cms.getContentType(contentTypeID), values)}, 500)
+  let previewContent = cms.preMount(contentType, values)
+  let updatePreviewContent = debounce(()=>{previewContent = cms.preMount(contentType, values)}, 500)
   $: if (values) updatePreviewContent()
 
   // export let validator:Validator.Validator<Object> = cms.getValidator(contentTypeID, values)
@@ -90,7 +89,7 @@ import Button from './ui/Button.svelte';
     </div>
     {#if component}
       <div class="cms-editor-preview">
-        <svelte:component this={component.component} {cms} {contentTypeID} content={previewContent} ></svelte:component>
+        <svelte:component this={component} {cms} entity={contentType} item={previewContent} ></svelte:component>
       </div>
     {/if}
   </div>

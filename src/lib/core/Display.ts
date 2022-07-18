@@ -1,11 +1,8 @@
-import type { ComponentType } from "sveltecms/core/Component"
+import type { Component, ComponentType } from "sveltecms/core/Component"
 import type { ConfigurableEntityConfigSetting } from "sveltecms"
 
-import Content from "sveltecms/display/Content.svelte"
-import Field from "sveltecms/display/Content.svelte"
 import Image from "sveltecms/display/field/Image.svelte"
 import File from "sveltecms/display/field/File.svelte"
-import Element from "sveltecms/display/field/Element.svelte"
 import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte"
 import type SvelteCMS from "sveltecms"
 import type { EntityTemplate } from "./EntityTemplate"
@@ -26,43 +23,57 @@ export const templateDisplay:EntityTemplate = {
     type: {
       type: 'text',
       default: '',
-      helptext: 'An HTML element (p, li, etc.) or registered component to use when displaying the field.',
+      helptext: 'An HTML element (p, li, etc.) or include path for a SvelteCMS Component to use when displaying the field.',
     },
     wrapper: {
       type: 'text',
       default: '',
-      helptext: 'An HTML element (div, ul, etc.) or registered component to use as a wrapper for the displayed field.',
+      helptext: 'An HTML element (div, ul, etc.) or include path for a SvelteCMS Component to use as a wrapper for the displayed field.',
     },
     html: {
       type: 'boolean',
       default: false,
       helptext: `Whether to treat the field value as pre-sanitized HTML. `+
       `NOTE! Unless the user input for the field is sanitized with `+
-      `an appropriate and properly configured preMount transformer, `+
+      `an appropriate and properly configured preMount Transformer, `+
       `using this feature is a critical security vulnerability.`
     }
   }
 }
 
-export class DisplayConfig  {
+export class Display {
   type: string = ''
-  isComponent: boolean = false
-  wrapper?: DisplayConfig
+  component?: Component
+  wrapper?: Display
+
+  // properties that only apply to an element
   html?: boolean
-  constructor(conf:string|DisplayConfigSetting, cms:SvelteCMS) {
-    if (typeof conf === 'string' && ['','none','hidden'].includes(conf)) return
+  tag?: string
+  id?: string
+  classes?: string[]
+
+  constructor(conf:string|false|undefined|DisplayConfigSetting, cms:SvelteCMS) {
+    if (!conf || (typeof conf === 'string' && ['none','hidden'].includes(conf))) return
     conf = typeof conf === 'string' ? { type:conf } : conf
-    this.type = conf.type
-    this.isComponent = cms.components[this.type] ? true : false
-    this.html = conf?.html
-    if (conf.wrapper) this.wrapper = new DisplayConfig(conf.wrapper, cms)
+    this.type = conf.type.trim()
+    this.component = cms.getEntity('component', this.type)
+    if (!this.component) {
+      this.html = conf?.html
+      let el, classes, tag, id
+      [el, ...classes] = this.type.split('.');
+      this.classes = classes;
+      [tag, id] = el.split('#');
+      this.tag = tag
+      this.id = id
+    }
+    if (conf.wrapper) this.wrapper = new Display(conf.wrapper, cms)
   }
+
+  get classList() { return this.classes.join(' ') }
+
 }
 
 export const displayComponents:ComponentType[] = [
-  { id: 'content', component: Content },
-  { id: 'field', component: Field },
-  { id: 'field_element', component: Element },
   { id: 'field_image', component: Image },
   { id: 'field_file', component: File },
   { id: 'field_fieldgroup', component: Fieldgroup },

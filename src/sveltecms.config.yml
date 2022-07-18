@@ -10,11 +10,13 @@ contentTypes:
       date: date
       image: image
       body: body
-    displayComponent: content_BlogPost
+    display:
+      type: content_BlogPost
+      wrapper: div.prose.dark:prose-invert
     indexFields: title,date,image
     label: ''
   landingPage:
-    displayComponent: content_LandingPage
+    display: content_LandingPage
     fields:
       title:
         type: title

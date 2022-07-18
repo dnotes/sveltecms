@@ -1,30 +1,34 @@
 <script lang="ts">
 import Button from '$lib/element/Button.svelte'
-  export let image
-  export let heading = ''
-  export let text = ''
-  export let imageFilter = ''
-  export let textStyle = ''
+import type { Content } from 'sveltecms/core/ContentStore';
+import type { Media } from 'sveltecms/core/MediaStore';
+export let item:Content & {
+  image?: string|Media
+  heading?: string
+  text?: string
+  imageFilter?: string
+  textStyle?: string
+}
 
 </script>
 
 <section class="hero">
 
   <div class="hero-image"
-    style:background-image="url({image?.src ?? image})"
-    style:filter="{imageFilter}"
+    style:background-image="url({item.image?.['src'] ?? item.image})"
+    style:filter="{item.imageFilter}"
   />
 
   <div class="hero-content"
-    style={textStyle}
+    style={item.textStyle}
   >
 
-    {#if heading}
-    <h2>{@html heading}</h2>
+    {#if item.heading}
+    <h2>{@html item.heading}</h2>
     {/if}
 
-    {#if text}
-    <div class="text">{@html text}</div>
+    {#if item.text}
+    <div class="text">{@html item.text}</div>
     {/if}
 
     <!-- <Button {button}/> -->

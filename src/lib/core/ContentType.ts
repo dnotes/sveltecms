@@ -8,6 +8,7 @@ import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils';
 import type { ComponentConfigSetting } from './Component';
+import { Display, type DisplayConfigSetting } from './Display';
 
 export const templateContentType:EntityTemplate = {
   id: 'contentType',
@@ -64,25 +65,14 @@ export const templateContentType:EntityTemplate = {
       default: '',
       helptext: 'The fields that should be indexed, and whose values should be returned when content is listed.',
     },
-    previewComponent: {
+    display: {
       type: 'entity',
-      default: undefined,
+      default: '',
       helptext: '',
       widget: {
         type: 'entity',
         options: {
-          entityType: 'component'
-        }
-      }
-    },
-    displayComponent: {
-      type: 'entity',
-      default: undefined,
-      helptext: '',
-      widget: {
-        type: 'entity',
-        options: {
-          entityType: 'component'
+          entityType: 'display'
         }
       }
     },
@@ -96,8 +86,7 @@ export type ContentTypeConfigSetting = ConfigSetting & {
   mediaStore?: string|MediaStoreConfigSetting
   slug?: string|string[]|SlugConfigSetting
   indexFields?: string|string[]
-  previewComponent?:string|ComponentConfigSetting
-  displayComponent?:string|ComponentConfigSetting
+  display?:string|DisplayConfigSetting
   form?:{
     method?:'post'|'get'
     action?:string
@@ -111,7 +100,7 @@ export class ContentType implements FieldableEntity, LabeledEntity {
   slug:SlugConfig
   contentStore:ContentStore
   mediaStore?:string|MediaStoreConfigSetting
-  previewComponent?:string|ComponentConfigSetting
+  display:Display
   displayComponent?:string|ComponentConfigSetting
   indexFields:string[]
   fields:{[key:string]:Field} = {}
@@ -124,8 +113,7 @@ export class ContentType implements FieldableEntity, LabeledEntity {
     this.label = conf.label || getLabelFromID(this.id)
     this.contentStore = new ContentStore(conf?.contentStore, cms)
     this.mediaStore = conf.mediaStore
-    this.previewComponent = conf.previewComponent
-    this.displayComponent = conf.displayComponent
+    this.display = new Display(conf.display, cms)
     this.form = {
       method:conf?.form?.method,
       action:conf?.form?.action,
