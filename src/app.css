@@ -7,6 +7,9 @@
 input,
 select,
 textarea {
+  background-color: var(--cms-background);
+  color: var(--cms-text);
   border: 1px solid var(--cms-main);
   border-bottom-width: 2px;
+  padding: .2em .5em;
 }
