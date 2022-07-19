@@ -52,6 +52,9 @@ import type { WidgetField } from "..";
       disabled={field.disabled}
       required={field.required}
     >
+      {#if !field.required || opts.unset}
+        <option value="">{opts.unset || '- none -'}</option>
+      {/if}
       {#each Object.entries(options || {}) as [value,title]}
         <option {value}>{title}</option>
       {/each}
