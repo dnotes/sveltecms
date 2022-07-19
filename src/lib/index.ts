@@ -13,7 +13,7 @@ import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
 import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es'
 import type { EntityTemplate } from './core/EntityTemplate'
 import { templateSlug } from './core/Slug'
-import { Indexer, type IndexerConfigSetting, type IndexerType } from './core/Indexer'
+import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType } from './core/Indexer'
 
 // import { default as Validator, Rules } from 'validatorjs'
 
@@ -86,9 +86,16 @@ export type ConfigurableEntityType = EntityType & {
   options?:ConfigSetting
 }
 
+type CMSSettings = ConfigSetting & {
+  adminStore?:string|ContentStoreConfigSetting
+  indexer?:string|IndexerConfigSetting
+  rootContentType?:string
+  frontPageSlug?:string
+}
+
 export type CMSConfigSetting = {
   configPath?:string
-  settings?:ConfigSetting
+  settings?:CMSSettings
   adminStore?:string|ContentStoreConfigSetting
   contentTypes?: {[key:string]: ContentTypeConfigSetting}
   lists?: {[key:string]: string|(string|number|{id:string|number, value:ConfigSetting})[]}
@@ -114,6 +121,7 @@ export default class SvelteCMS {
     slug: templateSlug,
     transformer: templateTransformer,
     widget: templateWidget,
+    indexer: templateIndexer,
   }
   admin: ContentType
   indexer: Indexer
@@ -349,6 +357,7 @@ export default class SvelteCMS {
       case 'fieldgroups':
       case 'transformers':
       case 'components':
+      case 'indexers':
         return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']))
       default:
         return [

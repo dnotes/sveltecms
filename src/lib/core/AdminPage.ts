@@ -128,10 +128,12 @@ export const adminPages:AdminPageConfig[] = [
     },
   },
   {
-    id: 'config',
-    component: 'CMSConfigView',
-    post: async({cms,event,values})=>{
-      if (event) return saveContentEndpoint(cms, cms.admin, event.request)
-    }
+    id: 'settings',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigSettings',
+      }
+    },
   },
 ]

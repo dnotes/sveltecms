@@ -2,11 +2,6 @@
 import type SvelteCMS from 'sveltecms';
 import type { ConfigSetting } from 'sveltecms';
 import Button from 'sveltecms/ui/Button.svelte';
-import Modal from 'sveltecms/ui/Modal.svelte'
-import CmsWidgetEntity from 'sveltecms/plugins/admin/widgets/CMSWidgetEntity.svelte';
-import { tick } from 'svelte';
-import yaml from 'js-yaml'
-import AddItemLine from 'sveltecms/ui/AddItemLine.svelte';
 import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
 
   export let cms:SvelteCMS
