@@ -3,6 +3,7 @@ import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigS
 import type ContentType from "sveltecms/core/ContentType"
 import type Field from "sveltecms/core/Field"
 
+import type { EntityTemplate } from "./EntityTemplate"
 import CMSWidgetFieldgroup from 'sveltecms/widgets/CMSWidgetFieldgroup.svelte'
 import CMSWidgetMultiple from 'sveltecms/widgets/CMSWidgetMultiple.svelte'
 import CMSWidgetNumber from 'sveltecms/widgets/CMSWidgetNumber.svelte'
@@ -16,7 +17,6 @@ import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
-import { Entity, type EntityTemplate } from "./EntityTemplate"
 
 
 export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:ContentType, field:Field)=>Promise<any>
@@ -47,7 +47,7 @@ export type WidgetType = ConfigurableEntityType & {
   formDataHandler?:FormDataHandler
 }
 
-export class Widget extends Entity implements ConfigurableEntity {
+export class Widget implements ConfigurableEntity {
   type: string
   widget: Object
   handlesMultiple: boolean
@@ -56,7 +56,6 @@ export class Widget extends Entity implements ConfigurableEntity {
   options?: ConfigSetting
   formDataHandler?:FormDataHandler
   constructor(conf:string|WidgetConfigSetting, cms:SvelteCMS) {
-    super(templateWidget)
     // TODO: change per CMSContentField changes
     conf = typeof conf === 'string' ? { type: conf } : conf
 

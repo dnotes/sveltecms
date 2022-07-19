@@ -8,7 +8,7 @@ import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
 import { Display, type DisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
-import { Entity, type EntityTemplate } from './EntityTemplate'
+import type { EntityTemplate } from './EntityTemplate'
 
 export type FieldConfigSetting = {
   type: string
@@ -197,10 +197,9 @@ export const templateField:EntityTemplate = {
   }
 }
 
-export class Field extends Entity implements FieldableEntity, TypedEntity, LabeledEntity {
+export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   id: string
   type: string
-  template:EntityTemplate = templateField
 
   // should be implemented by every widget
   label: string|ScriptFunctionConfig
@@ -237,7 +236,6 @@ export class Field extends Entity implements FieldableEntity, TypedEntity, Label
   errors: {[key:string]:any} = {} // all form errors
   touched: {[key:string]:any} = {} // all touched form elements
   constructor(id, conf:string|FieldConfigSetting, cms:SvelteCMS, contentType?:ContentType) {
-    super(templateField)
 
     // Set the field's id. This identifies the instance, not the field type;
     // in values objects, the key would be this id, e.g. values[id] = 'whatever'

@@ -1,6 +1,6 @@
 import type { FieldableEntityConfigSetting, EntityType, FieldableEntity, TypedEntity } from "sveltecms"
 import type SvelteCMS from "sveltecms"
-import { Entity, type EntityTemplate } from "./EntityTemplate"
+import type { EntityTemplate } from "./EntityTemplate"
 import Field, { type ConfigFieldConfigSetting, type FieldConfigSetting } from "./Field"
 
 export type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & {
@@ -22,8 +22,7 @@ export const templateFieldgroup:EntityTemplate = {
   isConfigurable: true,
   isFieldable: true,
 }
-export class Fieldgroup extends Entity implements EntityType, FieldableEntity {
-  template=templateFieldgroup
+export class Fieldgroup implements EntityType, FieldableEntity {
   id:string
   type:string
   admin?:boolean
@@ -31,7 +30,6 @@ export class Fieldgroup extends Entity implements EntityType, FieldableEntity {
   isFieldable=true
   fields:{[id:string]:Field}
   constructor(conf:string|FieldgroupConfigSetting, cms:SvelteCMS) {
-    super(templateFieldgroup)
     conf = typeof conf === 'string' ? cms.fieldgroups[conf] : conf
     this.id = conf.id
     this.admin = conf.admin
