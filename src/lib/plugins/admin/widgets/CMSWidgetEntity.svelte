@@ -236,7 +236,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
       />
     {/if}
 
-    {#if Object.keys(widgetFieldGroup?.fields || {}).length}
+    {#if conf?.['type'] && Object.keys(widgetFieldGroup?.fields || {}).length}
       <Button small highlight on:click={()=>{modalOpen=true}}>...</Button>
     {/if}
 
