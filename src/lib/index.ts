@@ -345,6 +345,7 @@ export default class SvelteCMS {
     if (!type.match(/s$/)) type += 's'
     switch (type) {
       case 'fields':
+        if (entityID) return Object.keys(this.getContentType(entityID)?.fields || {})
         return this.getFieldTypes(includeAdmin)
       case 'widgets':
         return this.getFieldTypeWidgets(includeAdmin, entityID)
