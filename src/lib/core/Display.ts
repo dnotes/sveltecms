@@ -4,6 +4,7 @@ import type { ConfigurableEntityConfigSetting } from "sveltecms"
 import Image from "sveltecms/display/field/Image.svelte"
 import File from "sveltecms/display/field/File.svelte"
 import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte"
+import Reference from "sveltecms/display/field/Reference.svelte"
 import type SvelteCMS from "sveltecms"
 import type { EntityTemplate } from "./EntityTemplate"
 
@@ -77,4 +78,5 @@ export const displayComponents:ComponentType[] = [
   { id: 'field_image', component: Image },
   { id: 'field_file', component: File },
   { id: 'field_fieldgroup', component: Fieldgroup },
+  { id: 'field_reference', component: Reference },
 ]

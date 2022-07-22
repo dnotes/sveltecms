@@ -379,7 +379,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'reference',
     default: [],
     widget: 'reference',
-    display: 'div',
+    display: 'field_reference',
   },
   // password: {
   //   id: 'password',
