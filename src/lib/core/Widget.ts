@@ -17,6 +17,8 @@ import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte'
 import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
+import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte"
+import CMSWidgetTags from "sveltecms/widgets/CMSWidgetTags.svelte"
 
 
 export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:ContentType, field:Field)=>Promise<any>
@@ -458,8 +460,144 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   value: {
     id:'value',
     description: 'A hidden html input element holding a value.',
-    fieldTypes: [],
+    fieldTypes: ['value'],
     widget: CMSWidgetValue,
+  },
+  reference: {
+    id: 'reference',
+    description: 'A reference to another Content item.',
+    fieldTypes: ['reference','text'],
+    handlesMultiple: true,
+    widget: CMSWidgetReference,
+    optionFields: {
+      contentType: {
+        type: 'text',
+        required: true,
+        default: '',
+        helptext: 'The Content Type from which a piece of content may be referenced.',
+        widget: {
+          type: 'select',
+          options: {
+            items: '$listEntities(contentType)',
+          }
+        },
+      },
+      searchField: {
+        type: 'text',
+        required: true,
+        default: '',
+        helptext: 'The field used for search and display. '+
+          'If new content is allowed, this field will be populated with the tag text.',
+        widget: {
+          type: 'tags',
+          options: {
+            items: '$listEntities(fields,false,$values.contentType)',
+            onlyUnique: true,
+            minChars: 0,
+          }
+        }
+      },
+      twoWayLinkField: {
+        type: 'text',
+        default: '',
+        helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
+        widget: {
+          type: 'select',
+          items: '$listEntities(fields,false,$values.contentType)'
+        }
+      },
+      allowNewContent: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Allow creating new content of the specified type.',
+      },
+      slugOnly: {
+        type: 'boolean',
+        default: false,
+        helptext: 'EXPERIMENTAL. Select this option if you want this field to store only the _slug string. '+
+          'By default, reference fields store all index fields and the _slug for each referenced item, '+
+          'which is often desirable for NoSQL or flat files as it reduces data calls.'
+      },
+      placeholder: {
+        type: 'text',
+        default: '',
+        helptext: 'Placeholder text when the input is empty.',
+      },
+      allowBlur: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Enable adding an unfinished item when the input loses focus.',
+      },
+      minChars: {
+        type: 'number',
+        default: 1,
+        helptext: 'The number of characters that must be typed before options are shown.',
+      },
+    }
+  },
+  tags: {
+    id: 'tags',
+    description: 'Tagging widget provided by ',
+    fieldTypes: ['tags'],
+    widget: CMSWidgetTags,
+    optionFields: {
+      placeholder: {
+        type: 'text',
+        default: '',
+        helptext: 'Placeholder text when the input is empty.',
+      },
+      onlyUnique: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Ensure that all entered tags are unique.',
+      },
+      items: {
+        type: 'text',
+        default: '',
+        helptext: 'A list of possible values. A Script Function may be used to retrieve this list from an external API.',
+      },
+      restrictToItems: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Only accept tags from the provided items.',
+      },
+      itemsKey: {
+        type: 'text',
+        default: '',
+        helptext: 'If items provides an array of objects, this is the key used for search and display.',
+      },
+      itemsFilter: {
+        type: 'boolean',
+        default: true,
+        helptext: 'Turn this off to disable filtering the items. May be useful for some APIs.',
+      },
+      allowBlur: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Enable adding an unfinished item when the input loses focus.',
+      },
+      minChars: {
+        type: 'number',
+        default: 1,
+        helptext: 'The number of characters that must be typed before options are shown.',
+      },
+      allowPaste: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Enable pasting a tag or tag group.',
+      },
+      allowDrop: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Enable drag and drop of a tag or tag group.',
+      },
+      splitWith: {
+        type: 'text',
+        default: ',',
+        helptext: 'The character that splits a group of tags.',
+        hidden: '$not($or($values.allowPaste, $values.allowDrop))',
+      },
+    }
   },
   // {
   //   id: 'options', // i.e. radios or checkboxes

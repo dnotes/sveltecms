@@ -8,6 +8,7 @@ import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
 import type { Media } from 'sveltecms/core/MediaStore';
 import type { Content } from 'sveltecms/core/ContentStore';
+import type ContentType from 'sveltecms/core/ContentType';
 const fs = {}
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
@@ -153,7 +154,13 @@ async function getIndex(fs:PromisifiedFS, filepath:string):Promise<Array<Media|C
     index = JSON.parse(await fs.readFile(filepath, 'utf8'))
   }
   catch(e) {
-    // if there is no file, just continue with {}
+    try {
+      let contentTypeID = filepath.replace(/.+\/_/, '').replace(/\..+/, '')
+      index = await fetch(`/${contentTypeID}/__data.json`).then(async res => { return (await res.json())?.content ?? [] })
+    }
+    catch(e) {
+      // just continue with empty index
+    }
   }
   return index
 }
@@ -334,17 +341,18 @@ const plugin:CMSPlugin = {
         index.splice(i, 1)
         return saveIndex(fs, filepath, index)
       },
-      searchContent: async function (contentType, search, options = {}) {
+      searchContent: async function (contentType:ContentType, search?:string, options = {}) {
         let fs = await getFs(this?.options?.databaseName)
         let filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
         if (!this?._indexes) this._indexes = {}
         if (!this._indexes[contentType.id]) this._indexes[contentType.id] = getIndex(fs, filepath).then(index => {
           return new Fuse(
             index,
-            options?.['keys'] ?? contentType.indexFields
+            { keys: options?.['keys'] ?? contentType.indexFields }
           )
         })
-        return (await this._indexes[contentType.id]).search(search)
+        let index = await this._indexes[contentType.id]
+        return index._docs
       },
       saveMedia: async function (media) {
         const fs = await getFs(this?.options?.databaseName)

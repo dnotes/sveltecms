@@ -363,18 +363,23 @@ export const fieldTypes:{[key:string]:FieldType} = {
   tags: {
     id: 'tags',
     default: [],
-    widget: 'text', // @todo: add tags widget
+    widget: 'tags',
     display: {
       type: 'li',
       wrapper: 'ul',
     },
-    preSave: ['tags']
   },
   value: {
     id: 'value',
     default: undefined,
     widget: 'value',
     display: '',
+  },
+  reference: {
+    id: 'reference',
+    default: [],
+    widget: 'reference',
+    display: 'div',
   },
   // password: {
   //   id: 'password',
