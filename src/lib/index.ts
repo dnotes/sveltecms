@@ -455,8 +455,19 @@ export default class SvelteCMS {
       .join(contentType.slug.separator)
   }
 
-  async listContent(contentType:string|ContentType, options:{load?:boolean, [key:string]:any} = {}):Promise<Content[]> {
+  async listContent(contentType:string|ContentType, options:string|{
+    skipIndex?:boolean,
+    load?:boolean,
+    getRaw?:boolean,
+    searchText?:string|undefined,
+    [key:string]:any
+  } = {}):Promise<Content[]> {
+    if (typeof options === 'string') options = { searchText:options }
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
+    if (!options?.skipIndex) {
+      let items = await this.indexer.searchContent(contentType, options.searchText)
+      return items
+    }
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
     const rawContent = await db.listContent(contentType, db.options)
