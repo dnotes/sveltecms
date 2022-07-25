@@ -14,7 +14,6 @@ contentTypes:
       type: content_BlogPost
       wrapper: div.prose.dark:prose-invert
     indexFields: title,date,image
-    label: ''
   landingPage:
     display: content_LandingPage
     fields:
@@ -33,15 +32,20 @@ contentTypes:
       type: staticFiles
       fileExtension: json
     slug: slug
-    label: ''
-    indexFields: ''
   docs:
     fields:
       title: title
       body: body
-    label: ''
     slug: title
     indexFields: title
+    display: div.prose.dark:prose-invert
+  tags:
+    fields:
+      title: title
+      body: body
+    slug: title
+    indexFields: title
+    display: div.prose.dark:prose-invert
 contentStores: {}
 mediaStores:
   images:
@@ -56,7 +60,14 @@ fields:
   title:
     type: text
     required: true
-    display: h1
+    display:
+      type: span
+      link: true
+    displayModes:
+      teaser:
+        type: h2
+        link: true
+      page: h1
   date:
     type: date
     required: true
@@ -64,6 +75,14 @@ fields:
   slideText:
     type: markdown
     widget: slideText
+  tagreference:
+    label: Tags
+    type: reference
+    multiple: true
+    widget:
+      type: reference
+      contentTypes: tags
+      inputField: title
   slug:
     type: text
     display: none

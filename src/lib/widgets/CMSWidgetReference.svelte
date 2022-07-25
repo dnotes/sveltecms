@@ -15,7 +15,7 @@ import { onMount } from 'svelte';
   //@ts-ignore
   let opts:{
     contentTypes:string|string[]
-    displayField:string
+    inputField:string
     twoWayLinkField?:string
     allowNewContent?:boolean
     slugOnly?:boolean
@@ -48,7 +48,7 @@ import { onMount } from 'svelte';
     onlyUnique
     {autoComplete}
     autocompleteFilter={false}
-    autoCompleteKey={opts.displayField || '_slug'}
+    autoCompleteKey={opts.inputField || '_slug'}
     onlyAutocomplete={opts.allowNewContent ? false : true}
     allowBlur={opts.allowBlur}
     minChars={opts.minChars}

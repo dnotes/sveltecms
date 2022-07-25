@@ -3,95 +3,46 @@ import cms from '$lib/cms' // TODO: pare this down; we shouldn't need the full C
 import type { Content } from 'sveltecms/core/ContentStore';
 import Wrapper from 'sveltecms/display/Wrapper.svelte';
 import ContentItem from 'sveltecms/display/ContentItem.svelte'
+import { Display } from 'sveltecms/core/Display';
 
   export let contentTypeID:string
   export let content:Content
 
   // Get the content type
-  let contentType = cms.getContentType(contentTypeID || cms?.conf?.settings?.rootContentType?.toString())
+  $: contentType = cms.getContentType(contentTypeID || cms?.conf?.settings?.rootContentType?.toString())
+  $: items = Array.isArray(content) ? content : [content]
+
+  // Get the proper display
+  let display:Display
+  $: displayMode = Array.isArray(content) ? 'teaser' : 'page'
+  $: display = new Display(contentType?.displayModes?.[displayMode] ?? contentType?.display ?? 'div', cms)
 
 </script>
 
-{#if contentType.display.wrapper}
+{#if display.isDisplayed}
+  {#if display?.wrapper?.isDisplayed}
 
-<Wrapper display={contentType.display.wrapper}>
-  {#await content then content}
-    {#if Array.isArray(content)}
-      {#each content as item}
-        <div><a rel="prefetch" href="/{contentTypeID}/{item._slug}">
-          {#if contentType.display?.component}
-            <svelte:component
-              this={contentType.display.component.component}
-              {cms}
-              item={content}
-              entity={contentType}
-            />
-          {:else}
-            <ContentItem
-              {cms}
-              item={content}
-              entity={contentType}
-            />
-          {/if}
-        </a></div>
+    <Wrapper display={display.wrapper}>
+      {#each items as item}
+        <ContentItem
+          {cms}
+          entity={contentType}
+          {item}
+          {displayMode}
+        />
       {/each}
-    {:else if contentType.display?.component}
-      <svelte:component
-        this={contentType.display.component.component}
-        {cms}
-        item={content}
-        entity={contentType}
-      />
-    {:else}
+    </Wrapper>
+
+  {:else}
+
+    {#each items as item}
       <ContentItem
         {cms}
-        item={content}
         entity={contentType}
+        {item}
+        {displayMode}
       />
-    {/if}
-  {:catch error}
-    {JSON.stringify(error)}
-  {/await}
-</Wrapper>
-
-{:else}
-
-{#await content then content}
-  {#if Array.isArray(content)}
-    {#each content as item}
-      <div><a rel="prefetch" href="/{contentTypeID}/{item._slug}">
-        {#if contentType.display?.component}
-          <svelte:component
-            this={contentType.display.component.component}
-            {cms}
-            item={content}
-            entity={contentType}
-          />
-        {:else}
-          <ContentItem
-            {cms}
-            item={content}
-            entity={contentType}
-          />
-        {/if}
-      </a></div>
     {/each}
-  {:else if contentType.display?.component}
-    <svelte:component
-      this={contentType.display.component.component}
-      {cms}
-      item={content}
-      entity={contentType}
-    />
-  {:else}
-    <ContentItem
-      {cms}
-      item={content}
-      entity={contentType}
-    />
-  {/if}
-{:catch error}
-  {JSON.stringify(error)}
-{/await}
 
+  {/if}
 {/if}

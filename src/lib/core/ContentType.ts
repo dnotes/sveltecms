@@ -1,5 +1,5 @@
 import type SvelteCMS from 'sveltecms'
-import type { ConfigSetting, DisplayableEntity, FieldableEntity, LabeledEntity } from 'sveltecms';
+import type { ConfigSetting, DisplayableEntity, DisplayableEntityConfigSetting, FieldableEntity, LabeledEntity } from 'sveltecms';
 import { SlugConfig, type SlugConfigSetting } from 'sveltecms/core/Slug'
 import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/ContentStore'
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore'
@@ -75,18 +75,28 @@ export const templateContentType:EntityTemplate = {
         }
       }
     },
+    displayModes: {
+      type:'entityList',
+      default:{},
+      helptext:'Display configurations which override the default display for a display mode. '+
+        'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
+      widget: {
+        type: 'entityList',
+        options: {
+          entityType: 'display',
+        }
+      }
+    },
   }
 }
 
-export type ContentTypeConfigSetting = ConfigSetting & {
+export type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {
   label: string
   fields:{[id:string]: string|FieldConfigSetting}
   contentStore: string|ContentStoreConfigSetting
   mediaStore?: string|MediaStoreConfigSetting
   slug?: string|string[]|SlugConfigSetting
   indexFields?: string|string[]
-  display?:string|false|DisplayConfigSetting
-  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
   form?:{
     method?:'post'|'get'
     action?:string

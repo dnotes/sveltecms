@@ -80,6 +80,13 @@ export type FieldableEntityConfigSetting = {
 export type DisplayableEntity = {
   display?:string|false|DisplayConfigSetting
   displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  displayComponent?:Component
+}
+
+export type DisplayableEntityType = EntityType & {
+  display?:string|false|DisplayConfigSetting
+  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  displayComponent?:string
 }
 
 export type DisplayableEntityConfigSetting = {
@@ -456,6 +463,14 @@ export default class SvelteCMS {
   getContentStore(contentType:string|ContentType) {
     const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     return type.contentStore
+  }
+
+  getUrl(item:Content, contentTypeID?:string) {
+    if (!contentTypeID) contentTypeID = item._type
+    if (contentTypeID === this?.conf?.settings?.rootContentType) contentTypeID = ''
+    let slug = item._slug
+    if (!contentTypeID && slug === this?.conf?.settings?.frontPageSlug) slug = ''
+    return '/' + [contentTypeID, slug].filter(Boolean).join('/')
   }
 
   slugifyContent(content:Content|Content[], contentType:ContentType, force?:boolean) {

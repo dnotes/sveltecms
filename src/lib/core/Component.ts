@@ -20,6 +20,7 @@ export const templateComponent:EntityTemplate = {
 }
 
 export type ComponentType = EntityType & ConfigurableEntityType & {
+  admin?:true
   component:Object // TODO: find type for svelte component
 }
 
@@ -29,6 +30,7 @@ export class Component implements ConfigurableEntity, TypedEntity {
   id: string
   type: string
   component: Object
+  admin?:true
   plugin?:string
   options?: ConfigSetting
   constructor(conf:string|ComponentConfigSetting, cms:SvelteCMS) {
@@ -37,6 +39,7 @@ export class Component implements ConfigurableEntity, TypedEntity {
     this.id = componentType.id
     this.type = componentType.id
     this.component = componentType.component
+    this.admin = componentType?.admin
     this.options = cms.getInstanceOptions(componentType, conf)
   }
 }

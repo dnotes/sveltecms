@@ -1,39 +1,43 @@
 <script lang="ts">
-import type SvelteCMS from "sveltecms";
-import type { FieldableEntity } from "sveltecms";
-import type { Content } from "sveltecms/core/ContentStore";
+import type { DisplayableEntity, EntityType, FieldableEntity } from "sveltecms";
 
-import Field from 'sveltecms/display/Field.svelte'
-import Wrapper from "./Wrapper.svelte";
+import type SvelteCMS from "sveltecms";
+import type { Content } from "sveltecms/core/ContentStore";
+import Display from "sveltecms/core/Display";
+import FieldList from "./FieldList.svelte";
 
   export let cms:SvelteCMS
-  export let entity:FieldableEntity = undefined
+  export let entity:EntityType & FieldableEntity & DisplayableEntity = undefined
   export let item:Content
+  export let displayMode:string
+  let classes:string = undefined
+  export { classes as class }
 
-  $: fields = Object.entries(entity?.fields || {})
+  $: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms)
+  $: classes = classes || `content-type-${entity.id} display-mode-${displayMode}`
 
 </script>
 
-{#each fields as [id, field]}
-  {#if typeof item?.[id] !== 'undefined' && (!Array.isArray(item[id]) || item[id]?.['length'])}
+{#if display?.component}
 
-    {#if field?.display?.wrapper}
+  <svelte:component
+    this={display.component.component}
+    {cms}
+    {item}
+    {entity}
+    {displayMode}
+  />
 
-      <Wrapper display={field.display.wrapper}>
-        <Field
-          {cms}
-          item={item[id]}
-          entity={field}/>
-      </Wrapper>
+{:else if display?.isDisplayed}
 
-    {:else if field?.display}
+  <svelte:element
+    this={display.tag}
+    id={display.id}
+    class="{classes} {display.classList}"
+  >
 
-      <Field
-        {cms}
-        item={item[id]}
-        entity={field}/>
+    <FieldList {cms} {entity} {item} {displayMode} />
 
-    {/if}
+  </svelte:element>
 
-  {/if}
-{/each}
+{/if}

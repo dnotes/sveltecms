@@ -86,8 +86,10 @@ export class Display {
 }
 
 export const displayComponents:ComponentType[] = [
-  { id: 'field_image', component: Image },
-  { id: 'field_file', component: File },
-  { id: 'field_fieldgroup', component: Fieldgroup },
-  { id: 'field_reference', component: Reference },
+  { id: 'sveltecms/display/field/Image', component: Image, admin: true },
+  { id: 'sveltecms/display/field/File', component: File, admin: true },
+  { id: 'sveltecms/display/field/Fieldgroup', component: Fieldgroup, admin: true },
+  { id: 'sveltecms/display/field/Reference', component: Reference, admin: true },
 ]
+
+export default Display

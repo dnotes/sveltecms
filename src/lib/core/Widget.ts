@@ -509,11 +509,11 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           }
         },
       },
-      displayField: {
+      inputField: {
         type: 'text',
         required: true,
         default: '',
-        helptext: 'The field used for search and display. '+
+        helptext: 'The field used for search and display in form inputs. '+
           'If new content is allowed, this field will be populated with the tag text.',
         widget: {
           type: 'tags',
@@ -544,6 +544,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         helptext: 'EXPERIMENTAL. Select this option if you want this field to store only the _slug string. '+
           'By default, reference fields store all index fields and the _slug for each referenced item, '+
           'which is often desirable for NoSQL or flat files as it reduces data calls.'
+      },
+      displayMode: {
+        type: 'text',
+        default: 'reference',
+        helptext: 'The displayMode to use when displaying referenced content. '+
+          'Common display modes are "page", "teaser", and "reference" (default).'
       },
       placeholder: {
         type: 'text',

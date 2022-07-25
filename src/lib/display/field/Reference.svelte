@@ -5,16 +5,15 @@ import type { Field,FieldConfigSetting } from "sveltecms/core/Field";
 import ContentItem from 'sveltecms/display/ContentItem.svelte';
 
   export let cms:SvelteCMS
-  export let entity:Field|FieldConfigSetting
+  export let entity:Field
   export let item:Content|string
 
-  // @ts-ignore
-  $: contentTypeID = entity?.widget?.contentType ?? entity?.widget?.options?.contentType
-  $: contentType = cms.getEntity('contentType', contentTypeID)
-  $: content = typeof item === 'string' ? cms.getContent(contentTypeID, item) : item
+  $: contentTypeID = typeof item === 'string' ? item.replace(/\/.+/,'') : item._type
+  $: contentType = cms.getContentType(contentTypeID)
+  $: content = typeof item === 'string' ? cms.getContent(contentType, item) : item
 
 </script>
 
 {#await content then content}
-  <ContentItem {cms} entity={contentType} item={content}><slot></slot></ContentItem>
+  <ContentItem {cms} entity={contentType} item={content} displayMode="{entity?.widget?.options?.displayMode?.toString() || 'reference'}" />
 {/await}

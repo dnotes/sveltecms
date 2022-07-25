@@ -22,7 +22,6 @@ import ContentItem from './display/ContentItem.svelte';
 
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
-  let component = contentType?.display?.component?.component || ContentItem
 
   const initialValues = cloneDeep(values)
   let oldSlug = values?.['_slug'] ?? ''
@@ -87,10 +86,13 @@ import ContentItem from './display/ContentItem.svelte';
 
       </form>
     </div>
-    {#if component}
-      <div class="cms-editor-preview">
-        <svelte:component this={component} {cms} entity={contentType} item={previewContent} ></svelte:component>
-      </div>
-    {/if}
+    <div class="cms-editor-preview">
+      <ContentItem
+        {cms}
+        entity={contentType}
+        item={previewContent}
+        displayMode="page"
+      />
+    </div>
   </div>
 </div>

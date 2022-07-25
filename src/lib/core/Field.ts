@@ -1,5 +1,5 @@
 import type SvelteCMS from 'sveltecms'
-import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity, DisplayableEntityConfigSetting, DisplayableEntity } from "sveltecms"
+import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity, DisplayableEntityConfigSetting, DisplayableEntity, DisplayableEntityType } from "sveltecms"
 import type { TransformerConfigSetting } from "sveltecms/core/Transformer"
 import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
@@ -9,6 +9,7 @@ import type { DisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
 import type { EntityTemplate } from './EntityTemplate'
+import type { Component } from './Component'
 
 export type FieldConfigSetting =  DisplayableEntityConfigSetting & {
   type: string
@@ -43,11 +44,10 @@ export type ConfigFieldConfigSetting = Omit<FieldConfigSetting,"display|displayM
   fields?: {[key:string]:ConfigFieldConfigSetting}
 }
 
-export type FieldType = EntityType & {
+export type FieldType = EntityType & DisplayableEntityType & {
   default: any
   widget: string|WidgetConfigSetting
   display: string|DisplayConfigSetting
-  displayModes?: {[key:string]:string|DisplayConfigSetting}
   preSave?: Array<string|TransformerConfigSetting>
   preMount?: Array<string|TransformerConfigSetting>
   admin?: boolean
@@ -100,6 +100,18 @@ export const templateField:EntityTemplate = {
         options: {
           entityType: 'display',
         },
+      }
+    },
+    displayModes: {
+      type:'entityList',
+      default:{},
+      helptext:'Display configurations which override the default display for a display mode. '+
+        'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
+      widget: {
+        type: 'entityList',
+        options: {
+          entityType: 'display',
+        }
       }
     },
     mediaStore: {
@@ -213,6 +225,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
   default?: any
   value?: any
   events?: {on:string,function:ScriptFunctionConfig}[]
+  displayComponent?: Component
 
   // implemented only in Multiple and Fieldgroup widgets
   // implement as needed in custom widgets
@@ -277,6 +290,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
       this.display = conf?.['display'] ?? fieldType.display
       this.displayModes = Object.assign({}, fieldType.displayModes || {}, conf.displayModes || {})
+      if (fieldType.displayComponent) this.displayComponent = cms.getEntity('components', fieldType.displayComponent)
 
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave
@@ -317,13 +331,15 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'image',
     default: [],
     widget: 'image',
-    display: 'field_image',
+    display: 'div',
+    displayComponent: 'sveltecms/display/field/Image' // These must be registered as admin components. See sveltecms/core/Display.ts.
   },
   file: {
     id: 'file',
     default: [],
     widget: 'file',
-    display: 'field_file',
+    display: 'div',
+    displayComponent: 'sveltecms/display/field/File'
   },
   html: {
     id: 'html',
@@ -339,7 +355,8 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'fieldgroup',
     default: {},
     widget: 'fieldgroup',
-    display: 'field_fieldgroup',
+    display: 'div',
+    displayComponent: 'sveltecms/display/field/Fieldgroup',
   },
   number: {
     id: 'number',
@@ -381,7 +398,11 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'reference',
     default: [],
     widget: 'reference',
-    display: 'field_reference',
+    display: {
+      type: 'li',
+      wrapper: 'ul',
+    },
+    displayComponent: 'sveltecms/display/field/Reference',
   },
   // password: {
   //   id: 'password',
