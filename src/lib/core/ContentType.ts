@@ -1,5 +1,5 @@
 import type SvelteCMS from 'sveltecms'
-import type { ConfigSetting, FieldableEntity, LabeledEntity } from 'sveltecms';
+import type { ConfigSetting, DisplayableEntity, FieldableEntity, LabeledEntity } from 'sveltecms';
 import { SlugConfig, type SlugConfigSetting } from 'sveltecms/core/Slug'
 import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/ContentStore'
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore'
@@ -7,8 +7,7 @@ import Field, { type FieldConfigSetting } from 'sveltecms/core/Field'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils';
-import type { ComponentConfigSetting } from './Component';
-import { Display, type DisplayConfigSetting } from './Display';
+import type { DisplayConfigSetting } from './Display';
 
 export const templateContentType:EntityTemplate = {
   id: 'contentType',
@@ -86,22 +85,23 @@ export type ContentTypeConfigSetting = ConfigSetting & {
   mediaStore?: string|MediaStoreConfigSetting
   slug?: string|string[]|SlugConfigSetting
   indexFields?: string|string[]
-  display?:string|DisplayConfigSetting
+  display?:string|false|DisplayConfigSetting
+  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
   form?:{
     method?:'post'|'get'
     action?:string
   }
 }
 
-export class ContentType implements FieldableEntity, LabeledEntity {
+export class ContentType implements FieldableEntity, LabeledEntity, DisplayableEntity {
   id:string
   label:string = ''
   isFieldable=true
   slug:SlugConfig
   contentStore:ContentStore
   mediaStore?:string|MediaStoreConfigSetting
-  display:Display
-  displayComponent?:string|ComponentConfigSetting
+  display?:string|false|DisplayConfigSetting
+  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
   indexFields:string[]
   fields:{[key:string]:Field} = {}
   form: {
@@ -113,7 +113,8 @@ export class ContentType implements FieldableEntity, LabeledEntity {
     this.label = conf.label || getLabelFromID(this.id)
     this.contentStore = new ContentStore(conf?.contentStore, cms)
     this.mediaStore = conf.mediaStore
-    this.display = new Display(conf.display, cms)
+    this.display = conf.display
+    this.displayModes = conf.displayModes
     this.form = {
       method:conf?.form?.method,
       action:conf?.form?.action,

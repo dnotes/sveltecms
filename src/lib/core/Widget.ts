@@ -469,20 +469,47 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     fieldTypes: ['reference','text'],
     handlesMultiple: true,
     widget: CMSWidgetReference,
+    formDataHandler: async (value, cms, contentType, field) => {
+      if (Array.isArray(value) && value.length) {
+
+        if (field.widget.options.slugOnly) return value
+
+        // Get an array of Content Types
+        let contentTypes = (Array.isArray(field?.widget?.options?.contentTypes)
+            && field.widget.options.contentTypes.length)
+          ? field.widget.options.contentTypes.map(toString)
+          : (field?.widget?.options?.contentTypes
+              ? field.widget.options.contentTypes.toString()
+              : cms.listEntities('contentType')
+            )
+
+        let index = await cms.listContent(contentTypes)
+        console.log({value, index})
+
+        return value.map(v => {
+          let [type, slug] = v.split('/')
+          return index.find(item => item._slug === slug && item._type === type)
+        }).filter(Boolean)
+
+      }
+    },
     optionFields: {
-      contentType: {
+      contentTypes: {
         type: 'text',
+        multiple: true,
         required: true,
-        default: '',
+        default: undefined,
         helptext: 'The Content Type from which a piece of content may be referenced.',
         widget: {
-          type: 'select',
+          type: 'tags',
           options: {
             items: '$listEntities(contentType)',
+            restrictToItems: true,
+            minChars: 0,
           }
         },
       },
-      searchField: {
+      displayField: {
         type: 'text',
         required: true,
         default: '',
@@ -492,25 +519,25 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           type: 'tags',
           options: {
             items: '$listEntities(fields,false,$values.contentType)',
-            onlyUnique: true,
+            restrictToItems: true,
             minChars: 0,
           }
         }
       },
-      twoWayLinkField: {
-        type: 'text',
-        default: '',
-        helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
-        widget: {
-          type: 'select',
-          items: '$listEntities(fields,false,$values.contentType)'
-        }
-      },
-      allowNewContent: {
-        type: 'boolean',
-        default: false,
-        helptext: 'Allow creating new content of the specified type.',
-      },
+      // twoWayLinkField: {
+      //   type: 'text',
+      //   default: '',
+      //   helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
+      //   widget: {
+      //     type: 'select',
+      //     items: '$listEntities(fields,false,$values.contentType)'
+      //   }
+      // },
+      // allowNewContent: {
+      //   type: 'boolean',
+      //   default: false,
+      //   helptext: 'Allow creating new content of the specified type.',
+      // },
       slugOnly: {
         type: 'boolean',
         default: false,
@@ -548,12 +575,12 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       },
       onlyUnique: {
         type: 'boolean',
-        default: false,
+        default: true,
         helptext: 'Ensure that all entered tags are unique.',
       },
       items: {
-        type: 'text',
-        default: '',
+        type: 'tags',
+        default: [],
         helptext: 'A list of possible values. A Script Function may be used to retrieve this list from an external API.',
       },
       restrictToItems: {

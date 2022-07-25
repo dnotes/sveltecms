@@ -165,6 +165,11 @@ async function getIndex(fs:PromisifiedFS, filepath:string):Promise<Array<Media|C
   return index
 }
 
+async function getFuse(fs, filepath:string, options) {
+  let index = await getIndex(fs, filepath)
+  return new Fuse(index,options)
+}
+
 async function saveIndex(fs:PromisifiedFS, filepath:string, index:Array<Media|Content>) {
   try {
     return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
@@ -319,40 +324,56 @@ const plugin:CMSPlugin = {
       saveContent: async function (contentType, content) {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
-        let item = {_slug: content._slug}
+
+        // Automatically index all fields beginning with underscore
+        let item = Object.fromEntries(Object.keys(content).filter(k => k.startsWith('_')).map(k => ([k,content[k]])))
+        // Also index all fields in the list of indexFields
         contentType.indexFields.forEach(k => { item[k] = content[k] })
+
         let index = await getIndex(fs, filepath)
         let i = index.findIndex(item => item._slug === content._slug)
         if (i > -1) index[i] = item
         else index.push(item)
+
+        // If the slug has changed, remove the index entry for the old slug
         if (content._oldSlug && (content._oldSlug !== content._slug)) {
           i = index.findIndex(item => item._slug = content._oldSlug)
           if (i > -1) index.splice(i, 1)
         }
+
+        // Unset the cached search index for this content type
+        if (this?._indexes?.[contentType.id]) this._indexes[contentType.id] = undefined
+
         return saveIndex(fs, filepath, index)
       },
       deleteContent: async function (contentType, content) {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
         let index = await getIndex(fs, filepath)
+
+        // Find the exact item in the index
         let slug = content._oldSlug ?? content._slug
         let i = index.findIndex(item => item._slug === slug)
+
+        // If the item is not in the index, just return
         if (i === -1) return
+
+        // Remove the item from the index
         index.splice(i, 1)
+
+        // Unset the cached search index for this content type
+        if (this?._indexes?.[contentType.id]) this._indexes[contentType.id] = undefined
+
         return saveIndex(fs, filepath, index)
       },
       searchContent: async function (contentType:ContentType, search?:string, options = {}) {
         let fs = await getFs(this?.options?.databaseName)
         let filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
         if (!this?._indexes) this._indexes = {}
-        if (!this._indexes[contentType.id]) this._indexes[contentType.id] = getIndex(fs, filepath).then(index => {
-          return new Fuse(
-            index,
-            { keys: options?.['keys'] ?? contentType.indexFields }
-          )
-        })
+        if (!this._indexes[contentType.id]) this._indexes[contentType.id] = getFuse(fs, filepath, { keys: options?.['keys'] ?? contentType?.indexFields })
         let index = await this._indexes[contentType.id]
-        return index._docs
+        if (!search) return index._docs
+        return index.search(search, { includeScore:true }).map(res => ({...res.item, _score:res?.score }))
       },
       saveMedia: async function (media) {
         const fs = await getFs(this?.options?.databaseName)
@@ -363,6 +384,7 @@ const plugin:CMSPlugin = {
         let i = index.findIndex(item => item.src === media.src)
         if (i > -1) index[i] = item
         else index.push(item)
+        if (this?._indexes?._media) this._indexes._media = undefined
         return saveIndex(fs, filepath, index)
       },
       deleteMedia: async function (media) {
@@ -372,19 +394,17 @@ const plugin:CMSPlugin = {
         let i = index.findIndex(item => item.src === media.src)
         if (i === -1) return
         index.splice(i, 1)
+        if (this?._indexes?._media) this._indexes._media = undefined
         return saveIndex(fs, filepath, index)
       },
       searchMedia: async function (search, options = {}) {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
         if (!this?.indexes) this._indexes = {}
-        if (!this._indexes._media) this._indexes._media = getIndex(fs, filepath).then(index => {
-          return new Fuse(
-            index,
-            options?.['keys'] ?? this.mediaKeys
-          )
-        })
-        return (await this._indexes._media).search(search)
+        if (!this._indexes._media) this._indexes._media = getFuse(fs, filepath, { keys: options?.['keys'] ?? this.mediaKeys })
+        let index = await this._indexes._media
+        if (!search) return index._docs
+        return index.search(search, { includeScore:true }).map(res => ({...res.item, _score:res?.score}))
       },
     }
   ],

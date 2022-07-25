@@ -11,7 +11,8 @@ import type { EntityTemplate } from "./EntityTemplate"
 export type DisplayConfigSetting = ConfigurableEntityConfigSetting & {
   type: string      // either the html element for svelte:element, or a registered component
   wrapper?: string  // the wrapper element or registered component
-  html?: boolean    // whether or not the item should be wrapped in @html
+  html?: boolean    // if true, the item will be displayed as {@html}
+  link?: boolean    // if true, the item will be wrapped in a link
 }
 
 export const templateDisplay:EntityTemplate = {
@@ -38,12 +39,19 @@ export const templateDisplay:EntityTemplate = {
       `NOTE! Unless the user input for the field is sanitized with `+
       `an appropriate and properly configured preMount Transformer, `+
       `using this feature is a critical security vulnerability.`
-    }
+    },
+    link: {
+      type: 'boolean',
+      default: false,
+      helptext: `Whether to display the field value as a link to its parent Content.`
+    },
   }
 }
 
 export class Display {
   type: string = ''
+  isDisplayed: boolean = false
+  link: boolean = false
   component?: Component
   wrapper?: Display
 
@@ -54,10 +62,13 @@ export class Display {
   classes?: string[]
 
   constructor(conf:string|false|undefined|DisplayConfigSetting, cms:SvelteCMS) {
-    if (!conf || (typeof conf === 'string' && ['none','hidden'].includes(conf))) return
+    if (!conf) return
     conf = typeof conf === 'string' ? { type:conf } : conf
+    if (!conf.type || ['none','hidden'].includes(conf.type)) return
+    this.isDisplayed = true
     this.type = conf.type.trim()
     this.component = cms.getEntity('component', this.type)
+    this.link = conf.link ? true : false
     if (!this.component) {
       this.html = conf?.html
       let el, classes, tag, id

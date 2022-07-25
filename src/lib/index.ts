@@ -77,6 +77,16 @@ export type FieldableEntityConfigSetting = {
   fields:{[id:string]:string|FieldConfigSetting}
 }
 
+export type DisplayableEntity = {
+  display?:string|false|DisplayConfigSetting
+  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+}
+
+export type DisplayableEntityConfigSetting = {
+  display?:string|false|DisplayConfigSetting
+  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+}
+
 export type EntityType = {
   id:string
 }
@@ -259,23 +269,29 @@ export default class SvelteCMS {
 
   }
 
-  preMount(fieldableEntity:ContentType|Field|Fieldgroup, values:Object) {
+  preMount(fieldableEntity:ContentType|Field|Fieldgroup, values:Content):Content {
     let res = {} // variable for result
     Object.entries(fieldableEntity?.fields || {}).forEach(([id,field]) => {
+    if (values.hasOwnProperty(id)) {
       try {
-        // For fieldgroups, or other fieldable field types (e.g. possibly image)
-        if ((field.type === 'fieldgroup' || field?.fields) && values?.[id]) {
+        // For references, fieldgroups, or other fieldable field types (e.g. possibly image)
+        if ((field.type === 'reference' || field.type === 'fieldgroup' || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
           if (Array.isArray(values[id])) {
             res[id] = []
-            for (let i=0;i<values[id].length;i++) {
+            for (let i=0;i<values[id]['length'];i++) {
               // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
-              let container = values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
+              let container = field.type === 'reference'
+                ? this.getContentType(values[id][i]?.['_type'])
+                : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field)
               res[id][i] = this.preMount(container, values[id][i])
             }
           }
           else {
-            let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field
-            res[id] = this.preMount(container, values?.[id])
+            let container = field.type === 'reference'
+              ? this.getContentType(values[id]?.['_type'])
+              : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field
+            // @ts-ignore the typecheck above should be sufficient
+            res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id]
           }
         }
         else res[id] = this.doFieldTransforms('preMount', field, this.doFieldTransforms('preSave', field, values?.[id]))
@@ -284,33 +300,40 @@ export default class SvelteCMS {
         e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`
         throw e
       }
+    }
     })
     // Pass on CMS-specific items like _slug (beginning with _)
     Object.keys(values).filter(k => k.match(/^_/)).forEach(k => res[k] = values[k])
     return res
   }
 
-  preSave(fieldableEntity:ContentType|Field|Fieldgroup, values:Object) {
+  preSave(fieldableEntity:ContentType|Field|Fieldgroup, values:Content):Content {
     let res = {}
     Object.entries(fieldableEntity?.fields || {}).forEach(([id,field]) => {
+    if (values.hasOwnProperty(id)) {
       try {
-        // For fieldgroups (as above)
-        if ((field.type === 'fieldgroup' || field?.fields) && values?.[id]) {
+        // For references and fieldgroups (as above)
+        if ((field.type === 'reference' || field.type === 'fieldgroup' || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
           res[id] = []
           if (Array.isArray(values[id])) {
-            for (let i=0;i<values[id].length;i++) {
+            for (let i=0;i<values[id]['length'];i++) {
               // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
-              let container = values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
+              let container = field.type === 'reference'
+                ? this.getContentType(values[id][i]?.['_type'])
+                : values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
               res[id][i] = this.preSave(container, values[id][i])
             }
           }
           else {
-            let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field
+            let container = field.type === 'reference'
+              ? this.getContentType(values[id]?.['_type'])
+              : values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field
             // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
             // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
             // When saving config, the "fieldgroup" fields will not have a "fields" prop, and must still be saved.
             // @TODO: Evaluate this for security, and probably fix it, since at the moment it will try to save
             // almost any value to the configuration, albeit serialized.
+            // @ts-ignore the typecheck above should be sufficient
             res[id] = container?.fields ? this.preSave(container, values?.[id]) : values[id]
           }
         }
@@ -320,6 +343,7 @@ export default class SvelteCMS {
         e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreSave/${field.id} : ${e.message}`
         throw e
       }
+    }
     })
     Object.keys(values).filter(k => k.match(/^_/)).forEach(k => res[k] = values[k])
     return res
@@ -434,14 +458,16 @@ export default class SvelteCMS {
     return type.contentStore
   }
 
-  slugifyContent(content:any, contentType:ContentType, force?:boolean) {
+  slugifyContent(content:Content|Content[], contentType:ContentType, force?:boolean) {
     if (Array.isArray(content)) {
       content.forEach(c => {
         c._slug = this.getSlug(c, contentType, force)
+        c._type = contentType.id
       })
     }
     else {
       content._slug = this.getSlug(content, contentType, force)
+      content._type = contentType.id
     }
     return content
   }
@@ -455,27 +481,43 @@ export default class SvelteCMS {
       .join(contentType.slug.separator)
   }
 
-  async listContent(contentType:string|ContentType, options:string|{
-    skipIndex?:boolean,
-    load?:boolean,
-    getRaw?:boolean,
-    searchText?:string|undefined,
+  async listContent(contentTypes:string|ContentType|Array<string|ContentType>, options:string|{
+    skipIndex?:boolean, // If you need to rebuild the index directly from the database.
+    getRaw?:boolean, // If you want the raw content, i.e. for <form> values.
+    searchText?:string|undefined, // Filter indexed items by search text. Will not work with skipIndex.
     [key:string]:any
   } = {}):Promise<Content[]> {
+
+    // Ensure proper types for options and contentTypes
     if (typeof options === 'string') options = { searchText:options }
-    contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
-    if (!options?.skipIndex) {
-      let items = await this.indexer.searchContent(contentType, options.searchText)
-      return items
-    }
-    const db = this.getContentStore(contentType)
-    Object.assign(db.options, options)
-    const rawContent = await db.listContent(contentType, db.options)
-    if (!rawContent) return
-    this.slugifyContent(rawContent, contentType)
-    if (options.getRaw) return rawContent
-    // @ts-ignore contentType has by now been type checked
-    return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)]
+    if (!Array.isArray(contentTypes)) contentTypes = [contentTypes]
+    contentTypes = contentTypes.map(t => typeof t === 'string' ? this.getContentType(t) : t)
+
+    // Get raw content
+    let contentLists = await Promise.all(contentTypes.map(async contentType => {
+      let rawContent
+      if (!options?.['skipIndex']) {
+        // @ts-ignore these are typechecked above
+        rawContent = await this.indexer.searchContent(contentType, options.searchText)
+        console.log(rawContent)
+      }
+      else {
+        const db = this.getContentStore(contentType)
+        Object.assign(db.options, options)
+        // @ts-ignore this is typechecked above
+        rawContent = await db.listContent(contentType, db.options)
+      }
+      if (!rawContent || !rawContent.length) return []
+      // @ts-ignore this is typechecked above
+      this.slugifyContent(rawContent, contentType)
+      if (options['getRaw']) return rawContent
+      // @ts-ignore this is typechecked above
+      return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)]
+    }))
+
+    // Unify content arrays
+    return [].concat(...contentLists)
+
   }
 
   /**
@@ -500,20 +542,24 @@ export default class SvelteCMS {
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
 
-  async saveContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}):Promise<Content> {
+  async saveContent(contentType:string|ContentType, content:Content, options:{[key:string]:any} = {}):Promise<Content> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
+    // @ts-ignore this will always be a single Content item from here
     let savedContent = await db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
-    if (contentType?.indexFields?.length) this.indexer.saveContent(contentType, savedContent)
+    await this.indexer.saveContent(contentType, savedContent)
     return savedContent
   }
 
-  async deleteContent(contentType:string|ContentType, content:any, options:{[key:string]:any} = {}):Promise<Content> {
+  async deleteContent(contentType:string|ContentType, content:Content, options:{[key:string]:any} = {}):Promise<Content> {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     Object.assign(db.options, options)
-    return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
+    // @ts-ignore this will always be a single Content item from here
+    let deletedContent = await db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
+    await this.indexer.deleteContent(contentType, deletedContent)
+    return deletedContent
   }
 
   transform(value, conf:ConfigurableEntityConfigSettingValue<TransformerConfigSetting>) {

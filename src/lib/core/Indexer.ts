@@ -13,8 +13,8 @@ export type IndexerType = EntityType & ConfigurableEntityType & {
   deleteContent:(contentType:ContentType, content:Content)=>Promise<void>
   saveMedia:(media:Media)=>Promise<void>
   deleteMedia:(media:Media)=>Promise<void>
-  searchContent:(contentType:ContentType, search:string|Object, options?:Object)=>Promise<Content[]>
-  searchMedia:(search:string|Object, options?:Object)=>Promise<Media[]>
+  searchContent:(contentType:ContentType, search:string|Object, options?:Object)=>Promise<Content & { _score?:number }[]>
+  searchMedia:(search:string|Object, options?:Object)=>Promise<Media & { _score?:number }[]>
 }
 
 export const templateIndexer:EntityTemplate = {

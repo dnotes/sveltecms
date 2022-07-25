@@ -1,16 +1,16 @@
 import type SvelteCMS from 'sveltecms'
-import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity } from "sveltecms"
+import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity, DisplayableEntityConfigSetting, DisplayableEntity } from "sveltecms"
 import type { TransformerConfigSetting } from "sveltecms/core/Transformer"
 import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
 import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction'
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
-import { Display, type DisplayConfigSetting } from './Display'
+import type { DisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
 import type { EntityTemplate } from './EntityTemplate'
 
-export type FieldConfigSetting = {
+export type FieldConfigSetting =  DisplayableEntityConfigSetting & {
   type: string
   label?: string|ScriptFunctionConfigSetting
   default?: any
@@ -26,7 +26,6 @@ export type FieldConfigSetting = {
   // multipleMax?: number|ScriptFunctionConfigSetting
   fields?: {[key:string]:string|FieldConfigSetting}
   widget?: string|WidgetConfigSetting
-  display?: string|false|DisplayConfigSetting
   // validator?: Rules // TODO
   preSave?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
   preMount?: string|TransformerConfigSetting|(string|TransformerConfigSetting)[]
@@ -36,7 +35,7 @@ export type FieldConfigSetting = {
   [id:string]:string|number|boolean|ConfigSetting|ScriptFunctionConfigSetting|(string|number|ConfigSetting)[]
 }
 
-export type ConfigFieldConfigSetting = FieldConfigSetting & {
+export type ConfigFieldConfigSetting = Omit<FieldConfigSetting,"display|displayModes"> & {
   type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'tags'|'entity'|'entityList'
   entity?: string
   default: any
@@ -48,6 +47,7 @@ export type FieldType = EntityType & {
   default: any
   widget: string|WidgetConfigSetting
   display: string|DisplayConfigSetting
+  displayModes?: {[key:string]:string|DisplayConfigSetting}
   preSave?: Array<string|TransformerConfigSetting>
   preMount?: Array<string|TransformerConfigSetting>
   admin?: boolean
@@ -197,7 +197,7 @@ export const templateField:EntityTemplate = {
   }
 }
 
-export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
+export class Field implements FieldableEntity, TypedEntity, LabeledEntity, DisplayableEntity {
   id: string
   type: string
 
@@ -226,7 +226,8 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
   // validator?: Rules
   fields?: {[key:string]:Field}
   widget: Widget
-  display?: Display
+  display?: string|false|DisplayConfigSetting
+  displayModes?: { [key: string]: string|false|DisplayConfigSetting }
   preSave?: (string|TransformerConfigSetting)[]
   preMount?: (string|TransformerConfigSetting)[]
   mediaStore?: MediaStore
@@ -274,7 +275,8 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity {
       this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
-      if (conf.display || fieldType.display) this.display = new Display(conf?.['display'] ?? fieldType.display, cms)
+      this.display = conf?.['display'] ?? fieldType.display
+      this.displayModes = Object.assign({}, fieldType.displayModes || {}, conf.displayModes || {})
 
       // this.validator = conf.validator ?? fieldType.defaultValidator
       this.preSave = conf.preSave ? ( Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave] ) : fieldType.preSave
@@ -357,7 +359,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'boolean',
     default: undefined,
     widget: 'checkbox',
-    display: 'boolean',
+    display: 'span',
     preSave: ['boolean'],
   },
   tags: {

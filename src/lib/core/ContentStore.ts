@@ -9,10 +9,12 @@ const noStore = async () => {
   return {}
 }
 
+export type Value = string|number|boolean|null|undefined|Date|Content|Array<Value>
 export type Content = {
+  _type?:string
   _slug?:string
   _oldSlug?:string
-  [id:string]:string|number|boolean|null|undefined|Date|Array<string|number|boolean|null|undefined|Date|Content>|Content
+  [id:string]:Value
 }
 
 export type ContentStoreType = EntityType & ConfigurableEntityType & {
