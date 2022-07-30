@@ -3,15 +3,15 @@ import type SvelteCMS from "sveltecms"
 import type { RequestEvent } from "@sveltejs/kit/types/private"
 import { Component, type ComponentConfigSetting } from "sveltecms/core/Component"
 import { saveContentEndpoint, deleteContentEndpoint } from 'sveltecms/utils'
-import fs from 'fs'
+import type { Content } from "./ContentStore"
 
 export type AdminPageConfig = {
   id:string
   component:string|ComponentConfigSetting
   label?:string|(string|undefined|false)[]
   get?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent})=>Promise<any>
-  post?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
-  del?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
+  post?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Content})=>Promise<any>
+  del?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Content})=>Promise<any>
 }
 
 export class AdminPage {
@@ -19,8 +19,8 @@ export class AdminPage {
   component:Component
   label:(string|undefined|false)[]
   get?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent})=>Promise<any>
-  post?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
-  del?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Object})=>Promise<any>
+  post?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Content})=>Promise<any>
+  del?: (data:{cms:SvelteCMS, args:string[], event?:RequestEvent, values?:Content})=>Promise<any>
   constructor(conf:AdminPageConfig, cms:SvelteCMS) {
     this.id = conf.id
     if (conf.label) this.label = typeof conf.label === 'string' ? [conf.label] : conf.label

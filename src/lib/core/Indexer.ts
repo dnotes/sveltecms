@@ -6,13 +6,15 @@ import type ContentType from './ContentType'
 import type { EntityTemplate } from './EntityTemplate'
 import type { Media } from './MediaStore'
 
+export type IndexItem = Content
+
 function noop(val?:any) { return async () => { return val } }
 
 export type IndexerType = EntityType & ConfigurableEntityType & {
-  saveContent:(contentType:ContentType, content:Content)=>Promise<void>
-  deleteContent:(contentType:ContentType, content:Content)=>Promise<void>
-  saveMedia:(media:Media)=>Promise<void>
-  deleteMedia:(media:Media)=>Promise<void>
+  saveContent:(contentType:ContentType, content:IndexItem|IndexItem[])=>Promise<void>
+  deleteContent:(contentType:ContentType, content:IndexItem|IndexItem[])=>Promise<void>
+  saveMedia:(media:Media|Media[])=>Promise<void>
+  deleteMedia:(media:Media|Media[])=>Promise<void>
   searchContent:(contentType:ContentType, search:string|Object, options?:Object)=>Promise<Content & { _score?:number }[]>
   searchMedia:(search:string|Object, options?:Object)=>Promise<Media & { _score?:number }[]>
 }
@@ -43,10 +45,10 @@ export type IndexerConfigSetting = TypedEntityConfigSetting & ConfigurableEntity
 export class Indexer implements ConfigurableEntity, TypedEntity {
   id: string
   type: string
-  saveContent:(contentType:ContentType, content:Content)=>Promise<void> = noop()
-  deleteContent:(contentType:ContentType, content:Content)=>Promise<void> = noop()
-  saveMedia:(media:Media)=>Promise<void> = noop()
-  deleteMedia:(media:Media)=>Promise<void> = noop()
+  saveContent:(contentType:ContentType, content:Content|Content[])=>Promise<void> = noop()
+  deleteContent:(contentType:ContentType, content:Content|Content[])=>Promise<void> = noop()
+  saveMedia:(media:Media|Media[])=>Promise<void> = noop()
+  deleteMedia:(media:Media|Media[])=>Promise<void> = noop()
   searchContent:(contentType:ContentType, search:string|Object, options?:Object)=>Promise<Content[]> = noop([])
   searchMedia:(search:string|Object, options?:Object)=>Promise<Media[]> = noop([])
   mediaKeys:string[] = ['type', 'size', 'height', 'width', 'duration', 'date']

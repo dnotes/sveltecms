@@ -10,10 +10,11 @@ import { ScriptFunction, scriptFunctions, parseScript, type ScriptFunctionType, 
 import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
 import { displayComponents, templateDisplay, type DisplayConfigSetting } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
-import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es'
+import { cloneDeep, mergeWith, get as getProp, union, sortBy } from 'lodash-es'
 import type { EntityTemplate } from './core/EntityTemplate'
 import { templateSlug } from './core/Slug'
-import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType } from './core/Indexer'
+import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
+import { hooks, type CMSHookFunctions, type PluginHooks } from './core/Hook'
 
 // import { default as Validator, Rules } from 'validatorjs'
 
@@ -157,6 +158,11 @@ export default class SvelteCMS {
   indexers:{[key:string]:IndexerType} = {}
   contentTypes:{[key:string]:ContentType} = {}
   lists:CMSListConfig = {}
+  hooks:CMSHookFunctions = {
+    contentPreSave: [],
+    contentPreDelete: [],
+    contentPostWrite: [],
+  }
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
     this.conf = conf
@@ -250,6 +256,14 @@ export default class SvelteCMS {
       }
     }, this)
 
+    hooks.forEach(hook => {
+      // @ts-ignore These will be correct.
+      this.hooks[hook.type].push(hook)
+    })
+    Object.keys(this.hooks).forEach(k => {
+      this.hooks[k] = sortBy(this.hooks[k], ['weight', 'label'])
+    })
+
     this.indexer = new Indexer(conf?.settings?.indexer ?? 'staticFiles', this)
 
   }
@@ -262,6 +276,8 @@ export default class SvelteCMS {
         plugin?.[k]?.forEach(conf => {
           this[k][conf.id] = conf
         })
+        // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
+        if (plugin.hooks) plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook) })
       }
       catch(e) {
         e.message = `Plugin ${plugin.id} failed loading ${k}\n${e.message}`
@@ -514,7 +530,6 @@ export default class SvelteCMS {
       if (!options?.['skipIndex']) {
         // @ts-ignore these are typechecked above
         rawContent = await this.indexer.searchContent(contentType, options.searchText)
-        console.log(rawContent)
       }
       else {
         const db = this.getContentStore(contentType)
@@ -557,24 +572,113 @@ export default class SvelteCMS {
     return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
   }
 
-  async saveContent(contentType:string|ContentType, content:Content, options:{[key:string]:any} = {}):Promise<Content> {
+  async saveContent(
+    contentType:string|ContentType,
+    content:Content|Content[],
+    options:{ skipHooks?:boolean, [key:string]:any } = {}
+  ):Promise<Content|Content[]> {
+
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
-    Object.assign(db.options, options)
-    // @ts-ignore this will always be a single Content item from here
-    let savedContent = await db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
-    await this.indexer.saveContent(contentType, savedContent)
-    return savedContent
+    let items = Array.isArray(content) ? content : [content]
+
+    for (let i=0; i<items.length; i++) {
+
+      // Set up old Content for contentPostWrite hooks
+      let before
+      if (items[i]._oldSlug && !options.skipHooks) {
+        before = await db.getContent(contentType, {...db.options, options}, items[i]._oldSlug)
+        before = this.slugifyContent(this.preSave(contentType, before), contentType)
+      }
+
+      // Get the new Content for the contentPreWrite hooks
+      // @ts-ignore this should already be type safe
+      items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType)
+
+      // Run contentPreWrite hooks, and bail if there is an error
+      try {
+        if (!options.skipHooks) await this.runHook('contentPreSave', items[i], this, {...db.options, ...options})
+      }
+      catch(e) {
+        e.message = `Error saving content ${items[i]._type}/${items[i]._slug}:\n${e.message}`
+        throw e
+      }
+
+      items[i] = await db.saveContent(items[i], contentType, {...db.options, ...options})
+
+      try {
+        if (!options.skipHooks) await this.runHook('contentPostWrite', { before, after: items[i], contentType }, this, {...db.options, ...options})
+      }
+      catch(e) {
+        console.log(e.message.split('\r'))
+        items[i]._errors = e.message.split('\r')
+      }
+
+    }
+
+    await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)))
+
+    return Array.isArray(content) ? items : items[0]
+
   }
 
-  async deleteContent(contentType:string|ContentType, content:Content, options:{[key:string]:any} = {}):Promise<Content> {
+  async deleteContent(
+    contentType:string|ContentType,
+    content:Content|Content[],
+    options:{[key:string]:any} = {}
+  ):Promise<Content|Content[]> {
+
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
-    Object.assign(db.options, options)
-    // @ts-ignore this will always be a single Content item from here
-    let deletedContent = await db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options)
-    await this.indexer.deleteContent(contentType, deletedContent)
-    return deletedContent
+    let items = Array.isArray(content) ? content : [content]
+
+    for (let i=0; i<items.length; i++) {
+
+      // Get the content to be deleted, for preDelete hooks
+      // @ts-ignore slugifyContent returns singular if passed singular
+      items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType)
+
+      // Run contentPreWrite hooks, and bail if there is an error
+      try {
+        if (!options.skipHooks) await this.runHook('contentPreDelete', items[i], this, {...db.options, ...options})
+      }
+      catch(e) {
+        e.message = `Error deleting content ${items[i]._type}/${items[i]._slug}:\n${e.message}`
+        throw e
+      }
+
+      items[i] = await db.deleteContent(items[i], contentType, {...db.options, ...options})
+
+      try {
+        if (!options.skipHooks) await this.runHook('contentPostWrite', { before: items[i], contentType }, this, {...db.options, ...options})
+      }
+      catch(e) {
+        console.log(e.message.split('\r'))
+        items[i]._errors = e.message.split('\r')
+      }
+
+    }
+
+    await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)))
+
+    return Array.isArray(content) ? items : items[0]
+  }
+
+  getIndexItem(content?:Content):IndexItem|undefined {
+    if (!content) return
+    let contentType = this.getContentType(content._type)
+    // For IndexItem, only use _slug and _type fields (TODO: evaluate)
+    let item = { _slug:content._slug, _type:content._type }
+    // Also index all fields in the list of indexFields
+    contentType.indexFields.forEach(k => { item[k] = getProp(content, k) })
+    return item
+  }
+
+  async runHook(type:string, ...args) {
+    let hooks = this.hooks[type] ?? []
+    for (let i=0; i<hooks.length; i++) {
+      await hooks[i].fn(...args)
+    }
   }
 
   transform(value, conf:ConfigurableEntityConfigSettingValue<TransformerConfigSetting>) {
@@ -938,6 +1042,7 @@ export type CMSPlugin = {
   lists?: CMSListConfig
   optionFields?:{[key:string]:ConfigFieldConfigSetting}
   fieldWidgets?:{[key:string]:string[]}
+  hooks?:PluginHooks
 }
 
 export type CMSPluginBuilder = (config:any) => CMSPlugin

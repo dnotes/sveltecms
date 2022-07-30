@@ -484,7 +484,6 @@ export const widgetTypes:{[key:string]:WidgetType} = {
             )
 
         let index = await cms.listContent(contentTypes)
-        console.log({value, index})
 
         return value.map(v => {
           let [type, slug] = v.split('/')
@@ -524,15 +523,15 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           }
         }
       },
-      // twoWayLinkField: {
-      //   type: 'text',
-      //   default: '',
-      //   helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
-      //   widget: {
-      //     type: 'select',
-      //     items: '$listEntities(fields,false,$values.contentType)'
-      //   }
-      // },
+      linkedField: {
+        type: 'text',
+        default: '',
+        helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
+        widget: {
+          type: 'select',
+          items: '$listEntities(fields,false,$values.contentType)'
+        }
+      },
       // allowNewContent: {
       //   type: 'boolean',
       //   default: false,

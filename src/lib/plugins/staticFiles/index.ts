@@ -3,7 +3,7 @@ import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, get } from 'lodash-es';
 import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
 import type { Media } from 'sveltecms/core/MediaStore';
@@ -121,10 +121,10 @@ export const staticFilesMediaOptionFields:{[key:string]:ConfigFieldConfigSetting
 
 export async function parseFileStoreContentItem(_filepath, content, opts) {
   let ext = extname(_filepath)
-  if (ext === 'json') return { ...JSON.parse(content), _filepath }
+  if (ext === 'json') return { ...JSON.parse(content) }
   else {
     const yaml = await import('js-yaml')
-    if (ext === 'yml' || ext === 'yaml') return { ...yaml.load(content), _filepath, }
+    if (ext === 'yml' || ext === 'yaml') return { ...yaml.load(content) }
     else if (ext === 'md') {
       let sections = content.split(/^---\n/gm)
       if (sections.length > 2 && sections.shift() === '') {
@@ -133,8 +133,8 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
           data = yaml.load(sections.shift())
         }
         catch (e) {} // The yaml would not load.
-        if (data) return { ...data, [opts.markdownBodyField]: sections[0], _filepath }
-        else return { [opts.markdownBodyField]: content, _filepath }
+        if (data) return { ...data, [opts.markdownBodyField]: sections[0] }
+        else return { [opts.markdownBodyField]: content }
       }
     }
     else throw new Error('Extension for file stores must be md, json, yml or yaml.')
@@ -207,7 +207,6 @@ const plugin:CMSPlugin = {
 
         if (!opts.full) return items.map(filepath => {
           return {
-            _filepath: filepath,
             _slug: getSlugFromFilepath(filepath, contentType.id, opts)
           }
         })
@@ -324,22 +323,21 @@ const plugin:CMSPlugin = {
       saveContent: async function (contentType, content) {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
-
-        // Automatically index all fields beginning with underscore
-        let item = Object.fromEntries(Object.keys(content).filter(k => k.startsWith('_')).map(k => ([k,content[k]])))
-        // Also index all fields in the list of indexFields
-        contentType.indexFields.forEach(k => { item[k] = content[k] })
-
         let index = await getIndex(fs, filepath)
-        let i = index.findIndex(item => item._slug === content._slug)
-        if (i > -1) index[i] = item
-        else index.push(item)
+        content = Array.isArray(content) ? content : [content]
 
-        // If the slug has changed, remove the index entry for the old slug
-        if (content._oldSlug && (content._oldSlug !== content._slug)) {
-          i = index.findIndex(item => item._slug = content._oldSlug)
-          if (i > -1) index.splice(i, 1)
-        }
+        content.forEach(item => {
+
+          let i = index.findIndex(indexedItem => item._slug === indexedItem._slug)
+          if (i > -1) index[i] = item
+          else index.push(item)
+
+          // If the slug has changed, remove the index entry for the old slug
+          if (item._oldSlug && (item._oldSlug !== item._slug)) {
+            i = index.findIndex(item => item._slug === item._oldSlug)
+            if (i > -1) index.splice(i, 1)
+          }
+        })
 
         // Unset the cached search index for this content type
         if (this?._indexes?.[contentType.id]) this._indexes[contentType.id] = undefined
@@ -350,16 +348,19 @@ const plugin:CMSPlugin = {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
         let index = await getIndex(fs, filepath)
+        content = Array.isArray(content) ? content : [content]
 
-        // Find the exact item in the index
-        let slug = content._oldSlug ?? content._slug
-        let i = index.findIndex(item => item._slug === slug)
+        content.forEach(item => {
+          // Find the exact item in the index
+          let slug = item._oldSlug ?? item._slug
+          let i = index.findIndex(item => item._slug === slug)
 
-        // If the item is not in the index, just return
-        if (i === -1) return
+          // If the item is not in the index, just return
+          if (i === -1) return
 
-        // Remove the item from the index
-        index.splice(i, 1)
+          // Remove the item from the index
+          index.splice(i, 1)
+        })
 
         // Unset the cached search index for this content type
         if (this?._indexes?.[contentType.id]) this._indexes[contentType.id] = undefined
@@ -375,25 +376,35 @@ const plugin:CMSPlugin = {
         if (!search) return index._docs
         return index.search(search, { includeScore:true }).map(res => ({...res.item, _score:res?.score }))
       },
-      saveMedia: async function (media) {
+      saveMedia: async function (allMedia) {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
-        let item = { src: media.src };
-        (this.mediaKeys || []).forEach(k => { item[k] = media[k] })
         let index = await getIndex(fs, filepath)
-        let i = index.findIndex(item => item.src === media.src)
-        if (i > -1) index[i] = item
-        else index.push(item)
+        allMedia = Array.isArray(allMedia) ? allMedia : [allMedia]
+
+        allMedia.forEach(media => {
+          let item = { src: media.src };
+          (this.mediaKeys || []).forEach(k => { item[k] = media[k] })
+          let i = index.findIndex(item => item.src === media.src)
+          if (i > -1) index[i] = item
+          else index.push(item)
+        })
+
         if (this?._indexes?._media) this._indexes._media = undefined
         return saveIndex(fs, filepath, index)
       },
-      deleteMedia: async function (media) {
+      deleteMedia: async function (allMedia) {
         const fs = await getFs(this?.options?.databaseName)
         const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
         let index = await getIndex(fs, filepath)
-        let i = index.findIndex(item => item.src === media.src)
-        if (i === -1) return
-        index.splice(i, 1)
+        allMedia = Array.isArray(allMedia) ? allMedia : [allMedia]
+
+        allMedia.forEach(media => {
+          let i = index.findIndex(item => item.src === media.src)
+          if (i === -1) return
+          index.splice(i, 1)
+        })
+
         if (this?._indexes?._media) this._indexes._media = undefined
         return saveIndex(fs, filepath, index)
       },

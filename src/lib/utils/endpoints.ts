@@ -23,13 +23,13 @@ async function parseRequest(cms:SvelteCMS, contentType:string|ContentType, reque
   throw new Error(`Content-Type must be application/json or multipart/form-data (got ${format})`)
 }
 
-async function saveContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}):Promise<Content> {
+async function saveContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}):Promise<Content|Content[]> {
   let { format, data } = await parseRequest(cms, contentType, request)
   let content = await cms.saveContent(contentType, data, options)
   return content
 }
 
-async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}):Promise<Content> {
+async function deleteContentEndpoint(cms:SvelteCMS, contentType:string|ContentType, request:Request, options={}):Promise<Content|Content[]> {
   let { format, data } = await parseRequest(cms, contentType, request)
   let content = await cms.deleteContent(contentType, data, options)
   return content
