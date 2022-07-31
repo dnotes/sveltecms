@@ -1,6 +1,5 @@
 <script lang="ts">
 import type SvelteCMS from 'sveltecms';
-import Fuse from 'fuse.js'
 
 import type { WidgetField } from 'sveltecms'
 import Tags from 'svelte-tags-input'
@@ -23,13 +22,13 @@ import { onMount } from 'svelte';
     minChars?:number
     allowBlur?:boolean
   } = field.widget.options ?? {}
-
+  let contentTypes = opts.contentTypes || cms.listEntities('contentType')
   let autoComplete
 
   onMount(async () => {
     autoComplete = async (value) => {
-      let content = await cms.listContent(opts.contentTypes, value)
-      return content
+      let content = await cms.listContent(contentTypes, value)
+      return content.filter(item => item._type !== field.values._type || item._slug !== field.values._slug)
     }
   })
 

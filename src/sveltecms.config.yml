@@ -43,6 +43,16 @@ contentTypes:
     fields:
       title: title
       body: body
+      contentreference:
+        label: Content
+        type: reference
+        multiple: true
+        disabled: true
+        hidden: true
+        widget:
+          type: reference
+          inputField: title
+          linkedField: tags
     slug: title
     indexFields: title
     display: div.prose.dark:prose-invert
@@ -83,6 +93,8 @@ fields:
       type: reference
       contentTypes: tags
       inputField: title
+      linkedField: contentreference
+      allowNewContent: true
   slug:
     type: text
     display: none

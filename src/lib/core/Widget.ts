@@ -474,15 +474,13 @@ export const widgetTypes:{[key:string]:WidgetType} = {
 
         if (field.widget.options.slugOnly) return value
 
-        // Get an array of Content Types
-        let contentTypes = (Array.isArray(field?.widget?.options?.contentTypes)
-            && field.widget.options.contentTypes.length)
-          ? field.widget.options.contentTypes.map(toString)
-          : (field?.widget?.options?.contentTypes
-              ? field.widget.options.contentTypes.toString()
-              : cms.listEntities('contentType')
-            )
+        // Get all content types available for referencing, as an array of strings
+        let contentTypes = field?.widget?.options?.contentTypes
+        if (typeof contentTypes === 'string') contentTypes = [contentTypes]
+        if (!Array.isArray(contentTypes) || contentTypes.length === 0) contentTypes = cms.listEntities('contentType')
+        contentTypes = contentTypes.map(v => v.toString())
 
+        // @ts-ignore this will always be an array of strings now
         let index = await cms.listContent(contentTypes)
 
         return value.map(v => {
@@ -496,9 +494,9 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       contentTypes: {
         type: 'text',
         multiple: true,
-        required: true,
         default: undefined,
-        helptext: 'The Content Type from which a piece of content may be referenced.',
+        helptext: 'The Content Type from which a piece of content may be referenced. '+
+          'Leave empty to allow any content type, e.g. for the linked reference field on a tag.',
         widget: {
           type: 'tags',
           options: {
