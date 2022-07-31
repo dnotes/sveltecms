@@ -18,7 +18,7 @@ $: unsaved = !isEqual(oldConf, conf) || !isEqual(Object.keys(oldConf), Object.ke
 $: code = yaml.dump(conf);
 export let saveConfig = async () => {
     set(cms.conf, opts.configPath, conf);
-    return fetch('/admin/config', {
+    return fetch('/admin/settings', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

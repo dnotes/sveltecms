@@ -121,5 +121,9 @@ export const adminPages = [
                 component: 'CMSConfigSettings',
             }
         },
+        POST: async ({ cms, event, values }) => {
+            if (event)
+                return saveContentEndpoint(cms, cms.admin, event.request);
+        }
     },
 ];
