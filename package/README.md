@@ -37,19 +37,16 @@ you will want to install and configure `@rollup/plugin-yaml`.
 * Install the plugin: \
     `npm install @rollup/plugin-yaml`
 
-* Configure Vite to use the plugin in `svelte.config.js`:
+* Configure Vite to use the plugin in `vite.config.js`:
     ```
     import yaml from '@rollup/plugin-yaml'
     ...
     const config = {
-        kit: {
-            vite: {
-                plugins: [
-                    yaml();
-                ]
-            }
-        }
-    }
+        plugins: [
+            ...
+            yaml(),
+        ]
+    };
     ```
 
 * Configure SvelteCMS to use the correct file in `src/lib/cms.ts`: \

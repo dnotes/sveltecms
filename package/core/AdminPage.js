@@ -8,9 +8,9 @@ export class AdminPage {
         else
             this.label = [];
         this.component = new Component(conf.component, cms);
-        this.get = conf.get;
-        this.post = conf.post;
-        this.del = conf.del;
+        this.GET = conf.GET;
+        this.POST = conf.POST;
+        this.DELETE = conf.DELETE;
     }
 }
 export const adminPages = [
@@ -21,7 +21,7 @@ export const adminPages = [
     {
         id: 'content/*',
         component: 'CMSContentList',
-        get: async ({ cms, args }) => {
+        GET: async ({ cms, args }) => {
             return cms.listContent(args[1]);
         }
     },
@@ -29,19 +29,19 @@ export const adminPages = [
         id: 'content/*/*',
         component: 'CMSContentEdit',
         label: ['Content', , 'Edit'],
-        get: async ({ cms, args }) => {
+        GET: async ({ cms, args }) => {
             if (args[2] === '_')
                 return {};
             return cms.getContent(args[1], args[2], { getRaw: true });
         },
-        post: async ({ cms, args, event, values }) => {
+        POST: async ({ cms, args, event, values }) => {
             if (event)
                 return saveContentEndpoint(cms, args[1], event.request);
             else if (values)
                 return cms.saveContent(args[1], values);
             throw new Error('Empty POST to content/*/*');
         },
-        del: async ({ cms, args, event, values }) => {
+        DELETE: async ({ cms, args, event, values }) => {
             if (event)
                 return deleteContentEndpoint(cms, args[1], event.request);
             else if (values)

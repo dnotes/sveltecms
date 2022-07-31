@@ -1,4 +1,3 @@
-/// <reference types="isomorphic-git__lightning-fs" />
 import type { CMSPlugin } from 'sveltecms';
 import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs';

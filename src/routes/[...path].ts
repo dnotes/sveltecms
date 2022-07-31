@@ -1,6 +1,6 @@
 import cms from '$lib/cms'
 
-export async function get(event) {
+export async function GET(event) {
 
   const { params } = event
   let [ contentTypeID, slug ] = params.path.split('/')

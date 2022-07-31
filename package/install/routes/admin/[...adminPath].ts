@@ -1,40 +1,40 @@
-import type { RequestEvent } from "@sveltejs/kit/types/private";
 import cms from '$lib/cms'
+import type { RequestEvent } from '@sveltejs/kit'
 import admin from 'sveltecms/plugins/admin'
 cms.use(admin)
 
-export async function get(event) {
+export async function GET(event:RequestEvent) {
 
   const { params } = event
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)
 
   let data
-  if (adminPage?.get) data = await adminPage.get({cms, args, event})
+  if (adminPage?.GET) data = await adminPage.GET({cms, args, event})
 
   return { status: 200, body: { data } }
 }
 
-export async function post(event:RequestEvent) {
+export async function POST(event:RequestEvent) {
 
   const { params } = event
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)
 
-  if (!adminPage || !adminPage.post) return { status:405 }
+  if (!adminPage || !adminPage.POST) return { status:405 }
 
-  let data = await adminPage.post({cms, args, event})
+  let data = await adminPage.POST({cms, args, event})
   return { status:200, body: { data } }
 }
 
-export async function del(event:RequestEvent) {
+export async function DELETE(event:RequestEvent) {
 
   const { params } = event
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)
 
-  if (!adminPage || !adminPage.del) return { status:405 }
+  if (!adminPage || !adminPage.DELETE) return { status:405 }
 
-  let data = await adminPage.del({cms, args, event})
+  let data = await adminPage.DELETE({cms, args, event})
   return { status:200, body: { data } }
 }

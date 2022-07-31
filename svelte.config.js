@@ -1,7 +1,6 @@
-import path from 'path';
 import preprocess from 'svelte-preprocess';
 import adapter from '@sveltejs/adapter-static'
-import yaml from '@rollup/plugin-yaml'
+import path from 'path'
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -12,16 +11,9 @@ const config = {
   ],
 	adapter: adapter(),
 	kit: {
-		vite: {
-			resolve: {
-				alias: {
-					sveltecms: path.resolve('src/lib'),
-					'$lib': path.resolve('src/local'),
-				}
-			},
-			plugins: [
-				yaml()
-			]
+		alias: {
+      $lib: path.resolve('src/local'),
+      sveltecms: path.resolve('src/lib'),
 		},
 		package: {
 			exports: (filepath) => {

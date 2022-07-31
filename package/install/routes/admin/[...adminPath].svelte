@@ -17,7 +17,7 @@
   let adminPath = $page.params.adminPath
   let adminPage = cms.getAdminPage($page.params.adminPath)
   let args = adminPath.split('/')
-  if (!data && adminPage?.get) data = adminPage.get({cms, args})
+  if (!data && adminPage?.GET) data = adminPage.GET({cms, args})
 
 </script>
 
