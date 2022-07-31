@@ -10,6 +10,8 @@ import { type ScriptFunctionType } from './core/ScriptFunction';
 import { type ComponentType, type ComponentConfigSetting, type Component } from 'sveltecms/core/Component';
 import { type DisplayConfigSetting } from 'sveltecms/core/Display';
 import type { EntityTemplate } from './core/EntityTemplate';
+import { Indexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer';
+import { type CMSHookFunctions, type PluginHooks } from './core/Hook';
 export declare const FieldPropsAllowFunctions: string[];
 export declare const cmsConfigurables: string[];
 export declare type TypedEntity = {
@@ -47,6 +49,26 @@ export declare type FieldableEntityConfigSetting = {
         [id: string]: string | FieldConfigSetting;
     };
 };
+export declare type DisplayableEntity = {
+    display?: string | false | DisplayConfigSetting;
+    displayModes?: {
+        [key: string]: string | false | DisplayConfigSetting;
+    };
+    displayComponent?: Component;
+};
+export declare type DisplayableEntityType = EntityType & {
+    display?: string | false | DisplayConfigSetting;
+    displayModes?: {
+        [key: string]: string | false | DisplayConfigSetting;
+    };
+    displayComponent?: string;
+};
+export declare type DisplayableEntityConfigSetting = {
+    display?: string | false | DisplayConfigSetting;
+    displayModes?: {
+        [key: string]: string | false | DisplayConfigSetting;
+    };
+};
 export declare type EntityType = {
     id: string;
 };
@@ -56,9 +78,15 @@ export declare type ConfigurableEntityType = EntityType & {
     };
     options?: ConfigSetting;
 };
+declare type CMSSettings = ConfigSetting & {
+    adminStore?: string | ContentStoreConfigSetting;
+    indexer?: string | IndexerConfigSetting;
+    rootContentType?: string;
+    frontPageSlug?: string;
+};
 export declare type CMSConfigSetting = {
     configPath?: string;
-    settings?: ConfigSetting;
+    settings?: CMSSettings;
     adminStore?: string | ContentStoreConfigSetting;
     contentTypes?: {
         [key: string]: ContentTypeConfigSetting;
@@ -113,8 +141,10 @@ export default class SvelteCMS {
             isConfigurable: boolean;
         };
         widget: EntityTemplate;
+        indexer: EntityTemplate;
     };
     admin: ContentType;
+    indexer: Indexer;
     adminPages?: {
         [key: string]: AdminPageConfig;
     };
@@ -153,14 +183,18 @@ export default class SvelteCMS {
     mediaStores: {
         [key: string]: MediaStoreType;
     };
+    indexers: {
+        [key: string]: IndexerType;
+    };
     contentTypes: {
         [key: string]: ContentType;
     };
     lists: CMSListConfig;
+    hooks: CMSHookFunctions;
     constructor(conf: CMSConfigSetting, plugins?: CMSPlugin[]);
     use(plugin: CMSPlugin, config?: any): void;
-    preMount(fieldableEntity: ContentType | Field | Fieldgroup, values: Object): {};
-    preSave(fieldableEntity: ContentType | Field | Fieldgroup, values: Object): {};
+    preMount(fieldableEntity: ContentType | Field | Fieldgroup, values: Content): Content;
+    preSave(fieldableEntity: ContentType | Field | Fieldgroup, values: Content): Content;
     doFieldTransforms(op: 'preSave' | 'preMount', field: Field, value: any): any;
     listEntities(type: string, includeAdmin?: boolean, entityID?: string): string[];
     getEntityType(type: string): EntityTemplate;
@@ -169,13 +203,15 @@ export default class SvelteCMS {
     getEntityRoot(type: string, id: string): any;
     getFieldTypes(includeAdmin?: boolean): string[];
     getFieldTypeWidgets(includeAdmin?: boolean, fieldTypeID?: string): string[];
-    getDisplayComponent(display: string | DisplayConfigSetting, fallback?: string): Component | ComponentType;
     getContentType(contentType: string): ContentType;
     getContentStore(contentType: string | ContentType): import("./core/ContentStore").ContentStore;
-    slugifyContent(content: any, contentType: ContentType, force?: boolean): any;
+    getUrl(item: Content, contentTypeID?: string): string;
+    slugifyContent(content: Content | Content[], contentType: ContentType, force?: boolean): Content | Content[];
     getSlug(content: any, contentType: ContentType, force: boolean): any;
-    listContent(contentType: string | ContentType, options?: {
-        load?: boolean;
+    listContent(contentTypes: string | ContentType | Array<string | ContentType>, options?: string | {
+        skipIndex?: boolean;
+        getRaw?: boolean;
+        searchText?: string | undefined;
         [key: string]: any;
     }): Promise<Content[]>;
     /**
@@ -190,12 +226,15 @@ export default class SvelteCMS {
     getContent(contentType: string | ContentType, slug: string | number | null, options?: {
         [key: string]: any;
     }): Promise<Content>;
-    saveContent(contentType: string | ContentType, content: any, options?: {
+    saveContent(contentType: string | ContentType, content: Content | Content[], options?: {
+        skipHooks?: boolean;
         [key: string]: any;
-    }): Promise<Content>;
-    deleteContent(contentType: string | ContentType, content: any, options?: {
+    }): Promise<Content | Content[]>;
+    deleteContent(contentType: string | ContentType, content: Content | Content[], options?: {
         [key: string]: any;
-    }): Promise<Content>;
+    }): Promise<Content | Content[]>;
+    getIndexItem(content?: Content): IndexItem | undefined;
+    runHook(type: string, ...args: any[]): Promise<void>;
     transform(value: any, conf: ConfigurableEntityConfigSettingValue<TransformerConfigSetting>): any;
     getConfigOptionValue(value: any): any;
     getConfigOptionsFromFields(optionFields: {
@@ -321,11 +360,12 @@ export declare type CMSPlugin = {
     fieldTypes?: FieldType[];
     widgetTypes?: WidgetType[];
     transformers?: Transformer[];
+    indexers?: IndexerType[];
     contentStores?: ContentStoreType[];
     mediaStores?: MediaStoreType[];
     fieldgroups?: FieldgroupConfigSetting[];
     adminFieldgroups?: FieldgroupConfigSetting[];
-    components?: Array<ComponentType | ComponentConfigSetting>;
+    components?: ComponentType[];
     lists?: CMSListConfig;
     optionFields?: {
         [key: string]: ConfigFieldConfigSetting;
@@ -333,6 +373,7 @@ export declare type CMSPlugin = {
     fieldWidgets?: {
         [key: string]: string[];
     };
+    hooks?: PluginHooks;
 };
 export declare type CMSPluginBuilder = (config: any) => CMSPlugin;
 export declare type CMSListConfig = {
@@ -341,3 +382,4 @@ export declare type CMSListConfig = {
         value: any;
     }>;
 };
+export {};

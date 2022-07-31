@@ -10,8 +10,10 @@ import { ScriptFunction, scriptFunctions, parseScript } from './core/ScriptFunct
 import { templateComponent } from 'sveltecms/core/Component';
 import { displayComponents, templateDisplay } from 'sveltecms/core/Display';
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles';
-import { cloneDeep, mergeWith, get as getProp, union } from 'lodash-es';
+import { cloneDeep, mergeWith, get as getProp, union, sortBy } from 'lodash-es';
 import { templateSlug } from './core/Slug';
+import { Indexer, templateIndexer } from './core/Indexer';
+import { hooks } from './core/Hook';
 // import { default as Validator, Rules } from 'validatorjs'
 const splitter = /\s*,\s*/g;
 export const FieldPropsAllowFunctions = [
@@ -24,6 +26,7 @@ export const cmsConfigurables = [
     'adminStore',
     'contentTypes',
     // 'lists',
+    'indexers',
     'contentStores',
     'mediaStores',
     'fields',
@@ -45,6 +48,7 @@ export default class SvelteCMS {
             slug: templateSlug,
             transformer: templateTransformer,
             widget: templateWidget,
+            indexer: templateIndexer,
         };
         this.adminPages = {};
         this.adminFieldgroups = {};
@@ -58,8 +62,14 @@ export default class SvelteCMS {
         this.transformers = transformers;
         this.contentStores = {};
         this.mediaStores = {};
+        this.indexers = {};
         this.contentTypes = {};
         this.lists = {};
+        this.hooks = {
+            contentPreSave: [],
+            contentPreDelete: [],
+            contentPostWrite: [],
+        };
         this.conf = conf;
         this.use(staticFilesPlugin);
         displayComponents.forEach(c => {
@@ -75,7 +85,7 @@ export default class SvelteCMS {
                 this.lists[key] = list;
         });
         // Initialize all of the stores, widgets, and transformers specified in config
-        ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups'].forEach(objectType => {
+        ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups', 'indexers'].forEach(objectType => {
             if (conf?.[objectType]) {
                 Object.entries(conf[objectType]).forEach(([id, settings]) => {
                     // config can:
@@ -120,7 +130,7 @@ export default class SvelteCMS {
             this.contentTypes[id] = new ContentType(id, conf, this);
         });
         let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json';
-        if (typeof adminStore === 'string') {
+        if (typeof adminStore === 'string' && !this.contentStores[adminStore]) {
             let contentDirectory = adminStore.replace(/\/[^\/]+$/, '');
             let fileExtension = adminStore.replace(/.+[\.]/, '');
             if (!['json', 'yml', 'yaml'].includes(fileExtension))
@@ -146,14 +156,25 @@ export default class SvelteCMS {
                 ...Object.fromEntries(cmsConfigurables.map(k => [k, 'fieldgroup']))
             }
         }, this);
+        hooks.forEach(hook => {
+            // @ts-ignore These will be correct.
+            this.hooks[hook.type].push(hook);
+        });
+        Object.keys(this.hooks).forEach(k => {
+            this.hooks[k] = sortBy(this.hooks[k], ['weight', 'label']);
+        });
+        this.indexer = new Indexer(conf?.settings?.indexer ?? 'staticFiles', this);
     }
     use(plugin, config) {
         // TODO: allow function that returns plugin
-        ['fieldTypes', 'widgetTypes', 'transformers', 'contentStores', 'mediaStores', 'lists', 'adminPages', 'components', 'fieldgroups'].forEach(k => {
+        ['fieldTypes', 'widgetTypes', 'transformers', 'contentStores', 'mediaStores', 'lists', 'adminPages', 'components', 'fieldgroups', 'indexers'].forEach(k => {
             try {
                 plugin?.[k]?.forEach(conf => {
                     this[k][conf.id] = conf;
                 });
+                // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
+                if (plugin.hooks)
+                    plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook); });
             }
             catch (e) {
                 e.message = `Plugin ${plugin.id} failed loading ${k}\n${e.message}`;
@@ -169,28 +190,35 @@ export default class SvelteCMS {
     preMount(fieldableEntity, values) {
         let res = {}; // variable for result
         Object.entries(fieldableEntity?.fields || {}).forEach(([id, field]) => {
-            try {
-                // For fieldgroups, or other fieldable field types (e.g. possibly image)
-                if ((field.type === 'fieldgroup' || field?.fields) && values?.[id]) {
-                    if (Array.isArray(values[id])) {
-                        res[id] = [];
-                        for (let i = 0; i < values[id].length; i++) {
-                            // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
-                            let container = values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field;
-                            res[id][i] = this.preMount(container, values[id][i]);
+            if (values.hasOwnProperty(id)) {
+                try {
+                    // For references, fieldgroups, or other fieldable field types (e.g. possibly image)
+                    if ((field.type === 'reference' || field.type === 'fieldgroup' || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
+                        if (Array.isArray(values[id])) {
+                            res[id] = [];
+                            for (let i = 0; i < values[id]['length']; i++) {
+                                // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
+                                let container = field.type === 'reference'
+                                    ? this.getContentType(values[id][i]?.['_type'])
+                                    : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field);
+                                res[id][i] = this.preMount(container, values[id][i]);
+                            }
+                        }
+                        else {
+                            let container = field.type === 'reference'
+                                ? this.getContentType(values[id]?.['_type'])
+                                : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field;
+                            // @ts-ignore the typecheck above should be sufficient
+                            res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id];
                         }
                     }
-                    else {
-                        let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field;
-                        res[id] = this.preMount(container, values?.[id]);
-                    }
+                    else
+                        res[id] = this.doFieldTransforms('preMount', field, this.doFieldTransforms('preSave', field, values?.[id]));
                 }
-                else
-                    res[id] = this.doFieldTransforms('preMount', field, this.doFieldTransforms('preSave', field, values?.[id]));
-            }
-            catch (e) {
-                e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`;
-                throw e;
+                catch (e) {
+                    e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreMount/${field.id} : ${e.message}`;
+                    throw e;
+                }
             }
         });
         // Pass on CMS-specific items like _slug (beginning with _)
@@ -200,33 +228,40 @@ export default class SvelteCMS {
     preSave(fieldableEntity, values) {
         let res = {};
         Object.entries(fieldableEntity?.fields || {}).forEach(([id, field]) => {
-            try {
-                // For fieldgroups (as above)
-                if ((field.type === 'fieldgroup' || field?.fields) && values?.[id]) {
-                    res[id] = [];
-                    if (Array.isArray(values[id])) {
-                        for (let i = 0; i < values[id].length; i++) {
-                            // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
-                            let container = values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field;
-                            res[id][i] = this.preSave(container, values[id][i]);
+            if (values.hasOwnProperty(id)) {
+                try {
+                    // For references and fieldgroups (as above)
+                    if ((field.type === 'reference' || field.type === 'fieldgroup' || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
+                        res[id] = [];
+                        if (Array.isArray(values[id])) {
+                            for (let i = 0; i < values[id]['length']; i++) {
+                                // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
+                                let container = field.type === 'reference'
+                                    ? this.getContentType(values[id][i]?.['_type'])
+                                    : values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field;
+                                res[id][i] = this.preSave(container, values[id][i]);
+                            }
+                        }
+                        else {
+                            let container = field.type === 'reference'
+                                ? this.getContentType(values[id]?.['_type'])
+                                : values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field;
+                            // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
+                            // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
+                            // When saving config, the "fieldgroup" fields will not have a "fields" prop, and must still be saved.
+                            // @TODO: Evaluate this for security, and probably fix it, since at the moment it will try to save
+                            // almost any value to the configuration, albeit serialized.
+                            // @ts-ignore the typecheck above should be sufficient
+                            res[id] = container?.fields ? this.preSave(container, values?.[id]) : values[id];
                         }
                     }
-                    else {
-                        let container = values[id]._fieldgroup ? new Fieldgroup(values[id]._fieldgroup, this) : field;
-                        // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
-                        // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
-                        // When saving config, the "fieldgroup" fields will not have a "fields" prop, and must still be saved.
-                        // @TODO: Evaluate this for security, and probably fix it, since at the moment it will try to save
-                        // almost any value to the configuration, albeit serialized.
-                        res[id] = container?.fields ? this.preSave(container, values?.[id]) : values[id];
-                    }
+                    else
+                        res[id] = this.doFieldTransforms('preSave', field, values?.[id]);
                 }
-                else
-                    res[id] = this.doFieldTransforms('preSave', field, values?.[id]);
-            }
-            catch (e) {
-                e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreSave/${field.id} : ${e.message}`;
-                throw e;
+                catch (e) {
+                    e.message = `value: ${JSON.stringify(values[id], null, 2)}\npreSave/${field.id} : ${e.message}`;
+                    throw e;
+                }
             }
         });
         Object.keys(values).filter(k => k.match(/^_/)).forEach(k => res[k] = values[k]);
@@ -254,6 +289,8 @@ export default class SvelteCMS {
             type += 's';
         switch (type) {
             case 'fields':
+                if (entityID)
+                    return Object.keys(this.getContentType(entityID)?.fields || {});
                 return this.getFieldTypes(includeAdmin);
             case 'widgets':
                 return this.getFieldTypeWidgets(includeAdmin, entityID);
@@ -266,6 +303,7 @@ export default class SvelteCMS {
             case 'fieldgroups':
             case 'transformers':
             case 'components':
+            case 'indexers':
                 return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']));
             default:
                 return [
@@ -332,12 +370,6 @@ export default class SvelteCMS {
             return union(widgetTypes, widgets);
         return union(widgetTypes.filter(k => this.widgetTypes[k].fieldTypes.includes(fieldTypeRoot.id)), widgets.filter(k => this.widgetTypes[this.widgets[k].type].fieldTypes.includes(fieldTypeRoot.id)));
     }
-    getDisplayComponent(display, fallback = 'field_element') {
-        let id = typeof display === 'string' ? display : (display?.type || display?.id);
-        if (!id)
-            return;
-        return this.components[id] || this.components[fallback];
-    }
     getContentType(contentType) {
         if (!this.contentTypes[contentType])
             throw new Error(`Content type not found: ${contentType}`);
@@ -347,14 +379,26 @@ export default class SvelteCMS {
         const type = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         return type.contentStore;
     }
+    getUrl(item, contentTypeID) {
+        if (!contentTypeID)
+            contentTypeID = item._type;
+        if (contentTypeID === this?.conf?.settings?.rootContentType)
+            contentTypeID = '';
+        let slug = item._slug;
+        if (!contentTypeID && slug === this?.conf?.settings?.frontPageSlug)
+            slug = '';
+        return '/' + [contentTypeID, slug].filter(Boolean).join('/');
+    }
     slugifyContent(content, contentType, force) {
         if (Array.isArray(content)) {
             content.forEach(c => {
                 c._slug = this.getSlug(c, contentType, force);
+                c._type = contentType.id;
             });
         }
         else {
             content._slug = this.getSlug(content, contentType, force);
+            content._type = contentType.id;
         }
         return content;
     }
@@ -367,18 +411,37 @@ export default class SvelteCMS {
             .map(value => this.transform(value, contentType.slug.slugify))
             .join(contentType.slug.separator);
     }
-    async listContent(contentType, options = {}) {
-        contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
-        const db = this.getContentStore(contentType);
-        Object.assign(db.options, options);
-        const rawContent = await db.listContent(contentType, db.options);
-        if (!rawContent)
-            return;
-        this.slugifyContent(rawContent, contentType);
-        if (options.getRaw)
-            return rawContent;
-        // @ts-ignore contentType has by now been type checked
-        return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)];
+    async listContent(contentTypes, options = {}) {
+        // Ensure proper types for options and contentTypes
+        if (typeof options === 'string')
+            options = { searchText: options };
+        if (!Array.isArray(contentTypes))
+            contentTypes = [contentTypes];
+        contentTypes = contentTypes.map(t => typeof t === 'string' ? this.getContentType(t) : t);
+        // Get raw content
+        let contentLists = await Promise.all(contentTypes.map(async (contentType) => {
+            let rawContent;
+            if (!options?.['skipIndex']) {
+                // @ts-ignore these are typechecked above
+                rawContent = await this.indexer.searchContent(contentType, options.searchText);
+            }
+            else {
+                const db = this.getContentStore(contentType);
+                Object.assign(db.options, options);
+                // @ts-ignore this is typechecked above
+                rawContent = await db.listContent(contentType, db.options);
+            }
+            if (!rawContent || !rawContent.length)
+                return [];
+            // @ts-ignore this is typechecked above
+            this.slugifyContent(rawContent, contentType);
+            if (options['getRaw'])
+                return rawContent;
+            // @ts-ignore this is typechecked above
+            return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)];
+        }));
+        // Unify content arrays
+        return [].concat(...contentLists);
     }
     /**
      * Gets an individual piece of content or all content of a content type
@@ -407,14 +470,92 @@ export default class SvelteCMS {
     async saveContent(contentType, content, options = {}) {
         contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
-        Object.assign(db.options, options);
-        return db.saveContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options);
+        let items = Array.isArray(content) ? content : [content];
+        for (let i = 0; i < items.length; i++) {
+            // Set up old Content for contentPostWrite hooks
+            let before;
+            if (items[i]._oldSlug && !options.skipHooks) {
+                before = await db.getContent(contentType, { ...db.options, options }, items[i]._oldSlug);
+                before = this.slugifyContent(this.preSave(contentType, before), contentType);
+            }
+            // Get the new Content for the contentPreWrite hooks
+            // @ts-ignore this should already be type safe
+            items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType);
+            // When a slug is changing, don't allow the change if it would overwrite content
+            if (items[i]._oldSlug &&
+                items[i]._slug !== items[i]._oldSlug &&
+                (await this.listContent(contentType)).find(item => item._slug === items[i]._slug))
+                throw new Error(`Tried to overwrite content: ${contentType.id}/${items[i]._slug}`);
+            // Run contentPreWrite hooks, and bail if there is an error
+            try {
+                if (!options.skipHooks)
+                    await this.runHook('contentPreSave', items[i], this, { ...db.options, ...options });
+            }
+            catch (e) {
+                e.message = `Error saving content ${items[i]._type}/${items[i]._slug}:\n${e.message}`;
+                throw e;
+            }
+            items[i] = await db.saveContent(items[i], contentType, { ...db.options, ...options });
+            // When a slug is changing, delete the old content
+            if (items[i]._oldSlug && items[i]._slug !== items[i]._oldSlug)
+                await this.deleteContent(contentType, before, { newSlug: items[i]._slug });
+            try {
+                if (!options.skipHooks)
+                    await this.runHook('contentPostWrite', { before, after: items[i], contentType }, this, { ...db.options, ...options });
+            }
+            catch (e) {
+                console.log(e.message.split('\r'));
+                items[i]._errors = e.message.split('\r');
+            }
+        }
+        await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)));
+        return Array.isArray(content) ? items : items[0];
     }
     async deleteContent(contentType, content, options = {}) {
         contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
-        Object.assign(db.options, options);
-        return db.deleteContent(this.slugifyContent(this.preSave(contentType, content), contentType), contentType, db.options);
+        let items = Array.isArray(content) ? content : [content];
+        for (let i = 0; i < items.length; i++) {
+            // Get the content to be deleted, for preDelete hooks
+            // @ts-ignore slugifyContent returns singular if passed singular
+            items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType);
+            // Run contentPreWrite hooks, and bail if there is an error
+            try {
+                if (!options.skipHooks)
+                    await this.runHook('contentPreDelete', items[i], this, { ...db.options, ...options });
+            }
+            catch (e) {
+                e.message = `Error deleting content ${items[i]._type}/${items[i]._slug}:\n${e.message}`;
+                throw e;
+            }
+            items[i] = await db.deleteContent(items[i], contentType, { ...db.options, ...options });
+            try {
+                if (!options.skipHooks)
+                    await this.runHook('contentPostWrite', { before: items[i], contentType }, this, { ...db.options, ...options });
+            }
+            catch (e) {
+                console.log(e.message.split('\r'));
+                items[i]._errors = e.message.split('\r');
+            }
+        }
+        await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)));
+        return Array.isArray(content) ? items : items[0];
+    }
+    getIndexItem(content) {
+        if (!content)
+            return;
+        let contentType = this.getContentType(content._type);
+        // For IndexItem, only use _slug and _type fields (TODO: evaluate)
+        let item = { _slug: content._slug, _type: content._type };
+        // Also index all fields in the list of indexFields
+        contentType.indexFields.forEach(k => { item[k] = getProp(content, k); });
+        return item;
+    }
+    async runHook(type, ...args) {
+        let hooks = this.hooks[type] ?? [];
+        for (let i = 0; i < hooks.length; i++) {
+            await hooks[i].fn(...args);
+        }
     }
     transform(value, conf) {
         if (!Array.isArray(conf))

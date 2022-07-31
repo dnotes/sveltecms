@@ -16,7 +16,3 @@ export declare type EntityTemplate = {
         [id: string]: ConfigFieldConfigSetting;
     };
 };
-export declare class Entity {
-    template?: EntityTemplate;
-    constructor(template: EntityTemplate);
-}

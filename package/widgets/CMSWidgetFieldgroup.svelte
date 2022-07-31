@@ -2,7 +2,6 @@
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
 import { cloneDeep, get } from 'lodash-es';
 import splitTags from 'sveltecms/utils/splitTags';
-import Field from 'sveltecms/display/Field.svelte';
 import Button from 'sveltecms/ui/Button.svelte';
 const split = splitTags();
 let parentField;

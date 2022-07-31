@@ -1,8 +1,9 @@
-import type { FieldableEntityConfigSetting, EntityType, FieldableEntity } from "sveltecms";
+import type { FieldableEntityConfigSetting, EntityType, FieldableEntity, DisplayableEntity, DisplayableEntityConfigSetting } from "sveltecms";
 import type SvelteCMS from "sveltecms";
-import { Entity, type EntityTemplate } from "./EntityTemplate";
+import type { DisplayConfigSetting } from "./Display";
+import type { EntityTemplate } from "./EntityTemplate";
 import Field, { type ConfigFieldConfigSetting } from "./Field";
-export declare type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & {
+export declare type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & DisplayableEntityConfigSetting & {
     admin?: boolean;
     type?: string;
 };
@@ -13,12 +14,15 @@ export declare type AdminFieldgroupConfigSetting = FieldgroupConfigSetting & {
     };
 };
 export declare const templateFieldgroup: EntityTemplate;
-export declare class Fieldgroup extends Entity implements EntityType, FieldableEntity {
-    template: EntityTemplate;
+export declare class Fieldgroup implements EntityType, FieldableEntity, DisplayableEntity {
     id: string;
     type: string;
     admin?: boolean;
     plugin?: string;
+    display?: string | false | DisplayConfigSetting;
+    displayModes: {
+        [key: string]: string | false | DisplayConfigSetting;
+    };
     isFieldable: boolean;
     fields: {
         [id: string]: Field;

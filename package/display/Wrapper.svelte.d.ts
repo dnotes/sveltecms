@@ -1,10 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from "sveltecms";
-import type { DisplayConfig } from "sveltecms/core/Display";
+import type { Display } from "sveltecms/core/Display";
 declare const __propDef: {
     props: {
-        cms: SvelteCMS;
-        display: DisplayConfig;
+        display: Display;
+        class?: string;
     };
     events: {
         [evt: string]: CustomEvent<any>;

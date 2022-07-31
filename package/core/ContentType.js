@@ -1,7 +1,7 @@
 import { SlugConfig } from 'sveltecms/core/Slug';
 import { ContentStore } from 'sveltecms/core/ContentStore';
 import Field, {} from 'sveltecms/core/Field';
-import { getLabelFromID } from 'sveltecms/utils';
+import { getLabelFromID, splitTags } from 'sveltecms/utils';
 export const templateContentType = {
     id: 'contentType',
     label: 'Content Type',
@@ -52,25 +52,31 @@ export const templateContentType = {
                 }
             }
         },
-        previewComponent: {
+        indexFields: {
+            type: 'text',
+            default: '',
+            helptext: 'The fields that should be indexed, and whose values should be returned when content is listed.',
+        },
+        display: {
             type: 'entity',
-            default: undefined,
+            default: '',
             helptext: '',
             widget: {
                 type: 'entity',
                 options: {
-                    entityType: 'component'
+                    entityType: 'display'
                 }
             }
         },
-        displayComponent: {
-            type: 'entity',
-            default: undefined,
-            helptext: '',
+        displayModes: {
+            type: 'entityList',
+            default: {},
+            helptext: 'Display configurations which override the default display for a display mode. ' +
+                'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
             widget: {
-                type: 'entity',
+                type: 'entityList',
                 options: {
-                    entityType: 'component'
+                    entityType: 'display',
                 }
             }
         },
@@ -85,8 +91,8 @@ export class ContentType {
         this.label = conf.label || getLabelFromID(this.id);
         this.contentStore = new ContentStore(conf?.contentStore, cms);
         this.mediaStore = conf.mediaStore;
-        this.previewComponent = conf.previewComponent;
-        this.displayComponent = conf.displayComponent;
+        this.display = conf.display;
+        this.displayModes = conf.displayModes;
         this.form = {
             method: conf?.form?.method,
             action: conf?.form?.action,
@@ -96,6 +102,9 @@ export class ContentType {
         });
         let slugConf = conf.slug || Object.keys(conf.fields)?.[0] || '';
         this.slug = new SlugConfig(slugConf, cms);
+        this.indexFields = Array.isArray(conf.indexFields)
+            ? conf.indexFields
+            : (splitTags()(conf.indexFields ?? undefined) || []);
     }
 }
 export default ContentType;

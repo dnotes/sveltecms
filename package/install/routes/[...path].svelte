@@ -1,28 +1,48 @@
 <script lang="ts">
-  import cms from '$lib/cms' // TODO: pare this down; we shouldn't need the full CMS
-  import type { Content } from 'sveltecms/core/ContentStore';
-  export let contentTypeID
+import cms from '$lib/cms' // TODO: pare this down; we shouldn't need the full CMS
+import type { Content } from 'sveltecms/core/ContentStore';
+import Wrapper from 'sveltecms/display/Wrapper.svelte';
+import ContentItem from 'sveltecms/display/ContentItem.svelte'
+import { Display } from 'sveltecms/core/Display';
+
+  export let contentTypeID:string
   export let content:Content
-  let contentType = cms.getContentType(contentTypeID || cms?.conf?.settings?.rootContentType?.toString())
-  let displayComponent = cms.getDisplayComponent(contentType.displayComponent?.['type'] || contentType.displayComponent, 'content')
+
+  // Get the content type
+  $: contentType = cms.getContentType(contentTypeID || cms?.conf?.settings?.rootContentType?.toString())
+  $: items = Array.isArray(content) ? content : [content]
+
+  // Get the proper display
+  let display:Display
+  $: displayMode = Array.isArray(content) ? 'teaser' : 'page'
+  $: display = new Display(contentType?.displayModes?.[displayMode] ?? contentType?.display ?? 'div', cms)
+
 </script>
 
-{#await content}
-  fetching content...
-{:then content}
-  {#if Array.isArray(content)}
-    <ul>
-      {#each content as item}
-        <li><a rel="prefetch" href="/{contentTypeID}/{item._slug}">{item._slug}</a></li>
+{#if display.isDisplayed}
+  {#if display?.wrapper?.isDisplayed}
+
+    <Wrapper display={display.wrapper}>
+      {#each items as item}
+        <ContentItem
+          {cms}
+          entity={contentType}
+          {item}
+          {displayMode}
+        />
       {/each}
-    </ul>
-  {:else if displayComponent?.component}
-    <svelte:component this={displayComponent.component} {cms} {content} {contentTypeID} />
-  {:else if cms.components['content']}
-    <svelte:component this={cms.components['content']?.component} {cms} {content} {contentTypeID} />
+    </Wrapper>
+
   {:else}
-    {JSON.stringify(content)}
+
+    {#each items as item}
+      <ContentItem
+        {cms}
+        entity={contentType}
+        {item}
+        {displayMode}
+      />
+    {/each}
+
   {/if}
-{:catch error}
-  {JSON.stringify(error)}
-{/await}
+{/if}

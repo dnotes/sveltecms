@@ -1,9 +1,16 @@
 import { SvelteComponentTyped } from "svelte";
+import type SvelteCMS from "sveltecms";
+import type { Value } from "sveltecms/core/ContentStore";
+import type Field from "sveltecms/core/Field";
 declare const __propDef: {
     props: {
-        value: string | {
+        cms: SvelteCMS;
+        entity: Field;
+        item: string | {
+            [key: string]: Value;
             src: string;
         };
+        displayMode: string;
     };
     events: {
         [evt: string]: CustomEvent<any>;

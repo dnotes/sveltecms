@@ -1,4 +1,3 @@
-import { Entity } from "./EntityTemplate";
 import Field, {} from "./Field";
 export const templateFieldgroup = {
     id: 'fieldgroup',
@@ -9,11 +8,34 @@ export const templateFieldgroup = {
     typeInherits: true,
     isConfigurable: true,
     isFieldable: true,
+    configFields: {
+        display: {
+            type: 'entity',
+            default: '',
+            helptext: 'The element or component used to display this fieldgroup.',
+            widget: {
+                type: 'entity',
+                options: {
+                    entityType: 'display',
+                },
+            }
+        },
+        displayModes: {
+            type: 'entityList',
+            default: {},
+            helptext: 'Display configurations which override the default display for a display mode. ' +
+                'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
+            widget: {
+                type: 'entityList',
+                options: {
+                    entityType: 'display',
+                }
+            }
+        },
+    }
 };
-export class Fieldgroup extends Entity {
+export class Fieldgroup {
     constructor(conf, cms) {
-        super(templateFieldgroup);
-        this.template = templateFieldgroup;
         this.isFieldable = true;
         conf = typeof conf === 'string' ? cms.fieldgroups[conf] : conf;
         this.id = conf.id;

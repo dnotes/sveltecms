@@ -5,7 +5,9 @@ declare const __propDef: {
         cms: SvelteCMS;
         contentTypeID: string;
         result?: any;
-        values?: {};
+        values?: {
+            _type: string;
+        };
         errors?: {};
         touched?: {};
         disabled?: boolean;
@@ -14,7 +16,6 @@ declare const __propDef: {
         contentType?: import("./core/ContentType").ContentType;
         action?: string;
         method?: string;
-        previewComponent?: string | import("./core/Component").ComponentConfigSetting;
         submit?: (event: any) => Promise<void>;
     };
     events: {

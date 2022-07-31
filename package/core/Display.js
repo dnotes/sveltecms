@@ -1,9 +1,7 @@
-import Content from "sveltecms/display/Content.svelte";
-import Field from "sveltecms/display/Content.svelte";
 import Image from "sveltecms/display/field/Image.svelte";
 import File from "sveltecms/display/field/File.svelte";
-import Element from "sveltecms/display/field/Element.svelte";
 import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte";
+import Reference from "sveltecms/display/field/Reference.svelte";
 export const templateDisplay = {
     id: 'display',
     label: 'Display',
@@ -14,42 +12,60 @@ export const templateDisplay = {
         type: {
             type: 'text',
             default: '',
-            helptext: 'An HTML element (p, li, etc.) or registered component to use when displaying the field.',
+            helptext: 'An HTML element (p, li, etc.) or include path for a SvelteCMS Component to use when displaying the field.',
         },
         wrapper: {
             type: 'text',
             default: '',
-            helptext: 'An HTML element (div, ul, etc.) or registered component to use as a wrapper for the displayed field.',
+            helptext: 'An HTML element (div, ul, etc.) or include path for a SvelteCMS Component to use as a wrapper for the displayed field.',
         },
         html: {
             type: 'boolean',
             default: false,
             helptext: `Whether to treat the field value as pre-sanitized HTML. ` +
                 `NOTE! Unless the user input for the field is sanitized with ` +
-                `an appropriate and properly configured preMount transformer, ` +
+                `an appropriate and properly configured preMount Transformer, ` +
                 `using this feature is a critical security vulnerability.`
-        }
+        },
+        link: {
+            type: 'boolean',
+            default: false,
+            helptext: `Whether to display the field value as a link to its parent Content.`
+        },
     }
 };
-export class DisplayConfig {
+export class Display {
     constructor(conf, cms) {
         this.type = '';
-        this.isComponent = false;
-        if (typeof conf === 'string' && ['', 'none', 'hidden'].includes(conf))
+        this.isDisplayed = false;
+        this.link = false;
+        if (!conf)
             return;
         conf = typeof conf === 'string' ? { type: conf } : conf;
-        this.type = conf.type;
-        this.isComponent = cms.components[this.type] ? true : false;
-        this.html = conf?.html;
+        if (!conf.type || ['none', 'hidden'].includes(conf.type))
+            return;
+        this.isDisplayed = true;
+        this.type = conf.type.trim();
+        this.component = cms.getEntity('component', this.type);
+        this.link = conf.link ? true : false;
+        if (!this.component) {
+            this.html = conf?.html;
+            let el, classes, tag, id;
+            [el, ...classes] = this.type.split('.');
+            this.classes = classes;
+            [tag, id] = el.split('#');
+            this.tag = tag;
+            this.id = id;
+        }
         if (conf.wrapper)
-            this.wrapper = new DisplayConfig(conf.wrapper, cms);
+            this.wrapper = new Display(conf.wrapper, cms);
     }
+    get classList() { return this.classes.join(' '); }
 }
 export const displayComponents = [
-    { id: 'content', component: Content },
-    { id: 'field', component: Field },
-    { id: 'field_element', component: Element },
-    { id: 'field_image', component: Image },
-    { id: 'field_file', component: File },
-    { id: 'field_fieldgroup', component: Fieldgroup },
+    { id: 'sveltecms/display/field/Image', component: Image, admin: true },
+    { id: 'sveltecms/display/field/File', component: File, admin: true },
+    { id: 'sveltecms/display/field/Fieldgroup', component: Fieldgroup, admin: true },
+    { id: 'sveltecms/display/field/Reference', component: Reference, admin: true },
 ];
+export default Display;

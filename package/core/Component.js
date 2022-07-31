@@ -1,3 +1,8 @@
+/**
+ * Note: Components must be pre-registered for ANY type of import in SvelteKit.
+ * Dynamic import() cannot be used with a variable in the import string; this
+ * is a limitation of the bundler. See https://github.com/sveltejs/svelte/issues/6702.
+ */
 export const templateComponent = {
     id: 'component',
     label: 'Component',
@@ -16,6 +21,7 @@ export class Component {
         this.id = componentType.id;
         this.type = componentType.id;
         this.component = componentType.component;
+        this.admin = componentType?.admin;
         this.options = cms.getInstanceOptions(componentType, conf);
     }
 }

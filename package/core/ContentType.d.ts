@@ -1,13 +1,13 @@
 import type SvelteCMS from 'sveltecms';
-import type { ConfigSetting, FieldableEntity, LabeledEntity } from 'sveltecms';
+import type { ConfigSetting, DisplayableEntity, DisplayableEntityConfigSetting, FieldableEntity, LabeledEntity } from 'sveltecms';
 import { SlugConfig, type SlugConfigSetting } from 'sveltecms/core/Slug';
 import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/ContentStore';
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore';
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field';
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
-import type { ComponentConfigSetting } from './Component';
+import type { DisplayConfigSetting } from './Display';
 export declare const templateContentType: EntityTemplate;
-export declare type ContentTypeConfigSetting = ConfigSetting & {
+export declare type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {
     label: string;
     fields: {
         [id: string]: string | FieldConfigSetting;
@@ -15,22 +15,24 @@ export declare type ContentTypeConfigSetting = ConfigSetting & {
     contentStore: string | ContentStoreConfigSetting;
     mediaStore?: string | MediaStoreConfigSetting;
     slug?: string | string[] | SlugConfigSetting;
-    previewComponent?: string | ComponentConfigSetting;
-    displayComponent?: string | ComponentConfigSetting;
+    indexFields?: string | string[];
     form?: {
         method?: 'post' | 'get';
         action?: string;
     };
 };
-export declare class ContentType implements FieldableEntity, LabeledEntity {
+export declare class ContentType implements FieldableEntity, LabeledEntity, DisplayableEntity {
     id: string;
     label: string;
     isFieldable: boolean;
     slug: SlugConfig;
     contentStore: ContentStore;
     mediaStore?: string | MediaStoreConfigSetting;
-    previewComponent?: string | ComponentConfigSetting;
-    displayComponent?: string | ComponentConfigSetting;
+    display?: string | false | DisplayConfigSetting;
+    displayModes?: {
+        [key: string]: string | false | DisplayConfigSetting;
+    };
+    indexFields: string[];
     fields: {
         [key: string]: Field;
     };

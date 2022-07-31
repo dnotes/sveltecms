@@ -70,6 +70,8 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
     // Now any special data not provided by a Field
     if (data?._slug?.[0])
         result.push(['_slug', data._slug[0]]);
+    if (data?._oldSlug?.[0])
+        result.push(['_oldSlug', data._oldSlug[0]]);
     if (data?._fieldgroup?.[0])
         result.push(['_fieldgroup', data._fieldgroup[0]]);
     return Object.fromEntries(result);

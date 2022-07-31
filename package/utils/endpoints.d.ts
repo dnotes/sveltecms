@@ -5,6 +5,6 @@ declare function parseRequest(cms: SvelteCMS, contentType: string | ContentType,
     format: string;
     data: any;
 }>;
-declare function saveContentEndpoint(cms: SvelteCMS, contentType: string | ContentType, request: Request, options?: {}): Promise<Content>;
-declare function deleteContentEndpoint(cms: SvelteCMS, contentType: string | ContentType, request: Request, options?: {}): Promise<Content>;
+declare function saveContentEndpoint(cms: SvelteCMS, contentType: string | ContentType, request: Request, options?: {}): Promise<Content | Content[]>;
+declare function deleteContentEndpoint(cms: SvelteCMS, contentType: string | ContentType, request: Request, options?: {}): Promise<Content | Content[]>;
 export { parseRequest, saveContentEndpoint, deleteContentEndpoint, };

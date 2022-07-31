@@ -11,7 +11,8 @@ import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte';
 import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte';
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte';
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte";
-import { Entity } from "./EntityTemplate";
+import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte";
+import CMSWidgetTags from "sveltecms/widgets/CMSWidgetTags.svelte";
 export const templateWidget = {
     id: 'widget',
     label: 'Widget',
@@ -23,9 +24,8 @@ export const templateWidget = {
     typeRestricted: true,
     isConfigurable: true,
 };
-export class Widget extends Entity {
+export class Widget {
     constructor(conf, cms) {
-        super(templateWidget);
         // TODO: change per CMSContentField changes
         conf = typeof conf === 'string' ? { type: conf } : conf;
         let parent = cms.widgets[conf.type];
@@ -423,8 +423,172 @@ export const widgetTypes = {
     value: {
         id: 'value',
         description: 'A hidden html input element holding a value.',
-        fieldTypes: [],
+        fieldTypes: ['value'],
         widget: CMSWidgetValue,
+    },
+    reference: {
+        id: 'reference',
+        description: 'A reference to another Content item.',
+        fieldTypes: ['reference', 'text'],
+        handlesMultiple: true,
+        widget: CMSWidgetReference,
+        formDataHandler: async (value, cms, contentType, field) => {
+            if (Array.isArray(value) && value.length) {
+                if (field.widget.options.slugOnly)
+                    return value;
+                // Get all content types available for referencing, as an array of strings
+                let contentTypes = field?.widget?.options?.contentTypes;
+                if (typeof contentTypes === 'string')
+                    contentTypes = [contentTypes];
+                if (!Array.isArray(contentTypes) || contentTypes.length === 0)
+                    contentTypes = cms.listEntities('contentType');
+                contentTypes = contentTypes.map(v => v.toString());
+                // @ts-ignore this will always be an array of strings now
+                let index = await cms.listContent(contentTypes);
+                return value.map(v => {
+                    let [type, slug] = v.split('/');
+                    return index.find(item => item._slug === slug && item._type === type);
+                }).filter(Boolean);
+            }
+        },
+        optionFields: {
+            contentTypes: {
+                type: 'text',
+                multiple: true,
+                default: undefined,
+                helptext: 'The Content Type from which a piece of content may be referenced. ' +
+                    'Leave empty to allow any content type, e.g. for the linked reference field on a tag.',
+                widget: {
+                    type: 'tags',
+                    options: {
+                        items: '$listEntities(contentType)',
+                        restrictToItems: true,
+                        minChars: 0,
+                    }
+                },
+            },
+            inputField: {
+                type: 'text',
+                required: true,
+                default: '',
+                helptext: 'The field used for search and display in form inputs. ' +
+                    'If new content is allowed, this field will be populated with the tag text.',
+                widget: {
+                    type: 'tags',
+                    options: {
+                        items: '$listEntities(fields,false,$values.contentType)',
+                        restrictToItems: true,
+                        minChars: 0,
+                    }
+                }
+            },
+            linkedField: {
+                type: 'text',
+                default: '',
+                helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
+                widget: {
+                    type: 'select',
+                    items: '$listEntities(fields,false,$values.contentType)'
+                }
+            },
+            // allowNewContent: {
+            //   type: 'boolean',
+            //   default: false,
+            //   helptext: 'Allow creating new content of the specified type.',
+            // },
+            slugOnly: {
+                type: 'boolean',
+                default: false,
+                helptext: 'EXPERIMENTAL. Select this option if you want this field to store only the _slug string. ' +
+                    'By default, reference fields store all index fields and the _slug for each referenced item, ' +
+                    'which is often desirable for NoSQL or flat files as it reduces data calls.'
+            },
+            displayMode: {
+                type: 'text',
+                default: 'reference',
+                helptext: 'The displayMode to use when displaying referenced content. ' +
+                    'Common display modes are "page", "teaser", and "reference" (default).'
+            },
+            placeholder: {
+                type: 'text',
+                default: '',
+                helptext: 'Placeholder text when the input is empty.',
+            },
+            allowBlur: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Enable adding an unfinished item when the input loses focus.',
+            },
+            minChars: {
+                type: 'number',
+                default: 1,
+                helptext: 'The number of characters that must be typed before options are shown.',
+            },
+        }
+    },
+    tags: {
+        id: 'tags',
+        description: 'Tagging widget provided by ',
+        fieldTypes: ['tags'],
+        widget: CMSWidgetTags,
+        optionFields: {
+            placeholder: {
+                type: 'text',
+                default: '',
+                helptext: 'Placeholder text when the input is empty.',
+            },
+            onlyUnique: {
+                type: 'boolean',
+                default: true,
+                helptext: 'Ensure that all entered tags are unique.',
+            },
+            items: {
+                type: 'tags',
+                default: [],
+                helptext: 'A list of possible values. A Script Function may be used to retrieve this list from an external API.',
+            },
+            restrictToItems: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Only accept tags from the provided items.',
+            },
+            itemsKey: {
+                type: 'text',
+                default: '',
+                helptext: 'If items provides an array of objects, this is the key used for search and display.',
+            },
+            itemsFilter: {
+                type: 'boolean',
+                default: true,
+                helptext: 'Turn this off to disable filtering the items. May be useful for some APIs.',
+            },
+            allowBlur: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Enable adding an unfinished item when the input loses focus.',
+            },
+            minChars: {
+                type: 'number',
+                default: 1,
+                helptext: 'The number of characters that must be typed before options are shown.',
+            },
+            allowPaste: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Enable pasting a tag or tag group.',
+            },
+            allowDrop: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Enable drag and drop of a tag or tag group.',
+            },
+            splitWith: {
+                type: 'text',
+                default: ',',
+                helptext: 'The character that splits a group of tags.',
+                hidden: '$not($or($values.allowPaste, $values.allowDrop))',
+            },
+        }
     },
     // {
     //   id: 'options', // i.e. radios or checkboxes

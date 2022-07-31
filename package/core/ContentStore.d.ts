@@ -2,9 +2,12 @@ import type SvelteCMS from 'sveltecms';
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms';
 import type { ContentType } from 'sveltecms/core/ContentType';
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
+export declare type Value = string | number | boolean | null | undefined | Date | Content | Array<Value>;
 export declare type Content = {
+    _type?: string;
     _slug?: string;
-    [id: string]: string | number | boolean | null | undefined | Date | Array<string | number | boolean | null | undefined | Date | Content> | Content;
+    _oldSlug?: string;
+    [id: string]: Value;
 };
 export declare type ContentStoreType = EntityType & ConfigurableEntityType & {
     listContent?: (contentType: ContentType, opts: ConfigSetting) => Promise<Content[]>;

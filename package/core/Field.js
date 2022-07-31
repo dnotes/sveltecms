@@ -1,9 +1,7 @@
 import MediaStore, {} from "sveltecms/core/MediaStore";
 import { parseScript, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
 import Widget, {} from 'sveltecms/core/Widget';
-import { DisplayConfig } from './Display';
 import { getLabelFromID, splitTags } from 'sveltecms/utils';
-import { Entity } from './EntityTemplate';
 export const templateField = {
     id: 'field',
     label: 'Field',
@@ -51,6 +49,18 @@ export const templateField = {
                 options: {
                     entityType: 'display',
                 },
+            }
+        },
+        displayModes: {
+            type: 'entityList',
+            default: {},
+            helptext: 'Display configurations which override the default display for a display mode. ' +
+                'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
+            widget: {
+                type: 'entityList',
+                options: {
+                    entityType: 'display',
+                }
             }
         },
         mediaStore: {
@@ -146,10 +156,8 @@ export const templateField = {
         },
     }
 };
-export class Field extends Entity {
+export class Field {
     constructor(id, conf, cms, contentType) {
-        super(templateField);
-        this.template = templateField;
         this.helptext = '';
         this.class = '';
         // Items that are only used when initialized for an entry form
@@ -191,8 +199,10 @@ export class Field extends Entity {
             this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false);
             this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false);
             this.widget = new Widget(conf.widget || fieldType.widget, cms);
-            if (conf.display || fieldType.display)
-                this.display = new DisplayConfig(conf?.['display'] ?? fieldType.display, cms);
+            this.display = conf?.['display'] ?? fieldType.display;
+            this.displayModes = Object.assign({}, fieldType.displayModes || {}, conf.displayModes || {});
+            if (fieldType.displayComponent)
+                this.displayComponent = cms.getEntity('components', fieldType.displayComponent);
             // this.validator = conf.validator ?? fieldType.defaultValidator
             this.preSave = conf.preSave ? (Array.isArray(conf.preSave) ? conf.preSave : [conf.preSave]) : fieldType.preSave;
             this.preMount = conf.preMount ? (Array.isArray(conf.preMount) ? conf.preMount : [conf.preMount]) : fieldType.preMount;
@@ -230,13 +240,15 @@ export const fieldTypes = {
         id: 'image',
         default: [],
         widget: 'image',
-        display: 'field_image',
+        display: 'div',
+        displayComponent: 'sveltecms/display/field/Image' // These must be registered as admin components. See sveltecms/core/Display.ts.
     },
     file: {
         id: 'file',
         default: [],
         widget: 'file',
-        display: 'field_file',
+        display: 'div',
+        displayComponent: 'sveltecms/display/field/File'
     },
     html: {
         id: 'html',
@@ -252,7 +264,8 @@ export const fieldTypes = {
         id: 'fieldgroup',
         default: {},
         widget: 'fieldgroup',
-        display: 'field_fieldgroup',
+        display: 'div',
+        displayComponent: 'sveltecms/display/field/Fieldgroup',
     },
     number: {
         id: 'number',
@@ -272,24 +285,33 @@ export const fieldTypes = {
         id: 'boolean',
         default: undefined,
         widget: 'checkbox',
-        display: 'boolean',
+        display: 'span',
         preSave: ['boolean'],
     },
     tags: {
         id: 'tags',
         default: [],
-        widget: 'text',
+        widget: 'tags',
         display: {
             type: 'li',
             wrapper: 'ul',
         },
-        preSave: ['tags']
     },
     value: {
         id: 'value',
         default: undefined,
         widget: 'value',
         display: '',
+    },
+    reference: {
+        id: 'reference',
+        default: [],
+        widget: 'reference',
+        display: {
+            type: 'li',
+            wrapper: 'ul',
+        },
+        displayComponent: 'sveltecms/display/field/Reference',
     },
     // password: {
     //   id: 'password',

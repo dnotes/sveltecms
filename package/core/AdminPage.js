@@ -1,6 +1,5 @@
 import { Component } from "sveltecms/core/Component";
 import { saveContentEndpoint, deleteContentEndpoint } from 'sveltecms/utils';
-import fs from 'fs';
 export class AdminPage {
     constructor(conf, cms) {
         this.id = conf.id;
@@ -87,16 +86,6 @@ export const adminPages = [
             }
         }
     },
-    {
-        id: 'contentTypes/*',
-        label: 'Content Types',
-        component: {
-            type: 'CMSConfigForm',
-            options: {
-                component: 'CMSConfigContentType',
-            },
-        },
-    },
     // {
     //   id: 'lists',
     //   configPath: 'lists',
@@ -125,11 +114,12 @@ export const adminPages = [
         },
     },
     {
-        id: 'config',
-        component: 'CMSConfigView',
-        post: async ({ cms, event, values }) => {
-            if (event)
-                return saveContentEndpoint(cms, cms.admin, event.request);
-        }
+        id: 'settings',
+        component: {
+            type: 'CMSConfigForm',
+            options: {
+                component: 'CMSConfigSettings',
+            }
+        },
     },
 ];

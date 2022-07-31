@@ -1,7 +1,8 @@
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
 import bytes from 'bytes';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, get } from 'lodash-es';
 import { dirname } from 'sveltecms/utils/path';
+import Fuse from 'fuse.js';
 const fs = {};
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
 function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/'); }
@@ -98,11 +99,11 @@ export const staticFilesMediaOptionFields = {
 export async function parseFileStoreContentItem(_filepath, content, opts) {
     let ext = extname(_filepath);
     if (ext === 'json')
-        return { ...JSON.parse(content), _filepath };
+        return { ...JSON.parse(content) };
     else {
         const yaml = await import('js-yaml');
         if (ext === 'yml' || ext === 'yaml')
-            return { ...yaml.load(content), _filepath, };
+            return { ...yaml.load(content) };
         else if (ext === 'md') {
             let sections = content.split(/^---\n/gm);
             if (sections.length > 2 && sections.shift() === '') {
@@ -112,9 +113,9 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
                 }
                 catch (e) { } // The yaml would not load.
                 if (data)
-                    return { ...data, [opts.markdownBodyField]: sections[0], _filepath };
+                    return { ...data, [opts.markdownBodyField]: sections[0] };
                 else
-                    return { [opts.markdownBodyField]: content, _filepath };
+                    return { [opts.markdownBodyField]: content };
             }
         }
         else
@@ -126,6 +127,44 @@ export function getSlugFromFilepath(filepath, contentTypeID, opts) {
     if (opts.prependContentTypeIdAs === 'filename' && slug.indexOf(contentTypeID) === 0)
         slug = slug.slice(contentTypeID.length);
     return slug;
+}
+async function getIndex(fs, filepath) {
+    let index = [];
+    try {
+        // @ts-ignore This should be absolutely a string
+        index = JSON.parse(await fs.readFile(filepath, 'utf8'));
+    }
+    catch (e) {
+        try {
+            let contentTypeID = filepath.replace(/.+\/_/, '').replace(/\..+/, '');
+            index = await fetch(`/${contentTypeID}/__data.json`).then(async (res) => { return (await res.json())?.content ?? []; });
+        }
+        catch (e) {
+            // just continue with empty index
+        }
+    }
+    return index;
+}
+async function getFuse(fs, filepath, options) {
+    let index = await getIndex(fs, filepath);
+    return new Fuse(index, options);
+}
+async function saveIndex(fs, filepath, index) {
+    try {
+        return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]');
+    }
+    catch (e) {
+        if (e.code === 'ENOENT') {
+            try {
+                await mkdirp(fs, dirname(filepath));
+                return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]');
+            }
+            catch (e) {
+                e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message;
+                throw e;
+            }
+        }
+    }
 }
 const plugin = {
     id: 'staticFiles',
@@ -146,7 +185,6 @@ const plugin = {
                 if (!opts.full)
                     return items.map(filepath => {
                         return {
-                            _filepath: filepath,
                             _slug: getSlugFromFilepath(filepath, contentType.id, opts)
                         };
                     });
@@ -232,6 +270,119 @@ const plugin = {
                     e.message = `Error deleting ${filepath}:\n${e.message}`;
                     throw e;
                 }
+            },
+        }
+    ],
+    indexers: [
+        {
+            id: 'staticFiles',
+            optionFields: {
+                databaseName: databaseNameField,
+                contentDirectory: {
+                    type: 'text',
+                    default: 'content',
+                    helptext: 'The directory for local content files relative to the project root.',
+                },
+            },
+            saveContent: async function (contentType, content) {
+                const fs = await getFs(this?.options?.databaseName);
+                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`;
+                let index = await getIndex(fs, filepath);
+                content = Array.isArray(content) ? content : [content];
+                content.forEach(item => {
+                    let i = index.findIndex(indexedItem => item._slug === indexedItem._slug);
+                    if (i > -1)
+                        index[i] = item;
+                    else
+                        index.push(item);
+                    // If the slug has changed, remove the index entry for the old slug
+                    if (item._oldSlug && (item._oldSlug !== item._slug)) {
+                        i = index.findIndex(item => item._slug === item._oldSlug);
+                        if (i > -1)
+                            index.splice(i, 1);
+                    }
+                });
+                // Unset the cached search index for this content type
+                if (this?._indexes?.[contentType.id])
+                    this._indexes[contentType.id] = undefined;
+                return saveIndex(fs, filepath, index);
+            },
+            deleteContent: async function (contentType, content) {
+                const fs = await getFs(this?.options?.databaseName);
+                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`;
+                let index = await getIndex(fs, filepath);
+                content = Array.isArray(content) ? content : [content];
+                content.forEach(item => {
+                    // Find the exact item in the index
+                    let slug = item._oldSlug ?? item._slug;
+                    let i = index.findIndex(item => item._slug === slug);
+                    // If the item is not in the index, just return
+                    if (i === -1)
+                        return;
+                    // Remove the item from the index
+                    index.splice(i, 1);
+                });
+                // Unset the cached search index for this content type
+                if (this?._indexes?.[contentType.id])
+                    this._indexes[contentType.id] = undefined;
+                return saveIndex(fs, filepath, index);
+            },
+            searchContent: async function (contentType, search, options = {}) {
+                let fs = await getFs(this?.options?.databaseName);
+                let filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`;
+                if (!this?._indexes)
+                    this._indexes = {};
+                if (!this._indexes[contentType.id])
+                    this._indexes[contentType.id] = getFuse(fs, filepath, { keys: options?.['keys'] ?? contentType?.indexFields });
+                let index = await this._indexes[contentType.id];
+                if (!search)
+                    return index._docs;
+                return index.search(search, { includeScore: true }).map(res => ({ ...res.item, _score: res?.score }));
+            },
+            saveMedia: async function (allMedia) {
+                const fs = await getFs(this?.options?.databaseName);
+                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`;
+                let index = await getIndex(fs, filepath);
+                allMedia = Array.isArray(allMedia) ? allMedia : [allMedia];
+                allMedia.forEach(media => {
+                    let item = { src: media.src };
+                    (this.mediaKeys || []).forEach(k => { item[k] = media[k]; });
+                    let i = index.findIndex(item => item.src === media.src);
+                    if (i > -1)
+                        index[i] = item;
+                    else
+                        index.push(item);
+                });
+                if (this?._indexes?._media)
+                    this._indexes._media = undefined;
+                return saveIndex(fs, filepath, index);
+            },
+            deleteMedia: async function (allMedia) {
+                const fs = await getFs(this?.options?.databaseName);
+                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`;
+                let index = await getIndex(fs, filepath);
+                allMedia = Array.isArray(allMedia) ? allMedia : [allMedia];
+                allMedia.forEach(media => {
+                    let i = index.findIndex(item => item.src === media.src);
+                    if (i === -1)
+                        return;
+                    index.splice(i, 1);
+                });
+                if (this?._indexes?._media)
+                    this._indexes._media = undefined;
+                return saveIndex(fs, filepath, index);
+            },
+            searchMedia: async function (search, options = {}) {
+                const fs = await getFs(this?.options?.databaseName);
+                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`;
+                if (!this?.indexes)
+                    this._indexes = {};
+                if (!this._indexes._media)
+                    this._indexes._media = getFuse(fs, filepath, { keys: options?.['keys'] ?? this.mediaKeys });
+                let index = await this._indexes._media;
+                if (!search)
+                    return index._docs;
+                return index.search(search, { includeScore: true }).map(res => ({ ...res.item, _score: res?.score }));
             },
         }
     ],
