@@ -4,6 +4,7 @@ import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
 
 // @ts-ignore
 import { goto } from '$app/navigation';
+// @ts-ignore
 import { browser } from '$app/env'
 
   export let cms:SvelteCMS
@@ -15,7 +16,10 @@ import { browser } from '$app/env'
 
   // If new content was just posted, goto the new url
   let isNew = slug === '_'
-  if (browser && isNew && data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+  if (browser && data._slug) {
+    if (isNew) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+    else if (slug !== data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+  }
 
   let content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
 

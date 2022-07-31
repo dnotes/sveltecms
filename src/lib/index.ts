@@ -595,6 +595,12 @@ export default class SvelteCMS {
       // @ts-ignore this should already be type safe
       items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType)
 
+      // When a slug is changing, don't allow the change if it would overwrite content
+      if ( items[i]._oldSlug &&
+        items[i]._slug !== items[i]._oldSlug &&
+        (await this.listContent(contentType)).find(item => item._slug === items[i]._slug)
+      ) throw new Error(`Tried to overwrite content: ${contentType.id}/${items[i]._slug}`)
+
       // Run contentPreWrite hooks, and bail if there is an error
       try {
         if (!options.skipHooks) await this.runHook('contentPreSave', items[i], this, {...db.options, ...options})
@@ -605,6 +611,9 @@ export default class SvelteCMS {
       }
 
       items[i] = await db.saveContent(items[i], contentType, {...db.options, ...options})
+
+      // When a slug is changing, delete the old content
+      if (items[i]._oldSlug && items[i]._slug !== items[i]._oldSlug) await this.deleteContent(contentType, before, { newSlug:items[i]._slug })
 
       try {
         if (!options.skipHooks) await this.runHook('contentPostWrite', { before, after: items[i], contentType }, this, {...db.options, ...options})

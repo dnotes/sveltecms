@@ -10,7 +10,7 @@ import ContentItem from './display/ContentItem.svelte';
   export let contentTypeID:string
 
   export let result = undefined
-  export let values = {}
+  export let values = { _type:contentTypeID }
   export let errors = {}
   export let touched = {}
   export let disabled = false
@@ -23,11 +23,17 @@ import ContentItem from './display/ContentItem.svelte';
   export let action = contentType?.form?.action ?? ''
   export let method = contentType?.form?.method ?? 'POST'
 
+  values['_oldSlug'] = values['_slug'] ?? ''
   const initialValues = cloneDeep(values)
-  let oldSlug = values?.['_slug'] ?? ''
+
+  let okMove
+  $: newSlug = cms.getSlug(values, contentType, true)
 
   let previewContent = cms.preMount(contentType, values)
-  let updatePreviewContent = debounce(()=>{previewContent = cms.preMount(contentType, values)}, 500)
+  let updatePreviewContent = debounce(()=>{
+    previewContent = cms.preMount(contentType, values)
+    if (okMove && values['_slug'] !== newSlug) values['_slug'] = newSlug
+  }, 500)
   $: if (values) updatePreviewContent()
 
   // export let validator:Validator.Validator<Object> = cms.getValidator(contentTypeID, values)
@@ -60,7 +66,7 @@ import ContentItem from './display/ContentItem.svelte';
     <div class="cms-editor-form">
       <slot name="header">
         <h2>
-          {#if isNew || initialValues === {}}
+          {#if isNew}
             New
           {:else}
             Edit
@@ -71,8 +77,18 @@ import ContentItem from './display/ContentItem.svelte';
       <form on:submit="{submit}" {action} {method} enctype={method.match(/post/i) ? 'multipart/form-data' : 'application/x-www-form-urlencoded'}>
         <CmsFieldGroup {cms} bind:values {widgetFieldGroup} />
 
-        <input type="hidden" name="_slug" bind:value={oldSlug}>
-        <input type="hidden" name="_oldSlug" value={oldSlug}>
+        <input type="hidden" name="_type" value={values['_type']}>
+        <input type="hidden" name="_slug" bind:value={values['_slug']}>
+        <input type="hidden" name="_oldSlug" value={values['_oldSlug']}>
+
+        {#if values['_oldSlug'] && newSlug !== values['_oldSlug']}
+        <div>
+          <label>
+            <input type="checkbox" name="[move]" bind:checked={okMove} on:change={updatePreviewContent} />
+            Move this content from <code>{contentType.id}/{values['_oldSlug']}</code> to <code>{contentType.id}/{newSlug}</code>
+          </label>
+        </div>
+        {/if}
 
         <Button
           submit
