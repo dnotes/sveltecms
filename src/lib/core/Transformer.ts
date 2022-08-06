@@ -125,7 +125,7 @@ export const transformers:{[id:string]:Transformer} = {
           return ['','']
         })
       }
-      return slugify(v, opts)
+      return slugify(v.toString(), opts)
     },
     optionFields: {
       separator: {
