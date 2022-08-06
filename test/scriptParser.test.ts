@@ -3,7 +3,7 @@ import { parseScript } from '../src/lib/core/ScriptFunction'
 function testScript({script,expectedScript,expectedConf}) {
   let conf = parseScript(script)
   expect(conf).toEqual(expectedConf)
-  expect(conf.toString()).toEqual(expectedScript)
+  expect(conf?.toString()).toEqual(expectedScript)
 }
 
 function testNotAScript({script}) {
