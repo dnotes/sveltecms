@@ -3,16 +3,16 @@ import { Field, templateField, fieldTypes, type FieldType, type FieldConfigSetti
 import { widgetTypes, templateWidget, type WidgetType, type WidgetConfigSetting } from './core/Widget'
 import { ContentType, templateContentType, type ContentTypeConfigSetting } from "./core/ContentType"
 import { type MediaStoreType, type MediaStoreConfigSetting, templateMediaStore } from './core/MediaStore'
-import { templateContentStore, type Content, type ContentStoreConfigSetting, type ContentStoreType } from './core/ContentStore'
+import { templateContentStore, type Content, type ContentStoreConfigSetting, type ContentStoreType, type Value } from './core/ContentStore'
 import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, templateFieldgroup } from './core/Fieldgroup'
 import { transformers, templateTransformer, type Transformer, type TransformerConfigSetting } from './core/Transformer'
-import { ScriptFunction, scriptFunctions, parseScript, type ScriptFunctionType, type ScriptFunctionConfigSetting } from './core/ScriptFunction'
+import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig } from './core/ScriptFunction'
 import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
 import { displayComponents, templateDisplay, type DisplayConfigSetting } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
-import { cloneDeep, mergeWith, get as getProp, union, sortBy } from 'lodash-es'
+import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual } from 'lodash-es'
 import type { EntityTemplate } from './core/EntityTemplate'
-import { templateSlug } from './core/Slug'
+import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
 import { hooks, type CMSHookFunctions, type PluginHooks } from './core/Hook'
 
@@ -61,7 +61,7 @@ export type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & {
 export type ConfigurableEntityConfigSettingValue<T> = string|T|(string|T)[]
 
 export type LabeledEntity = {
-  label:string
+  label:string|ScriptFunctionConfig
 }
 
 export type FieldableEntityType = {
@@ -109,6 +109,8 @@ type CMSSettings = ConfigSetting & {
   indexer?:string|IndexerConfigSetting
   rootContentType?:string
   frontPageSlug?:string
+  defaultContentDisplay?:string|false|DisplayConfigSetting
+  defaultContentDisplayModes?:{[key:string]:string|false|DisplayConfigSetting}
 }
 
 export type CMSConfigSetting = {
@@ -157,6 +159,7 @@ export default class SvelteCMS {
   mediaStores:{[key:string]:MediaStoreType} = {}
   indexers:{[key:string]:IndexerType} = {}
   contentTypes:{[key:string]:ContentType} = {}
+  defaultContentType: ContentType
   lists:CMSListConfig = {}
   hooks:CMSHookFunctions = {
     contentPreSave: [],
@@ -229,6 +232,17 @@ export default class SvelteCMS {
       this.contentTypes[id] = new ContentType(id, conf, this)
     });
 
+    // @ts-ignore
+    this.defaultContentType = new ContentType('default', {
+      id: 'default',
+      contentStore: '',
+      display: this.conf.settings.defaultContentDisplay || 'div',
+      displayModes: this.conf.settings.defaultContentDisplayModes || {},
+      fields: Object.fromEntries(this.listEntities('field').map(id => {
+        return [id, this.fields[id] || id]
+      }))
+    }, this)
+
     let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json'
     if (typeof adminStore === 'string' && !this.contentStores[adminStore]) {
       let contentDirectory = adminStore.replace(/\/[^\/]+$/, '')
@@ -276,14 +290,15 @@ export default class SvelteCMS {
         plugin?.[k]?.forEach(conf => {
           this[k][conf.id] = conf
         })
-        // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
-        if (plugin.hooks) plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook) })
       }
       catch(e) {
         e.message = `Plugin ${plugin.id} failed loading ${k}\n${e.message}`
         throw e
       }
     });
+
+    // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
+    if (plugin.hooks) plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook) })
 
     // This allows plugins to update existing widgets to work with provided fields. See markdown plugin.
     Object.entries(plugin?.fieldWidgets || {}).forEach(([fieldTypeID, widgetTypeIDs]) => {
@@ -304,7 +319,7 @@ export default class SvelteCMS {
             for (let i=0;i<values[id]['length'];i++) {
               // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
               let container = field.type === 'reference'
-                ? this.getContentType(values[id][i]?.['_type'])
+                ? (this.contentTypes[values[id][i]?.['_type']] || this.defaultContentType)
                 : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field)
               res[id][i] = this.preMount(container, values[id][i])
             }
@@ -342,7 +357,7 @@ export default class SvelteCMS {
             for (let i=0;i<values[id]['length'];i++) {
               // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
               let container = field.type === 'reference'
-                ? this.getContentType(values[id][i]?.['_type'])
+                ? (this.contentTypes[values[id][i]?.['_type']] || this.defaultContentType)
                 : values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
               res[id][i] = this.preSave(container, values[id][i])
             }
@@ -492,24 +507,24 @@ export default class SvelteCMS {
   slugifyContent(content:Content|Content[], contentType:ContentType, force?:boolean) {
     if (Array.isArray(content)) {
       content.forEach(c => {
-        c._slug = this.getSlug(c, contentType, force)
+        c._slug = this.getSlug(c, contentType.slug, force)
         c._type = contentType.id
       })
     }
     else {
-      content._slug = this.getSlug(content, contentType, force)
+      content._slug = this.getSlug(content, contentType.slug, force)
       content._type = contentType.id
     }
     return content
   }
 
-  getSlug(content:any, contentType:ContentType, force:boolean) {
+  getSlug(content:any, slug:SlugConfig, force:boolean) {
     if (content._slug && !force) return content._slug
-    return contentType.slug.fields
+    return slug.fields
       .map(id => getProp(content,id))
       .filter(value => typeof value !== 'undefined')
-      .map(value => this.transform(value, contentType.slug.slugify))
-      .join(contentType.slug.separator)
+      .map(value => this.transform(value, slug.slugify))
+      .join(slug.separator)
   }
 
   async listContent(contentTypes:string|ContentType|Array<string|ContentType>, options:string|{
@@ -520,28 +535,34 @@ export default class SvelteCMS {
   } = {}):Promise<Content[]> {
 
     // Ensure proper types for options and contentTypes
-    if (typeof options === 'string') options = { searchText:options }
+    let opts = typeof options === 'string' ? { searchText:options } : options
     if (!Array.isArray(contentTypes)) contentTypes = [contentTypes]
-    contentTypes = contentTypes.map(t => typeof t === 'string' ? this.getContentType(t) : t)
+    contentTypes = contentTypes.map(t => typeof t === 'string' ? this.contentTypes[t] ?? t : t)
 
     // Get raw content
     let contentLists = await Promise.all(contentTypes.map(async contentType => {
       let rawContent
-      if (!options?.['skipIndex']) {
+      // Usually we will get items from the Indexer, unless a full content search is desired
+      // AND we are sure we are dealing with a real content type (we may not be, with reference fields)
+      if (!opts?.['skipIndex'] || typeof contentType === 'string') {
         // @ts-ignore these are typechecked above
-        rawContent = await this.indexer.searchContent(contentType, options.searchText)
+        rawContent = await this.indexer.searchContent(contentType, opts.searchText, opts)
       }
       else {
         const db = this.getContentStore(contentType)
-        Object.assign(db.options, options)
-        // @ts-ignore this is typechecked above
-        rawContent = await db.listContent(contentType, db.options)
+        rawContent = await db.listContent(contentType, {...db.options, ...opts})
       }
       if (!rawContent || !rawContent.length) return []
-      // @ts-ignore this is typechecked above
+
+      // For referene fields, we may not be dealing with a full content type.
+      // At the moment we just return the IndexItem.
+      // TODO: Evaluate for security and usability:
+      // - Are there cases where passing a free-tagged IndexItem to Display will be insecure?
+      // - Can/Should we add a phantom Content Type to Indexer or CMS, so that we can preMount?
+      if (typeof contentType === 'string') return rawContent
+
       this.slugifyContent(rawContent, contentType)
-      if (options['getRaw']) return rawContent
-      // @ts-ignore this is typechecked above
+      if (opts['getRaw']) return rawContent
       return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : [this.preMount(contentType, rawContent)]
     }))
 
@@ -560,16 +581,29 @@ export default class SvelteCMS {
    * @returns object
    */
   async getContent(contentType:string|ContentType, slug:string|number|null, options:{[key:string]:any} = {}):Promise<Content> {
+    // For content references, we may need to get an item that is not actually a content type.
+    if (typeof contentType === 'string' && !this.contentTypes[contentType]) {
+      let index = await this.indexer.getIndex(contentType)
+      return index.find(item => item._slug === slug) || undefined
+    }
+
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
-    Object.assign(db.options, options)
-    let rawContent = await db.getContent(contentType, db.options, slug)
-    if (!rawContent || (Array.isArray(rawContent) && !rawContent.length)) return
-    if (Array.isArray(rawContent)) rawContent = rawContent.find(item => item._slug === slug) || rawContent[0]
+
+    let rawContent = await db.getContent(contentType, {...db.options, ...options}, slug)
+
+    // For content references, it may happen that some items are stored only in the index file
+    if (!rawContent || (Array.isArray(rawContent) && !rawContent.length)) {
+      rawContent = (await this.indexer.getIndex(contentType.id)).find(item => item?._slug === slug)
+    }
+
+    // If there's really no content, just return.
+    if (!rawContent || isEqual(rawContent, [])) return
+
+    if (Array.isArray(rawContent)) rawContent = rawContent.find(item => item?._slug === slug) || rawContent[0]
     this.slugifyContent(rawContent, contentType)
     if (options.getRaw) return rawContent
-    // @ts-ignore contentType has by now been type checked
-    return Array.isArray(rawContent) ? rawContent.map(c => this.preMount(contentType, c)) : this.preMount(contentType, rawContent)
+    return this.preMount(contentType, rawContent)
   }
 
   async saveContent(
@@ -673,9 +707,29 @@ export default class SvelteCMS {
     return Array.isArray(content) ? items : items[0]
   }
 
+  newContent(contentTypeID:string, values:{[id:string]:Value} = {}):Content {
+    if (!this.contentTypes[contentTypeID]) return
+    // Here we start the process of obtaining a new piece of content.
+    // To do this, we have to initialize the fields as Widgets, because
+    // they may have Script Functions determining their default values.
+    let contentType = this.getWidgetFields(this.contentTypes[contentTypeID], { values, errors:{}, touched:{} })
+    function getDefaults(entity:WidgetFieldFieldgroup, prefix='') {
+      return Object.fromEntries(Object.entries(entity.fields)
+        .map(([id,field]) => {
+          let fieldPath = [prefix, id].filter(Boolean).join('.')
+          if (!field.isFieldable) return [id, getProp(field.values, fieldPath) ?? field.default]
+          let fieldgroup = this.getWidgetFields(field)
+          return getDefaults(fieldgroup, fieldPath)
+        }));
+    }
+    let content = getDefaults(contentType)
+    // @ts-ignore slugifyContent returns a single object if passed a single object
+    return this.slugifyContent(content, this.contentTypes[contentTypeID])
+  }
+
   getIndexItem(content?:Content):IndexItem|undefined {
     if (!content) return
-    let contentType = this.getContentType(content._type)
+    let contentType = this.contentTypes[content?._type] || this.defaultContentType
     // For IndexItem, only use _slug and _type fields (TODO: evaluate)
     let item = { _slug:content._slug, _type:content._type }
     // Also index all fields in the list of indexFields
@@ -757,6 +811,26 @@ export default class SvelteCMS {
     })
     // @ts-ignore
     return c
+  }
+
+  findFields(
+    fields:{[id:string]:Field},
+    query:{[path:string]:string|number|boolean}|((item:Field)=>boolean),
+    prefix=''
+  ):string[] {
+    let foundFields:string[] = []
+    Object.entries(fields).forEach(([id,field]) => {
+      let newID = [prefix, id].filter(Boolean).join('.')
+      let matchingFields = field.fields ? this.findFields(field.fields, query, newID) : []
+      foundFields.push(...matchingFields)
+      if (query instanceof Function) {
+        if (query(field)) foundFields.push(newID)
+      }
+      else if (!Object.entries(query).reduce((skip, [prop, value]) => {
+        return skip || !isEqual(getProp(field, prop), value)
+      }, false)) foundFields.push(newID)
+    })
+    return foundFields
   }
 
   initializeContentField(field:Field, vars:{ values:any, errors:any, touched:any, id?:string }) {

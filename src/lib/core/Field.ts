@@ -11,9 +11,10 @@ import { getLabelFromID, splitTags } from 'sveltecms/utils'
 import type { EntityTemplate } from './EntityTemplate'
 import type { Component } from './Component'
 
-export type FieldConfigSetting =  DisplayableEntityConfigSetting & {
+export type FieldConfigSetting = DisplayableEntityConfigSetting & {
   type: string
   label?: string|ScriptFunctionConfigSetting
+  index?: boolean|ScriptFunctionConfigSetting
   default?: any
   // value?: any
   helptext?: string|ScriptFunctionConfigSetting
@@ -37,7 +38,7 @@ export type FieldConfigSetting =  DisplayableEntityConfigSetting & {
 }
 
 export type ConfigFieldConfigSetting = Omit<FieldConfigSetting,"display|displayModes"> & {
-  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'tags'|'entity'|'entityList'
+  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'entity'|'entityList'
   entity?: string
   default: any
   helptext: string
@@ -47,9 +48,9 @@ export type ConfigFieldConfigSetting = Omit<FieldConfigSetting,"display|displayM
 export type FieldType = EntityType & DisplayableEntityType & {
   default: any
   widget: string|WidgetConfigSetting
-  display: string|DisplayConfigSetting
   preSave?: Array<string|TransformerConfigSetting>
   preMount?: Array<string|TransformerConfigSetting>
+  multiple?: boolean
   admin?: boolean
 }
 
@@ -66,7 +67,7 @@ export const templateField:EntityTemplate = {
   isFieldable: true,
   listFields: ['widget'],
   scriptableProps:[
-    'label','helptext','default',
+    'label','helptext','default','index',
     'multiple','multipleLabelFields','multipleMin','multipleMax',
     'required','disabled','hidden','class'
   ],
@@ -90,6 +91,11 @@ export const templateField:EntityTemplate = {
           }
         },
       }
+    },
+    index: {
+      type: 'boolean',
+      default: false,
+      helptext: 'Whether the field data should be indexed.',
     },
     display: {
       type:'entity',
@@ -220,6 +226,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
   disabled?: boolean|ScriptFunctionConfig
 
   // should be implemented by the CMS
+  index?: boolean|ScriptFunctionConfig
   hidden?: boolean|ScriptFunctionConfig
   class: string|ScriptFunctionConfig = ''
   default?: any
@@ -229,7 +236,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
 
   // implemented only in Multiple and Fieldgroup widgets
   // implement as needed in custom widgets
-  multiple?: boolean|ScriptFunctionConfig
+  multiple?: boolean|ScriptFunctionConfig|ScriptFunctionConfigSetting
   multipleOrSingle?: boolean
   multipleLabelFields?: string|string[]|ScriptFunctionConfig
   multipleMin?: number|ScriptFunctionConfig
@@ -268,10 +275,11 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       if (!fieldType) throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`)
       this.type = conf.type
       this.label = parseScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
+      this.index = parseScript(conf.index) ?? (conf.index ? true : false)
       this.value = parseScript(conf.value) ?? conf.value
       this.helptext = parseScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '')
-      this.multiple = parseScript(conf.multiple) ?? (conf.multiple ? true : false)
-      this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? conf.multipleLabelFields
+      this.multiple = parseScript(conf.multiple) ?? (conf.multiple ?? fieldType.multiple ?? false)
+      this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? (Array.isArray(conf.multipleLabelFields) ? conf.multipleLabelFields : [])
       this.multipleOrSingle = conf.multipleOrSingle ?? false
       this.multipleMin = parseScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin))
       this.multipleMax = parseScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax))
@@ -288,7 +296,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
-      this.display = conf?.['display'] ?? fieldType.display
+      this.display = conf.display ?? fieldType.display
       this.displayModes = Object.assign({}, fieldType.displayModes || {}, conf.displayModes || {})
       if (fieldType.displayComponent) this.displayComponent = cms.getEntity('components', fieldType.displayComponent)
 
@@ -324,8 +332,9 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'date',
     default: '',
     widget: 'date',
-    display: 'span',
     preSave: ['date'],
+    display: 'span',
+    displayComponent: 'sveltecms/display/field/Date'
   },
   image: {
     id: 'image',
@@ -379,15 +388,6 @@ export const fieldTypes:{[key:string]:FieldType} = {
     display: 'span',
     preSave: ['boolean'],
   },
-  tags: {
-    id: 'tags',
-    default: [],
-    widget: 'tags',
-    display: {
-      type: 'li',
-      wrapper: 'ul',
-    },
-  },
   value: {
     id: 'value',
     default: undefined,
@@ -398,9 +398,14 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'reference',
     default: [],
     widget: 'reference',
-    display: {
-      type: 'li',
-      wrapper: 'ul',
+    multiple: true,
+    display: false,
+    displayModes: {
+      page: {
+        wrapper: 'ul',
+        type: 'li',
+        link: true,
+      }
     },
     displayComponent: 'sveltecms/display/field/Reference',
   },

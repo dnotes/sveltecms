@@ -5,12 +5,14 @@ import Image from "sveltecms/display/field/Image.svelte"
 import File from "sveltecms/display/field/File.svelte"
 import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte"
 import Reference from "sveltecms/display/field/Reference.svelte"
+import DateSvelte from "sveltecms/display/field/Date.svelte"
 import type SvelteCMS from "sveltecms"
 import type { EntityTemplate } from "./EntityTemplate"
 
 export type DisplayConfigSetting = ConfigurableEntityConfigSetting & {
   type: string      // either the html element for svelte:element, or a registered component
   wrapper?: string  // the wrapper element or registered component
+  label?: string    // the label element or registered component
   html?: boolean    // if true, the item will be displayed as {@html}
   link?: boolean    // if true, the item will be wrapped in a link
 }
@@ -25,12 +27,17 @@ export const templateDisplay:EntityTemplate = {
     type: {
       type: 'text',
       default: '',
-      helptext: 'An HTML element (p, li, etc.) or include path for a SvelteCMS Component to use when displaying the field.',
+      helptext: 'An HTML element (p, li, etc.) or ID of a registered SvelteCMS Component to use when displaying the field.',
     },
     wrapper: {
       type: 'text',
       default: '',
-      helptext: 'An HTML element (div, ul, etc.) or include path for a SvelteCMS Component to use as a wrapper for the displayed field.',
+      helptext: 'An HTML element (div, ul, etc.) or ID of a registered SvelteCMS Component to use as a wrapper for the displayed field.',
+    },
+    label: {
+      type: 'text',
+      default: '',
+      helptext: 'An HTML element (div, span.label, etc.) or ID of a registered SvelteCMS Component to use when displaying the Field label.',
     },
     html: {
       type: 'boolean',
@@ -54,6 +61,7 @@ export class Display {
   link: boolean = false
   component?: Component
   wrapper?: Display
+  label?: Display
 
   // properties that only apply to an element
   html?: boolean
@@ -79,6 +87,7 @@ export class Display {
       this.id = id
     }
     if (conf.wrapper) this.wrapper = new Display(conf.wrapper, cms)
+    if (conf.label) this.label = new Display(conf.label, cms)
   }
 
   get classList() { return this.classes.join(' ') }
@@ -86,6 +95,7 @@ export class Display {
 }
 
 export const displayComponents:ComponentType[] = [
+  { id: 'sveltecms/display/field/Date', component: DateSvelte, admin: true },
   { id: 'sveltecms/display/field/Image', component: Image, admin: true },
   { id: 'sveltecms/display/field/File', component: File, admin: true },
   { id: 'sveltecms/display/field/Fieldgroup', component: Fieldgroup, admin: true },

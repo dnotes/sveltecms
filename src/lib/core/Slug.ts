@@ -2,7 +2,7 @@ import type SvelteCMS from 'sveltecms'
 import type { ConfigSetting, ConfigurableEntityConfigSettingValue } from 'sveltecms'
 import type { TransformerConfigSetting } from 'sveltecms/core/Transformer'
 
-import { splitTags } from 'sveltecms/utils'
+import splitTags from 'sveltecms/utils/splitTags'
 import type { EntityTemplate } from './EntityTemplate'
 const split = splitTags()
 
@@ -22,8 +22,11 @@ export const templateSlug:EntityTemplate = {
   typeField: 'fields',
   configFields: {
     fields: {
-      type: 'tags',
-      default: '',
+      type: 'text',
+      multiple: true,
+      multipleOrSingle: true,
+      default: [],
+      widget: 'multiselect',
       helptext: 'A comma-separated list of field IDs. The value of those fields '+
       'are combined to form the slug, which is used as the key in key-value databases '+
       'and as part of the URL for viewing the content on a website.',

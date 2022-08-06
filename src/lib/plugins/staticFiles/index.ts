@@ -6,9 +6,7 @@ import bytes from 'bytes'
 import { cloneDeep, get } from 'lodash-es';
 import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
-import type { Media } from 'sveltecms/core/MediaStore';
-import type { Content } from 'sveltecms/core/ContentStore';
-import type ContentType from 'sveltecms/core/ContentType';
+import { findReferenceIndex } from 'sveltecms/utils';
 const fs = {}
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
@@ -108,8 +106,10 @@ export const staticFilesMediaOptionFields:{[key:string]:ConfigFieldConfigSetting
     helptext: 'The directory for media files relative to the static directory.',
   },
   allowMediaTypes: {
-    type: 'tags',
-    default: 'image/*',
+    type: 'text',
+    multiple: true,
+    default: ['image/*'],
+    widget: 'multiselect',
     helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
   },
   maxUploadSize: {
@@ -126,7 +126,7 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
     const yaml = await import('js-yaml')
     if (ext === 'yml' || ext === 'yaml') return { ...yaml.load(content) }
     else if (ext === 'md') {
-      let sections = content.split(/^---\n/gm)
+      let sections = content.split(/^---[\r\n]+/gm)
       if (sections.length > 2 && sections.shift() === '') {
         let data
         try {
@@ -145,47 +145,6 @@ export function getSlugFromFilepath(filepath:string, contentTypeID:string, opts:
   let slug = filepath.replace(/.+\//, '').replace(/\.[^\.]*$/, '')
   if (opts.prependContentTypeIdAs === 'filename' && slug.indexOf(contentTypeID) === 0) slug = slug.slice(contentTypeID.length)
   return slug
-}
-
-async function getIndex(fs:PromisifiedFS, filepath:string):Promise<Array<Media|Content>> {
-  let index = []
-  try {
-    // @ts-ignore This should be absolutely a string
-    index = JSON.parse(await fs.readFile(filepath, 'utf8'))
-  }
-  catch(e) {
-    try {
-      let contentTypeID = filepath.replace(/.+\/_/, '').replace(/\..+/, '')
-      index = await fetch(`/${contentTypeID}/__data.json`).then(async res => { return (await res.json())?.content ?? [] })
-    }
-    catch(e) {
-      // just continue with empty index
-    }
-  }
-  return index
-}
-
-async function getFuse(fs, filepath:string, options) {
-  let index = await getIndex(fs, filepath)
-  return new Fuse(index,options)
-}
-
-async function saveIndex(fs:PromisifiedFS, filepath:string, index:Array<Media|Content>) {
-  try {
-    return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
-  }
-  catch(e) {
-    if (e.code === 'ENOENT') {
-      try {
-        await mkdirp(fs, dirname(filepath))
-        return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
-      }
-      catch(e) {
-        e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message
-        throw e
-      }
-    }
-  }
 }
 
 const plugin:CMSPlugin = {
@@ -273,7 +232,7 @@ const plugin:CMSPlugin = {
 
         try {
           await mkdirp(fs, dirname(filepath))
-          await fs.writeFile(filepath, saveContent)
+          await fs.writeFile(filepath, saveContent.replace(/\r\n/g, '\n'))
           return content
         }
         catch (e) {
@@ -320,17 +279,89 @@ const plugin:CMSPlugin = {
           helptext: 'The directory for local content files relative to the project root.',
         },
       },
-      saveContent: async function (contentType, content) {
+      getIndex: async function(id) {
         const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
-        let index = await getIndex(fs, filepath)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${id}.index.json`
+
+        let index = []
+        try {
+          // @ts-ignore This should be absolutely a string
+          index = JSON.parse(await fs.readFile(filepath, 'utf8'))
+        }
+        catch(e) {
+          try {
+            let contentTypeID = filepath.replace(/.+\/_/, '').replace(/\..+/, '')
+            let fetchedIndex = await fetch(`/${contentTypeID}/__data.json`).then(async res => { return (await res.json())?.content ?? [] })
+            index = fetchedIndex
+          }
+          catch(e) {
+            console.warn(e.message)
+            // just continue with empty index
+          }
+        }
+        return index
+      },
+      updateIndex: async function(id, changes) {
+        let index = await this.getIndex(id)
+        changes.forEach(change => {
+          // get the index of the item
+          let i = findReferenceIndex(change.before, index)
+          // For deleted items
+          if (!change.after) {
+            if (i !== -1) index.splice(i,1)
+          }
+          // For changed items
+          else if (i !== -1) {
+            index.splice(i,1,change.after)
+          }
+          // For added items
+          else {
+            index.unshift(change.after)
+          }
+        })
+        await this.saveIndex(id, index)
+      },
+      saveIndex: async function(id, index) {
+        const fs = await getFs(this?.options?.databaseName)
+        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${id}.index.json`
+
+        try {
+          return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
+        }
+        catch(e) {
+          if (e.code === 'ENOENT') {
+            try {
+              await mkdirp(fs, dirname(filepath))
+              return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
+            }
+            catch(e) {
+              e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message
+              throw e
+            }
+          }
+        }
+
+      },
+      searchIndex: async function(id, search, options) {
+        if (!this?._indexes) this._indexes = {}
+        if (!this._indexes[id]) {
+          let index = await this.getIndex(id)
+          this._indexes[id] = new Fuse(index, options)
+        }
+        let index = await this._indexes[id]
+        if (!search) return index._docs
+        return index.search(search, { includeScore:true }).map(res => ({...res.item, _score:res?.score }))
+      },
+      saveContent: async function (contentType, content) {
+        let id = contentType?.['id'] ?? contentType
+        let index = await this.getIndex(id)
         content = Array.isArray(content) ? content : [content]
 
         content.forEach(item => {
 
           let i = index.findIndex(indexedItem => item._slug === indexedItem._slug)
           if (i > -1) index[i] = item
-          else index.push(item)
+          else index.unshift(item)
 
           // If the slug has changed, remove the index entry for the old slug
           if (item._oldSlug && (item._oldSlug !== item._slug)) {
@@ -340,14 +371,13 @@ const plugin:CMSPlugin = {
         })
 
         // Unset the cached search index for this content type
-        if (this?._indexes?.[contentType.id]) this._indexes[contentType.id] = undefined
+        if (this?._indexes?.[id]) this._indexes[id] = undefined
 
-        return saveIndex(fs, filepath, index)
+        return this.saveIndex(id, index)
       },
       deleteContent: async function (contentType, content) {
-        const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
-        let index = await getIndex(fs, filepath)
+        let id = contentType?.['id'] ?? contentType
+        let index = await this.getIndex(id)
         content = Array.isArray(content) ? content : [content]
 
         content.forEach(item => {
@@ -363,23 +393,16 @@ const plugin:CMSPlugin = {
         })
 
         // Unset the cached search index for this content type
-        if (this?._indexes?.[contentType.id]) this._indexes[contentType.id] = undefined
+        if (this?._indexes?.[id]) this._indexes[id] = undefined
 
-        return saveIndex(fs, filepath, index)
+        return this.saveIndex(id, index)
       },
-      searchContent: async function (contentType:ContentType, search?:string, options = {}) {
-        let fs = await getFs(this?.options?.databaseName)
-        let filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${contentType.id}.index.json`
-        if (!this?._indexes) this._indexes = {}
-        if (!this._indexes[contentType.id]) this._indexes[contentType.id] = getFuse(fs, filepath, { keys: options?.['keys'] ?? contentType?.indexFields })
-        let index = await this._indexes[contentType.id]
-        if (!search) return index._docs
-        return index.search(search, { includeScore:true }).map(res => ({...res.item, _score:res?.score }))
+      searchContent: async function (contentType, search, options = {}) {
+        let keys = [...(contentType?.['indexFields'] || []), '_slug']
+        return this.searchIndex(contentType?.['id'] ?? contentType, search, { keys, ...options })
       },
       saveMedia: async function (allMedia) {
-        const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
-        let index = await getIndex(fs, filepath)
+        let index = await this.getIndex('_media')
         allMedia = Array.isArray(allMedia) ? allMedia : [allMedia]
 
         allMedia.forEach(media => {
@@ -387,16 +410,14 @@ const plugin:CMSPlugin = {
           (this.mediaKeys || []).forEach(k => { item[k] = media[k] })
           let i = index.findIndex(item => item.src === media.src)
           if (i > -1) index[i] = item
-          else index.push(item)
+          else index.unshift(item)
         })
 
         if (this?._indexes?._media) this._indexes._media = undefined
-        return saveIndex(fs, filepath, index)
+        return this.saveIndex('_media', index)
       },
       deleteMedia: async function (allMedia) {
-        const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
-        let index = await getIndex(fs, filepath)
+        let index = await this.getIndex('_media')
         allMedia = Array.isArray(allMedia) ? allMedia : [allMedia]
 
         allMedia.forEach(media => {
@@ -406,16 +427,10 @@ const plugin:CMSPlugin = {
         })
 
         if (this?._indexes?._media) this._indexes._media = undefined
-        return saveIndex(fs, filepath, index)
+        return this.saveIndex('_media', index)
       },
       searchMedia: async function (search, options = {}) {
-        const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/__media.index.json`
-        if (!this?.indexes) this._indexes = {}
-        if (!this._indexes._media) this._indexes._media = getFuse(fs, filepath, { keys: options?.['keys'] ?? this.mediaKeys })
-        let index = await this._indexes._media
-        if (!search) return index._docs
-        return index.search(search, { includeScore:true }).map(res => ({...res.item, _score:res?.score}))
+        return this.searchIndex('_media', search, { keys: this.mediaKeys, ...options })
       },
     }
   ],
@@ -472,12 +487,12 @@ const plugin:CMSPlugin = {
     {
       id: 'components',
       component: 'CMSComponentList',
-      get: async() => {
+      GET: async() => {
         // @ts-ignore TODO: remove sveltekit/vite-specific code
         let files = await import.meta.glob(`$lib/**/*.svelte`)
         return Object.keys(files)
       },
-      post: async({cms, event}) => {
+      POST: async({cms, event}) => {
         let values = await event.request.json()
         let saveComponents = Object.keys(values)
           .filter(k => values[k])

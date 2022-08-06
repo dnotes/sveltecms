@@ -48,7 +48,7 @@ export const adminPlugin:CMSPlugin = {
         fieldType: {
           type: 'text',
           default: '',
-          helptext: 'The field type for which a widget will be chosen. Only used when entityType is "widget".',
+          helptext: 'The field type for which a widget will be chosen. Only used when Entity Type is "widget".',
         },
       }
     },

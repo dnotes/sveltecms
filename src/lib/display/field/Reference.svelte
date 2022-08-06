@@ -6,14 +6,10 @@ import ContentItem from 'sveltecms/display/ContentItem.svelte';
 
   export let cms:SvelteCMS
   export let entity:Field
-  export let item:Content|string
+  export let item:Content
 
-  $: contentTypeID = typeof item === 'string' ? item.replace(/\/.+/,'') : item._type
-  $: contentType = cms.getContentType(contentTypeID)
-  $: content = typeof item === 'string' ? cms.getContent(contentType, item) : item
+  $: contentType = cms.contentTypes[item._type] || { ...cms.defaultContentType, id:item._type }
 
 </script>
 
-{#await content then content}
-  <ContentItem {cms} entity={contentType} item={content} displayMode="{entity?.widget?.options?.displayMode?.toString() || 'reference'}" />
-{/await}
+<ContentItem {cms} entity={contentType} {item} displayMode="{entity?.widget?.options?.displayMode?.toString() || 'reference'}" />

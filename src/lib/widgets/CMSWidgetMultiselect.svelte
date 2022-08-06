@@ -1,5 +1,4 @@
 <script lang="ts">
-import type SvelteCMS from 'sveltecms';
 import type { WidgetField } from 'sveltecms'
 import type { Content } from 'sveltecms/core/ContentStore';
 import Tags from 'svelte-tags-input'
@@ -9,19 +8,27 @@ import Tags from 'svelte-tags-input'
 
   export let value = field.default
 
+  let tags = Array.isArray(value) ? value : (
+    typeof value === 'undefined' || value === '' || value === null ? [] : [value]
+  )
+
+  function handleTags(e) {
+    if (!field.multiple || (field.multipleOrSingle && e.detail?.tags?.length === 1)) value = tags[0]
+    else value = e.detail?.tags?.length ? tags : undefined
+  }
+
   //@ts-ignore
   let opts:{
+    items?:Array<string|number|Content> // autoComplete
+    restrictToItems?:boolean // onlyAutocomplete
+    itemsFilter?:boolean
+    placeholder?:string
+    onlyUnique?:boolean
+    allowBlur?:boolean
+    minChars?:number
     allowPaste?:boolean
     allowDrop?:boolean
     splitWith?:string
-    allowBlur?:boolean
-    onlyUnique?:boolean
-    placeholder?:string
-    items?:Array<string|number|Content> // autoComplete
-    restrictToItems?:boolean // onlyAutocomplete
-    itemsKey?:string
-    itemsFilter?:boolean
-    minChars?:number
   } = field.widget.options
 
 </script>
@@ -32,8 +39,8 @@ import Tags from 'svelte-tags-input'
     <slot>{field.label}</slot>
   </span>
   <Tags
-    bind:tags={value}
-    name={id}
+    bind:tags
+    on:tags={handleTags}
     disable={field.disabled}
     placeholder={opts.placeholder}
     allowPaste={opts.allowPaste}
@@ -44,9 +51,11 @@ import Tags from 'svelte-tags-input'
     onlyUnique={opts.onlyUnique}
     autoComplete={opts.items}
     onlyAutocomplete={opts.restrictToItems}
-    autoCompleteKey={opts.itemsKey}
-    autoCompleteFilter={opts.itemsFilter}
+    autoCompleteFilter={!opts.itemsFilter ? false : undefined}
     minChars={opts.minChars}
     labelText={field.label}
   />
 </label>
+{#each tags as tag}
+  <input type="hidden" name="{id}" value="{tag}" />
+{/each}

@@ -27,7 +27,7 @@ import ContentItem from './display/ContentItem.svelte';
   const initialValues = cloneDeep(values)
 
   let okMove
-  $: newSlug = cms.getSlug(values, contentType, true)
+  $: newSlug = cms.getSlug(values, contentType.slug, true)
 
   let previewContent = cms.preMount(contentType, values)
   let updatePreviewContent = debounce(()=>{

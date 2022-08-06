@@ -2,6 +2,7 @@ configPath: src/sveltecms.config.yml
 settings:
   rootContentType: landingPage
   frontPageSlug: front
+  defaultContentDisplay: div.prose.dark:prose-invert
 contentTypes:
   blog:
     slug: date,title
@@ -10,10 +11,8 @@ contentTypes:
       date: date
       image: image
       body: body
-    display:
-      type: content_BlogPost
-      wrapper: div.prose.dark:prose-invert
-    indexFields: title,date,image
+      tags: tags
+    label: ''
   landingPage:
     display: content_LandingPage
     fields:
@@ -32,30 +31,20 @@ contentTypes:
       type: staticFiles
       fileExtension: json
     slug: slug
+    label: ''
   docs:
     fields:
       title: title
       body: body
     slug: title
-    indexFields: title
-    display: div.prose.dark:prose-invert
+    label: ''
   tags:
+    label: ''
+    slug: title
     fields:
       title: title
       body: body
-      contentreference:
-        label: Content
-        type: reference
-        multiple: true
-        disabled: true
-        hidden: true
-        widget:
-          type: reference
-          inputField: title
-          linkedField: tags
-    slug: title
-    indexFields: title
-    display: div.prose.dark:prose-invert
+      taggedContent: taggedContent
 contentStores: {}
 mediaStores:
   images:
@@ -69,6 +58,7 @@ mediaStores:
 fields:
   title:
     type: text
+    index: true
     required: true
     display:
       type: span
@@ -80,21 +70,13 @@ fields:
       page: h1
   date:
     type: date
+    index: true
     required: true
+    default: $now
   body: markdown
   slideText:
     type: markdown
     widget: slideText
-  tagreference:
-    label: Tags
-    type: reference
-    multiple: true
-    widget:
-      type: reference
-      contentTypes: tags
-      inputField: title
-      linkedField: contentreference
-      allowNewContent: true
   slug:
     type: text
     display: none
@@ -103,6 +85,7 @@ fields:
     display: h1
   image:
     type: image
+    index: true
     mediaStore: images
   style:
     type: text
@@ -130,6 +113,19 @@ fields:
         helptext: >-
           Any help text that should be shown for screen readers or when hovering
           over the element.
+  tags:
+    type: reference
+    widget:
+      type: reference
+      referenceKey: taggedContent
+      contentTypes: tags
+      freeTagging: true
+  taggedContent:
+    type: reference
+    widget:
+      type: reference
+      referenceKey: tags
+      displayMode: teaser
 widgets:
   date:
     type: date
@@ -178,3 +174,4 @@ fieldgroups:
     fields:
       quote: markdown
 _slug: sveltecms.config
+_type: admin

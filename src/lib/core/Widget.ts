@@ -18,7 +18,9 @@ import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte'
 import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
 import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte"
-import CMSWidgetTags from "sveltecms/widgets/CMSWidgetTags.svelte"
+import CMSWidgetMultiselect from "sveltecms/widgets/CMSWidgetMultiselect.svelte"
+import SlugConfig from "./Slug"
+import { isReferenceString } from "sveltecms/utils"
 
 
 export type FormDataHandler = (value:{[key:string]:any}, cms:SvelteCMS, contentType:ContentType, field:Field)=>Promise<any>
@@ -98,7 +100,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   text: {
     id: 'text',
     description: `A plain text input.`,
-    fieldTypes: ['text','date','number','tags'],
+    fieldTypes: ['text','date','number'],
     widget: CMSWidgetText,
     optionFields: {
       placeholder: {
@@ -253,7 +255,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   },
   textarea: {
     id: 'textarea',
-    fieldTypes: ['html','text','tags'],
+    fieldTypes: ['html','text'],
     description: `An HTML textarea input.`,
     widget: CMSWidgetTextarea,
     optionFields: {
@@ -341,9 +343,13 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     },
     optionFields: {
       accept: {
-        type: 'tags',
+        type: 'text',
+        multiple: true,
         default: 'image/*',
-        helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        widget: {
+          type: 'multiselect'
+        },
+        helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
       },
       altField: {
         type: 'boolean',
@@ -472,20 +478,34 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     formDataHandler: async (value, cms, contentType, field) => {
       if (Array.isArray(value) && value.length) {
 
-        if (field.widget.options.slugOnly) return value
-
         // Get all content types available for referencing, as an array of strings
-        let contentTypes = field?.widget?.options?.contentTypes
-        if (typeof contentTypes === 'string') contentTypes = [contentTypes]
-        if (!Array.isArray(contentTypes) || contentTypes.length === 0) contentTypes = cms.listEntities('contentType')
-        contentTypes = contentTypes.map(v => v.toString())
-
-        // @ts-ignore this will always be an array of strings now
+        let contentTypes:string[] = Array.isArray(field.widget?.options?.contentTypes)
+          ? field.widget.options.contentTypes.filter(Boolean).map(toString)
+          : (field.widget?.options?.contentTypes ? [field.widget.options.contentTypes.toString()] : [])
+        if (!contentTypes.length) contentTypes = cms.listEntities('contentType')
         let index = await cms.listContent(contentTypes)
 
+        let slugConfig = new SlugConfig(field.widget?.options?.displayKey?.toString(), cms)
         return value.map(v => {
-          let [type, slug] = v.split('/')
-          return index.find(item => item._slug === slug && item._type === type)
+          // If the value is an existing reference, as `${_type}/${_slug}`, return the IndexItem
+          // This will automatically filter out any items not from an allowed Content Type
+          if (isReferenceString(v)) {
+            let [type, slug] = v.split('/')
+            let item = index.find(item => item._slug === slug && item._type === type)
+            return {...item, [field.widget?.options?.referenceKey?.toString()]:undefined}
+          }
+          // For free tagging values (which should be strings) create a new IndexItem
+          let displayKey = field.widget?.options?.displayKey?.toString()
+          if (contentTypes.length === 1
+            && field.widget?.options?.freeTagging
+            && field.widget?.options?.displayKey
+          ) {
+            return {
+              _type: contentTypes[0],
+              _slug: cms.getSlug({[displayKey]:v}, slugConfig, true),
+              [displayKey]:v
+            }
+          }
         }).filter(Boolean)
 
       }
@@ -493,61 +513,65 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     optionFields: {
       contentTypes: {
         type: 'text',
+        label: 'Index ID / Content Types',
         multiple: true,
+        multipleOrSingle: true,
         default: undefined,
-        helptext: 'The Content Type from which a piece of content may be referenced. '+
-          'Leave empty to allow any content type, e.g. for the linked reference field on a tag.',
+        helptext: `An ID for the field's index, or one or more Content Type IDs. `+
+          `For free tagging, this MUST be a single value, which MAY have an associated Content Type.`,
         widget: {
-          type: 'tags',
-          options: {
-            items: '$listEntities(contentType)',
-            restrictToItems: true,
-            minChars: 0,
-          }
+          type: 'multiselect',
+          minChars: 0,
+          items: {function:'listEntities', params:['contentType']},
         },
       },
-      inputField: {
-        type: 'text',
-        required: true,
-        default: '',
-        helptext: 'The field used for search and display in form inputs. '+
-          'If new content is allowed, this field will be populated with the tag text.',
-        widget: {
-          type: 'tags',
-          options: {
-            items: '$listEntities(fields,false,$values.contentType)',
-            restrictToItems: true,
-            minChars: 0,
-          }
-        }
-      },
-      linkedField: {
-        type: 'text',
-        default: '',
-        helptext: 'If provided, will populate a field on the linked content item with a reverse link.',
-        widget: {
-          type: 'select',
-          items: '$listEntities(fields,false,$values.contentType)'
-        }
-      },
-      // allowNewContent: {
-      //   type: 'boolean',
-      //   default: false,
-      //   helptext: 'Allow creating new content of the specified type.',
-      // },
-      slugOnly: {
+      freeTagging: {
         type: 'boolean',
         default: false,
-        helptext: 'EXPERIMENTAL. Select this option if you want this field to store only the _slug string. '+
-          'By default, reference fields store all index fields and the _slug for each referenced item, '+
-          'which is often desirable for NoSQL or flat files as it reduces data calls.'
+        helptext: 'If false, only existing content items will be allowed.',
+        disabled: {function:'not', params:[
+          {function:'typeof',params:[
+            {function:'getValue',params:['contentTypes']},
+            'string',
+          ]}
+        ]}
+      },
+      displayKey: {
+        type: 'text',
+        required: true,
+        default: 'title',
+        helptext: 'The field used and for search and display in form inputs, and for storing the text value when free tagging. '+
+          'If this field is linked with Content Types, then each linked Content Type should have a text field with this ID.',
+      },
+      referenceKey: {
+        type: 'text',
+        default: '',
+        disabled: {function:'getValue',params:['contentTypes.0']},
+        helptext: 'The ID of a "reference" type field on the associated Content Types. '+
+          'If provided, that field in referenced content will be populated with backlinks to the referencing content.',
       },
       displayMode: {
         type: 'text',
         default: 'reference',
-        helptext: 'The displayMode to use when displaying referenced content. '+
-          'Common display modes are "page", "teaser", and "reference" (default).'
+        widget: {
+          type: 'multiselect',
+          items: ['page', 'teaser', 'reference'],
+          minChars: 0,
+        },
+        helptext: 'The displayMode to use when displaying referenced content.'
       },
+      // TODO: in order to carry this off, we would need to:
+      // - Differentiate between slugs and free tags in formDataHandler above
+      // - Same in CMSWidgetReference, when getting tags variable from values
+      // - Account for slug-only values in the "references" hook (Hook.ts)
+      // - Load content from slug-only values in Reference display component
+      // slugOnly: {
+      //   type: 'boolean',
+      //   default: false,
+      //   helptext: 'EXPERIMENTAL. Select this option if you want this field to store only the _slug string. '+
+      //     'By default, reference fields store all index fields and the _slug for each referenced item, '+
+      //     'which is often desirable for NoSQL or flat files as it reduces data calls.'
+      // },
       placeholder: {
         type: 'text',
         default: '',
@@ -565,12 +589,31 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       },
     }
   },
-  tags: {
-    id: 'tags',
-    description: 'Tagging widget provided by ',
-    fieldTypes: ['tags'],
-    widget: CMSWidgetTags,
+  multiselect: {
+    id: 'multiselect',
+    description: 'Multiple text-entry widget provided by svelte-input-tags.',
+    fieldTypes: ['text','number','float'],
+    handlesMultiple: true,
+    widget: CMSWidgetMultiselect,
     optionFields: {
+      items: {
+        type: 'text',
+        multiple: true,
+        default: [],
+        widget: 'multiselect',
+        helptext: `A list of possible values to be presented to content editors. `+
+          `A script function may be used to retrieve options from an external API.`,
+      },
+      restrictToItems: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Only accept items from the provided items.',
+      },
+      itemsFilter: {
+        type: 'boolean',
+        default: true,
+        helptext: 'Turn this off to disable filtering the items. May be useful for some APIs.',
+      },
       placeholder: {
         type: 'text',
         default: '',
@@ -579,27 +622,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       onlyUnique: {
         type: 'boolean',
         default: true,
-        helptext: 'Ensure that all entered tags are unique.',
-      },
-      items: {
-        type: 'tags',
-        default: [],
-        helptext: 'A list of possible values. A Script Function may be used to retrieve this list from an external API.',
-      },
-      restrictToItems: {
-        type: 'boolean',
-        default: false,
-        helptext: 'Only accept tags from the provided items.',
-      },
-      itemsKey: {
-        type: 'text',
-        default: '',
-        helptext: 'If items provides an array of objects, this is the key used for search and display.',
-      },
-      itemsFilter: {
-        type: 'boolean',
-        default: true,
-        helptext: 'Turn this off to disable filtering the items. May be useful for some APIs.',
+        helptext: 'Ensure that all entered items are unique.',
       },
       allowBlur: {
         type: 'boolean',
@@ -624,19 +647,19 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       splitWith: {
         type: 'text',
         default: ',',
-        helptext: 'The character that splits a group of tags.',
-        hidden: '$not($or($values.allowPaste, $values.allowDrop))',
+        helptext: 'The character that splits a group of items.',
+        hidden: {function:'not', params:[
+          {function:'or', params:[
+            {function:'getValue',params:['allowPaste']},
+            {function:'getValue',params:['allowDrop']},
+          ]}
+        ]},
       },
     }
   },
   // {
   //   id: 'options', // i.e. radios or checkboxes
   //   fieldTypes: 'text,number,date',
-  //   handlesMultiple: true,
-  // },
-  // {
-  //   id: 'tags',
-  //   fieldTypes: 'tags', // We need a good widget for tag handling, like Select2
   //   handlesMultiple: true,
   // },
 }

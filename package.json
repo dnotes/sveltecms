@@ -2,6 +2,7 @@
   "name": "sveltecms",
   "version": "0.0.7",
   "scripts": {
+    "debug": "echo 'To debug, open Google Chrome to chrome://inspect' && node --inspect node_modules/.bin/vite dev",
     "dev": "vite dev",
     "build": "svelte-kit build",
     "preview": "svelte-kit preview",

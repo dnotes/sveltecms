@@ -4,6 +4,7 @@ import type SvelteCMS from "sveltecms";
 import type { Content, Value } from "sveltecms/core/ContentStore";
 import { Display } from "sveltecms/core/Display";
 import type { Field } from "sveltecms/core/Field";
+import Wrapper from "./Wrapper.svelte";
 
   export let cms:SvelteCMS
   export let entity:Field
@@ -21,6 +22,12 @@ import type { Field } from "sveltecms/core/Field";
 
 
 {#if display.isDisplayed}
+
+  {#if display.label}
+    <Wrapper {cms} {entity} {item} {parent} {displayMode} display={display.label}>
+      {entity.label}
+    </Wrapper>
+  {/if}
 
   {#each items as item}
     {#if display.component}

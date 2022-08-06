@@ -101,12 +101,6 @@ export const adminPages:AdminPageConfig[] = [
   },
   // {
   //   id: 'lists',
-  //   configPath: 'lists',
-  //   component: CMSConfigList,
-  //   options: {
-  //     fieldgroup: 'listConfig',
-  //     stringField: 'tags',
-  //   }
   // },
   {
     id: 'contentStores',

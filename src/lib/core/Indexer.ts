@@ -7,15 +7,25 @@ import type { EntityTemplate } from './EntityTemplate'
 import type { Media } from './MediaStore'
 
 export type IndexItem = Content
+export type IndexChange = { before?:IndexItem, after?:IndexItem }
+
+export function isIndexItem(item:IndexItem|any): item is IndexItem {
+  return (<IndexItem>item)?._type !== undefined
+}
+
 
 function noop(val?:any) { return async () => { return val } }
 
 export type IndexerType = EntityType & ConfigurableEntityType & {
-  saveContent:(contentType:ContentType, content:IndexItem|IndexItem[])=>Promise<void>
-  deleteContent:(contentType:ContentType, content:IndexItem|IndexItem[])=>Promise<void>
+  getIndex:(id:string)=>Promise<IndexItem[]>
+  updateIndex:(id:string, changes:IndexChange[])=>Promise<void>
+  saveIndex:(id:string, index:IndexItem[])=>Promise<void>
+  searchIndex:(id:string, search?:string, options?:Object) => Promise<(Content|Media) & { _score?:number }[]>
+  saveContent:(contentType:string|ContentType, content:IndexItem|IndexItem[])=>Promise<void>
+  deleteContent:(contentType:string|ContentType, content:IndexItem|IndexItem[])=>Promise<void>
   saveMedia:(media:Media|Media[])=>Promise<void>
   deleteMedia:(media:Media|Media[])=>Promise<void>
-  searchContent:(contentType:ContentType, search:string|Object, options?:Object)=>Promise<Content & { _score?:number }[]>
+  searchContent:(contentType:string|ContentType, search:string|Object, options?:Object)=>Promise<Content & { _score?:number }[]>
   searchMedia:(search:string|Object, options?:Object)=>Promise<Media & { _score?:number }[]>
 }
 
@@ -45,6 +55,10 @@ export type IndexerConfigSetting = TypedEntityConfigSetting & ConfigurableEntity
 export class Indexer implements ConfigurableEntity, TypedEntity {
   id: string
   type: string
+  getIndex:(id:string)=>Promise<IndexItem[]> = noop()
+  updateIndex:(id:string, changes:IndexChange[])=>Promise<void>
+  saveIndex:(id:string,index:IndexItem|IndexItem[])=>Promise<void> = noop()
+  searchIndex:(id:string, search?:string, options?:Object) => Promise<(Content|Media) & { _score?:number }[]> = noop()
   saveContent:(contentType:ContentType, content:Content|Content[])=>Promise<void> = noop()
   deleteContent:(contentType:ContentType, content:Content|Content[])=>Promise<void> = noop()
   saveMedia:(media:Media|Media[])=>Promise<void> = noop()
@@ -57,7 +71,10 @@ export class Indexer implements ConfigurableEntity, TypedEntity {
     if (typeof conf === 'string') conf = { type:conf }
     let indexer = cms.indexers[conf.type]
     if (!indexer) return this
-    Object.keys(indexer).forEach(k => this[k] = indexer[k])
+    this.getIndex = indexer.getIndex.bind(this)
+    this.updateIndex = indexer.updateIndex.bind(this)
+    this.saveIndex = indexer.saveIndex.bind(this)
+    this.searchIndex = indexer.searchIndex.bind(this)
     this.saveContent = indexer.saveContent.bind(this)
     this.deleteContent = indexer.deleteContent.bind(this)
     this.saveMedia = indexer.saveMedia.bind(this)

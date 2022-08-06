@@ -474,6 +474,24 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
       }
     }
   },
+  typeof: {
+    id: 'typeof',
+    fn: (vars, opts) => {
+      return typeof opts?.value === opts?.type
+    },
+    optionFields: {
+      value: {
+        type: 'text',
+        default: '',
+        helptext: 'A value of which to get the type. Generally only useful with a script function.'
+      },
+      type: {
+        type: 'text',
+        default: '',
+        helptext: 'The type that the value should be in order to pass this test.'
+      },
+    }
+  },
   listEntities: {
     id: 'listEntities',
     admin: true,

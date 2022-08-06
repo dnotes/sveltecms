@@ -4,6 +4,8 @@ date: 2022-04-28T20:10:00.000Z
 image:
   src: /images/Birthday_cake.png
 _slug: 2022-04-28-happy-birthday-svelte-cms
+_oldSlug: 2022-04-28-happy-birthday-svelte-cms
+_type: blog
 ---
 Congratulations SvelteCMS, you've just turned 0! This is one small post for a static site generator, but a giant accomplishment for a content management system!
 

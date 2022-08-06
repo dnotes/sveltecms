@@ -70,7 +70,32 @@ import Button from "sveltecms/ui/Button.svelte";
         default: '',
         helptext: 'The slug for the front page. If provided, the content of '+
           'the Root Content Type that has this slug will be the front page of the site/app.'
-      }
+      },
+      defaultContentDisplay: {
+        type: 'entity',
+        default: 'div',
+        helptext: 'The default display for all Content Types. Useful for things like TailwindCSS with Typography plugin, '+
+          'e.g. "div.prose.dark:prose-invert".',
+        widget: {
+          type: 'entity',
+          options: {
+            entityType: 'display'
+          }
+        }
+      },
+      defaultContentDisplayModes: {
+        type: 'entityList',
+        default: {},
+        helptext: 'The default display for all Content Types. Useful for things like TailwindCSS with Typography plugin, '+
+          'e.g. "div.prose.dark:prose-invert".',
+        widget: {
+          type: 'entityList',
+          options: {
+            legend: 'Default Content Display Modes',
+            entityType: 'display'
+          }
+        }
+      },
     }
   }, cms)
 
