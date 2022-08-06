@@ -2,14 +2,18 @@ configPath: src/sveltecms.config.yml
 settings:
   rootContentType: landingPage
   frontPageSlug: front
-  defaultContentDisplay: div.prose.dark:prose-invert
+  defaultContentDisplay: div.prose.prose-xl.dark:prose-invert.mx-auto
+  defaultContentDisplayModes:
+    reference: span
+    teaser: >-
+      div.prose.prose-xl.dark:prose-invert.mx-auto.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
 contentTypes:
   blog:
     slug: date,title
     fields:
+      image: image
       title: title
       date: date
-      image: image
       body: body
       tags: tags
     label: ''
@@ -38,13 +42,6 @@ contentTypes:
       body: body
     slug: title
     label: ''
-  tags:
-    label: ''
-    slug: title
-    fields:
-      title: title
-      body: body
-      taggedContent: taggedContent
 contentStores: {}
 mediaStores:
   images:
@@ -65,7 +62,7 @@ fields:
       link: true
     displayModes:
       teaser:
-        type: h2
+        type: h2.m-0.font-bold
         link: true
       page: h1
   date:
@@ -87,6 +84,9 @@ fields:
     type: image
     index: true
     mediaStore: images
+    displayModes:
+      teaser: >-
+        div.w-36.h-28.float-left.pr-4.m-0.not-prose.overflow-hidden.drop-shadow-xl
   style:
     type: text
     display: none
@@ -115,6 +115,13 @@ fields:
           over the element.
   tags:
     type: reference
+    displayModes:
+      page:
+        label: h4.border-t-2.pt-2
+        wrapper: ul
+        type: >-
+          li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
+        link: true
     widget:
       type: reference
       referenceKey: taggedContent
@@ -122,6 +129,13 @@ fields:
       freeTagging: true
   taggedContent:
     type: reference
+    displayModes:
+      page:
+        label: h4.border-t-2.pt-2
+        wrapper: ul
+        type: >-
+          li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
+        link: true
     widget:
       type: reference
       referenceKey: tags

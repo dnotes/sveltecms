@@ -8,9 +8,6 @@ tags:
   - title: Tagging
     _slug: tagging
     _type: tags
-  - title: Tagging
-    _type: tags
-    _slug: tagging
   - title: Indexers
     _type: tags
     _slug: indexers
