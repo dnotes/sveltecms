@@ -13,9 +13,9 @@ import FieldList from "../FieldList.svelte";
   }
   export let displayMode:string
 
-  let filepath = typeof item === 'string' ? item : item.src
-  let filename = filepath.replace(/.+\//,'')
-  let display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms)
+  $: filepath = typeof item === 'string' ? item : item.src
+  $: filename = filepath.replace(/.+\//,'')
+  $: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms)
 
 </script>
 

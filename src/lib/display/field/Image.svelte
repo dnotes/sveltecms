@@ -14,10 +14,10 @@ import FieldList from "../FieldList.svelte";
   }
   export let displayMode:string
 
-  let src = typeof item === 'string' ? item : item.src
-  let alt = item?.['alt'] || undefined
-  let title = item?.['title'] || undefined
-  let display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms)
+  $: src = typeof item === 'string' ? item : item.src
+  $: alt = item?.['alt'] || undefined
+  $: title = item?.['title'] || undefined
+  $: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms)
 
 </script>
 
