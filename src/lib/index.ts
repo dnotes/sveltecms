@@ -6,7 +6,7 @@ import { type MediaStoreType, type MediaStoreConfigSetting, templateMediaStore }
 import { templateContentStore, type Content, type ContentStoreConfigSetting, type ContentStoreType, type Value } from './core/ContentStore'
 import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, templateFieldgroup } from './core/Fieldgroup'
 import { transformers, templateTransformer, type Transformer, type TransformerConfigSetting } from './core/Transformer'
-import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig } from './core/ScriptFunction'
+import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig, parseScript } from './core/ScriptFunction'
 import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
 import { displayComponents, templateDisplay, type DisplayConfigSetting } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
@@ -285,7 +285,7 @@ export default class SvelteCMS {
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow function that returns plugin
 
-    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups','indexers'].forEach(k => {
+    ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups','indexers','scriptFunctions'].forEach(k => {
       try {
         plugin?.[k]?.forEach(conf => {
           this[k][conf.id] = conf
@@ -886,8 +886,16 @@ export default class SvelteCMS {
   initializeConfigOptions(options, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }) {
     // console.log({name:'initializeConfigOptions', count:Object.keys(options).length, options:cloneDeep(options)}) // debug functions
     Object.keys(options).forEach(k => {
+      options[k] = parseScript(options[k]) ?? options[k]
       if (options[k]?.function && typeof options[k]?.function === 'string') {
         this.initializeFunction(options, k, vars)
+      }
+      else if (Array.isArray(options[k])) {
+        for (let i=0; i<options[k].length; i++) {
+          if (options[k][i]?.function && typeof options[k][i].function === 'string') {
+            this.initializeFunction(options[k], i.toString(), vars)
+          }
+        }
       }
     })
   }
@@ -1126,6 +1134,7 @@ export type CMSPlugin = {
   optionFields?:{[key:string]:ConfigFieldConfigSetting}
   fieldWidgets?:{[key:string]:string[]}
   hooks?:PluginHooks
+  scriptFunctions?:ScriptFunctionType[]
 }
 
 export type CMSPluginBuilder = (config:any) => CMSPlugin
