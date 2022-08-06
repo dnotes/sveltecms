@@ -2,8 +2,8 @@ import type SvelteCMS from "sveltecms"
 import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntityType, FieldableEntity, ConfigurableEntity, FieldableEntityType } from "sveltecms"
 import type ContentType from "sveltecms/core/ContentType"
 import type Field from "sveltecms/core/Field"
-
 import type { EntityTemplate } from "./EntityTemplate"
+
 import CMSWidgetFieldgroup from 'sveltecms/widgets/CMSWidgetFieldgroup.svelte'
 import CMSWidgetMultiple from 'sveltecms/widgets/CMSWidgetMultiple.svelte'
 import CMSWidgetNumber from 'sveltecms/widgets/CMSWidgetNumber.svelte'
@@ -19,6 +19,8 @@ import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
 import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte"
 import CMSWidgetMultiselect from "sveltecms/widgets/CMSWidgetMultiselect.svelte"
+import CMSWidgetCalculated from "sveltecms/widgets/CMSWidgetCalculated.svelte"
+
 import SlugConfig from "./Slug"
 import { isReferenceString } from "sveltecms/utils"
 
@@ -657,6 +659,19 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       },
     }
   },
+  calculated: {
+    id: 'calculated',
+    description: 'This widget allows providing a calculated value using a Script Function.',
+    widget: CMSWidgetCalculated,
+    fieldTypes: ['text','date','html','fieldgroup','number','float','boolean','value'],
+    optionFields: {
+      value: {
+        type: 'text',
+        default: '',
+        helptext: 'The value of the field. Use a Script Function to determine this based on other fields.',
+      }
+    }
+  }
   // {
   //   id: 'options', // i.e. radios or checkboxes
   //   fieldTypes: 'text,number,date',
