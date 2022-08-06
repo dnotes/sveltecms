@@ -1,1 +1,67 @@
 configPath: src/lib/sveltecms.config.yml
+settings:
+  rootContentType: page
+  frontPageSlug: front
+  defaultContentDisplay: div
+  defaultContentDisplayModes:
+    reference: span
+contentTypes:
+  page:
+    slug: slug
+    fields:
+      slug: slug
+      image: mainImage
+      title: title
+      body: body
+  blog:
+    slug: date,title
+    fields:
+      image: mainImage
+      title: title
+      date: postDate
+      body: body
+      tags: tags
+fields:
+  title:
+    type: text
+    index: true
+    required: true
+    display:
+      type: span
+      link: true
+    displayModes:
+      teaser:
+        type: h2
+        link: true
+      page: h1
+  postDate:
+    type: date
+    index: true
+    required: true
+    default: $now
+  body: markdown
+  slug:
+    type: text
+    display: none
+  mainImage:
+    type: image
+    index: true
+    mediaStore: images
+  tags:
+    type: reference
+    widget:
+      type: reference
+      referenceKey: taggedContent
+      contentTypes: tags
+      freeTagging: true
+  taggedContent:
+    type: reference
+    widget:
+      type: reference
+      referenceKey: tags
+      displayMode: teaser
+mediaStores:
+  images:
+    type: staticFiles
+    mediaDirectory: images
+    allowMediaTypes: image/jpeg, image/png, image/gif
