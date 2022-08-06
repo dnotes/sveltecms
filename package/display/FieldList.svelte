@@ -16,7 +16,15 @@ $: displays = Object.fromEntries(fieldlist.map(([id, field]) => ([id, new Displa
 
     {#if displays[id]?.wrapper?.isDisplayed}
 
-      <Wrapper display={displays[id].wrapper} class="field-{entity?.['id']} field-type-{field?.['type']}">
+      <Wrapper
+        {cms}
+        entity={field}
+        item={item[id]}
+        parent={item}
+        {displayMode}
+        display={displays[id].wrapper}
+        class="field-{entity?.['id']} field-type-{field?.['type']}"
+      >
         <FieldValue
           {cms}
           entity={field}

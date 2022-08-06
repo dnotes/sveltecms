@@ -15,7 +15,7 @@ export const templateField = {
     isFieldable: true,
     listFields: ['widget'],
     scriptableProps: [
-        'label', 'helptext', 'default',
+        'label', 'helptext', 'default', 'index',
         'multiple', 'multipleLabelFields', 'multipleMin', 'multipleMax',
         'required', 'disabled', 'hidden', 'class'
     ],
@@ -39,6 +39,11 @@ export const templateField = {
                     }
                 },
             }
+        },
+        index: {
+            type: 'boolean',
+            default: false,
+            helptext: 'Whether the field data should be indexed.',
         },
         display: {
             type: 'entity',
@@ -180,10 +185,11 @@ export class Field {
                 throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`);
             this.type = conf.type;
             this.label = parseScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)); // text is required
+            this.index = parseScript(conf.index) ?? (conf.index ? true : false);
             this.value = parseScript(conf.value) ?? conf.value;
             this.helptext = parseScript(conf.value) ?? (typeof conf.helptext === 'string' ? conf.helptext : '');
-            this.multiple = parseScript(conf.multiple) ?? (conf.multiple ? true : false);
-            this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? conf.multipleLabelFields;
+            this.multiple = parseScript(conf.multiple) ?? (conf.multiple ?? fieldType.multiple ?? false);
+            this.multipleLabelFields = parseScript(conf.multipleLabelFields) ?? (Array.isArray(conf.multipleLabelFields) ? conf.multipleLabelFields : []);
             this.multipleOrSingle = conf.multipleOrSingle ?? false;
             this.multipleMin = parseScript(conf.multipleMin) ?? (isNaN(Number(conf.multipleMin)) ? undefined : Number(conf.multipleMin));
             this.multipleMax = parseScript(conf.multipleMax) ?? (isNaN(Number(conf.multipleMax)) ? undefined : Number(conf.multipleMax));
@@ -199,7 +205,7 @@ export class Field {
             this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false);
             this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false);
             this.widget = new Widget(conf.widget || fieldType.widget, cms);
-            this.display = conf?.['display'] ?? fieldType.display;
+            this.display = conf.display ?? fieldType.display;
             this.displayModes = Object.assign({}, fieldType.displayModes || {}, conf.displayModes || {});
             if (fieldType.displayComponent)
                 this.displayComponent = cms.getEntity('components', fieldType.displayComponent);
@@ -233,8 +239,9 @@ export const fieldTypes = {
         id: 'date',
         default: '',
         widget: 'date',
-        display: 'span',
         preSave: ['date'],
+        display: 'span',
+        displayComponent: 'sveltecms/display/field/Date'
     },
     image: {
         id: 'image',
@@ -288,15 +295,6 @@ export const fieldTypes = {
         display: 'span',
         preSave: ['boolean'],
     },
-    tags: {
-        id: 'tags',
-        default: [],
-        widget: 'tags',
-        display: {
-            type: 'li',
-            wrapper: 'ul',
-        },
-    },
     value: {
         id: 'value',
         default: undefined,
@@ -307,9 +305,14 @@ export const fieldTypes = {
         id: 'reference',
         default: [],
         widget: 'reference',
-        display: {
-            type: 'li',
-            wrapper: 'ul',
+        multiple: true,
+        display: false,
+        displayModes: {
+            page: {
+                wrapper: 'ul',
+                type: 'li',
+                link: true,
+            }
         },
         displayComponent: 'sveltecms/display/field/Reference',
     },

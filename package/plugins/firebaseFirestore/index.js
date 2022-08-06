@@ -34,8 +34,10 @@ const firestoreBuilder = (options) => {
             helptext: 'An alternate firestore server to use other than the default, https://firestore.googleapis.com.'
         },
         listFields: {
-            type: "tags",
+            type: "text",
+            multiple: true,
             default: [],
+            widget: 'multiselect',
             helptext: 'The fields to get in cms.listContent queries for this type.'
         },
         listQuery: {

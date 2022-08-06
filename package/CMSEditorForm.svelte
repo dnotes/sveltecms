@@ -19,7 +19,7 @@ export let method = contentType?.form?.method ?? 'POST';
 values['_oldSlug'] = values['_slug'] ?? '';
 const initialValues = cloneDeep(values);
 let okMove;
-$: newSlug = cms.getSlug(values, contentType, true);
+$: newSlug = cms.getSlug(values, contentType.slug, true);
 let previewContent = cms.preMount(contentType, values);
 let updatePreviewContent = debounce(() => {
     previewContent = cms.preMount(contentType, values);

@@ -8,14 +8,13 @@ import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
 import type { DisplayConfigSetting } from './Display';
 export declare const templateContentType: EntityTemplate;
 export declare type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {
-    label: string;
+    label?: string;
     fields: {
         [id: string]: string | FieldConfigSetting;
     };
     contentStore: string | ContentStoreConfigSetting;
     mediaStore?: string | MediaStoreConfigSetting;
     slug?: string | string[] | SlugConfigSetting;
-    indexFields?: string | string[];
     form?: {
         method?: 'post' | 'get';
         action?: string;

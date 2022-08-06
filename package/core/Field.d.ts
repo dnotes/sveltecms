@@ -11,6 +11,7 @@ import type { Component } from './Component';
 export declare type FieldConfigSetting = DisplayableEntityConfigSetting & {
     type: string;
     label?: string | ScriptFunctionConfigSetting;
+    index?: boolean | ScriptFunctionConfigSetting;
     default?: any;
     helptext?: string | ScriptFunctionConfigSetting;
     required?: boolean | ScriptFunctionConfigSetting;
@@ -37,7 +38,7 @@ export declare type FieldConfigSetting = DisplayableEntityConfigSetting & {
     [id: string]: string | number | boolean | ConfigSetting | ScriptFunctionConfigSetting | (string | number | ConfigSetting)[];
 };
 export declare type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display|displayModes"> & {
-    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'tags' | 'entity' | 'entityList';
+    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'entity' | 'entityList';
     entity?: string;
     default: any;
     helptext: string;
@@ -48,9 +49,9 @@ export declare type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display
 export declare type FieldType = EntityType & DisplayableEntityType & {
     default: any;
     widget: string | WidgetConfigSetting;
-    display: string | DisplayConfigSetting;
     preSave?: Array<string | TransformerConfigSetting>;
     preMount?: Array<string | TransformerConfigSetting>;
+    multiple?: boolean;
     admin?: boolean;
 };
 export declare const templateField: EntityTemplate;
@@ -61,6 +62,7 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
     helptext?: string | ScriptFunctionConfig;
     required?: boolean | ScriptFunctionConfig;
     disabled?: boolean | ScriptFunctionConfig;
+    index?: boolean | ScriptFunctionConfig;
     hidden?: boolean | ScriptFunctionConfig;
     class: string | ScriptFunctionConfig;
     default?: any;
@@ -70,7 +72,7 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
         function: ScriptFunctionConfig;
     }[];
     displayComponent?: Component;
-    multiple?: boolean | ScriptFunctionConfig;
+    multiple?: boolean | ScriptFunctionConfig | ScriptFunctionConfigSetting;
     multipleOrSingle?: boolean;
     multipleLabelFields?: string | string[] | ScriptFunctionConfig;
     multipleMin?: number | ScriptFunctionConfig;

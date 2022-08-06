@@ -1,4 +1,5 @@
 <script>import { Display } from "sveltecms/core/Display";
+import Wrapper from "./Wrapper.svelte";
 export let cms;
 export let entity;
 export let item;
@@ -12,6 +13,12 @@ $: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display 
 
 
 {#if display.isDisplayed}
+
+  {#if display.label}
+    <Wrapper {cms} {entity} {item} {parent} {displayMode} display={display.label}>
+      {entity.label}
+    </Wrapper>
+  {/if}
 
   {#each items as item}
     {#if display.component}

@@ -2,6 +2,13 @@
 export let field;
 export let id;
 export let value = field.default;
+let tags = Array.isArray(value) ? value : (typeof value === 'undefined' || value === '' || value === null ? [] : [value]);
+function handleTags(e) {
+    if (!field.multiple || (field.multipleOrSingle && e.detail?.tags?.length === 1))
+        value = tags[0];
+    else
+        value = e.detail?.tags?.length ? tags : undefined;
+}
 //@ts-ignore
 let opts = field.widget.options;
 </script>
@@ -12,8 +19,8 @@ let opts = field.widget.options;
     <slot>{field.label}</slot>
   </span>
   <Tags
-    bind:tags={value}
-    name={id}
+    bind:tags
+    on:tags={handleTags}
     disable={field.disabled}
     placeholder={opts.placeholder}
     allowPaste={opts.allowPaste}
@@ -24,9 +31,11 @@ let opts = field.widget.options;
     onlyUnique={opts.onlyUnique}
     autoComplete={opts.items}
     onlyAutocomplete={opts.restrictToItems}
-    autoCompleteKey={opts.itemsKey}
-    autoCompleteFilter={opts.itemsFilter}
+    autoCompleteFilter={!opts.itemsFilter ? false : undefined}
     minChars={opts.minChars}
     labelText={field.label}
   />
 </label>
+{#each tags as tag}
+  <input type="hidden" name="{id}" value="{tag}" />
+{/each}

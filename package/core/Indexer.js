@@ -1,4 +1,7 @@
 import { splitTags } from 'sveltecms/utils';
+export function isIndexItem(item) {
+    return item?._type !== undefined;
+}
 function noop(val) { return async () => { return val; }; }
 export const templateIndexer = {
     id: 'indexer',
@@ -20,6 +23,9 @@ export const templateIndexer = {
 };
 export class Indexer {
     constructor(conf, cms) {
+        this.getIndex = noop();
+        this.saveIndex = noop();
+        this.searchIndex = noop();
         this.saveContent = noop();
         this.deleteContent = noop();
         this.saveMedia = noop();
@@ -33,7 +39,10 @@ export class Indexer {
         let indexer = cms.indexers[conf.type];
         if (!indexer)
             return this;
-        Object.keys(indexer).forEach(k => this[k] = indexer[k]);
+        this.getIndex = indexer.getIndex.bind(this);
+        this.updateIndex = indexer.updateIndex.bind(this);
+        this.saveIndex = indexer.saveIndex.bind(this);
+        this.searchIndex = indexer.searchIndex.bind(this);
         this.saveContent = indexer.saveContent.bind(this);
         this.deleteContent = indexer.deleteContent.bind(this);
         this.saveMedia = indexer.saveMedia.bind(this);

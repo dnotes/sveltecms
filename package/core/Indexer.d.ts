@@ -5,12 +5,23 @@ import type ContentType from './ContentType';
 import type { EntityTemplate } from './EntityTemplate';
 import type { Media } from './MediaStore';
 export declare type IndexItem = Content;
+export declare type IndexChange = {
+    before?: IndexItem;
+    after?: IndexItem;
+};
+export declare function isIndexItem(item: IndexItem | any): item is IndexItem;
 export declare type IndexerType = EntityType & ConfigurableEntityType & {
-    saveContent: (contentType: ContentType, content: IndexItem | IndexItem[]) => Promise<void>;
-    deleteContent: (contentType: ContentType, content: IndexItem | IndexItem[]) => Promise<void>;
+    getIndex: (id: string) => Promise<IndexItem[]>;
+    updateIndex: (id: string, changes: IndexChange[]) => Promise<void>;
+    saveIndex: (id: string, index: IndexItem[]) => Promise<void>;
+    searchIndex: (id: string, search?: string, options?: Object) => Promise<(Content | Media) & {
+        _score?: number;
+    }[]>;
+    saveContent: (contentType: string | ContentType, content: IndexItem | IndexItem[]) => Promise<void>;
+    deleteContent: (contentType: string | ContentType, content: IndexItem | IndexItem[]) => Promise<void>;
     saveMedia: (media: Media | Media[]) => Promise<void>;
     deleteMedia: (media: Media | Media[]) => Promise<void>;
-    searchContent: (contentType: ContentType, search: string | Object, options?: Object) => Promise<Content & {
+    searchContent: (contentType: string | ContentType, search: string | Object, options?: Object) => Promise<Content & {
         _score?: number;
     }[]>;
     searchMedia: (search: string | Object, options?: Object) => Promise<Media & {
@@ -24,6 +35,12 @@ export declare type IndexerConfigSetting = TypedEntityConfigSetting & Configurab
 export declare class Indexer implements ConfigurableEntity, TypedEntity {
     id: string;
     type: string;
+    getIndex: (id: string) => Promise<IndexItem[]>;
+    updateIndex: (id: string, changes: IndexChange[]) => Promise<void>;
+    saveIndex: (id: string, index: IndexItem | IndexItem[]) => Promise<void>;
+    searchIndex: (id: string, search?: string, options?: Object) => Promise<(Content | Media) & {
+        _score?: number;
+    }[]>;
     saveContent: (contentType: ContentType, content: Content | Content[]) => Promise<void>;
     deleteContent: (contentType: ContentType, content: Content | Content[]) => Promise<void>;
     saveMedia: (media: Media | Media[]) => Promise<void>;

@@ -5,6 +5,7 @@ import type { EntityTemplate } from "./EntityTemplate";
 export declare type DisplayConfigSetting = ConfigurableEntityConfigSetting & {
     type: string;
     wrapper?: string;
+    label?: string;
     html?: boolean;
     link?: boolean;
 };
@@ -15,6 +16,7 @@ export declare class Display {
     link: boolean;
     component?: Component;
     wrapper?: Display;
+    label?: Display;
     html?: boolean;
     tag?: string;
     id?: string;

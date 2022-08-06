@@ -6,7 +6,7 @@ declare const __propDef: {
     props: {
         cms: SvelteCMS;
         entity: Field;
-        item: Content | string;
+        item: Content;
     };
     events: {
         [evt: string]: CustomEvent<any>;

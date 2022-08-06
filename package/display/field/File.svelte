@@ -4,9 +4,9 @@ export let cms;
 export let entity;
 export let item;
 export let displayMode;
-let filepath = typeof item === 'string' ? item : item.src;
-let filename = filepath.replace(/.+\//, '');
-let display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms);
+$: filepath = typeof item === 'string' ? item : item.src;
+$: filename = filepath.replace(/.+\//, '');
+$: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms);
 </script>
 
 {#if filepath}

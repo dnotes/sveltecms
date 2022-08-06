@@ -42,11 +42,11 @@ let confirmRemove;
 function resetItem(i) {
     items[i][1] = items[i][0];
 }
-$: value = Object.fromEntries(items);
+$: value = items.length ? Object.fromEntries(items) : undefined;
 </script>
 
 <fieldset class="multiple">
-  <legend>{entityType?.labelPlural || `Can't find entity type`}</legend>
+  <legend>{field?.label || entityType?.labelPlural || `Can't find entity type`}</legend>
   {#each items as [entityID, value], i}
     <div class="multiple-item">
       <CmsWidgetEntity

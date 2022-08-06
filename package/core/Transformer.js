@@ -116,7 +116,7 @@ export const transformers = {
                     return ['', ''];
                 });
             }
-            return slugify(v, opts);
+            return slugify(v.toString(), opts);
         },
         optionFields: {
             separator: {
@@ -135,8 +135,10 @@ export const transformers = {
                 default: true,
             },
             customReplacements: {
-                type: 'tags',
+                type: 'text',
+                multiple: true,
                 default: [],
+                widget: 'multiselect',
                 helptext: `Add your own custom replacements. ` +
                     `The replacements are run on the original string before any other transformations. ` +
                     `The format is "from:to,from2:to2,...". To remove a character, use "from:". ` +

@@ -1,4 +1,6 @@
-import { get, isEqual, set } from "lodash-es";
+import { cloneDeep, get, isEqual, set } from "lodash-es";
+import { isIndexItem } from "./Indexer";
+import { findReferenceIndex } from "sveltecms/utils";
 // TODO: Make a special kind of Error for Hooks, including:
 // - some way to collect multiple errors into one
 // - some way to indicate a URL to check on each error
@@ -13,18 +15,11 @@ export const hooks = [
             // reference fields that have a widget with the "linkedField" option set
             // The array is the field's id (or path) in the content being saved,
             // and the id (or path) of the linked Field in the referenced content type
-            let referenceFields = [];
-            function getLinkedReferenceFields(fields, prefix) {
-                Object.entries(fields).forEach(([id, field]) => {
-                    let fieldPath = [prefix, id].filter(Boolean).join('.');
-                    if (field.type === 'reference' && field.widget?.options?.linkedField && typeof field.widget.options.linkedField === 'string') {
-                        referenceFields.push([fieldPath, field.widget.options.linkedField]);
-                    }
-                    if (field.isFieldable && field.fields)
-                        getLinkedReferenceFields(field.fields, fieldPath);
-                });
-            }
-            getLinkedReferenceFields(change.contentType.fields);
+            let referenceFields = cms.findFields(change.contentType.fields, { type: 'reference' })
+                .map(fieldPath => {
+                let referenceKey = get(change.contentType.fields, fieldPath).widget?.options?.referenceKey;
+                return [fieldPath, typeof referenceKey === 'string' ? referenceKey : ''];
+            });
             if (!referenceFields.length)
                 return;
             // Set array for errors
@@ -39,13 +34,13 @@ export const hooks = [
             // 5. Load content for each referenced item (can do this async)
             // 6. Update any linked Field value with the new item, or delete the old item
             // 7. Save the content for each ContentType, saving the index but skipping the hooks
-            // 1.
+            // 1. Get the appropriate references for the item being saved
             let oldIndexItem = cms.getIndexItem(change?.before);
             let newIndexItem = cms.getIndexItem(change?.after);
-            let isChangedItem = !isEqual(oldIndexItem, newIndexItem);
-            let oldSlug = change.before?._slug ? `${change?.before?._type}/${change?.before?._slug}` : undefined;
-            let newSlug = change.after?._slug ? `${change?.after?._type}/${change?.after?._slug}` : undefined;
-            let isChangedSlug = oldSlug === newSlug;
+            let isChangedContentIndexItem = !isEqual(oldIndexItem, newIndexItem);
+            // let oldSlug = change.before?._slug ? `${change?.before?._type}/${change?.before?._slug}` : undefined
+            // let newSlug = change.after?._slug ? `${change?.after?._type}/${change?.after?._slug}` : undefined
+            // let isChangedSlug = oldSlug === newSlug
             // 4. prepare an object keyed by content type ID, i.e. { contentTypeID: {} }
             let allContent = {};
             cms.listEntities('contentType').forEach(k => { allContent[k] = {}; });
@@ -53,84 +48,138 @@ export const hooks = [
             // this must be done synchronously because there may be multiple fields referencing
             // the same type of content and we must not load any piece of content multiple times
             for (let i = 0; i < referenceFields.length; i++) {
-                let [path, linkedFieldPath] = referenceFields[i];
+                let [fieldPath, referenceKey] = referenceFields[i];
+                let field = get(change.contentType.fields, fieldPath);
+                // Get a list of all allowable values for each reference's _type property
+                let referencedContentTypes = Array.isArray(field.widget?.options?.contentTypes)
+                    ? field.widget.options.contentTypes.filter(Boolean).map(toString)
+                    : (field.widget?.options?.contentTypes ? [field.widget.options.contentTypes.toString()] : []);
+                if (!referencedContentTypes.length)
+                    referencedContentTypes = cms.listEntities('contentType');
+                // Create variable for index changes
+                let indexChanges = {};
+                referencedContentTypes.forEach(k => indexChanges[k] = []);
                 try {
-                    function getVars(item) {
-                        return (typeof item === 'string') ? item.split('/') : [item?.['_type'], item?.['_slug']];
-                    }
                     // Get field values for the field
-                    let oldValues = get(change.before || {}, path) ?? [];
-                    let oldValueArray = Array.isArray(oldValues) ? oldValues : [oldValues].filter(Boolean);
-                    let newValues = get(change.after || {}, path) ?? [];
-                    let newValueArray = Array.isArray(newValues) ? newValues : [newValues].filter(Boolean);
+                    let oldValues = get(change.before || {}, fieldPath) ?? [];
+                    let oldValueArray = (Array.isArray(oldValues) ? oldValues : [oldValues].filter(Boolean)).filter(isIndexItem);
+                    let newValues = get(change.after || {}, fieldPath) ?? [];
+                    let newValueArray = (Array.isArray(newValues) ? newValues : [newValues].filter(Boolean)).filter(isIndexItem);
+                    // ==== DELETED ITEMS =====================
                     // Change references that have been deleted
                     let deleteRefs = oldValueArray
-                        .filter(item => newValueArray.findIndex(compare => {
-                        item === compare || (item?.['_type'] === compare?.['_type'] && item?.['_slug'] === compare?.['_slug']);
-                    }) === -1)
+                        // Filter out any old references that are still in, considering ONLY _type and _slug.
+                        .filter(item => findReferenceIndex(item, newValueArray) === -1)
                         .map(async (item) => {
                         // Get content loading variables
-                        let [refType, refSlug] = getVars(item);
-                        let content = allContent[refType][refSlug] || await cms.getContent(refType, refSlug, { getRaw: true });
-                        if (!content)
-                            throw new Error(`Could not load content for ${refType}/${refSlug}`);
-                        let fieldValue = get(content, linkedFieldPath);
-                        if (!fieldValue)
-                            return; // don't need to delete the reference
-                        if (!Array.isArray(fieldValue))
-                            throw new Error(`Reference linkedField ${refType}/${refSlug}.${path} value is not an array of references.`);
-                        let idx = fieldValue.findIndex(v => (v === oldSlug || isEqual(v, oldIndexItem)));
-                        if (idx !== -1) {
-                            fieldValue.splice(idx, 1);
-                            set(content, linkedFieldPath, fieldValue);
-                            allContent[refType][refSlug] = content;
+                        let { _slug, _type } = item;
+                        // Load content (or index item) if possible
+                        let before = allContent?.[_type]?.[_slug] || await cms.getContent(_type, _slug, { getRaw: true });
+                        // If content was loaded, delete the reference if necessary
+                        if (before) {
+                            let after = cloneDeep(before);
+                            let fieldValue = get(after, referenceKey);
+                            if (!fieldValue)
+                                return; // don't need to delete the reference
+                            if (!Array.isArray(fieldValue)) { // could be a !multiple reference field
+                                if (fieldValue?.['_type'] === oldIndexItem._type && fieldValue?.['_slug'] === oldIndexItem._slug) {
+                                    // Set the value in the other Content|IndexItem
+                                    set(after, referenceKey, undefined);
+                                    // Queue the changes to be made
+                                    if (allContent[_type])
+                                        allContent[_type][_slug] = after;
+                                    else if (indexChanges[_type])
+                                        indexChanges[_type].push({ before, after });
+                                }
+                            }
+                            else {
+                                let idx = findReferenceIndex(oldIndexItem, fieldValue);
+                                if (idx !== -1) {
+                                    // Get the Content Type, if it's available
+                                    let contentType = cms.contentTypes[_type];
+                                    let referenceField = get(contentType?.fields || {}, referenceKey);
+                                    // Set the value in the other Content|IndexItem
+                                    fieldValue.splice(idx, 1);
+                                    if (!fieldValue.length)
+                                        set(after, referenceKey, undefined);
+                                    else if (fieldValue.length === 1 && referenceField && referenceField.multipleOrSingle)
+                                        set(after, referenceKey, fieldValue[0]);
+                                    else
+                                        set(after, referenceKey, fieldValue);
+                                    // Queue the changes to be made
+                                    if (allContent[_type])
+                                        allContent[_type][_slug] = after;
+                                    else if (indexChanges[_type])
+                                        indexChanges[_type].push({ before, after });
+                                }
+                            }
                         }
+                        // If the content could not be loaded, then there is no need to delete anything.
+                        // (strange though -- TODO: should this be an error?)
                     });
+                    // ---- end deleted items
+                    // ==== UPDATED ITEMS ==============================
                     // Change references that have been added or updated
                     let updateRefs = newValueArray
                         .map(async (item) => {
-                        // Get ContentType and Field, to check whether we need to update
-                        let [refType, refSlug] = getVars(item);
-                        let contentType = cms.getContentType(item['_type']);
-                        let linkedField = get(contentType.fields, linkedFieldPath);
-                        if (linkedField?.type !== 'reference')
-                            throw new Error(`Reference linkedField ${contentType?.id}.${linkedField?.id} must have type "reference" (${linkedField?.type})`);
-                        let slugOnly = linkedField.widget?.options?.slugOnly;
+                        // Get content loading variables
+                        let { _slug, _type } = item;
+                        // Filter out any items from Content Types that aren't permitted
+                        // If someone tries to add new items, they won't be saved.
+                        // TODO: figure out what to do if people change configuration after content exists
+                        if (!referencedContentTypes.includes(_type))
+                            return;
+                        // Get the Content Type, if it's available
+                        let contentType = cms.contentTypes[_type];
+                        let referenceField = get(contentType?.fields || {}, referenceKey);
                         // 3. Check whether we can and need to update a reference
-                        if (oldValueArray.findIndex(compare => isEqual(item, compare)) !== -1) {
-                            if (slugOnly && !isChangedSlug)
+                        // If the IndexItem for Content being saved has not changed,
+                        // and the reference is still in the field item, then there is nothing to update.
+                        if (!isChangedContentIndexItem && findReferenceIndex(item, oldValueArray) !== -1)
+                            return;
+                        // Load content (or index item) if possible
+                        let before = allContent?.[_type]?.[_slug] || await cms.getContent(_type, _slug, { getRaw: true });
+                        let after = before ? cloneDeep(before) : undefined;
+                        if (!after) {
+                            if (referencedContentTypes.length !== 1 || !field.widget?.options?.freeTagging)
                                 return;
-                            if (!isChangedItem)
-                                return;
+                            after = cms.newContent(item?._type, item) || cloneDeep(item);
                         }
-                        // Get full content
-                        let content = allContent[refType][refSlug] || await cms.getContent(refType, refSlug, { getRaw: true });
-                        if (!content)
-                            throw new Error(`Could not load content for ${item['_type']}/${item['_slug']}`);
-                        let newReference = slugOnly ? newSlug : newIndexItem;
-                        let fieldValue = get(content, linkedFieldPath);
-                        if (fieldValue && !Array.isArray(fieldValue))
-                            throw new Error(`Reference linkedField ${item['_type']}/${item['_slug']}.${path} value is not an array of references.`);
-                        else if (!fieldValue)
-                            set(content, linkedFieldPath, [newReference]);
+                        let fieldValue = get(before || {}, referenceKey);
+                        // The new fieldValue should be an IndexItem[] array
+                        // -- unless the referenceField is !multiple or multipleOrSingle, and there is only one item.
+                        // If there is no fieldValue, we need to create one.
+                        if (!fieldValue) {
+                            set(after, referenceKey, (referenceField && (!referenceField?.multiple || referenceField?.multipleOrSingle) ? newIndexItem : [newIndexItem]));
+                        }
+                        // If it's not an array, add the item if allowed. Items get added at the top.
+                        else if (!Array.isArray(fieldValue)) {
+                            if (!referenceField || (referenceField?.multiple && referenceField?.multipleMax > 1))
+                                set(after, referenceKey, [newIndexItem, fieldValue]);
+                        }
+                        // Add the item
                         else if (Array.isArray(fieldValue)) { // It's always an array by now, but typescript complains
-                            let idx = fieldValue.findIndex(v => (v === oldSlug || (v['_type'] === oldIndexItem['_type'] && v['_slug'] === oldIndexItem['_slug'])));
-                            if (idx !== -1) {
-                                fieldValue.splice(idx, 1, newReference);
-                            }
-                            else {
-                                fieldValue.push(newReference);
-                            }
-                            set(content, linkedFieldPath, fieldValue);
+                            // Check if the item is changed or added
+                            let idx = findReferenceIndex(oldIndexItem, fieldValue);
+                            if (idx !== -1)
+                                fieldValue.splice(idx, 1, newIndexItem);
+                            else
+                                fieldValue.unshift(newIndexItem);
+                            set(after, referenceKey, fieldValue);
                         }
-                        allContent[refType][refSlug] = content;
+                        // Queue the changes to be made
+                        if (allContent[_type])
+                            allContent[_type][_slug] = after;
+                        else if (indexChanges[_type])
+                            indexChanges[_type].push({ before, after });
                     });
+                    // ---- end updated items
                     await Promise.all([...deleteRefs, ...updateRefs]);
-                    // 7. Save the content for each ContentType, saving the index but skipping the hooks
-                    let promises = Object.keys(allContent).map(async (contentTypeID) => {
-                        let content = Object.values(allContent[contentTypeID]);
-                        if (content.length)
-                            await cms.saveContent(contentTypeID, content, { skipHooks: true });
+                    let promises;
+                    // 7. Save the indexes for any tags without a linked Content Type
+                    promises = Object.keys(indexChanges).map(async (id) => {
+                        if (indexChanges[id].length)
+                            await cms.indexer.updateIndex(id, indexChanges[id]);
                     });
                     await Promise.all(promises);
                 }
@@ -138,8 +187,22 @@ export const hooks = [
                     errors.push(e);
                 }
             }
+            // DONE iterating through fields.
+            try {
+                let promises;
+                // 7. Save the content for each ContentType, saving the index but skipping the hooks
+                promises = Object.keys(allContent).map(async (contentTypeID) => {
+                    let content = Object.values(allContent[contentTypeID]);
+                    if (content.length)
+                        await cms.saveContent(contentTypeID, content, { skipHooks: true });
+                });
+                await Promise.all(promises);
+            }
+            catch (e) {
+                errors.push(e);
+            }
             if (errors.length)
-                throw new Error(errors.map(e => `Reference linking: ${e.message}`).join('\r'));
+                throw new Error(errors.map(e => `Reference linking: ${e.message}\n${e.stack || ''}\n\n`).join('\n'));
         }
     }
 ];

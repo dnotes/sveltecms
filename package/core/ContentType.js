@@ -52,11 +52,6 @@ export const templateContentType = {
                 }
             }
         },
-        indexFields: {
-            type: 'text',
-            default: '',
-            helptext: 'The fields that should be indexed, and whose values should be returned when content is listed.',
-        },
         display: {
             type: 'entity',
             default: '',
@@ -91,20 +86,19 @@ export class ContentType {
         this.label = conf.label || getLabelFromID(this.id);
         this.contentStore = new ContentStore(conf?.contentStore, cms);
         this.mediaStore = conf.mediaStore;
-        this.display = conf.display;
-        this.displayModes = conf.displayModes;
+        this.display = conf.display ?? cms.conf?.settings?.defaultContentDisplay ?? 'div';
+        this.displayModes = conf.displayModes ?? cms.conf?.settings?.defaultContentDisplayModes;
+        this.indexFields = [];
         this.form = {
             method: conf?.form?.method,
             action: conf?.form?.action,
         };
-        Object.entries(conf.fields).forEach(([id, conf]) => {
+        Object.entries(conf.fields || {}).forEach(([id, conf]) => {
             this.fields[id] = new Field(id, conf, cms, this);
         });
         let slugConf = conf.slug || Object.keys(conf.fields)?.[0] || '';
         this.slug = new SlugConfig(slugConf, cms);
-        this.indexFields = Array.isArray(conf.indexFields)
-            ? conf.indexFields
-            : (splitTags()(conf.indexFields ?? undefined) || []);
+        this.indexFields = cms.findFields(this.fields, f => f.index ? true : false);
     }
 }
 export default ContentType;

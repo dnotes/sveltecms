@@ -4,12 +4,14 @@ import type { Content } from 'sveltecms/core/ContentStore';
 import Wrapper from 'sveltecms/display/Wrapper.svelte';
 import ContentItem from 'sveltecms/display/ContentItem.svelte'
 import { Display } from 'sveltecms/core/Display';
+import ContentType from 'sveltecms/core/ContentType';
 
   export let contentTypeID:string
   export let content:Content
 
   // Get the content type
-  $: contentType = cms.getContentType(contentTypeID || cms?.conf?.settings?.rootContentType?.toString())
+  $: contentTypeID = contentTypeID || cms?.conf?.settings?.rootContentType?.toString()
+  $: contentType = cms.contentTypes[contentTypeID] || { ...cms.defaultContentType, id:contentTypeID }
   $: items = Array.isArray(content) ? content : [content]
 
   // Get the proper display

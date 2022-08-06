@@ -88,12 +88,6 @@ export const adminPages = [
     },
     // {
     //   id: 'lists',
-    //   configPath: 'lists',
-    //   component: CMSConfigList,
-    //   options: {
-    //     fieldgroup: 'listConfig',
-    //     stringField: 'tags',
-    //   }
     // },
     {
         id: 'contentStores',
