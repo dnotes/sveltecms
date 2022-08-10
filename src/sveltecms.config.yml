@@ -133,8 +133,7 @@ fields:
       page:
         label: h4.border-t-2.pt-2
         wrapper: ul
-        type: >-
-          li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
+        type: li.list-none
         link: true
     widget:
       type: reference
