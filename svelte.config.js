@@ -9,8 +9,8 @@ const config = {
       postcss: true,
     }),
   ],
-	adapter: adapter(),
 	kit: {
+		adapter: adapter(),
 		alias: {
       $lib: path.resolve('src/local'),
       sveltecms: path.resolve('src/lib'),
@@ -20,6 +20,9 @@ const config = {
 				return !(filepath.match(/\/local\//))
 			}
 		},
+		prerender: {
+			default: true
+		}
 	}
 };
 
