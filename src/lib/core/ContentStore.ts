@@ -3,12 +3,6 @@ import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting
 import type { ContentType } from 'sveltecms/core/ContentType'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
-const noStore = async () => {
-  // @ts-ignore
-  console.error(`Store not found: (${this?.['id'] || ''})`)
-  return {}
-}
-
 export type Value = string|number|boolean|null|undefined|Date|Content|Array<Value>
 export type Content = {
   _type?:string
@@ -54,9 +48,9 @@ export class ContentStore implements ConfigurableEntity, TypedEntity {
     this.id = store.id
     this.type = conf.type
     this.listContent = store?.listContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return []; })
-    this.getContent = store?.getContent || noStore
-    this.saveContent = store?.saveContent || noStore
-    this.deleteContent = store?.deleteContent || noStore
+    this.getContent = store?.getContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return {}; })
+    this.saveContent = store?.saveContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return {}; })
+    this.deleteContent = store?.deleteContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return {}; })
     this.options = cms.getInstanceOptions(store, conf)
   }
 }
