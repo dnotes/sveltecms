@@ -2,7 +2,6 @@
 import type SvelteCMS from "sveltecms";
 import Button from "sveltecms/ui/Button.svelte";
 
-  export let cms:SvelteCMS
   export let adminPath:string
   export let basePath:string
   export let data = []
