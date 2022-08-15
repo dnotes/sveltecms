@@ -21,7 +21,7 @@ type Hook = {
 }
 
 export type ContentPreWriteHook = Hook & {
-  fn: (content:Content, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
+  fn: (content:Content, contentType:ContentType, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
   type: 'contentPreSave'|'contentPreDelete'
 }
 export type ContentPostWriteHook = Hook & {

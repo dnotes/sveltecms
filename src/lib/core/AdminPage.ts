@@ -129,7 +129,7 @@ export const adminPages:AdminPageConfig[] = [
       }
     },
     POST: async({cms,event,values})=>{
-      if (event) return saveContentEndpoint(cms, cms.admin, event.request)
+      if (event) return saveContentEndpoint(cms, cms.admin, event.request, { filepath: cms.conf.configPath, skipIndex: true })
     }
   },
 ]

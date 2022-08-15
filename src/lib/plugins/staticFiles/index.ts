@@ -1,4 +1,4 @@
-import type { default as SvelteCMS, CMSPlugin, CMSPluginBuilder } from 'sveltecms';
+import type { CMSPlugin } from 'sveltecms';
 import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
@@ -8,15 +8,13 @@ import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
 import { findReferenceIndex } from 'sveltecms/utils';
 import type { IndexItem } from 'sveltecms/core/Indexer';
-import type { Content } from 'sveltecms/core/ContentStore';
-import { async } from '@firebase/util';
 const fs = {}
 
 const allIndexes:{[key:string]:{default:IndexItem[]}} = import.meta.glob('/src/content/_*.index.json', { eager:true })
 const allContent = import.meta.glob('/src/content/*/**/*.{md,yml,yaml,json}', { as:'raw' })
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
-function getContentDir() { return (isBrowser || isWebWorker) ? '/src/content' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/') + '/src/content' }
+function getBasedir() { return (isBrowser || isWebWorker) ? '/' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/')}
 export async function getFs(databaseName):Promise<PromisifiedFS> {
   if (fs[databaseName]) return fs[databaseName]
   if (isBrowser || isWebWorker) {
@@ -42,11 +40,19 @@ export const databaseNameField:ConfigFieldConfigSetting = {
 }
 
 export type staticFilesContentOptions = {
+  contentDirectory: string,
   fileExtension: "md"|"json"|"yml"|"yaml",
   markdownBodyField: string,
 }
 
 export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetting} = {
+  contentDirectory: {
+    type: 'text',
+    default: 'src/content',
+    helptext: 'The directory for local content files relative to the project root. '+
+      'At the moment, this is hard-coded to "src/content", and changing it can break '+
+      'listing and getting content for that Content Type during `vite build` processes.'
+  },
   fileExtension: {
     type: 'text',
     default: 'md',
@@ -156,7 +162,7 @@ const plugin:CMSPlugin = {
         if (!content.length) {
           try {
             const fs = await getFs('opts.databaseName')
-            let glob = opts.glob ? `${getContentDir()}/${opts.glob}` : `${getContentDir()}/${contentType.id}/*.${opts.fileExtension}`
+            let glob = opts.glob ? `${getBasedir()}/${opts.glob}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/*.${opts.fileExtension}`
             glob = glob.replace(/\/+/g, '/')
             const {default:fg} = await import('fast-glob')
             const paths = await fg(glob)
@@ -193,7 +199,7 @@ const plugin:CMSPlugin = {
         try {
           // This will happen if Vite is unavailable or if a non-existent slug is requested
           const fs = await getFs('opts.databaseName')
-          let glob = opts.glob ? `${getContentDir()}/${opts.glob}` : `${getContentDir()}/${contentType.id}/*.${opts.fileExtension}`
+          let glob = opts.glob ? `${getBasedir()}/${opts.glob}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/*.${opts.fileExtension}`
           glob = glob.replace(/\/+/g, '/')
           const {default:fg} = await import('fast-glob')
           const items = await fg(glob)
@@ -219,8 +225,7 @@ const plugin:CMSPlugin = {
 
         const fs = await getFs('opts.databaseName')
 
-        const base = `${getContentDir()}/`
-        let filepath = opts.filepath ? `${getContentDir()}/${opts.filepath}` : `${getContentDir()}/${contentType.id}/${slug}.${opts.fileExtension}`
+        let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/${slug}.${opts.fileExtension}`
 
         let body = ''
         let saveContent:any = cloneDeep(content)
@@ -260,7 +265,7 @@ const plugin:CMSPlugin = {
 
         const fs = await getFs('opts.databaseName')
 
-        let filepath = opts.filepath ? `${getContentDir()}/${opts.filepath}` : `${getContentDir()}/${contentType.id}/${slug}.${opts.fileExtension}`
+        let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/${slug}.${opts.fileExtension}`
 
         try {
           await fs.unlink(filepath)
@@ -287,7 +292,7 @@ const plugin:CMSPlugin = {
         if (allIndexes?.[`/src/content/_${id}.index.json`]) return allIndexes[`/src/content/_${id}.index.json`].default
 
         const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getContentDir()}/_${id}.index.json`
+        const filepath = `${getBasedir()}/src/content/_${id}.index.json`
 
         let index = []
         try {
@@ -329,7 +334,7 @@ const plugin:CMSPlugin = {
       },
       saveIndex: async function(id, index) {
         const fs = await getFs(this?.options?.databaseName)
-        const filepath = `${getContentDir()}/_${id}.index.json`
+        const filepath = `${getBasedir()}/src/content/_${id}.index.json`
 
         try {
           return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
@@ -459,7 +464,7 @@ const plugin:CMSPlugin = {
 
         // Get file system
         const fs = await getFs('opts.databaseName')
-        const filepath = `${getContentDir()}/${opts.staticDirectory}/${opts.mediaDirectory}/${file.name}`.replace(/\/+/g,'/')
+        const filepath = `${getBasedir()}/${opts.staticDirectory}/${opts.mediaDirectory}/${file.name}`.replace(/\/+/g,'/')
 
         // TODO: determine what to do if files exist
         let fileStats
@@ -520,7 +525,7 @@ const plugin:CMSPlugin = {
           `export default components;`
 
         let fs = await getFs('opts.databaseName')
-        let filepath = `${getContentDir()}/${cms.conf.configPath}.components.ts`
+        let filepath = `${getBasedir()}/${cms.conf.configPath}.components.ts`
         await fs.writeFile(filepath, output)
 
         // @ts-ignore TODO: remove sveltekit/vite-specific code

@@ -15,7 +15,7 @@ import yaml from 'js-yaml'
   let opts = Object.assign({}, options)
   let component = cms.getEntity('components', opts.component)
   opts.configPath = data ?? opts.configPath ?? adminPath.replace(/\//,'.')
-  if (!opts.configType) opts.configType = opts.configPath.replace(/\..+/, '')
+  if (!opts.configType) opts.configType = opts?.configPath?.replace(/\..+/, '')
   let conf = get(cms.conf, opts.configPath, {})
 
   // Variables for diffing

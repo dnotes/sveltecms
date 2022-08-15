@@ -461,6 +461,25 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
       }
     }
   },
+  join: {
+    id: 'join',
+    fn: (vars, opts) => {
+      return Array.isArray(opts.values) ? opts.values.join(opts.joinString) : opts.values
+    },
+    optionFields: {
+      joinString: {
+        type: 'text',
+        default: ' ',
+        helptext: 'The character used to join the provided values.'
+      },
+      values: {
+        type: 'text',
+        multiple: true,
+        default: '',
+        helptext: 'List of strings to join with the join string.'
+      }
+    }
+  },
   length: {
     id: 'length',
     fn: (vars, opts) => {

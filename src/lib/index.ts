@@ -243,7 +243,7 @@ export default class SvelteCMS {
       }))
     }, this)
 
-    let adminStore = conf.adminStore || conf.configPath || 'src/sveltecms.config.json'
+    let adminStore = conf.adminStore || conf.configPath || 'src/lib/sveltecms.config.json'
     if (typeof adminStore === 'string' && !this.contentStores[adminStore]) {
       let contentDirectory = adminStore.replace(/\/[^\/]+$/, '')
       let fileExtension = adminStore.replace(/.+[\.]/, '')
@@ -251,7 +251,6 @@ export default class SvelteCMS {
       adminStore = {
         type: 'staticFiles',
         options: {
-          prependContentTypeIdAs: '',
           contentDirectory,
           fileExtension,
         }
@@ -609,7 +608,7 @@ export default class SvelteCMS {
   async saveContent(
     contentType:string|ContentType,
     content:Content|Content[],
-    options:{ skipHooks?:boolean, [key:string]:any } = {}
+    options:{ skipHooks?:boolean, skipIndex?:boolean, [key:string]:any } = {}
   ):Promise<Content|Content[]> {
 
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
@@ -637,7 +636,7 @@ export default class SvelteCMS {
 
       // Run contentPreWrite hooks, and bail if there is an error
       try {
-        if (!options.skipHooks) await this.runHook('contentPreSave', items[i], this, {...db.options, ...options})
+        if (!options.skipHooks) await this.runHook('contentPreSave', items[i], contentType, this, {...db.options, ...options})
       }
       catch(e) {
         e.message = `Error saving content ${items[i]._type}/${items[i]._slug}:\n${e.message}`
@@ -659,7 +658,7 @@ export default class SvelteCMS {
 
     }
 
-    await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)))
+    if (!options.skipIndex) await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)))
 
     return Array.isArray(content) ? items : items[0]
 
@@ -668,7 +667,7 @@ export default class SvelteCMS {
   async deleteContent(
     contentType:string|ContentType,
     content:Content|Content[],
-    options:{[key:string]:any} = {}
+    options:{skipHooks?:boolean, skipIndex?:boolean, [key:string]:any} = {}
   ):Promise<Content|Content[]> {
 
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
@@ -683,7 +682,7 @@ export default class SvelteCMS {
 
       // Run contentPreWrite hooks, and bail if there is an error
       try {
-        if (!options.skipHooks) await this.runHook('contentPreDelete', items[i], this, {...db.options, ...options})
+        if (!options.skipHooks) await this.runHook('contentPreDelete', items[i], contentType, this, {...db.options, ...options})
       }
       catch(e) {
         e.message = `Error deleting content ${items[i]._type}/${items[i]._slug}:\n${e.message}`
@@ -702,7 +701,7 @@ export default class SvelteCMS {
 
     }
 
-    await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)))
+    if (!options.skipIndex) await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)))
 
     return Array.isArray(content) ? items : items[0]
   }
