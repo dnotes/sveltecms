@@ -1,8 +1,3 @@
-const noStore = async () => {
-    // @ts-ignore
-    console.error(`Store not found: (${this?.['id'] || ''})`);
-    return {};
-};
 export const templateContentStore = {
     id: 'contentStore',
     label: 'Content Store',
@@ -26,9 +21,9 @@ export class ContentStore {
         this.id = store.id;
         this.type = conf.type;
         this.listContent = store?.listContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return []; });
-        this.getContent = store?.getContent || noStore;
-        this.saveContent = store?.saveContent || noStore;
-        this.deleteContent = store?.deleteContent || noStore;
+        this.getContent = store?.getContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return {}; });
+        this.saveContent = store?.saveContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return {}; });
+        this.deleteContent = store?.deleteContent || (async () => { console.error(`Store not found: (${this?.['id']})`); return {}; });
         this.options = cms.getInstanceOptions(store, conf);
     }
 }
