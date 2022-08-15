@@ -234,9 +234,12 @@ export default class SvelteCMS {
     }): Promise<Content>;
     saveContent(contentType: string | ContentType, content: Content | Content[], options?: {
         skipHooks?: boolean;
+        skipIndex?: boolean;
         [key: string]: any;
     }): Promise<Content | Content[]>;
     deleteContent(contentType: string | ContentType, content: Content | Content[], options?: {
+        skipHooks?: boolean;
+        skipIndex?: boolean;
         [key: string]: any;
     }): Promise<Content | Content[]>;
     newContent(contentTypeID: string, values?: {

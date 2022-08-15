@@ -82,8 +82,8 @@ and how to recognize the classes.
             // Files in this list should be checked for tailwind classes.
             files: [
                 "./src/**/*.{html,js,svelte,ts}", // This line is default.
-                "./src/lib/sveltecms.config.{json,yml}",
-                "./src/content/**/*.{md,yml,json}",
+                "./src/sveltecms.config.{json,yml}",
+                "./content/**/*.{md,yml,json}",
             ],
             // The content.extract configuration tells Tailwind to use
             // the function defined above for .json, .yml, and .md files.

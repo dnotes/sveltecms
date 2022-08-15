@@ -14,7 +14,7 @@ declare type Hook = {
     weight?: number;
 };
 export declare type ContentPreWriteHook = Hook & {
-    fn: (content: Content, cms: SvelteCMS, options: {
+    fn: (content: Content, contentType: ContentType, cms: SvelteCMS, options: {
         [key: string]: any;
     }) => Promise<void>;
     type: 'contentPreSave' | 'contentPreDelete';

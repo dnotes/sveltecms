@@ -33,11 +33,14 @@ html {
 }
 
 .sveltecms input,
-.sveltecms select {
+.sveltecms select,
+.sveltecms textarea {
   background-color: var(--cms-background);
   color: var(--cms-text);
+  border: 1px solid var(--cms-main);
+  border-bottom-width: 2px;
+  padding: .2em .5em;
 }
-
 
 /* Helpers */
 .sveltecms .left, .sveltecms th { text-align:left; }

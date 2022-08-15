@@ -1,5 +1,4 @@
 <script>import Button from "sveltecms/ui/Button.svelte";
-export let cms;
 export let adminPath;
 export let basePath;
 export let data = [];

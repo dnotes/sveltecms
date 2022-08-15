@@ -5,7 +5,6 @@ export declare function getFs(databaseName: any): Promise<PromisifiedFS>;
 export declare const databaseNameField: ConfigFieldConfigSetting;
 export declare type staticFilesContentOptions = {
     contentDirectory: string;
-    prependContentTypeIdAs: "" | "directory" | "filename";
     fileExtension: "md" | "json" | "yml" | "yaml";
     markdownBodyField: string;
 };

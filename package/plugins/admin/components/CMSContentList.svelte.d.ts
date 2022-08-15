@@ -1,8 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from "sveltecms";
 declare const __propDef: {
     props: {
-        cms: SvelteCMS;
         adminPath: string;
         basePath: string;
         data?: any[];

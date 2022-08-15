@@ -5,8 +5,10 @@ import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
 import { findReferenceIndex } from 'sveltecms/utils';
 const fs = {};
+const allIndexes = import.meta.glob('/src/content/_*.index.json', { eager: true });
+const allContent = import.meta.glob('/src/content/*/**/*.{md,yml,yaml,json}', { as: 'raw' });
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
-function getBasedir() { return (isBrowser || isWebWorker) ? '' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/'); }
+function getBasedir() { return (isBrowser || isWebWorker) ? '/' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/'); }
 export async function getFs(databaseName) {
     if (fs[databaseName])
         return fs[databaseName];
@@ -34,23 +36,10 @@ export const databaseNameField = {
 export const staticFilesContentOptionFields = {
     contentDirectory: {
         type: 'text',
-        default: 'content',
-        helptext: 'The directory for local content files relative to the project root.',
-    },
-    prependContentTypeIdAs: {
-        type: 'text',
-        widget: {
-            type: 'select',
-            options: {
-                items: {
-                    '': 'None',
-                    'directory': 'Directory',
-                    'filename': 'Filename prefix'
-                },
-            },
-        },
-        default: 'directory',
-        helptext: 'Include the content type id as part of the path',
+        default: 'src/content',
+        helptext: 'The directory for local content files relative to the project root. ' +
+            'At the moment, this is hard-coded to "src/content", and changing it can break ' +
+            'listing and getting content for that Content Type during `vite build` processes.'
     },
     fileExtension: {
         type: 'text',
@@ -127,8 +116,6 @@ export async function parseFileStoreContentItem(_filepath, content, opts) {
 }
 export function getSlugFromFilepath(filepath, contentTypeID, opts) {
     let slug = filepath.replace(/.+\//, '').replace(/\.[^\.]*$/, '');
-    if (opts.prependContentTypeIdAs === 'filename' && slug.indexOf(contentTypeID) === 0)
-        slug = slug.slice(contentTypeID.length);
     return slug;
 }
 const plugin = {
@@ -138,56 +125,77 @@ const plugin = {
             id: 'staticFiles',
             optionFields: { databaseName: databaseNameField, ...staticFilesContentOptionFields },
             listContent: async (contentType, opts) => {
-                const fs = await getFs('opts.databaseName');
-                let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
-                    `${getBasedir()}/${opts.contentDirectory}/` + // base dir
-                        `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-                        `*.${opts.fileExtension}`; // file extensions
-                glob = glob.replace(/\/+/g, '/');
-                const { default: fg } = await import('fast-glob');
-                const items = await fg(glob);
-                if (!opts.full)
-                    return items.map(filepath => {
-                        return {
-                            _slug: getSlugFromFilepath(filepath, contentType.id, opts)
-                        };
-                    });
-                let files = await Promise.all(items.map(async (f) => {
-                    let item = await fs.readFile(f, { encoding: 'utf8' });
-                    return parseFileStoreContentItem(f, item, opts);
+                let type = contentType.id;
+                let index = allIndexes?.[type]?.default ?? [];
+                let content = [];
+                await Promise.all(Object.keys(allContent)
+                    .filter(path => path.indexOf(`/src/content/${type}/`) === 0)
+                    .map(path => async () => {
+                    if (opts.full)
+                        content.push(await parseFileStoreContentItem(path, await allContent[path](), opts));
+                    else {
+                        let slug = getSlugFromFilepath(path, type, opts);
+                        content.push(index.find(item => item._slug === slug) ?? { _type: type, _slug: slug });
+                    }
                 }));
-                return files;
+                if (!content.length) {
+                    try {
+                        const fs = await getFs('opts.databaseName');
+                        let glob = opts.glob ? `${getBasedir()}/${opts.glob}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/*.${opts.fileExtension}`;
+                        glob = glob.replace(/\/+/g, '/');
+                        const { default: fg } = await import('fast-glob');
+                        const paths = await fg(glob);
+                        await Promise.all(paths.map(path => async () => {
+                            if (opts.full)
+                                content.push(parseFileStoreContentItem(path, await allContent[path](), opts));
+                            else {
+                                let slug = getSlugFromFilepath(path, type, opts);
+                                content.push(index.find(item => item._slug === slug) ?? { _type: type, _slug: slug });
+                            }
+                        }));
+                    }
+                    catch (e) {
+                        console.error(`Error listing content for type "${contentType.id}": ${e.message}`);
+                    }
+                }
+                return content;
             },
             getContent: async (contentType, opts, slug = '') => {
                 slug = slug || opts.slug || '*';
-                const fs = await getFs('opts.databaseName');
-                let glob = opts.glob ? `${getBasedir()}/${opts.glob}` :
-                    `${getBasedir()}/${opts.contentDirectory}/` + // base dir
-                        `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-                        `${slug}.${opts.fileExtension}`; // file extensions
-                glob = glob.replace(/\/+/g, '/');
-                const { default: fg } = await import('fast-glob');
-                const items = await fg(glob);
-                const files = items.map(async (f) => {
-                    let item = await fs.readFile(f, { encoding: 'utf8' });
-                    return parseFileStoreContentItem(f, item, opts);
-                });
-                await Promise.all(files);
-                return files.length === 1 ? files[0] : files;
+                // Try to get with Vite
+                let filepath = `/src/content/${contentType?.id ?? contentType}/${slug}.${opts.fileExtension}`;
+                let item = allContent?.[filepath];
+                if (item) {
+                    let text = await item();
+                    let content = await parseFileStoreContentItem(filepath, text, opts);
+                    if (content)
+                        return content;
+                }
+                try {
+                    // This will happen if Vite is unavailable or if a non-existent slug is requested
+                    const fs = await getFs('opts.databaseName');
+                    let glob = opts.glob ? `${getBasedir()}/${opts.glob}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/*.${opts.fileExtension}`;
+                    glob = glob.replace(/\/+/g, '/');
+                    const { default: fg } = await import('fast-glob');
+                    const items = await fg(glob);
+                    const files = items.map(async (f) => {
+                        let item = await fs.readFile(f, { encoding: 'utf8' });
+                        return parseFileStoreContentItem(f, item, opts);
+                    });
+                    await Promise.all(files);
+                    return files.length === 1 ? files[0] : files;
+                }
+                catch (e) {
+                    console.error(`Error fetching content "${contentType.id}/${slug}": ${e.message}`);
+                }
+                return {};
             },
             saveContent: async (content, contentType, opts) => {
                 let slug = opts.slug ?? content._slug ?? content.slug;
                 if (!slug && !opts.filepath)
                     throw new Error(`Content to be saved must have a slug or a provided filepath: ${contentType.label}\n - opts.slug: ${opts.slug}\n - content._slug: ${content._slug}\n - content.slug: ${content.slug}`);
                 const fs = await getFs('opts.databaseName');
-                const base = `${getBasedir()}/${opts.contentDirectory}/`;
-                let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
-                    `${getBasedir()}/${opts.contentDirectory}/` + // base dir
-                        `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-                        `${slug}.${opts.fileExtension}`; // file extensions
+                let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/${slug}.${opts.fileExtension}`;
                 let body = '';
                 let saveContent = cloneDeep(content);
                 switch (opts.fileExtension) {
@@ -222,11 +230,7 @@ const plugin = {
                 if (!slug && !opts.filepath)
                     throw new Error(`Content to be deleted must have a slug or a provided filepath: ${contentType.label}`);
                 const fs = await getFs('opts.databaseName');
-                let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` :
-                    `${getBasedir()}/${opts.contentDirectory}/` + // base dir
-                        `${opts.prependContentTypeIdAs ? // content type, as directory or prefix
-                            contentType.id + (opts.prependContentTypeIdAs === 'directory' ? '/' : '_') : ''}` +
-                        `${slug}.${opts.fileExtension}`; // file extensions
+                let filepath = opts.filepath ? `${getBasedir()}/${opts.filepath}` : `${getBasedir()}/${opts.contentDirectory}/${contentType.id}/${slug}.${opts.fileExtension}`;
                 try {
                     await fs.unlink(filepath);
                     return content;
@@ -243,15 +247,13 @@ const plugin = {
             id: 'staticFiles',
             optionFields: {
                 databaseName: databaseNameField,
-                contentDirectory: {
-                    type: 'text',
-                    default: 'content',
-                    helptext: 'The directory for local content files relative to the project root.',
-                },
             },
             getIndex: async function (id) {
+                await allIndexes;
+                if (allIndexes?.[`/src/content/_${id}.index.json`])
+                    return allIndexes[`/src/content/_${id}.index.json`].default;
                 const fs = await getFs(this?.options?.databaseName);
-                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${id}.index.json`;
+                const filepath = `${getBasedir()}/src/content/_${id}.index.json`;
                 let index = [];
                 try {
                     // @ts-ignore This should be absolutely a string
@@ -293,7 +295,7 @@ const plugin = {
             },
             saveIndex: async function (id, index) {
                 const fs = await getFs(this?.options?.databaseName);
-                const filepath = `${getBasedir()}/${this?.options?.contentDirectory || 'content'}/_${id}.index.json`;
+                const filepath = `${getBasedir()}/src/content/_${id}.index.json`;
                 try {
                     return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]');
                 }

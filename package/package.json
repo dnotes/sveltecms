@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-yaml": "^3.1.0",
-    "@sveltejs/adapter-static": "^1.0.0-next.21",
+    "@sveltejs/adapter-static": "^1.0.0-next.39",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.4.0",
     "@tailwindcss/typography": "^0.5.2",
