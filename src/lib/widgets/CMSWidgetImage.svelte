@@ -25,7 +25,7 @@ let result
 
   //@ts-ignore
   let opts:{
-    accept:string
+    accept:string|string[]
     altField:boolean
     altRequired:boolean
     titleField:boolean

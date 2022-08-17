@@ -52,7 +52,7 @@ import Button from "sveltecms/ui/Button.svelte";
 
   //@ts-ignore
   let opts:{
-    accept:string
+    accept:string|string[]
     titleField:boolean
     attributionField:boolean
     attributionRequired:boolean
