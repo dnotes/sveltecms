@@ -409,7 +409,7 @@ const plugin = {
             optionFields: { databaseName: databaseNameField, ...staticFilesMediaOptionFields },
             saveMedia: async (file, opts) => {
                 // Check media for validity
-                let mediaTypes = opts.allowMediaTypes.split(/\s*,\s*/);
+                let mediaTypes = Array.isArray(opts.allowMediaTypes) ? opts.allowMediaTypes : opts.allowMediaTypes.split(/\s*,\s*/);
                 if (!mediaTypes.includes(file.type) && // exact type
                     !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type
                     !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension

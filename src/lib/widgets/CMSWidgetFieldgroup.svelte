@@ -35,7 +35,7 @@ const split = splitTags()
   let isSelectable = [...opts.fieldgroups, ...opts.fieldgroupTypes].length
 
   let label = parentField.label
-  $: if (parentField.multipleLabelFields && value) label = Array.isArray(parentField.multipleLabelFields) ?
+  $: if (parentField.multipleLabelFields?.['length'] && value) label = Array.isArray(parentField.multipleLabelFields) ?
     parentField.multipleLabelFields.map(s=>s?.toString()) :
     split(parentField?.multipleLabelFields?.toString()).map(id => get(value, id) ?? id).join(', ')
 

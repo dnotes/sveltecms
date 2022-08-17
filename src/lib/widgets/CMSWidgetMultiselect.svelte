@@ -1,25 +1,20 @@
 <script lang="ts">
 import type { WidgetField } from 'sveltecms'
-import type { Content } from 'sveltecms/core/ContentStore';
 import Tags from 'svelte-tags-input'
+import { getList } from 'sveltecms/utils';
 
   export let field:WidgetField
   export let id:string
 
-  export let value = field.default
-
-  let tags = Array.isArray(value) ? value : (
-    typeof value === 'undefined' || value === '' || value === null ? [] : [value]
-  )
+  export let value:string|number|Array<string|number> = field.default
 
   function handleTags(e) {
-    if (!field.multiple || (field.multipleOrSingle && e.detail?.tags?.length === 1)) value = tags[0]
-    else value = e.detail?.tags?.length ? tags : undefined
+    if (!field.multiple || (field.multipleOrSingle && e.detail?.tags?.length === 1)) value = typeof tags?.[0] === 'string' ? tags[0] : tags?.[0]?.value
+    else value = e.detail?.tags?.length ? tags.map(t => typeof t === 'string' ? t : t.value) : undefined
   }
 
-  //@ts-ignore
   let opts:{
-    items?:Array<string|number|Content> // autoComplete
+    items?:string[]|any // autoComplete
     restrictToItems?:boolean // onlyAutocomplete
     itemsFilter?:boolean
     placeholder?:string
@@ -30,6 +25,19 @@ import Tags from 'svelte-tags-input'
     allowDrop?:boolean
     splitWith?:string
   } = field.widget.options
+
+  let autoComplete = getList(opts.items)
+
+  let tags:Array<string|{value:any,label:any}> = Array.isArray(value)
+    ? value.map(v => v.toString()).map(v => autoComplete.find(item => item.value === v) ?? v)
+    : ((typeof value === 'undefined' || value === '' || value === null)
+      ? []
+      : [(autoComplete.find(item => item.value === value) ?? value.toString())]
+    )
+
+  // For script functions
+  $: opts = field.widget.options ?? {}
+  $: autoComplete = getList(opts.items)
 
 </script>
 
@@ -49,13 +57,14 @@ import Tags from 'svelte-tags-input'
     maxTags={field.multiple ? (field.multipleMax || false) : 1}
     allowBlur={opts.allowBlur}
     onlyUnique={opts.onlyUnique}
-    autoComplete={opts.items}
+    bind:autoComplete
+    autoCompleteKey='label'
     onlyAutocomplete={opts.restrictToItems}
     autoCompleteFilter={!opts.itemsFilter ? false : undefined}
-    minChars={opts.minChars}
+    minChars={opts.minChars.toString()}
     labelText={field.label}
   />
 </label>
 {#each tags as tag}
-  <input type="hidden" name="{id}" value="{tag}" />
+  <input type="hidden" name="{id}" value="{typeof tag === 'string' ? tag : tag.value}" />
 {/each}

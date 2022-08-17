@@ -42,7 +42,7 @@ import SlugConfig from 'sveltecms/core/Slug';
   function handleTags(e) {
     let tags = (e?.detail?.tags ?? []).map(item => (
       typeof item !== 'string' ? item : {
-        _type: opts.contentTypes[0],
+        _type: contentTypes[0],
         _slug: cms.getSlug({ [opts.displayKey]:item }, slugConfig, true ),
         [opts.displayKey]: item,
       }
@@ -54,7 +54,6 @@ import SlugConfig from 'sveltecms/core/Slug';
   onMount(async () => {
     autoComplete = async (value) => {
       let content = await cms.listContent(contentTypes, value)
-      console.log(cms)
       return content.filter(item => item._type !== field.values._type || item._slug !== field.values._slug)
     }
   })
@@ -74,7 +73,7 @@ import SlugConfig from 'sveltecms/core/Slug';
     maxTags={field.multiple ? (field.multipleMax || false) : 1}
     onlyUnique
     {autoComplete}
-    autocompleteFilter={false}
+    autoCompleteFilter={false}
     autoCompleteKey={opts.displayKey || '_slug'}
     onlyAutocomplete={(contentTypes.length === 1 && opts.freeTagging) ? false : true}
     allowBlur={opts.allowBlur}

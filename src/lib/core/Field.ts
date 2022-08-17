@@ -38,7 +38,7 @@ export type FieldConfigSetting = DisplayableEntityConfigSetting & {
 }
 
 export type ConfigFieldConfigSetting = Omit<FieldConfigSetting,"display|displayModes"> & {
-  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'entity'|'entityList'
+  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'entity'|'entityList'|'list'
   entity?: string
   default: any
   helptext: string
@@ -65,7 +65,7 @@ export const templateField:EntityTemplate = {
   typeRestricted: true,
   isConfigurable: true,
   isFieldable: true,
-  listFields: ['widget'],
+  listFields: ['widget','index'],
   scriptableProps:[
     'label','helptext','default','index',
     'multiple','multipleLabelFields','multipleMin','multipleMax',
@@ -85,10 +85,7 @@ export const templateField:EntityTemplate = {
         type: 'entity',
         options: {
           entityType: 'widget',
-          fieldType: {
-            function: 'getValue',
-            params: ['type'],
-          }
+          fieldType: '$values.type'
         },
       }
     },
@@ -184,6 +181,18 @@ export const templateField:EntityTemplate = {
       default: '',
       helptext: 'For fieldgroups, the fields to concatenate when creating a label for each item.',
       hidden: '$not($values.multiple)',
+    },
+    fields: {
+      type: 'entityList',
+      default: {},
+      helptext: '',
+      hidden: '$not($widgetHandles(fields))',
+      widget: {
+        type: 'entityList',
+        options: {
+          entityType: 'field',
+        }
+      }
     },
     preSave: {
       type: 'entity',

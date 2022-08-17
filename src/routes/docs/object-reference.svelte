@@ -1,6 +1,5 @@
 <script lang="ts">
   import cms from '$lib/cms'
-import A from '../[...path].svelte'
   import Table from './_object-reference-table.svelte'
   let items = Object.keys(cms.entityTypes)
     .sort()

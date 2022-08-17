@@ -65,7 +65,8 @@ import { pad, formatTimezoneOffset } from 'sveltecms/utils/date'
     minTime?:string,
     maxTime?:string,
     seconds?:boolean,
-  } = field.widget.options
+  }
+  $: opts = field.widget.options
 
 </script>
 

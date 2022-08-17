@@ -60,12 +60,12 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
     widget: {
       type: 'select',
       options: {
-        items: {
-          'md': '.md (Markdown)',
-          'json': '.json (JSON)',
-          'yml': '.yml (YAML)',
-          'yaml': '.yaml (YAML)',
-        }
+        items: [
+          'md:.md (Markdown)',
+          'json:.json (JSON)',
+          'yml:.yml (YAML)',
+          'yaml:.yaml (YAML)',
+        ]
       }
     },
     helptext: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',
@@ -80,7 +80,7 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
 export type staticFilesMediaOptions = {
   staticDirectory:string,
   mediaDirectory:string,
-  allowMediaTypes:string,
+  allowMediaTypes:string|string[],
   maxUploadSize:string,
 }
 
@@ -100,7 +100,7 @@ export const staticFilesMediaOptionFields:{[key:string]:ConfigFieldConfigSetting
     multiple: true,
     default: ['image/*'],
     widget: 'multiselect',
-    helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+    helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
   },
   maxUploadSize: {
     type: 'text',
@@ -452,7 +452,7 @@ const plugin:CMSPlugin = {
       saveMedia: async (file, opts:staticFilesMediaOptions) => {
 
         // Check media for validity
-        let mediaTypes = opts.allowMediaTypes.split(/\s*,\s*/)
+        let mediaTypes = Array.isArray(opts.allowMediaTypes) ? opts.allowMediaTypes : opts.allowMediaTypes.split(/\s*,\s*/)
         if (
           !mediaTypes.includes(file.type) && // exact type
           !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type

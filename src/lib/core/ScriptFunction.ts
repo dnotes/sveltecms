@@ -530,6 +530,44 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
       },
     }
   },
+  widgetHandles: {
+    id: 'widgetHandles',
+    admin: true,
+    fn: (vars, opts) => {
+      if (!vars.values?.widget) return false
+      let widgetRoot = vars.cms.getEntityRoot('widgets', vars.values.widget?.type ?? vars.values.widget)
+      switch (opts.handlesWhat) {
+        case 'fields': return widgetRoot.handlesFields
+        case 'media': return widgetRoot.handlesMedia
+        case 'multiple': return widgetRoot.handlesMultiple
+      }
+    },
+    optionFields: {
+      handlesWhat: {
+        type: 'text',
+        default: 'fields',
+        helptext: 'What to check the widget for handling',
+        widget: {
+          type: 'select',
+          items: ['fields', 'media', 'multiple']
+        }
+      }
+    }
+  },
+  debug: {
+    id: 'debug',
+    fn: (vars, opts) => {
+      console.log({ returnValue:opts.value, ...vars })
+      return opts.value
+    },
+    optionFields: {
+      value: {
+        type: 'text',
+        default: '',
+        helptext: 'The value to return after debugging.'
+      }
+    }
+  }
 }
 
 

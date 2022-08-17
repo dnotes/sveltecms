@@ -47,7 +47,10 @@ mediaStores:
   images:
     type: staticFiles
     mediaDirectory: images
-    allowMediaTypes: image/jpeg, image/png, image/gif
+    allowMediaTypes:
+      - image/jpeg
+      - image/png
+      - image/gif
   icons:
     type: staticFiles
     mediaDirectory: images/icons
@@ -117,10 +120,10 @@ fields:
     type: reference
     displayModes:
       page:
-        label: h4.border-t-2.pt-2
-        wrapper: ul
         type: >-
           li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
+        label: h4.border-t-2.pt-2
+        wrapper: ul
         link: true
     widget:
       type: reference
@@ -131,9 +134,9 @@ fields:
     type: reference
     displayModes:
       page:
+        type: li.list-none
         label: h4.border-t-2.pt-2
         wrapper: ul
-        type: li.list-none
         link: true
     widget:
       type: reference

@@ -1,4 +1,6 @@
 <script lang="ts">
+import { getList } from "sveltecms/utils/list";
+
 import type { WidgetField } from "..";
 
   export let field:WidgetField
@@ -8,12 +10,13 @@ import type { WidgetField } from "..";
 
   //@ts-ignore
   let opts:{
-    size:number,
-    unset:string,
-    items:string[]|{[key:string|number]:string}
+    size?:number,
+    unset?:string,
+    items?:string[]|any
   } = field.widget.options
 
-  $: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => { return [o,o] })) : opts.items
+  $: opts = field.widget.options
+  $: options = getList(opts.items)
 
 </script>
 
@@ -34,8 +37,8 @@ import type { WidgetField } from "..";
       {#if !field.required || opts.unset}
         <option value="">{opts.unset || '- none -'}</option>
       {/if}
-      {#each Object.entries(options || {}) as [value,title]}
-        <option {value}>{title}</option>
+      {#each options as {value,label}}
+        <option {value}>{label}</option>
       {/each}
     </select>
   </label>
@@ -55,8 +58,8 @@ import type { WidgetField } from "..";
       {#if !field.required || opts.unset}
         <option value="">{opts.unset || '- none -'}</option>
       {/if}
-      {#each Object.entries(options || {}) as [value,title]}
-        <option {value}>{title}</option>
+      {#each options as {value,label}}
+        <option {value}>{label}</option>
       {/each}
     </select>
   </label>

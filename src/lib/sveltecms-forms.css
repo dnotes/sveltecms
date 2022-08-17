@@ -60,7 +60,7 @@ html {
   border-color: var(--cms-main) !important;
 }
 .sveltecms ul.svelte-tags-input-matchs li:hover,
-.sveltecms ul.svelte-tags-input-matchs li:focus {
+.sveltecms ul.svelte-tags-input-matchs li.focus {
   background: var(--cms-main) !important;
   color: var(--cms-text) !important;
 }
@@ -209,6 +209,8 @@ html {
   display: flex;
   gap: 1em;
 }
+
+.sveltecms fieldset.multiple>div.multiple-item>label>span:first-child { display:none; }
 
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
 div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; max-height:100vh; }
