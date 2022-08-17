@@ -19,7 +19,6 @@ import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
 import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte"
 import CMSWidgetMultiselect from "sveltecms/widgets/CMSWidgetMultiselect.svelte"
-import CMSWidgetCalculated from "sveltecms/widgets/CMSWidgetCalculated.svelte"
 
 import SlugConfig from "./Slug"
 import { isReferenceString } from "sveltecms/utils"
@@ -462,9 +461,25 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   },
   value: {
     id:'value',
-    description: 'A hidden html input element holding a value.',
-    fieldTypes: ['value'],
+    description: 'This widget allows providing a calculated value using a Script Function. '+
+      'The value may be hidden or displayed during editing. THIS WIDGET DOES NOT PROVIDE SECURITY! '+
+      'Even if not displayed, this field and its value are still available in clients / browsers, '+
+      'and the value can still be modified before the form is submitted. NEVER expect this widget '+
+      'to keep sensitive data safe, and NEVER trust the data received from it without validating it.',
+    fieldTypes: ['text','date','html','fieldgroup','number','float','boolean','value'],
     widget: CMSWidgetValue,
+    optionFields: {
+      value: {
+        type: 'text',
+        default: '',
+        helptext: 'The value of the field. Use a Script Function to determine this based on other fields.',
+      },
+      display: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Can display the calculated value on the editing form in a disabled text field.',
+      }
+    }
   },
   reference: {
     id: 'reference',
@@ -656,19 +671,6 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       },
     }
   },
-  calculated: {
-    id: 'calculated',
-    description: 'This widget allows providing a calculated value using a Script Function.',
-    widget: CMSWidgetCalculated,
-    fieldTypes: ['text','date','html','fieldgroup','number','float','boolean','value'],
-    optionFields: {
-      value: {
-        type: 'text',
-        default: '',
-        helptext: 'The value of the field. Use a Script Function to determine this based on other fields.',
-      }
-    }
-  }
   // {
   //   id: 'options', // i.e. radios or checkboxes
   //   fieldTypes: 'text,number,date',

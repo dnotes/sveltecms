@@ -44,7 +44,7 @@ const pluginBuilder:CMSPluginBuilder = (config:{
       },
     ],
     fieldWidgets: {
-      markdown: ['textarea','calculated']
+      markdown: ['textarea','value']
     },
   }
   return plugin
