@@ -1,4 +1,5 @@
 <script>
+  import "sveltecms/sveltecms-forms.css";
   import "../app.css";
 </script>
 
@@ -19,7 +20,6 @@
 </div>
 
 <style>
-  @import "sveltecms/sveltecms-forms.css";
   #page {
     display: flex;
     flex-direction: column;
