@@ -16,21 +16,21 @@ export const adminPlugin:CMSPlugin = {
       default: undefined,
       multiple: true,
       widget: 'list',
-      display: '',
+      displays: 'none',
     },
     {
       id: 'entity',
       admin: true,
       default: undefined,
       widget: 'entity',
-      display: '',
+      displays: 'none',
     },
     {
       id: 'entityList',
       admin: true,
       default: undefined,
       widget: 'entityList',
-      display: '',
+      displays: 'none',
     },
   ],
   widgetTypes: [
@@ -68,7 +68,7 @@ export const adminPlugin:CMSPlugin = {
       id: 'entityList',
       fieldTypes: ['entityList'],
       admin: true,
-      description: `Form element for the configuration of a list of entities.`,
+      description: `List element for the configuration of a collection of entities.`,
       widget: CMSWidgetEntityList,
       optionFields: {
         entityType: {
@@ -78,7 +78,7 @@ export const adminPlugin:CMSPlugin = {
           helptext: 'The type of entity to be configured.',
         },
       }
-    }
+    },
   ]
 }
 

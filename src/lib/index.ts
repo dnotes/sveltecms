@@ -8,9 +8,9 @@ import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldg
 import { transformers, templateTransformer, type Transformer, type TransformerConfigSetting } from './core/Transformer'
 import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig, parseScript } from './core/ScriptFunction'
 import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
-import { displayComponents, templateDisplay, type DisplayConfigSetting } from 'sveltecms/core/Display'
+import { displayComponents, templateDisplay, type EntityDisplayConfigSetting, type EntityDisplayConfig, defaultDisplayModes, isDisplayConfig, type DisplayConfigSetting, type FullEntityDisplayConfig } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
-import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual } from 'lodash-es'
+import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual, merge, uniq } from 'lodash-es'
 import type { EntityTemplate } from './core/EntityTemplate'
 import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
@@ -79,20 +79,17 @@ export type FieldableEntityConfigSetting = {
 }
 
 export type DisplayableEntity = {
-  display?:string|false|DisplayConfigSetting
-  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  displays:EntityDisplayConfigSetting
   displayComponent?:Component
 }
 
 export type DisplayableEntityType = EntityType & {
-  display?:string|false|DisplayConfigSetting
-  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  displays:EntityDisplayConfigSetting
   displayComponent?:string
 }
 
 export type DisplayableEntityConfigSetting = {
-  display?:string|false|DisplayConfigSetting
-  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  displays?:EntityDisplayConfigSetting
 }
 
 export type EntityType = {
@@ -109,8 +106,7 @@ type CMSSettings = ConfigSetting & {
   indexer?:string|IndexerConfigSetting
   rootContentType?:string
   frontPageSlug?:string
-  defaultContentDisplay?:string|false|DisplayConfigSetting
-  defaultContentDisplayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  defaultContentDisplays?:EntityDisplayConfigSetting
 }
 
 export type CMSConfigSetting = {
@@ -160,6 +156,7 @@ export default class SvelteCMS {
   indexers:{[key:string]:IndexerType} = {}
   contentTypes:{[key:string]:ContentType} = {}
   defaultContentType: ContentType
+  defaultContentDisplays: FullEntityDisplayConfig
   lists:CMSListConfig = {}
   hooks:CMSHookFunctions = {
     contentPreSave: [],
@@ -169,6 +166,14 @@ export default class SvelteCMS {
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
     this.conf = conf
+    this.defaultContentDisplays = {
+      default: 'div',
+      page: 'div',
+      teaser: 'div',
+      reference: 'span',
+      ...this.parseEntityDisplayConfigSetting(conf?.settings?.defaultContentDisplays)
+    }
+
     this.use(staticFilesPlugin)
     displayComponents.forEach(c => {
       this.components[c.id] = c
@@ -236,8 +241,7 @@ export default class SvelteCMS {
     this.defaultContentType = new ContentType('default', {
       id: 'default',
       contentStore: '',
-      display: this.conf.settings.defaultContentDisplay || 'div',
-      displayModes: this.conf.settings.defaultContentDisplayModes || {},
+      displays: this.conf.settings.defaultContentDisplays || 'div',
       fields: Object.fromEntries(this.listEntities('field').map(id => {
         return [id, this.fields[id] || id]
       }))
@@ -997,6 +1001,19 @@ export default class SvelteCMS {
       }
     }
 
+    // ...add the "display" configuration if necessary...
+    if (entityType?.isDisplayable) configFields.displays = {
+      type: 'entityList',
+      default: undefined,
+      helptext: `The Display configuration for this ${entityType.label}.`,
+      widget: {
+        type: 'entityList',
+        options: {
+          entityType: 'display',
+        }
+      }
+    }
+
     // ...and get the root entity
     let entityRoot = this.getEntityRoot(type, id)
 
@@ -1080,6 +1097,46 @@ export default class SvelteCMS {
       })
     return this._scriptFunctionHelp
   }
+
+  get displayModes() {
+    return uniq([...defaultDisplayModes, ...Object.keys(this.defaultContentDisplays || {})])
+  }
+
+  /**
+   * Normalize the EntityDisplayConfigSetting into an object with any necessary display modes.
+   * @param {string|false|undefined|DisplayConfigSetting|{[id:string]:DisplayConfigSetting}} conf
+   *  The contents of the "displays" prop for a configurable object.
+   * @returns {EntityDisplayConfig}
+   * | Value type                         | Returns |
+   * | -----                              | ------- |
+   * | undefined                          | {}      |
+   * | string                             | { [(...cms.displayModes):string]:value } |
+   * | boolean                            | { [(...cms.displayModes):string]:value } |
+   * | {type:any,[id:string]:any}         | { [(...cms.displayModes):string]:value } |
+   * | {[id:string]:DisplayConfigSetting} | value |
+   */
+  parseEntityDisplayConfigSetting(conf:EntityDisplayConfigSetting):{[id:string]:DisplayConfigSetting} {
+
+    // If the conf is undefined, it shouldn't change other configurations
+    if (typeof conf === 'undefined') return {}
+
+    // @ts-ignore Edge case for manual config where someone types "displays: false"
+    if (typeof conf === 'boolean') conf = conf.toString()
+
+    // If the conf is a single display mode, it covers ALL display modes.
+    // @ts-ignore for some reason, the boolean check above causes typescript to complain about this, but I think it's right
+    if ( typeof conf === 'string' || isDisplayConfig(conf) ) return Object.fromEntries(this.displayModes.map(m => [m,conf]))
+
+    // If the conf has a default, it covers ALL display modes not overridden in the same conf.
+    if (conf.hasOwnProperty('default')) return Object.fromEntries(
+      this.displayModes.map(m => [m, conf[m] ?? conf['default']])
+    )
+
+    // Otherwise the config is already an EntityDisplayConfig
+    return conf
+
+  }
+
 }
 
 export type WidgetField = Field & {

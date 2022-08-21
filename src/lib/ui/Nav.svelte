@@ -50,10 +50,10 @@ import { getLabelFromID } from "sveltecms/utils";
     border-radius: 5px 5px 0 0;
     padding:2px 10px 4px;
     text-align:center;
-    color:var(--cms-background);
+    color:var(--cms-bg);
   }
   nav>a.active {
-    background:var(--cms-background);
+    background:var(--cms-bg);
     color:var(--cms-main);
   }
   .breadcrumbs a {

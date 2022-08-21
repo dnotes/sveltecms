@@ -7,7 +7,10 @@ import type { WidgetField } from 'sveltecms'
   export let value = field.default
 
   //@ts-ignore
-  let opts:{placeholder?:string} = field.widget.options
+  let opts:{
+    placeholder?:string
+    size?:number
+  } = field.widget.options
 
 </script>
 
@@ -21,6 +24,7 @@ import type { WidgetField } from 'sveltecms'
     type="text"
     bind:value
     placeholder="{opts?.placeholder ?? ''}"
+    size={opts.size}
     disabled={field.disabled}
     required={field.required}
   />

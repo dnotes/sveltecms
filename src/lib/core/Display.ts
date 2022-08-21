@@ -1,5 +1,4 @@
 import type { Component, ComponentType } from "sveltecms/core/Component"
-import type { ConfigurableEntityConfigSetting } from "sveltecms"
 
 import Image from "sveltecms/display/field/Image.svelte"
 import File from "sveltecms/display/field/File.svelte"
@@ -9,13 +8,36 @@ import DateSvelte from "sveltecms/display/field/Date.svelte"
 import type SvelteCMS from "sveltecms"
 import type { EntityTemplate } from "./EntityTemplate"
 
-export type DisplayConfigSetting = ConfigurableEntityConfigSetting & {
+export type DisplayConfig = {
   type: string      // either the html element for svelte:element, or a registered component
   wrapper?: string  // the wrapper element or registered component
   label?: string    // the label element or registered component
   html?: boolean    // if true, the item will be displayed as {@html}
   link?: boolean    // if true, the item will be wrapped in a link
 }
+export function isDisplayConfig(item:DisplayConfig|any): item is DisplayConfig {
+  return (<DisplayConfig>item)?.type !== undefined
+}
+
+export type DisplayConfigSetting = string|DisplayConfig
+
+export type EntityDisplayConfigSetting = DisplayConfigSetting|{[id:string]:DisplayConfigSetting}
+
+export type EntityDisplayConfig = {
+  [id:string]: DisplayConfigSetting
+}
+
+export type FullEntityDisplayConfig = EntityDisplayConfig & {
+  default: DisplayConfigSetting
+  page: DisplayConfigSetting
+  teaser: DisplayConfigSetting
+  reference: DisplayConfigSetting
+}
+
+export const defaultDisplayModes = ['default','page','teaser','reference']
+
+export const displayNoneKeywords = ['none','hidden','false']
+export function isDisplayNone(conf) { return (!conf || displayNoneKeywords.includes(conf)) ? true : false }
 
 export const templateDisplay:EntityTemplate = {
   id: 'display',
@@ -23,6 +45,7 @@ export const templateDisplay:EntityTemplate = {
   labelPlural: 'Displays',
   description: 'A Display configuration determines how SvelteCMS will display a field by default.',
   typeField: true,
+  listFields: ['wrapper','label','html','link'],
   configFields: {
     type: {
       type: 'text',
@@ -69,10 +92,10 @@ export class Display {
   id?: string
   classes?: string[]
 
-  constructor(conf:string|false|undefined|DisplayConfigSetting, cms:SvelteCMS) {
-    if (!conf) return
+  constructor(conf:DisplayConfigSetting, cms:SvelteCMS) {
+    if (!conf || isDisplayNone(conf)) return
     conf = typeof conf === 'string' ? { type:conf } : conf
-    if (!conf.type || ['none','hidden'].includes(conf.type)) return
+    if (isDisplayNone(conf.type)) return
     this.isDisplayed = true
     this.type = conf.type.trim()
     this.component = cms.getEntity('component', this.type)

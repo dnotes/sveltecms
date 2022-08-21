@@ -5,9 +5,8 @@ import { ContentStore, type ContentStoreConfigSetting, type Value } from 'svelte
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore'
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
-
 import { getLabelFromID, splitTags } from 'sveltecms/utils';
-import type { DisplayConfigSetting } from './Display';
+import type { EntityDisplayConfigSetting } from './Display';
 
 export const templateContentType:EntityTemplate = {
   id: 'contentType',
@@ -17,6 +16,8 @@ export const templateContentType:EntityTemplate = {
   typeField: false,
   isFieldable: true,
   isConfigurable: true,
+  isDisplayable: true,
+  listFields: ['contentStore','mediaStore','slug'],
   configFields: {
     label: {
       type: 'text',
@@ -59,29 +60,6 @@ export const templateContentType:EntityTemplate = {
         }
       }
     },
-    display: {
-      type: 'entity',
-      default: '',
-      helptext: '',
-      widget: {
-        type: 'entity',
-        options: {
-          entityType: 'display'
-        }
-      }
-    },
-    displayModes: {
-      type:'entityList',
-      default:{},
-      helptext:'Display configurations which override the default display for a display mode. '+
-        'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
-      widget: {
-        type: 'entityList',
-        options: {
-          entityType: 'display',
-        }
-      }
-    },
   }
 }
 
@@ -104,8 +82,7 @@ export class ContentType implements FieldableEntity, LabeledEntity, DisplayableE
   slug:SlugConfig
   contentStore:ContentStore
   mediaStore?:string|MediaStoreConfigSetting
-  display?:string|false|DisplayConfigSetting
-  displayModes?:{[key:string]:string|false|DisplayConfigSetting}
+  displays:EntityDisplayConfigSetting
   indexFields:string[]
   fields:{[key:string]:Field} = {}
   form: {
@@ -117,8 +94,7 @@ export class ContentType implements FieldableEntity, LabeledEntity, DisplayableE
     this.label = conf.label || getLabelFromID(this.id)
     this.contentStore = new ContentStore(conf?.contentStore, cms)
     this.mediaStore = conf.mediaStore
-    this.display = conf.display ?? cms.conf?.settings?.defaultContentDisplay ?? 'div'
-    this.displayModes = conf.displayModes ?? cms.conf?.settings?.defaultContentDisplayModes
+    this.displays = { ...cms.defaultContentDisplays, ...cms.parseEntityDisplayConfigSetting(conf.displays) }
     this.indexFields = []
     this.form = {
       method:conf?.form?.method,

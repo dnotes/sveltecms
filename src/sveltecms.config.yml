@@ -2,8 +2,8 @@ configPath: src/sveltecms.config.yml
 settings:
   rootContentType: landingPage
   frontPageSlug: front
-  defaultContentDisplay: div.prose.prose-xl.dark:prose-invert.mx-auto
-  defaultContentDisplayModes:
+  defaultContentDisplays:
+    default: div.prose.prose-xl.dark:prose-invert.mx-auto
     reference: span
     teaser: >-
       div.prose.prose-xl.dark:prose-invert.mx-auto.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
@@ -18,11 +18,13 @@ contentTypes:
       tags: tags
     label: ''
   landingPage:
-    display: content_LandingPage
+    displays:
+      default: none
+      page: content_LandingPage
     fields:
       title:
         type: title
-        display: none
+        displays: none
       slug: slug
       blocks:
         type: fieldgroup
@@ -60,10 +62,10 @@ fields:
     type: text
     index: true
     required: true
-    display:
-      type: span
-      link: true
-    displayModes:
+    displays:
+      default:
+        type: span
+        link: true
       teaser:
         type: h2.m-0.font-bold
         link: true
@@ -79,26 +81,26 @@ fields:
     widget: slideText
   slug:
     type: text
-    display: none
+    displays: none
   h1:
     type: text
-    display: h1
+    displays: h1
   image:
     type: image
     index: true
     mediaStore: images
-    displayModes:
+    displays:
       teaser: >-
         div.w-36.h-28.float-left.pr-4.m-0.not-prose.overflow-hidden.drop-shadow-xl
   style:
     type: text
-    display: none
+    displays: none
     helptext: |-
       This value will go within a style tag.
       Example: "top:5%; width:30%; text-align:center;"
   button:
     type: fieldgroup
-    display: element_Button
+    displays: element_Button
     fields:
       href:
         type: text
@@ -118,7 +120,7 @@ fields:
           over the element.
   tags:
     type: reference
-    displayModes:
+    displays:
       page:
         type: >-
           li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
@@ -132,7 +134,7 @@ fields:
       freeTagging: true
   taggedContent:
     type: reference
-    displayModes:
+    displays:
       page:
         type: li.list-none
         label: h4.border-t-2.pt-2

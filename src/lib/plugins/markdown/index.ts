@@ -36,7 +36,7 @@ const pluginBuilder:CMSPluginBuilder = (config:{
         id: 'markdown',
         default: '',
         widget: 'textarea',
-        display: {
+        displays: {
           type: 'div',
           html: true,
         },

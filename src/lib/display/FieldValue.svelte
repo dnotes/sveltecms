@@ -16,7 +16,7 @@ import Wrapper from "./Wrapper.svelte";
   let display:Display
 
   $: items = Array.isArray(item) ? item : [item]
-  $: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? false, cms)
+  $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms)
 
 </script>
 

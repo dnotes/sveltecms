@@ -120,13 +120,13 @@ const split = splitTags()
 <style global>
   .sveltecms fieldset.fieldgroup>.fieldgroup-type {
     background: var(--cms-main);
-    color: var(--cms-background);
+    color: var(--cms-bg);
   }
   .sveltecms fieldset.fieldgroup {
     background: var(--cms-main);
   }
   .sveltecms fieldset.fieldgroup .field {
-    background: var(--cms-background);
+    background: var(--cms-bg);
   }
   .sveltecms fieldset.fieldgroup.collapsed {
     background: transparent;

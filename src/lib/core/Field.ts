@@ -5,7 +5,7 @@ import type ContentType from 'sveltecms/core/ContentType'
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore"
 import { parseScript, type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction'
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget'
-import type { DisplayConfigSetting } from './Display'
+import type { EntityDisplayConfigSetting } from './Display'
 
 import { getLabelFromID, splitTags } from 'sveltecms/utils'
 import type { EntityTemplate } from './EntityTemplate'
@@ -64,8 +64,9 @@ export const templateField:EntityTemplate = {
   typeRequired: true,
   typeRestricted: true,
   isConfigurable: true,
+  isDisplayable: true,
   isFieldable: true,
-  listFields: ['widget','index'],
+  listFields: ['widget','index','required','multiple'],
   scriptableProps:[
     'label','helptext','default','index',
     'multiple','multipleLabelFields','multipleMin','multipleMax',
@@ -91,31 +92,9 @@ export const templateField:EntityTemplate = {
     },
     index: {
       type: 'boolean',
+      label: 'Index',
       default: false,
       helptext: 'Whether the field data should be indexed.',
-    },
-    display: {
-      type:'entity',
-      default:'',
-      helptext:'The element or component used to display this field.',
-      widget: {
-        type: 'entity',
-        options: {
-          entityType: 'display',
-        },
-      }
-    },
-    displayModes: {
-      type:'entityList',
-      default:{},
-      helptext:'Display configurations which override the default display for a display mode. '+
-        'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
-      widget: {
-        type: 'entityList',
-        options: {
-          entityType: 'display',
-        }
-      }
     },
     mediaStore: {
       type:'entity',
@@ -140,21 +119,25 @@ export const templateField:EntityTemplate = {
     },
     required: {
       type: 'boolean',
+      label: 'Req​uired',
       default: false,
       helptext: 'Whether the field is required.'
     },
     hidden: {
       type: 'boolean',
+      label: 'Hid​den',
       default: false,
       helptext: 'Whether the field is hidden.'
     },
     disabled: {
       type: 'boolean',
+      label: 'Dis​abled',
       default: false,
       helptext: 'Whether the field is disabled.'
     },
     multiple: {
       type: 'boolean',
+      label: 'Mult​iple',
       default: false,
       helptext: 'Whether the field takes multiple values.'
     },
@@ -220,7 +203,6 @@ export const templateField:EntityTemplate = {
         }
       }
     },
-
   }
 }
 
@@ -255,8 +237,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
   // validator?: Rules
   fields?: {[key:string]:Field}
   widget: Widget
-  display?: string|false|DisplayConfigSetting
-  displayModes?: { [key: string]: string|false|DisplayConfigSetting }
+  displays: EntityDisplayConfigSetting
   preSave?: (string|TransformerConfigSetting)[]
   preMount?: (string|TransformerConfigSetting)[]
   mediaStore?: MediaStore
@@ -305,8 +286,9 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false)
       this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false)
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
-      this.display = conf.display ?? fieldType.display
-      this.displayModes = Object.assign({}, fieldType.displayModes || {}, conf.displayModes || {})
+
+      this.displays = { default:'none', ...cms.parseEntityDisplayConfigSetting(fieldType.displays), ...cms.parseEntityDisplayConfigSetting(conf.displays) }
+
       if (fieldType.displayComponent) this.displayComponent = cms.getEntity('components', fieldType.displayComponent)
 
       // this.validator = conf.validator ?? fieldType.defaultValidator
@@ -334,7 +316,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'text',
     default: '',
     widget: 'text',
-    display: 'span',
+    displays: 'span',
     preSave: ['toString'],
   },
   date: {
@@ -342,28 +324,28 @@ export const fieldTypes:{[key:string]:FieldType} = {
     default: '',
     widget: 'date',
     preSave: ['date'],
-    display: 'span',
+    displays: 'span',
     displayComponent: 'sveltecms/display/field/Date'
   },
   image: {
     id: 'image',
     default: [],
     widget: 'image',
-    display: 'div',
+    displays: 'div',
     displayComponent: 'sveltecms/display/field/Image' // These must be registered as admin components. See sveltecms/core/Display.ts.
   },
   file: {
     id: 'file',
     default: [],
     widget: 'file',
-    display: 'div',
+    displays: 'span',
     displayComponent: 'sveltecms/display/field/File'
   },
   html: {
     id: 'html',
     default: '',
     widget: 'textarea',
-    display: {
+    displays: {
       type: 'div',
       html: true
     },
@@ -373,43 +355,43 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'fieldgroup',
     default: {},
     widget: 'fieldgroup',
-    display: 'div',
+    displays: 'div',
     displayComponent: 'sveltecms/display/field/Fieldgroup',
   },
   number: {
     id: 'number',
     default: undefined,
     widget: 'number',
-    display: 'span',
+    displays: 'span',
     preSave: ['parseInt'],
   },
   float: {
     id: 'float',
     default: undefined,
     widget: 'text',
-    display: 'span',
+    displays: 'span',
     preSave: ['parseFloat'],
   },
   boolean: {
     id: 'boolean',
     default: undefined,
     widget: 'checkbox',
-    display: 'span',
+    displays: 'span',
     preSave: ['boolean'],
   },
   value: {
     id: 'value',
     default: undefined,
     widget: 'value',
-    display: '',
+    displays: 'span',
   },
   reference: {
     id: 'reference',
     default: [],
     widget: 'reference',
     multiple: true,
-    display: false,
-    displayModes: {
+    displays: {
+      default: 'none',
       page: {
         wrapper: 'ul',
         type: 'li',

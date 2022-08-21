@@ -17,7 +17,7 @@ let fieldlist:[string,Field][]
 let displays:{[id:string]:Display}
 
 $: fieldlist = Object.entries(entity?.fields || {})
-$: displays = Object.fromEntries(fieldlist.map(([id,field]) => ([id, new Display(field?.displayModes?.[displayMode] ?? field?.display, cms)])))
+$: displays = Object.fromEntries(fieldlist.map(([id,field]) => ([id, new Display(field?.displays?.[displayMode] ?? field?.displays?.['default'], cms)])))
 
 </script>
 
