@@ -1,6 +1,6 @@
 import type { FieldableEntityConfigSetting, EntityType, FieldableEntity, DisplayableEntity, DisplayableEntityConfigSetting } from "sveltecms";
 import type SvelteCMS from "sveltecms";
-import type { DisplayConfigSetting } from "./Display";
+import type { EntityDisplayConfigSetting } from "./Display";
 import type { EntityTemplate } from "./EntityTemplate";
 import Field, { type ConfigFieldConfigSetting } from "./Field";
 export declare type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & DisplayableEntityConfigSetting & {
@@ -19,10 +19,7 @@ export declare class Fieldgroup implements EntityType, FieldableEntity, Displaya
     type: string;
     admin?: boolean;
     plugin?: string;
-    display?: string | false | DisplayConfigSetting;
-    displayModes: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    displays: EntityDisplayConfigSetting;
     isFieldable: boolean;
     fields: {
         [id: string]: Field;

@@ -60,12 +60,18 @@ export const transformers = {
     parseInt: {
         id: 'parseInt',
         description: 'Converts a Field value to a number using parseInt.',
-        fn: (v) => parseInt(v)
+        fn: (v) => {
+            let value = parseInt(v);
+            return Number.isNaN(value) ? undefined : value;
+        }
     },
     parseFloat: {
         id: 'parseFloat',
         description: 'Converts a Field value to a number using parseFloat.',
-        fn: (v) => parseFloat(v)
+        fn: (v) => {
+            let value = parseFloat(v);
+            return Number.isNaN(value) ? undefined : value;
+        }
     },
     delete: {
         id: 'delete',

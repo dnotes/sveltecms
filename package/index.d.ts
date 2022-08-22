@@ -8,7 +8,7 @@ import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldg
 import { type Transformer, type TransformerConfigSetting } from './core/Transformer';
 import { type ScriptFunctionType, type ScriptFunctionConfig } from './core/ScriptFunction';
 import { type ComponentType, type ComponentConfigSetting, type Component } from 'sveltecms/core/Component';
-import { type DisplayConfigSetting } from 'sveltecms/core/Display';
+import { type EntityDisplayConfigSetting, type DisplayConfigSetting, type FullEntityDisplayConfig } from 'sveltecms/core/Display';
 import type { EntityTemplate } from './core/EntityTemplate';
 import SlugConfig from './core/Slug';
 import { Indexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer';
@@ -51,24 +51,15 @@ export declare type FieldableEntityConfigSetting = {
     };
 };
 export declare type DisplayableEntity = {
-    display?: string | false | DisplayConfigSetting;
-    displayModes?: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    displays: EntityDisplayConfigSetting;
     displayComponent?: Component;
 };
 export declare type DisplayableEntityType = EntityType & {
-    display?: string | false | DisplayConfigSetting;
-    displayModes?: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    displays: EntityDisplayConfigSetting;
     displayComponent?: string;
 };
 export declare type DisplayableEntityConfigSetting = {
-    display?: string | false | DisplayConfigSetting;
-    displayModes?: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    displays?: EntityDisplayConfigSetting;
 };
 export declare type EntityType = {
     id: string;
@@ -84,10 +75,7 @@ declare type CMSSettings = ConfigSetting & {
     indexer?: string | IndexerConfigSetting;
     rootContentType?: string;
     frontPageSlug?: string;
-    defaultContentDisplay?: string | false | DisplayConfigSetting;
-    defaultContentDisplayModes?: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    defaultContentDisplays?: EntityDisplayConfigSetting;
 };
 export declare type CMSConfigSetting = {
     configPath?: string;
@@ -195,6 +183,7 @@ export default class SvelteCMS {
         [key: string]: ContentType;
     };
     defaultContentType: ContentType;
+    defaultContentDisplays: FullEntityDisplayConfig;
     lists: CMSListConfig;
     hooks: CMSHookFunctions;
     constructor(conf: CMSConfigSetting, plugins?: CMSPlugin[]);
@@ -337,6 +326,23 @@ export default class SvelteCMS {
             helptext: string;
         }>;
     }>;
+    get displayModes(): string[];
+    /**
+     * Normalize the EntityDisplayConfigSetting into an object with any necessary display modes.
+     * @param {string|false|undefined|DisplayConfigSetting|{[id:string]:DisplayConfigSetting}} conf
+     *  The contents of the "displays" prop for a configurable object.
+     * @returns {EntityDisplayConfig}
+     * | Value type                         | Returns |
+     * | -----                              | ------- |
+     * | undefined                          | {}      |
+     * | string                             | { [(...cms.displayModes):string]:value } |
+     * | boolean                            | { [(...cms.displayModes):string]:value } |
+     * | {type:any,[id:string]:any}         | { [(...cms.displayModes):string]:value } |
+     * | {[id:string]:DisplayConfigSetting} | value |
+     */
+    parseEntityDisplayConfigSetting(conf: EntityDisplayConfigSetting): {
+        [id: string]: DisplayConfigSetting;
+    };
 }
 export declare type WidgetField = Field & {
     label: string;

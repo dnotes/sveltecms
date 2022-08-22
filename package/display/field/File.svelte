@@ -6,7 +6,7 @@ export let item;
 export let displayMode;
 $: filepath = typeof item === 'string' ? item : item.src;
 $: filename = filepath.replace(/.+\//, '');
-$: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms);
+$: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms);
 </script>
 
 {#if filepath}

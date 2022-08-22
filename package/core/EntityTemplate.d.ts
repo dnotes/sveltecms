@@ -9,6 +9,7 @@ export declare type EntityTemplate = {
     typeRequired?: boolean;
     typeRestricted?: boolean;
     isConfigurable?: boolean;
+    isDisplayable?: boolean;
     listFields?: string[];
     isFieldable?: boolean;
     scriptableProps?: string[];

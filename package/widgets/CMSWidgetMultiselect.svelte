@@ -1,16 +1,24 @@
 <script>import Tags from 'svelte-tags-input';
+import { getList } from 'sveltecms/utils';
 export let field;
 export let id;
 export let value = field.default;
-let tags = Array.isArray(value) ? value : (typeof value === 'undefined' || value === '' || value === null ? [] : [value]);
 function handleTags(e) {
     if (!field.multiple || (field.multipleOrSingle && e.detail?.tags?.length === 1))
-        value = tags[0];
+        value = typeof tags?.[0] === 'string' ? tags[0] : tags?.[0]?.value;
     else
-        value = e.detail?.tags?.length ? tags : undefined;
+        value = e.detail?.tags?.length ? tags.map(t => typeof t === 'string' ? t : t.value) : undefined;
 }
-//@ts-ignore
 let opts = field.widget.options;
+let autoComplete = getList(opts.items);
+let tags = Array.isArray(value)
+    ? value.map(v => v.toString()).map(v => autoComplete.find(item => item.value === v) ?? v)
+    : ((typeof value === 'undefined' || value === '' || value === null)
+        ? []
+        : [(autoComplete.find(item => item.value === value) ?? value.toString())]);
+// For script functions
+$: opts = field.widget.options ?? {};
+$: autoComplete = getList(opts.items);
 </script>
 
 <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -29,13 +37,14 @@ let opts = field.widget.options;
     maxTags={field.multiple ? (field.multipleMax || false) : 1}
     allowBlur={opts.allowBlur}
     onlyUnique={opts.onlyUnique}
-    autoComplete={opts.items}
+    bind:autoComplete
+    autoCompleteKey='label'
     onlyAutocomplete={opts.restrictToItems}
     autoCompleteFilter={!opts.itemsFilter ? false : undefined}
-    minChars={opts.minChars}
+    minChars={opts.minChars.toString()}
     labelText={field.label}
   />
 </label>
 {#each tags as tag}
-  <input type="hidden" name="{id}" value="{tag}" />
+  <input type="hidden" name="{id}" value="{typeof tag === 'string' ? tag : tag.value}" />
 {/each}

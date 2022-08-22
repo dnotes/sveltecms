@@ -1,28 +1,29 @@
 <script>import { tick } from "svelte";
+import { page } from "$app/stores";
 import CmsWidgetEntity from "sveltecms/plugins/admin/widgets/CMSWidgetEntity.svelte";
 import Button from "sveltecms/ui/Button.svelte";
 import Modal from "sveltecms/ui/Modal.svelte";
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
+import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte";
 export let cms;
 export let id;
 export let field = undefined;
 export let value;
 // @ts-ignore
-export let options = field?.widget?.options || {};
+export let options = field?.widget?.options;
 let opts = Object.assign({}, options);
 let entityType = cms.getEntityType(opts.entityType);
 let items = Object.entries(value || {});
-let collapsedItems = items.map(i => true);
 let addIDEl;
 let newEntityID;
 let newEntityType;
 let newEntityTypeList = cms.listEntities(entityType.id);
+let section = $page.url.searchParams.get('section') || 'config';
 export function addEntity(id) {
     items = [...items, [id, id]];
 }
 async function addItem() {
     if (newEntityID) {
-        collapsedItems[items.length] = true;
         items.push([newEntityID, newEntityType]);
         items = items;
         await tick();
@@ -39,48 +40,53 @@ function removeItem(i) {
 }
 // Variables for the remove item modal
 let confirmRemove;
-function resetItem(i) {
-    items[i][1] = items[i][0];
-}
 $: value = items.length ? Object.fromEntries(items) : undefined;
 </script>
 
-<fieldset class="multiple">
-  <legend>{field?.label || entityType?.labelPlural || `Can't find entity type`}</legend>
+
+<fieldset class="entitylist {entityType.isDisplayable ? section : 'config'}">
+  <legend>
+    {#if opts.isTopLevelEntity}
+      <h2>Configure {entityType.labelPlural || '[unknown entity type]s'}</h2>
+    {:else}
+      {field?.label || entityType?.labelPlural || `Can't find entity type`}
+    {/if}
+    {#if entityType.isDisplayable}
+      <EntityListSectionToggle bind:section />
+    {/if}
+  </legend>
   {#each items as [entityID, value], i}
-    <div class="multiple-item">
+    <div>
       <CmsWidgetEntity
         bind:value
         bind:entityID
         {cms}
         {id}
-        collapsed={collapsedItems[i]}
         options={{ entityType:opts.entityType, isTopLevelEntity:opts.isTopLevelEntity }}
-      />
-      <div class="delete">
-        <Button cancel
-          helptext="{collapsedItems[i] ? 'Show' : 'Hide'} this {entityType.label}"
-          on:click={() => { collapsedItems[i] = !collapsedItems[i] }}>{#if collapsedItems[i]}&ltri;{:else}&dtri;{/if}</Button>
-        <Button cancel
-          helptext="Remove this {entityType.label}"
-          on:click={(e) => { items.splice(i,1); items=items; }}>&times;</Button>
-      </div>
+      >
+      <Button cancel
+        helptext="Remove this {entityType.label}"
+        on:click={(e) => { items.splice(i,1); items=items; }}>&times;</Button>
+      </CmsWidgetEntity>
     </div>
   {/each}
-  <div class="multiple-item">
-    <fieldset class="fieldgroup collapsed">
-      <legend>
-        <label><em>{entityType.label || 'unknown entity'} &nbsp;</em>
-          <input
-            type="text"
-            name="_new[id]"
-            size=8
-            bind:this={addIDEl}
-            bind:value={newEntityID}
-          >
-        </label>
+  <div class="add">
+    <div class="field">
+      <label>
+        <input
+          type="text"
+          name="_new[id]"
+          size=8
+          bind:this={addIDEl}
+          bind:value={newEntityID}
+        >
+      </label>
+    </div>
 
-        {#if entityType.typeField}
+    {#if entityType.typeField}
+      <div class="field">
+        <!-- svelte-ignore a11y-label-has-associated-control -->
+        <label>
           <CmsWidgetEntityTypeField
             {entityType}
             id="_new[type]"
@@ -89,10 +95,12 @@ $: value = items.length ? Object.fromEntries(items) : undefined;
             required={false}
             unset="choose"
           />
-        {/if}
-        <Button primary disabled={!newEntityID || (entityType.typeField && !newEntityType)} on:click={addItem}>+ add</Button>
-      </legend>
-    </fieldset>
+        </label>
+      </div>
+    {/if}
+    <div class="cell">
+      <Button primary disabled={!newEntityID || (entityType.typeField && !newEntityType)} on:click={addItem}>+ add {entityType.label}</Button>
+    </div>
   </div>
 </fieldset>
 
@@ -107,3 +115,82 @@ $: value = items.length ? Object.fromEntries(items) : undefined;
   </Modal>
 {/if}
 
+<style global>
+
+  /* Table layout */
+  :global(.sveltecms) :global(.entitylist) {
+    min-width:0;
+    max-width:100%;
+    overflow-x:scroll;
+  }
+  :global(.sveltecms) :global(.entitylist)>:global(div) {
+    display:flex;
+    min-width:-webkit-max-content;
+    min-width:-moz-max-content;
+    min-width:max-content;
+    border: 1px solid var(--cms-border);
+  }
+  :global(.sveltecms) :global(.entitylist)>:global(div.add) {
+    border:none;
+  }
+
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field)>:global(label)>:global(span),
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field)>:global(div.cms-helptext) {
+    display:none;
+  }
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field),
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.cell) {
+    padding: .2em .5em;
+    width:-webkit-max-content;
+    width:-moz-max-content;
+    width:max-content;
+    position: relative;
+    border-left: 2px solid var(--cms-border);
+    display: flex;
+    align-items: center;
+  }
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div)>:global(label) {
+    display: flex;
+    align-items: center;
+  }
+
+  :global(.sveltecms) :global(.entitylist)>:global(div.add)>:global(div.field) {
+    background: var(--cms-border);
+  }
+
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field)>:global(label)>:global(input),
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field)>:global(label)>:global(select),
+  :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field)>:global(label)>:global(textarea)
+  {
+    border: none;
+    max-width: 9em;
+  }
+
+
+  /* Sections (config / display) */
+  :global(.sveltecms) :global(.entitylist.config)>:global(div)>:global(div.field.display) {
+    display:none;
+  }
+  :global(.sveltecms) :global(.entitylist.display)>:global(div)>:global(div.field.config) {
+    display:none;
+  }
+
+
+
+  /* The "column" headings */
+  :global(.sveltecms) :global(.entitylist)>:global(div:nth-child(2)) {
+    margin-top: 1.4em;
+  }
+  :global(.sveltecms) :global(.entitylist)>:global(div:nth-child(2))>:global(div.field)>:global(label)>:global(span) {
+    display:block;
+    position:absolute;
+    overflow-x:visible;
+    overflow-y:hidden;
+    line-height:1.2em;
+    height:1.2em;
+    top:-2em;
+    left:50%;
+    transform:translateX(-50%);
+    font-family: 'Arial Narrow', Arial, sans-serif;
+    text-align: center;
+  }</style>

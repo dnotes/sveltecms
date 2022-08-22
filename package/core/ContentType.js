@@ -10,6 +10,8 @@ export const templateContentType = {
     typeField: false,
     isFieldable: true,
     isConfigurable: true,
+    isDisplayable: true,
+    listFields: ['contentStore', 'mediaStore', 'slug'],
     configFields: {
         label: {
             type: 'text',
@@ -52,29 +54,6 @@ export const templateContentType = {
                 }
             }
         },
-        display: {
-            type: 'entity',
-            default: '',
-            helptext: '',
-            widget: {
-                type: 'entity',
-                options: {
-                    entityType: 'display'
-                }
-            }
-        },
-        displayModes: {
-            type: 'entityList',
-            default: {},
-            helptext: 'Display configurations which override the default display for a display mode. ' +
-                'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
-            widget: {
-                type: 'entityList',
-                options: {
-                    entityType: 'display',
-                }
-            }
-        },
     }
 };
 export class ContentType {
@@ -86,8 +65,7 @@ export class ContentType {
         this.label = conf.label || getLabelFromID(this.id);
         this.contentStore = new ContentStore(conf?.contentStore, cms);
         this.mediaStore = conf.mediaStore;
-        this.display = conf.display ?? cms.conf?.settings?.defaultContentDisplay ?? 'div';
-        this.displayModes = conf.displayModes ?? cms.conf?.settings?.defaultContentDisplayModes;
+        this.displays = { ...cms.defaultContentDisplays, ...cms.parseEntityDisplayConfigSetting(conf.displays) };
         this.indexFields = [];
         this.form = {
             method: conf?.form?.method,

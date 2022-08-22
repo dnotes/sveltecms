@@ -4,7 +4,7 @@ declare const __propDef: {
     props: {
         field: WidgetField;
         id: string;
-        value?: any;
+        value?: number;
     };
     events: {
         [evt: string]: CustomEvent<any>;

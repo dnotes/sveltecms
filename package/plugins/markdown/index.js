@@ -26,7 +26,7 @@ const pluginBuilder = (config) => {
                 id: 'markdown',
                 default: '',
                 widget: 'textarea',
-                display: {
+                displays: {
                     type: 'div',
                     html: true,
                 },
@@ -34,7 +34,7 @@ const pluginBuilder = (config) => {
             },
         ],
         fieldWidgets: {
-            markdown: ['textarea', 'calculated']
+            markdown: ['textarea', 'value']
         },
     };
     return plugin;

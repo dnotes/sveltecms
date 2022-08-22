@@ -13,7 +13,6 @@ import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte';
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte";
 import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte";
 import CMSWidgetMultiselect from "sveltecms/widgets/CMSWidgetMultiselect.svelte";
-import CMSWidgetCalculated from "sveltecms/widgets/CMSWidgetCalculated.svelte";
 import SlugConfig from "./Slug";
 import { isReferenceString } from "sveltecms/utils";
 export const templateWidget = {
@@ -127,13 +126,31 @@ export const widgetTypes = {
             },
             max: {
                 type: 'number',
-                default: undefined,
+                default: 5,
                 helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
             },
             step: {
                 type: 'number',
                 default: 1,
                 helptext: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
+            },
+            showValue: {
+                type: 'boolean',
+                default: true,
+                helptext: 'Whether to show the exact value while editing.',
+            },
+            showScale: {
+                type: 'boolean',
+                default: true,
+                helptext: 'Whether to show min and max values when editing.',
+            },
+            items: {
+                type: 'list',
+                label: 'Context Items',
+                default: [],
+                helptext: `Text values that correspond to a certain value or range of values, ` +
+                    `similar to value:label items for a select input. ` +
+                    `The list must be keyed with numbers, e.g. "0:low", "3:medium", "8:high".`,
             },
         }
     },
@@ -156,20 +173,18 @@ export const widgetTypes = {
                     type: 'select',
                     default: 'editable',
                     unset: '- none - ',
-                    items: {
-                        'hidden': 'Hidden',
-                        'editable': 'Editable',
-                        'timeonly': 'Time only (no date)',
-                    },
+                    items: [
+                        'hidden:Hidden',
+                        'editable:Editable',
+                        'timeonly:Time only (no date)',
+                    ],
                 }
             },
             minDate: {
                 type: 'date',
                 widget: {
                     type: 'date',
-                    options: {
-                        time: '',
-                    }
+                    time: '',
                 },
                 default: '',
                 helptext: 'The earliest date allowable.',
@@ -179,9 +194,7 @@ export const widgetTypes = {
                 type: 'date',
                 widget: {
                     type: 'date',
-                    options: {
-                        time: '',
-                    }
+                    time: '',
                 },
                 default: '',
                 helptext: 'The latest date allowable.',
@@ -198,9 +211,8 @@ export const widgetTypes = {
                 type: 'date',
                 widget: {
                     type: 'date',
-                    options: {
-                        time: 'timeonly',
-                    }
+                    time: 'timeonly',
+                    seconds: '$if($values.seconds)'
                 },
                 default: '',
                 helptext: 'The earliest time allowed.',
@@ -210,9 +222,8 @@ export const widgetTypes = {
                 type: 'date',
                 widget: {
                     type: 'date',
-                    options: {
-                        time: 'timeonly',
-                    }
+                    time: 'timeonly',
+                    seconds: '$values.seconds',
                 },
                 default: '',
                 helptext: 'The latest time allowed.',
@@ -311,7 +322,8 @@ export const widgetTypes = {
                 multiple: true,
                 default: 'image/*',
                 widget: {
-                    type: 'multiselect'
+                    type: 'multiselect',
+                    allowBlur: true,
                 },
                 helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
             },
@@ -353,7 +365,8 @@ export const widgetTypes = {
             accept: {
                 type: 'text',
                 default: undefined,
-                helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+                widget: 'multiselect',
+                helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
             },
             storeStats: {
                 type: 'boolean',
@@ -398,40 +411,37 @@ export const widgetTypes = {
             unset: {
                 type: 'text',
                 default: '',
-                helptext: 'The title text to use for a blank entry. If this is provided, or if the field is not required, a blank value will be available. The default title for the blank value is "- none -".'
+                helptext: 'The title text to use for a blank entry. If this is provided, or if the field is not ' +
+                    'required, a blank value will be available. The default title for the blank value is "- none -".',
             },
             items: {
-                type: 'fieldgroup',
-                helptext: '',
-                multiple: true,
-                default: {},
-                widget: {
-                    type: 'fieldgroup',
-                    options: {
-                        oneline: true
-                    }
-                },
-                fields: {
-                    label: {
-                        type: 'text',
-                        required: true,
-                        default: '',
-                        helptext: 'The label for the select option, shown to users.',
-                    },
-                    value: {
-                        type: 'text',
-                        default: '',
-                        helptext: 'The value saved to the database.'
-                    }
-                }
+                type: 'list',
+                default: [],
+                helptext: 'The list of values allowed for this select input, along with the labels for display.',
             },
         }
     },
     value: {
         id: 'value',
-        description: 'A hidden html input element holding a value.',
-        fieldTypes: ['value'],
+        description: 'This widget allows providing a calculated value using a Script Function. ' +
+            'The value may be hidden or displayed during editing. THIS WIDGET DOES NOT PROVIDE SECURITY! ' +
+            'Even if not displayed, this field and its value are still available in clients / browsers, ' +
+            'and the value can still be modified before the form is submitted. NEVER expect this widget ' +
+            'to keep sensitive data safe, and NEVER trust the data received from it without validating it.',
+        fieldTypes: ['text', 'date', 'html', 'fieldgroup', 'number', 'float', 'boolean', 'value'],
         widget: CMSWidgetValue,
+        optionFields: {
+            value: {
+                type: 'text',
+                default: '',
+                helptext: 'The value of the field. Use a Script Function to determine this based on other fields.',
+            },
+            display: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Can display the calculated value on the editing form in a disabled text field.',
+            }
+        }
     },
     reference: {
         id: 'reference',
@@ -563,6 +573,8 @@ export const widgetTypes = {
                 default: [],
                 widget: 'multiselect',
                 helptext: `A list of possible values to be presented to content editors. ` +
+                    `Values should be text strings, but may use the "[value][:label]" format, ` +
+                    `e.g. "1:First Place". ` +
                     `A script function may be used to retrieve options from an external API.`,
             },
             restrictToItems: {
@@ -618,19 +630,6 @@ export const widgetTypes = {
             },
         }
     },
-    calculated: {
-        id: 'calculated',
-        description: 'This widget allows providing a calculated value using a Script Function.',
-        widget: CMSWidgetCalculated,
-        fieldTypes: ['text', 'date', 'html', 'fieldgroup', 'number', 'float', 'boolean', 'value'],
-        optionFields: {
-            value: {
-                type: 'text',
-                default: '',
-                helptext: 'The value of the field. Use a Script Function to determine this based on other fields.',
-            }
-        }
-    }
     // {
     //   id: 'options', // i.e. radios or checkboxes
     //   fieldTypes: 'text,number,date',

@@ -5,7 +5,7 @@ import type ContentType from 'sveltecms/core/ContentType';
 import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore";
 import { type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
 import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget';
-import type { DisplayConfigSetting } from './Display';
+import type { EntityDisplayConfigSetting } from './Display';
 import type { EntityTemplate } from './EntityTemplate';
 import type { Component } from './Component';
 export declare type FieldConfigSetting = DisplayableEntityConfigSetting & {
@@ -38,7 +38,7 @@ export declare type FieldConfigSetting = DisplayableEntityConfigSetting & {
     [id: string]: string | number | boolean | ConfigSetting | ScriptFunctionConfigSetting | (string | number | ConfigSetting)[];
 };
 export declare type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display|displayModes"> & {
-    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'entity' | 'entityList';
+    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'entity' | 'entityList' | 'list';
     entity?: string;
     default: any;
     helptext: string;
@@ -81,10 +81,7 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
         [key: string]: Field;
     };
     widget: Widget;
-    display?: string | false | DisplayConfigSetting;
-    displayModes?: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    displays: EntityDisplayConfigSetting;
     preSave?: (string | TransformerConfigSetting)[];
     preMount?: (string | TransformerConfigSetting)[];
     mediaStore?: MediaStore;

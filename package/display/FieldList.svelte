@@ -8,7 +8,7 @@ export let displayMode;
 let fieldlist;
 let displays;
 $: fieldlist = Object.entries(entity?.fields || {});
-$: displays = Object.fromEntries(fieldlist.map(([id, field]) => ([id, new Display(field?.displayModes?.[displayMode] ?? field?.display, cms)])));
+$: displays = Object.fromEntries(fieldlist.map(([id, field]) => ([id, new Display(field?.displays?.[displayMode] ?? field?.displays?.['default'], cms)])));
 </script>
 
 {#each fieldlist as [id, field]}

@@ -3,12 +3,19 @@ import File from "sveltecms/display/field/File.svelte";
 import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte";
 import Reference from "sveltecms/display/field/Reference.svelte";
 import DateSvelte from "sveltecms/display/field/Date.svelte";
+export function isDisplayConfig(item) {
+    return item?.type !== undefined;
+}
+export const defaultDisplayModes = ['default', 'page', 'teaser', 'reference'];
+export const displayNoneKeywords = ['none', 'hidden', 'false'];
+export function isDisplayNone(conf) { return (!conf || displayNoneKeywords.includes(conf)) ? true : false; }
 export const templateDisplay = {
     id: 'display',
     label: 'Display',
     labelPlural: 'Displays',
     description: 'A Display configuration determines how SvelteCMS will display a field by default.',
     typeField: true,
+    listFields: ['wrapper', 'label', 'html', 'link'],
     configFields: {
         type: {
             type: 'text',
@@ -45,10 +52,10 @@ export class Display {
         this.type = '';
         this.isDisplayed = false;
         this.link = false;
-        if (!conf)
+        if (!conf || isDisplayNone(conf))
             return;
         conf = typeof conf === 'string' ? { type: conf } : conf;
-        if (!conf.type || ['none', 'hidden'].includes(conf.type))
+        if (isDisplayNone(conf.type))
             return;
         this.isDisplayed = true;
         this.type = conf.type.trim();

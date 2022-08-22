@@ -22,7 +22,7 @@ let parentFieldProxy = cloneDeep(parentField);
 let fieldgroup;
 let isSelectable = [...opts.fieldgroups, ...opts.fieldgroupTypes].length;
 let label = parentField.label;
-$: if (parentField.multipleLabelFields && value)
+$: if (parentField.multipleLabelFields?.['length'] && value)
     label = Array.isArray(parentField.multipleLabelFields) ?
         parentField.multipleLabelFields.map(s => s?.toString()) :
         split(parentField?.multipleLabelFields?.toString()).map(id => get(value, id) ?? id).join(', ');
@@ -101,13 +101,13 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
 <style global>
   :global(.sveltecms) :global(fieldset.fieldgroup)>:global(.fieldgroup-type) {
     background: var(--cms-main);
-    color: var(--cms-background);
+    color: var(--cms-bg);
   }
   :global(.sveltecms) :global(fieldset.fieldgroup) {
     background: var(--cms-main);
   }
   :global(.sveltecms) :global(fieldset.fieldgroup) :global(.field) {
-    background: var(--cms-background);
+    background: var(--cms-bg);
   }
   :global(.sveltecms) :global(fieldset.fieldgroup.collapsed) {
     background: transparent;

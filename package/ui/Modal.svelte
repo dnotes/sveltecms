@@ -33,5 +33,5 @@ function cancel() {
     max-width: 85vw;
     max-height: 92vh;
     overflow-y:scroll;
-    background:var(--cms-background);
+    background:var(--cms-bg);
   }</style>

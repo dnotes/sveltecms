@@ -9,7 +9,9 @@ declare const __propDef: {
     events: {
         [evt: string]: CustomEvent<any>;
     };
-    slots: {};
+    slots: {
+        default: {};
+    };
 };
 export declare type CmsWidgetValueProps = typeof __propDef.props;
 export declare type CmsWidgetValueEvents = typeof __propDef.events;

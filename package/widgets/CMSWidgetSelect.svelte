@@ -1,9 +1,11 @@
-<script>export let field;
+<script>import { getList } from "sveltecms/utils/list";
+export let field;
 export let id;
 export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '');
 //@ts-ignore
 let opts = field.widget.options;
-$: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => { return [o, o]; })) : opts.items;
+$: opts = field.widget.options;
+$: options = getList(opts.items);
 </script>
 
 {#if field.multiple}
@@ -23,8 +25,8 @@ $: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => 
       {#if !field.required || opts.unset}
         <option value="">{opts.unset || '- none -'}</option>
       {/if}
-      {#each Object.entries(options || {}) as [value,title]}
-        <option {value}>{title}</option>
+      {#each options as {value,label}}
+        <option {value}>{label}</option>
       {/each}
     </select>
   </label>
@@ -44,8 +46,8 @@ $: options = Array.isArray(opts.items) ? Object.fromEntries(opts.items.map(o => 
       {#if !field.required || opts.unset}
         <option value="">{opts.unset || '- none -'}</option>
       {/if}
-      {#each Object.entries(options || {}) as [value,title]}
-        <option {value}>{title}</option>
+      {#each options as {value,label}}
+        <option {value}>{label}</option>
       {/each}
     </select>
   </label>

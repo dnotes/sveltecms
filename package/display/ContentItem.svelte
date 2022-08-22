@@ -6,7 +6,7 @@ export let item;
 export let displayMode;
 let classes = undefined;
 export { classes as class };
-$: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms);
+$: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms);
 $: classes = classes || `content-type-${entity.id} display-mode-${displayMode}`;
 </script>
 

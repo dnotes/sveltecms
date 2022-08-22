@@ -14,9 +14,9 @@ declare const __propDef: {
             isTopLevelEntity?: boolean;
         };
         entityID?: string | null;
-        collapsed?: boolean;
         nested?: boolean;
         idElement?: HTMLElement;
+        label?: string;
     };
     events: {
         change: CustomEvent<any>;

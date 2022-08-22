@@ -7,32 +7,8 @@ export const templateFieldgroup = {
     typeField: true,
     typeInherits: true,
     isConfigurable: true,
+    isDisplayable: true,
     isFieldable: true,
-    configFields: {
-        display: {
-            type: 'entity',
-            default: '',
-            helptext: 'The element or component used to display this fieldgroup.',
-            widget: {
-                type: 'entity',
-                options: {
-                    entityType: 'display',
-                },
-            }
-        },
-        displayModes: {
-            type: 'entityList',
-            default: {},
-            helptext: 'Display configurations which override the default display for a display mode. ' +
-                'Display modes used by SvelteCMS include: "page", "teaser", and "reference".',
-            widget: {
-                type: 'entityList',
-                options: {
-                    entityType: 'display',
-                }
-            }
-        },
-    }
 };
 export class Fieldgroup {
     constructor(conf, cms) {
@@ -41,6 +17,7 @@ export class Fieldgroup {
         this.id = conf.id;
         this.admin = conf.admin;
         this.type = conf.type || conf.id;
+        this.displays = { default: 'div', ...cms.parseEntityDisplayConfigSetting(conf.displays) };
         this.fields = Object.fromEntries(Object.entries(conf.fields).map(([id, conf]) => {
             return [id, new Field(id, conf, cms)];
         }));

@@ -1,8 +1,10 @@
 <script>import { cloneDeep, isEqual, isNull } from "lodash-es";
+import yaml from 'js-yaml';
 import { createEventDispatcher } from "svelte";
 import CmsFieldGroup from "sveltecms/CMSFieldGroup.svelte";
 import Button from "sveltecms/ui/Button.svelte";
 import Modal from "sveltecms/ui/Modal.svelte";
+import CmsWidgetDisplayList from "./CMSWidgetDisplayList.svelte";
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 export let cms;
 export let id;
@@ -10,17 +12,18 @@ export let value;
 export let field = undefined;
 // @ts-ignore
 export let options = field?.widget?.options || {};
-let opts = Object.assign({}, options);
+let opts = { ...(field?.widget?.options || {}), ...options };
+$: opts = { ...(field?.widget?.options || {}), ...options };
 // This widget is used in two circumstances: as one property of a config setting, or as part of a list.
 // As a property of a config setting, e.g. a property of a FieldConfigSetting, it would NOT have an entityID, only a value.
 // As part of a list, e.g. when specifying fields for a ContentType, it would have both an entityID and a value.
 export let entityID = null;
-// In a list, this item may be collapsed
-export let collapsed = false;
 // Whether this is a nested EntityWidget, within an Entity field that handles multiple entries
 export let nested = false;
 // The ID element, for focus operations
 export let idElement = undefined;
+// Exports used specifically by direct calls from CMSWidgetDisplayList
+export let label = undefined;
 // The entity type template. See EntityTemplate.ts
 let entityType = cms.getEntityType(opts.entityType);
 // Whether the entity has a type field
@@ -66,20 +69,20 @@ function setType() {
 }
 setType();
 // Whenever configuration changes, set the value
-function setValue() {
+function setValue(skipClose) {
     let newValue;
     if (Array.isArray(conf)) {
         newValue = conf.filter(Boolean);
     }
     else {
-        // Get any customized values // TODO: test whether we need isEqual instead of !==
+        // Get any customized values
         let customizations = Object.entries(conf || {}).filter(([k, v]) => {
             return !isEqual(defaults?.[k], v);
         });
         // Set the type field
         let typeField = isTyped ? [[entityTypeFieldID, (typeof value === 'string' ? value : value?.[entityTypeFieldID])]] : [];
         // Set the new value, including the type and the customized properties and options
-        newValue = Object.fromEntries([...typeField, ...customizations]);
+        newValue = Object.fromEntries([...typeField, ...customizations.filter(c => typeof c[1] !== 'undefined')]);
         // If the new value is only a type, it should be a string
         if (isEqual(Object.keys(newValue), [entityTypeFieldID]))
             newValue = newValue[entityTypeFieldID];
@@ -90,7 +93,8 @@ function setValue() {
     // And dispatch the change event
     dispatch('change', { value });
     // Close the Modal
-    modalOpen = false;
+    if (skipClose !== 'skipClose')
+        modalOpen = false;
 }
 function addItem() {
     if (Array.isArray(conf))
@@ -107,6 +111,9 @@ function removeItem(i) {
 $: isString = typeof value === 'string';
 // Value for the form names
 $: formBaseID = entityID ? `${id}[${entityID}]` : id;
+// Push upstream value reactively
+$: if (conf)
+    setValue('skipClose');
 </script>
 
 {#if isMultiple && Array.isArray(conf)}
@@ -136,18 +143,24 @@ $: formBaseID = entityID ? `${id}[${entityID}]` : id;
 
 {:else if !isNull(entityID)}
   <!-- Entity accepts an id / value pair, as in field lists -->
-  <fieldset class="fieldgroup" class:collapsed>
-    <legend>
-      <label><em>{entityType?.label || "unknown entity"} &nbsp;</em>
-        <input
-          type="text"
-          size=8
-          bind:this={idElement}
-          bind:value={entityID}
-        >
-      </label>
 
-      {#if entityType?.typeField}
+  <div class="field">
+    <label>
+      <span>ID</span>
+      <input
+        type="text"
+        size=8
+        bind:this={idElement}
+        bind:value={entityID}
+      >
+    </label>
+  </div>
+
+  {#if entityType?.typeField}
+    <div class="field config">
+      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <label>
+        <span>{entityType.configFields?.[typeof entityType.typeField === 'string' ? entityType.typeField : 'type']?.label || 'Type'}</span>
         <CmsWidgetEntityTypeField
           {entityType}
           id="{isString ? formBaseID : `${formBaseID}[type]`}"
@@ -155,35 +168,44 @@ $: formBaseID = entityID ? `${id}[${entityID}]` : id;
           items={typeOptions}
           on:change={setType}
         />
-      {/if}
+      </label>
+    </div>
+  {/if}
 
-      {#each (entityType?.listFields || []) as fieldID}
-        {#if widgetFieldGroup?.fields?.[fieldID]}
-
-          <svelte:component
-            this={widgetFieldGroup.fields[fieldID].widget.widget}
-            field={widgetFieldGroup.fields[fieldID]}
-            {id}
-            {cms}
-            bind:value={conf[fieldID]}
-          />
-
-        {/if}
-      {/each}
-
-      <slot></slot>
-
-    </legend>
-    {#if widgetFieldGroup && !opts.skipDetail}
-      <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} on:change={setValue} />
+  {#each (entityType?.listFields || []) as fieldID}
+    {#if widgetFieldGroup?.fields?.[fieldID]}
+      <div class="field config">
+        <svelte:component
+          this={widgetFieldGroup.fields[fieldID].widget.widget}
+          field={widgetFieldGroup.fields[fieldID]}
+          id="{formBaseID}[{fieldID}]"
+          {cms}
+          bind:value={conf[fieldID]}
+        />
+      </div>
     {/if}
-  </fieldset>
+  {/each}
+
+  {#if entityType.isDisplayable}
+    <CmsWidgetDisplayList
+      {cms}
+      id="{formBaseID}[displays]"
+      field={widgetFieldGroup.fields.displays}
+      bind:value={conf['displays']}
+    />
+  {/if}
+
+  <div class="field ops">
+    <Button small highlight on:click={()=>{modalOpen=true}}>...</Button>
+    <slot></slot>
+  </div>
+
 {:else}
   <!-- Entity accepts a single value, as in a widget field -->
   <!-- svelte-ignore a11y-label-has-associated-control -->
   <label>
     {#if !nested}
-      <span>{field?.label || entityType?.label || 'unknown entity'}</span>
+      <span>{label || field?.label || entityType?.label || 'unknown entity'}</span>
     {/if}
 
     {#if entityType?.typeField}
@@ -197,8 +219,19 @@ $: formBaseID = entityID ? `${id}[${entityID}]` : id;
       />
     {/if}
 
-    {#if conf?.['type'] && Object.keys(widgetFieldGroup?.fields || {}).length}
-      <Button small highlight on:click={()=>{modalOpen=true}}>...</Button>
+    {#if entityType.configFields || entityType.isConfigurable}
+      <div class="details">
+        {#if Object.keys(widgetFieldGroup?.fields || {}).length}
+          <Button
+            small
+            on:click={()=>{modalOpen=true}}
+            disabled={!conf[entityTypeFieldID]}
+            highlight={conf[entityTypeFieldID] && typeof value !== 'string'}
+          >
+            <span title="{yaml.dump(value)}">...</span>
+          </Button>
+        {/if}
+      </div>
     {/if}
 
   </label>
@@ -206,10 +239,19 @@ $: formBaseID = entityID ? `${id}[${entityID}]` : id;
 
 {#if modalOpen}
   <Modal on:cancel={setValue}>
-    <h2>Configure {opts.entityType} {value?.[entityTypeFieldID] ?? value}</h2>
+    <h2>Configure {entityType.label} "{entityID ?? value?.[entityTypeFieldID] ?? value}"</h2>
     <form on:submit|preventDefault={setValue}>
       <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} />
     </form>
     <Button primary on:click={setValue}>Close</Button>
   </Modal>
 {/if}
+
+<style>
+  div.details {
+    width: 36px;
+    height: 30px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }</style>

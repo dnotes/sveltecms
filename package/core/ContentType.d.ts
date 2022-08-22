@@ -5,7 +5,7 @@ import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/Con
 import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore';
 import Field, { type FieldConfigSetting } from 'sveltecms/core/Field';
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
-import type { DisplayConfigSetting } from './Display';
+import type { EntityDisplayConfigSetting } from './Display';
 export declare const templateContentType: EntityTemplate;
 export declare type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {
     label?: string;
@@ -27,10 +27,7 @@ export declare class ContentType implements FieldableEntity, LabeledEntity, Disp
     slug: SlugConfig;
     contentStore: ContentStore;
     mediaStore?: string | MediaStoreConfigSetting;
-    display?: string | false | DisplayConfigSetting;
-    displayModes?: {
-        [key: string]: string | false | DisplayConfigSetting;
-    };
+    displays: EntityDisplayConfigSetting;
     indexFields: string[];
     fields: {
         [key: string]: Field;

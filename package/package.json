@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
@@ -21,7 +21,7 @@
     "lodash-es": "^4.17.21",
     "markdown-it": "^12.3.2",
     "sanitize-html": "^2.5.3",
-    "svelte-tags-input": "^2.9.2",
+    "svelte-tags-input": "https://github.com/dnotes/svelte-tags-input#deac0e954e74ae0c4b7686f11abf2daffda8cff3",
     "validatorjs": "^3.22.1"
   },
   "devDependencies": {
@@ -123,9 +123,11 @@
     "./plugins/admin/components": "./plugins/admin/components/index.js",
     "./plugins/admin": "./plugins/admin/index.js",
     "./plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte": "./plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte",
+    "./plugins/admin/widgets/CMSWidgetDisplayList.svelte": "./plugins/admin/widgets/CMSWidgetDisplayList.svelte",
     "./plugins/admin/widgets/CMSWidgetEntity.svelte": "./plugins/admin/widgets/CMSWidgetEntity.svelte",
     "./plugins/admin/widgets/CMSWidgetEntityList.svelte": "./plugins/admin/widgets/CMSWidgetEntityList.svelte",
     "./plugins/admin/widgets/CMSWidgetEntityTypeField.svelte": "./plugins/admin/widgets/CMSWidgetEntityTypeField.svelte",
+    "./plugins/admin/widgets/CMSWidgetList.svelte": "./plugins/admin/widgets/CMSWidgetList.svelte",
     "./plugins/checkboxes/CheckboxText.svelte": "./plugins/checkboxes/CheckboxText.svelte",
     "./plugins/checkboxes": "./plugins/checkboxes/index.js",
     "./plugins/firebaseFirestore": "./plugins/firebaseFirestore/index.js",
@@ -138,6 +140,7 @@
     "./ui/AddItemLine.svelte": "./ui/AddItemLine.svelte",
     "./ui/Button.svelte": "./ui/Button.svelte",
     "./ui/DisplayResult.svelte": "./ui/DisplayResult.svelte",
+    "./ui/EntityListSectionToggle.svelte": "./ui/EntityListSectionToggle.svelte",
     "./ui/Modal.svelte": "./ui/Modal.svelte",
     "./ui/Nav.svelte": "./ui/Nav.svelte",
     "./ui/ScriptableButton.svelte": "./ui/ScriptableButton.svelte",
@@ -146,10 +149,10 @@
     "./utils/formDataHandler": "./utils/formDataHandler.js",
     "./utils/getLabelFromID": "./utils/getLabelFromID.js",
     "./utils": "./utils/index.js",
+    "./utils/list": "./utils/list.js",
     "./utils/path": "./utils/path.js",
     "./utils/reference": "./utils/reference.js",
     "./utils/splitTags": "./utils/splitTags.js",
-    "./widgets/CMSWidgetCalculated.svelte": "./widgets/CMSWidgetCalculated.svelte",
     "./widgets/CMSWidgetCheckbox.svelte": "./widgets/CMSWidgetCheckbox.svelte",
     "./widgets/CMSWidgetDate.svelte": "./widgets/CMSWidgetDate.svelte",
     "./widgets/CMSWidgetFieldgroup.svelte": "./widgets/CMSWidgetFieldgroup.svelte",

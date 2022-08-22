@@ -48,12 +48,12 @@ export const staticFilesContentOptionFields = {
         widget: {
             type: 'select',
             options: {
-                items: {
-                    'md': '.md (Markdown)',
-                    'json': '.json (JSON)',
-                    'yml': '.yml (YAML)',
-                    'yaml': '.yaml (YAML)',
-                }
+                items: [
+                    'md:.md (Markdown)',
+                    'json:.json (JSON)',
+                    'yml:.yml (YAML)',
+                    'yaml:.yaml (YAML)',
+                ]
             }
         },
         helptext: 'What type of file to use for new content; must be one of "md", "json", "yml", or "yaml"',
@@ -80,7 +80,7 @@ export const staticFilesMediaOptionFields = {
         multiple: true,
         default: ['image/*'],
         widget: 'multiselect',
-        helptext: 'A comma-separated list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
+        helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
     },
     maxUploadSize: {
         type: 'text',

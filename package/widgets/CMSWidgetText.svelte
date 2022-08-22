@@ -15,6 +15,7 @@ let opts = field.widget.options;
     type="text"
     bind:value
     placeholder="{opts?.placeholder ?? ''}"
+    size={opts.size}
     disabled={field.disabled}
     required={field.required}
   />

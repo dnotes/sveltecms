@@ -49,7 +49,8 @@ else {
     splitValue.time = '';
 }
 //@ts-ignore
-let opts = field.widget.options;
+let opts;
+$: opts = field.widget.options;
 </script>
 
 <!-- svelte-ignore a11y-label-has-associated-control -->

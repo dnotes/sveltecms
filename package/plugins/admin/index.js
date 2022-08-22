@@ -2,27 +2,45 @@ import * as components from './components';
 import { adminPages } from 'sveltecms/core/AdminPage';
 import CMSWidgetEntity from './widgets/CMSWidgetEntity.svelte';
 import CMSWidgetEntityList from './widgets/CMSWidgetEntityList.svelte';
+import CMSWidgetList from './widgets/CMSWidgetList.svelte';
 export const adminPlugin = {
     id: 'admin',
     components: Object.entries(components).map(([id, component]) => ({ id, component, admin: true })),
     adminPages,
     fieldTypes: [
         {
+            id: 'list',
+            admin: true,
+            default: undefined,
+            multiple: true,
+            widget: 'list',
+            displays: 'none',
+        },
+        {
             id: 'entity',
             admin: true,
             default: undefined,
             widget: 'entity',
-            display: '',
+            displays: 'none',
         },
         {
             id: 'entityList',
             admin: true,
             default: undefined,
             widget: 'entityList',
-            display: '',
-        }
+            displays: 'none',
+        },
     ],
     widgetTypes: [
+        {
+            id: 'list',
+            fieldTypes: ['list'],
+            admin: true,
+            description: `Form element for the configuration of an ad-hoc list of key:value pairs. ` +
+                `Useful for providing items to select boxes, for example.`,
+            handlesMultiple: true,
+            widget: CMSWidgetList,
+        },
         {
             id: 'entity',
             fieldTypes: ['entity'],
@@ -36,12 +54,6 @@ export const adminPlugin = {
                     required: true,
                     default: '',
                     helptext: 'The type of entity to be configured.',
-                    widget: {
-                        type: 'select',
-                        options: {
-                            items: '$listEntities()'
-                        }
-                    }
                 },
                 fieldType: {
                     type: 'text',
@@ -54,7 +66,7 @@ export const adminPlugin = {
             id: 'entityList',
             fieldTypes: ['entityList'],
             admin: true,
-            description: `Form element for the configuration of a list of entities.`,
+            description: `List element for the configuration of a collection of entities.`,
             widget: CMSWidgetEntityList,
             optionFields: {
                 entityType: {
@@ -62,15 +74,9 @@ export const adminPlugin = {
                     required: true,
                     default: 'field',
                     helptext: 'The type of entity to be configured.',
-                    widget: {
-                        type: 'select',
-                        options: {
-                            items: '$listEntities()'
-                        }
-                    }
                 },
             }
-        }
+        },
     ]
 };
 export default adminPlugin;

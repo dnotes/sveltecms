@@ -7,7 +7,7 @@ export let displayMode;
 $: src = typeof item === 'string' ? item : item.src;
 $: alt = item?.['alt'] || undefined;
 $: title = item?.['title'] || undefined;
-$: display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'div', cms);
+$: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms);
 </script>
 
 {#if src}

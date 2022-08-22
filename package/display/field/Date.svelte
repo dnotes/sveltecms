@@ -9,7 +9,7 @@ $: if (browser && window?.navigator?.language)
     lang = window.navigator.language;
 $: realDate = typeof (item) === 'string' ? new Date(item) || item : item;
 $: displayDate = realDate?.toLocaleString(lang) || 'no date';
-let display = new Display(entity?.displayModes?.[displayMode] ?? entity?.display ?? 'span', cms);
+let display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms);
 </script>
 
 <svelte:element

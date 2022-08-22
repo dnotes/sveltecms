@@ -1,19 +1,33 @@
 html {
-  --cms-background: white;
+  /* CMS Main Color Variables */
+  --cms-bg: white;
+  --cms-bg-dark: #222;
   --cms-main: rgb(113, 155, 155);
+  --cms-main-dark: rgb(113, 155, 155);
   --cms-link: rgb(113, 155, 155);
-  --cms-text: #222;
-  --cms-tooltip: lightgoldenrodyellow;
-  --cms-button: rgb(113, 155, 155);
+  --cms-link-dark: rgb(113, 155, 155);
+  --cms-text: black;
+  --cms-text-dark: white;
+  --cms-border: #e2e2e2;
+  --cms-border-dark: #555;
+  /* CMS Other Variables */
   --cms-danger: indianred;
   --cms-font: sans-serif;
 }
-
+html.dark {
+  --cms-bg: var(--cms-bg-dark);
+  --cms-main: var(--cms-main-dark);
+  --cms-link: var(--cms-link-dark);
+  --cms-text: var(--cms-text-dark);
+  --cms-border: var(--cms-border-dark);
+}
 @media (prefers-color-scheme:dark) {
   html {
-    --cms-background: #222;
-    --cms-text: white;
-    --cms-tooltip: darkslategrey;
+    --cms-bg: var(--cms-bg-dark);
+    --cms-main: var(--cms-main-dark);
+    --cms-link: var(--cms-link-dark);
+    --cms-text: var(--cms-text-dark);
+    --cms-border: var(--cms-border-dark);
   }
 }
 
@@ -27,7 +41,7 @@ html {
 /* Styles for SvelteCMS */
 
 .sveltecms {
-  background-color: var(--cms-background);
+  background-color: var(--cms-bg);
   color: var(--cms-text);
   border-color: var(--cms-main);
 }
@@ -35,7 +49,7 @@ html {
 .sveltecms input,
 .sveltecms select,
 .sveltecms textarea {
-  background-color: var(--cms-background);
+  background-color: var(--cms-bg);
   color: var(--cms-text);
   border: 1px solid var(--cms-main);
   border-bottom-width: 2px;
@@ -56,16 +70,16 @@ html {
 
 .sveltecms ul.svelte-tags-input-matchs {
   z-index: 1;
-  background: var(--cms-background) !important;
+  background: var(--cms-bg) !important;
   border-color: var(--cms-main) !important;
 }
 .sveltecms ul.svelte-tags-input-matchs li:hover,
-.sveltecms ul.svelte-tags-input-matchs li:focus {
+.sveltecms ul.svelte-tags-input-matchs li.focus {
   background: var(--cms-main) !important;
   color: var(--cms-text) !important;
 }
 .sveltecms div.svelte-tags-input-layout {
-  background: var(--cms-background) !important;
+  background: var(--cms-bg) !important;
   border-color: var(--cms-main) !important;
 }
 .sveltecms span.svelte-tags-input-tag {
@@ -88,13 +102,13 @@ html {
   font-size: 90%;
   text-decoration:none;
   cursor:pointer;
-  color:var(--cms-button);
-  border-color:var(--cms-button);
+  color:var(--cms-main);
+  border-color:var(--cms-main);
   background:transparent;
   padding: 0 .8em;
   line-height: 2.2em;
   border-radius: 1em;
-  border: 2px solid var(--cms-button);
+  border: 2px solid var(--cms-main);
   display: inline-block;
   text-transform: lowercase;
 }
@@ -111,7 +125,7 @@ html {
 
 .sveltecms button.link {
   border:none;
-  background: var(--cms-background);
+  background: var(--cms-bg);
   color: var(--cms-link);
 }
 
@@ -121,8 +135,8 @@ html {
 .sveltecms a.button.highlight,
 .sveltecms button.danger,
 .sveltecms button[type="submit"] {
-  background: var(--cms-button);
-  color: var(--cms-background);
+  background: var(--cms-main);
+  color: var(--cms-bg);
   border: none;
   padding-top: 1px;
 }
@@ -159,7 +173,7 @@ html {
   font-size:22px;
   line-height: 24px;
   padding: 0 7px 2px;
-  background: var(--cms-background);
+  background: var(--cms-bg);
 }
 
 /* Layout */
@@ -208,7 +222,10 @@ html {
   border-radius: 1em;
   display: flex;
   gap: 1em;
+  align-items: center;
 }
+
+.sveltecms fieldset.multiple>div.multiple-item>label>span:first-child { display:none; }
 
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
 div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; max-height:100vh; }
