@@ -2,8 +2,8 @@ configPath: src/lib/sveltecms.config.yml
 settings:
   rootContentType: page
   frontPageSlug: front
-  defaultContentDisplay: div
-  defaultContentDisplayModes:
+  defaultContentDisplays:
+    default: div
     reference: span
 contentTypes:
   page:
@@ -26,12 +26,12 @@ fields:
     type: text
     index: true
     required: true
-    display:
-      type: span
-      link: true
-    displayModes:
-      teaser:
+    displays:
+      default:
         type: h2
+        link: true
+      reference:
+        type: span
         link: true
       page: h1
   postDate:
@@ -42,7 +42,7 @@ fields:
   body: markdown
   slug:
     type: text
-    display: none
+    displays: none
   mainImage:
     type: image
     index: true
