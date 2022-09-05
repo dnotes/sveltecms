@@ -22,6 +22,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
     fieldType?:string    // The field "type" value, for when choosing a widget
     skipDetail?:boolean   // Whether to skip rendering the detail fields (i.e. for a new entity in a list)
     isTopLevelEntity?:boolean // Whether this widget is configuring a top-level entity, e.g. cms.fields
+    placeholder?:string
   } = field?.widget?.options || {}
   let opts = { ...(field?.widget?.options || {}), ...options}
   $: opts = { ...(field?.widget?.options || {}), ...options}
@@ -227,6 +228,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
       id="{formBaseID}[displays]"
       field={widgetFieldGroup.fields.displays}
       bind:value={conf['displays']}
+      {defaults}
     />
   {/if}
 
@@ -251,6 +253,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
         items={typeOptions}
         on:change={setType}
         required={field?.required ?? false}
+        placeholder={opts.placeholder ?? ''}
       />
     {/if}
 
