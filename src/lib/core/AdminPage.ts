@@ -99,6 +99,16 @@ export const adminPages:AdminPageConfig[] = [
       }
     }
   },
+  {
+    id: 'contentTypes/*',
+    label: 'Content Types',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigEntity'
+      },
+    },
+  },
   // {
   //   id: 'lists',
   // },
