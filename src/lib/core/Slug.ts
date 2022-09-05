@@ -23,10 +23,10 @@ export const templateSlug:EntityTemplate = {
   configFields: {
     fields: {
       type: 'text',
-      multiple: true,
-      multipleOrSingle: true,
-      default: [],
-      widget: 'multiselect',
+      // multiple: true, // TODO: make this work with CMSWidgetEntityTypeField in Admin UI
+      // multipleOrSingle: true,
+      default: '',
+      // widget: 'multiselect',
       helptext: 'A comma-separated list of field IDs. The value of those fields '+
       'are combined to form the slug, which is used as the key in key-value databases '+
       'and as part of the URL for viewing the content on a website.',
