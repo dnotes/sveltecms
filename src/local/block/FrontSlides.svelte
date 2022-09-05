@@ -1,28 +1,23 @@
 <script lang="ts">
-import { fade, fly, slide } from 'svelte/transition'
+import { fade } from 'svelte/transition'
 import { onDestroy } from 'svelte';
 import type { Content } from 'sveltecms/core/ContentStore';
+import { page } from '$app/stores'
 
   export let item:Content & { slides:Content[] }
 
-  let i = 0
-  let heading = ''
-  let text = ''
+  let i = parseInt($page.url.searchParams.get('i')) || 0
+  let heading
+  let text
 
   $: if (i || item.slides?.[i]) {
-    heading = ''
-    text = ''
-    setTimeout(populate, 500)
+    heading = (item?.slides?.[i]?.heading || '').toString()
+    text = (item?.slides?.[i]?.text || '').toString()
   }
 
   function autonext() {
     if (i === item.slides.length - 1) i = -5
     else i++
-  }
-
-  function populate() {
-    heading = item.slides?.[i]?.heading.toString() || ''
-    text = item.slides?.[i]?.text.toString() || ''
   }
 
   const timing = 4200
@@ -36,13 +31,14 @@ import type { Content } from 'sveltecms/core/ContentStore';
   <div class="hero-links">
     {#each item.slides as slide, idx}
       {#if slide?.icon?.['src']}
-        <img
-          on:click={()=>{ clearInterval(interval); i=idx; }}
-          class:on={idx === i}
-          src="{slide.icon['src']}"
-          alt="{slide.icon?.['alt'] || ''}"
-          title="{slide.icon?.['alt'] || ''}"
-        >
+        <a href="?i={idx}" on:click|preventDefault={()=>{ clearInterval(interval); i=idx; }}>
+          <img
+            class:on={idx === i}
+            src="{slide.icon['src']}"
+            alt="{slide.icon?.['alt'] || ''}"
+            title="{slide.icon?.['alt'] || ''}"
+          >
+        </a>
       {/if}
     {/each}
     &nbsp;<span class="red">SvelteCMS</span>
@@ -53,7 +49,7 @@ import type { Content } from 'sveltecms/core/ContentStore';
 
     {#if i < -1}
     <div class="hero-title">
-      <div transition:fade>
+      <div transition:fade|local>
         <h1>SvelteCMS</h1>
         <h3 class="red big">it's&nbsp;<wbr/>really&nbsp;<wbr/>yours.</h3>
       </div>
@@ -82,7 +78,10 @@ import type { Content } from 'sveltecms/core/ContentStore';
 </section>
 
 <style>
-  h1,h2,h3 { font-weight: bold; }
+  h1,h2,h3 {
+    font-weight: bold;
+    line-height: 1.25em;
+  }
   .hero {
     position:relative;
     width:100%;
@@ -156,7 +155,6 @@ import type { Content } from 'sveltecms/core/ContentStore';
     position: absolute;
     right: 0;
     font-size: 5vh;
-    margin-top: -.5vh;
   }
   :global(.fn) {
     display: inline-block;
@@ -179,7 +177,7 @@ import type { Content } from 'sveltecms/core/ContentStore';
   }
   @media (orientation:landscape) and (max-height:400px) {
     h1,h2 { font-size: 3vw; }
-    h2>span { font-size: 4vw; margin-top:-.5vw; }
+    h2>span { font-size: 4vw; }
     h3.big { font-size: 4vw; }
     .text { font-size: 2vw; }
   }
