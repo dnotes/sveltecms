@@ -14,7 +14,7 @@ export let value
 
 {#if !field.hidden}
   <div class="field field-{id} {field?.class || ''}">
-    {#if !field.widget.widget}
+    {#if !field?.widget?.widget}
       <CmsWidgetUndefined {field} {id} />
     {:else if field.multiple && !field.widget.handlesMultiple}
       <CmsWidgetMultiple

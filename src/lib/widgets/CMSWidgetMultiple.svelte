@@ -12,7 +12,7 @@ import { cloneDeep } from "lodash-es";
   export let cms:SvelteCMS
 
   // For multiple fieldgroups, it is necessary to set the value to {}, otherwise SSR causes infinite loop
-  export let value = [field.type === 'fieldgroup' ? {} : field.default]
+  export let value:any|any[] = [field.type === 'fieldgroup' ? {} : field.default]
   if (!Array.isArray(value) && !field?.multipleOrSingle) value = [value]
 
   let fieldgroupsCollapsed = []
