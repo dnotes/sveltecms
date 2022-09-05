@@ -535,6 +535,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           type: 'multiselect',
           minChars: 0,
           items: {function:'listEntities', params:['contentType']},
+          allowBlur: true,
         },
       },
       freeTagging: {
