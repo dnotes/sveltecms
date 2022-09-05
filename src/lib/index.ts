@@ -329,7 +329,7 @@ export default class SvelteCMS {
           }
           else {
             let container = field.type === 'reference'
-              ? this.getContentType(values[id]?.['_type'])
+              ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
               : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field
             // @ts-ignore the typecheck above should be sufficient
             res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id]
@@ -367,7 +367,7 @@ export default class SvelteCMS {
           }
           else {
             let container = field.type === 'reference'
-              ? this.getContentType(values[id]?.['_type'])
+              ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
               : values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field
             // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
             // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
@@ -957,8 +957,8 @@ export default class SvelteCMS {
   /**
    * Get the full config setting for a particular entity
    * @param type The Entity Type, e.g. 'field'
-   * @param entity The ID of the particular entity to get
-   * @param options The list of options and properties for the entity (so they aren't looked up more than once)
+   * @param id The ID of the particular entity to get
+   * @param parentOnly If true, the config for the current entity will be ignored
    * @returns ConfigSetting
    */
   getEntityConfig(type:string, id:string, parentOnly=false):ConfigSetting {
