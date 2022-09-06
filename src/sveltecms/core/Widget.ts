@@ -1,7 +1,7 @@
-import type SvelteCMS from "sveltecms"
-import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntityType, FieldableEntity, ConfigurableEntity, FieldableEntityType } from "sveltecms"
-import type ContentType from "sveltecms/core/ContentType"
-import type Field from "sveltecms/core/Field"
+import type SvelteCMS from "sveltecmsecms"
+import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigSetting, ConfigurableEntityType, FieldableEntity, ConfigurableEntity, FieldableEntityType } from "sveltecmsecms"
+import type ContentType from "sveltecms/core/ContentTypeType"
+import type Field from "sveltecms/core/Fieldield"
 import type { EntityTemplate } from "./EntityTemplate"
 
 import CMSWidgetFieldgroup from 'sveltecms/widgets/CMSWidgetFieldgroup.svelte'

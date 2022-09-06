@@ -12,18 +12,14 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		alias: {
-      $lib: path.resolve('src/local'),
-      sveltecms: path.resolve('src/lib'),
+      sveltecms: path.resolve('src/sveltecms'),
 		},
-		package: {
-			exports: (filepath) => {
-				return !(filepath.match(/\/local\//))
-			}
-		},
-		prerender: {
-			default: true
+	},
+	package: {
+		exports: (filepath) => {
+			return !(filepath.match(/\/local\//))
 		}
-	}
+	},
 };
 
 export default config;

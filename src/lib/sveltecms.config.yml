@@ -1,4 +1,4 @@
-configPath: src/sveltecms.config.yml
+configPath: src/lib/sveltecms.config.yml
 settings:
   rootContentType: landingPage
   frontPageSlug: front

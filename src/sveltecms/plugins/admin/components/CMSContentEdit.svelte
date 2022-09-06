@@ -2,10 +2,8 @@
 import type SvelteCMS from 'sveltecms'
 import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
 
-// @ts-ignore
 import { goto } from '$app/navigation';
-// @ts-ignore
-import { browser } from '$app/env'
+import { browser } from '$app/environment'
 
   export let cms:SvelteCMS
   export let basePath:string

@@ -1,8 +1,7 @@
 <script lang="ts">
 import type { Content } from 'sveltecms/core/ContentStore';
 import type { Media } from 'sveltecms/core/MediaStore';
-// @ts-ignore WHY!
-import { browser } from '$app/env'
+import { browser } from '$app/environment'
   export let item:Content & {
     date?: Date,
     image?: Media

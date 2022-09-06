@@ -1,7 +1,7 @@
 import CMS from 'sveltecms'
 // @ts-ignore TODO: why can't it find this?
-import conf from '../sveltecms.config.yml'
-import components from '../sveltecms.config.yml.components'
+import conf from './sveltecms.config.yml'
+import components from './sveltecms.config.yml.components'
 import markdownPlugin from 'sveltecms/plugins/markdown'
 
 import MarkdownIT from 'markdown-it'

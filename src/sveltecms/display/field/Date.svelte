@@ -2,7 +2,7 @@
 import type SvelteCMS from "sveltecms";
 import Display from "sveltecms/core/Display";
 import type Field from "sveltecms/core/Field";
-import { browser } from '$app/env'
+import { browser } from '$app/environment'
 
   export let cms:SvelteCMS
   export let entity:Field

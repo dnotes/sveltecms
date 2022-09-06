@@ -1,11 +1,11 @@
-import type { Component, ComponentType } from "sveltecms/core/Component"
+import type { Component, ComponentType } from "sveltecms/core/Componentnent"
 
 import Image from "sveltecms/display/field/Image.svelte"
 import File from "sveltecms/display/field/File.svelte"
 import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte"
 import Reference from "sveltecms/display/field/Reference.svelte"
 import DateSvelte from "sveltecms/display/field/Date.svelte"
-import type SvelteCMS from "sveltecms"
+import type SvelteCMS from "sveltecmsecms"
 import type { EntityTemplate } from "./EntityTemplate"
 
 export type DisplayConfig = {

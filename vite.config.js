@@ -6,7 +6,13 @@ const config = {
   plugins: [
 		sveltekit(),
 		yaml(),
-	]
+	],
+	// resolve: {
+	// 	alias: {
+  //     $lib: path.resolve('src/local'),
+  //     sveltecms: path.resolve('src/lib'),
+	// 	}
+	// }
 };
 
 export default config;

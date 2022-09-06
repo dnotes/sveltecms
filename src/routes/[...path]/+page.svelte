@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { PageData } from './$types'
 import cms from '$lib/cms' // TODO: pare this down; we shouldn't need the full CMS
 import type { Content } from 'sveltecms/core/ContentStore';
 import Wrapper from 'sveltecms/display/Wrapper.svelte';
@@ -6,8 +7,10 @@ import ContentItem from 'sveltecms/display/ContentItem.svelte'
 import { Display } from 'sveltecms/core/Display';
 import ContentType from 'sveltecms/core/ContentType';
 
-  export let contentTypeID:string
-  export let content:Content
+  export let data:PageData
+  let contentTypeID:string
+  let content:Content
+  $: ({contentTypeID, content} = data)
 
   // Get the content type
   $: contentTypeID = contentTypeID || cms?.conf?.settings?.rootContentType?.toString()

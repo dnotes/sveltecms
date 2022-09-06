@@ -14,7 +14,7 @@ const config = {
     // Files in this list should be checked for tailwind classes.
     files: [
       "./src/**/*.{html,js,svelte,ts}",
-      "./src/sveltecms.config.{json,yml}",
+      "./src/lib/sveltecms.config.{json,yml}",
       "./content/**/*.{md,yml,json}",
     ],
     // The content.extract configuration tells Tailwind to use

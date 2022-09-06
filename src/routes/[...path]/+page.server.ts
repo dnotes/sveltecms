@@ -1,12 +1,12 @@
 import cms from '$lib/cms'
+import { error, redirect } from '@sveltejs/kit'
 
-export async function GET(event) {
+export async function load(event) {
 
   const { params } = event
   let [ contentTypeID, slug ] = params.path.split('/')
 
   let content, teasers
-  try {
     if (slug) {
       // If we are not looking for the root content type
       if (contentTypeID !== cms?.conf?.settings?.rootContentType) {
@@ -14,8 +14,7 @@ export async function GET(event) {
         content = await cms.getContent(contentTypeID, slug)
       }
       if (!content) {
-        // console.log(`\n17 type:${contentTypeID} slug:${slug} not found\n`)
-        return { status:404 }
+        throw error(404)
       }
     }
     else if (contentTypeID) {
@@ -26,7 +25,7 @@ export async function GET(event) {
         // Check if this is the front page
         if (contentTypeID === cms?.conf?.settings?.frontPageSlug?.toString()) {
           // console.log(`\n28 type:${contentTypeID} slug:${slug} front page\n`)
-          return { status:301, headers: { location: '/' } }
+          throw redirect(301, '/')
         }
 
         // Check for root content with this slug
@@ -41,26 +40,18 @@ export async function GET(event) {
       if (!content) content = await cms.listContent(contentTypeID)
       if (!content) {
         // console.log(`\n43 type:${contentTypeID} slug:${slug} no content list\n`)
-        return { status: 404 }
+        throw error(404)
       }
     }
     else if (cms?.conf?.settings?.rootContentType && cms?.conf?.settings?.frontPageSlug) {
       contentTypeID = cms.conf.settings.rootContentType.toString()
       content = await cms.getContent(contentTypeID, cms.conf.settings.frontPageSlug.toString())
     }
-  }
-  catch(e) {
-    // console.log(`\n53 type:${contentTypeID} slug:${slug} error\n`)
-    return e
-  }
   // console.log(`\n56 type:${contentTypeID} slug:${slug} returning\n`)
   return {
-    status: 200,
-    body: {
-      contentTypeID,
-      content,
-      teasers,
-    }
+    contentTypeID,
+    content,
+    teasers,
   }
 
 }
