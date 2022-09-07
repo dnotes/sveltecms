@@ -11,6 +11,7 @@ import { browser } from '$app/environment'
   export let data
 
   let [ contentPath, contentTypeID, slug ] = adminPath.split('/')
+  $: ([ contentPath, contentTypeID, slug ] = adminPath.split('/'))
 
   // If new content was just posted, goto the new url
   let isNew = slug === '_'
@@ -19,7 +20,7 @@ import { browser } from '$app/environment'
     else if (slug !== data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
   }
 
-  let content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
+  $: content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
 
 </script>
 

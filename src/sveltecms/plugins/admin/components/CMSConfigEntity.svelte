@@ -9,9 +9,9 @@ import CmsFieldGroup from 'sveltecms/CMSFieldGroup.svelte';
     configType:string
     configPath:string
   }
-  let opts = Object.assign({}, options)
-  let entityType = cms.getEntityType(opts.configType)
-  let widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(entityType.id), {values:data, errors:{}, touched:{}, id:options.configPath})
+  $: opts = Object.assign({}, options)
+  $: entityType = cms.getEntityType(opts.configType)
+  $: widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(entityType.id), {values:data, errors:{}, touched:{}, id:options.configPath})
 
 </script>
 

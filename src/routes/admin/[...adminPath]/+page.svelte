@@ -9,11 +9,10 @@
   import CmsAdmin from 'sveltecms/CMSAdmin.svelte'
 
   export let data:PageData
-  let adminData = data.data
-
-  let adminPath = $page.params.adminPath
-  let adminPage = cms.getAdminPage($page.params.adminPath)
-  let args = adminPath.split('/')
+  $: adminData = data.data
+  $: adminPath = $page.params.adminPath
+  $: adminPage = cms.getAdminPage($page.params.adminPath)
+  $: args = adminPath.split('/')
   if (!adminData && adminPage?.GET) adminData = adminPage.GET({cms, args})
 
 </script>

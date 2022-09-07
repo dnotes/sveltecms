@@ -14,10 +14,10 @@ import type SvelteCMS from "sveltecms";
     <a href="{basePath}/{configPath}/{contentType.id}">{contentType.label}</a>
   </li>
   {:else}
-    There are no content types. <a href="{basePath}/contentTypes/_">Add one!</a>
+    There are no content types. <a href="{basePath}/contentTypes">Add one!</a>
   {/each}
 </ul>
 
-{#if cms.contentTypes !== {}}
-  <a href="{basePath}/contentTypes/_">+ new content type</a>
+{#if Object.keys(cms.contentTypes || {}).length}
+  <a href="{basePath}/contentTypes">+ new content type</a>
 {/if}

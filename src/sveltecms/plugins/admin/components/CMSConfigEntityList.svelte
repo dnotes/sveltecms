@@ -10,12 +10,12 @@ import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
     configType:string
     configPath:string
   }
-  let opts = Object.assign({}, options)
-  let entityType = cms.getEntityType(opts.configType)
+  $: opts = Object.assign({}, options)
+  $: entityType = cms.getEntityType(opts.configType)
   let addEntity
 
   // All entities of the type being configured
-  let entities = cms.listEntities(opts.configPath)
+  $: entities = cms.listEntities(opts.configPath)
 
   // All config items for the type of entities being configured, as an array
   $: items = Object.entries(data)
