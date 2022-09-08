@@ -1,4 +1,4 @@
-import { parseScript } from '../src/lib/core/ScriptFunction'
+import { parseScript } from '../src/sveltecms/core/ScriptFunction'
 
 function testScript({script,expectedScript,expectedConf}) {
   let conf = parseScript(script)
