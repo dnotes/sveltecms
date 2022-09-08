@@ -1,10 +1,10 @@
-import type SvelteCMS from 'sveltecms';
-import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity, DisplayableEntityConfigSetting, DisplayableEntity, DisplayableEntityType } from "sveltecms";
-import type { TransformerConfigSetting } from "sveltecms/core/Transformer";
-import type ContentType from 'sveltecms/core/ContentType';
-import MediaStore, { type MediaStoreConfigSetting } from "sveltecms/core/MediaStore";
-import { type ScriptFunctionConfigSetting, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
-import Widget, { type WidgetConfigSetting } from 'sveltecms/core/Widget';
+import type SvelteCMS from '..';
+import type { LabeledEntity, TypedEntity, EntityType, ConfigSetting, FieldableEntity, DisplayableEntityConfigSetting, DisplayableEntity, DisplayableEntityType } from "..";
+import type { TransformerConfigSetting } from "./Transformer";
+import type ContentType from './ContentType';
+import MediaStore, { type MediaStoreConfigSetting } from "./MediaStore";
+import { type ScriptFunctionConfigSetting, ScriptFunctionConfig } from './ScriptFunction';
+import Widget, { type WidgetConfigSetting } from './Widget';
 import type { EntityDisplayConfigSetting } from './Display';
 import type { EntityTemplate } from './EntityTemplate';
 import type { Component } from './Component';

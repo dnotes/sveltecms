@@ -1,20 +1,20 @@
-import CMSWidgetFieldgroup from 'sveltecms/widgets/CMSWidgetFieldgroup.svelte';
-import CMSWidgetMultiple from 'sveltecms/widgets/CMSWidgetMultiple.svelte';
-import CMSWidgetNumber from 'sveltecms/widgets/CMSWidgetNumber.svelte';
-import CMSWidgetRange from 'sveltecms/widgets/CMSWidgetRange.svelte';
-import CMSWidgetText from 'sveltecms/widgets/CMSWidgetText.svelte';
-import CMSWidgetUndefined from 'sveltecms/widgets/CMSWidgetUndefined.svelte';
-import CMSWidgetDate from 'sveltecms/widgets/CMSWidgetDate.svelte';
-import CMSWidgetTextarea from 'sveltecms/widgets/CMSWidgetTextarea.svelte';
-import CMSWidgetCheckbox from 'sveltecms/widgets/CMSWidgetCheckbox.svelte';
-import CMSWidgetImage from 'sveltecms/widgets/CMSWidgetImage.svelte';
-import CMSWidgetFile from 'sveltecms/widgets/CMSWidgetFile.svelte';
-import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte';
-import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte";
-import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte";
-import CMSWidgetMultiselect from "sveltecms/widgets/CMSWidgetMultiselect.svelte";
+import CMSWidgetFieldgroup from '../widgets/CMSWidgetFieldgroup.svelte';
+import CMSWidgetMultiple from '../widgets/CMSWidgetMultiple.svelte';
+import CMSWidgetNumber from '../widgets/CMSWidgetNumber.svelte';
+import CMSWidgetRange from '../widgets/CMSWidgetRange.svelte';
+import CMSWidgetText from '../widgets/CMSWidgetText.svelte';
+import CMSWidgetUndefined from '../widgets/CMSWidgetUndefined.svelte';
+import CMSWidgetDate from '../widgets/CMSWidgetDate.svelte';
+import CMSWidgetTextarea from '../widgets/CMSWidgetTextarea.svelte';
+import CMSWidgetCheckbox from '../widgets/CMSWidgetCheckbox.svelte';
+import CMSWidgetImage from '../widgets/CMSWidgetImage.svelte';
+import CMSWidgetFile from '../widgets/CMSWidgetFile.svelte';
+import CMSWidgetSelect from '../widgets/CMSWidgetSelect.svelte';
+import CMSWidgetValue from "../widgets/CMSWidgetValue.svelte";
+import CMSWidgetReference from "../widgets/CMSWidgetReference.svelte";
+import CMSWidgetMultiselect from "../widgets/CMSWidgetMultiselect.svelte";
 import SlugConfig from "./Slug";
-import { isReferenceString } from "sveltecms/utils";
+import { isReferenceString } from "../utils";
 export const templateWidget = {
     id: 'widget',
     label: 'Widget',
@@ -494,6 +494,7 @@ export const widgetTypes = {
                     type: 'multiselect',
                     minChars: 0,
                     items: { function: 'listEntities', params: ['contentType'] },
+                    allowBlur: true,
                 },
             },
             freeTagging: {

@@ -1,6 +1,6 @@
 import type { RequestEvent } from "@sveltejs/kit";
-import type SvelteCMS from "sveltecms";
-import { Component, type ComponentConfigSetting } from "sveltecms/core/Component";
+import type SvelteCMS from "..";
+import { Component, type ComponentConfigSetting } from "./Component";
 import type { Content } from "./ContentStore";
 export declare type AdminPageConfig = {
     id: string;

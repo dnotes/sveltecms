@@ -1,7 +1,7 @@
-<script>import { getLabelFromID } from "sveltecms/utils";
-import Button from 'sveltecms/ui/Button.svelte';
-import Modal from 'sveltecms/ui/Modal.svelte';
-import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
+<script>import { getLabelFromID } from "../../../utils";
+import Button from '../../../ui/Button.svelte';
+import Modal from '../../../ui/Modal.svelte';
+import AddItemLine from "../../../ui/AddItemLine.svelte";
 export let cms;
 export let basePath;
 export let adminPath;

@@ -1,7 +1,7 @@
 <script>export let cms;
 export let entity;
-export let item;
-export let parent;
+export let item = undefined;
+export let parent = undefined;
 export let displayMode;
 export let display;
 let classes = '';

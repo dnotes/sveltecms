@@ -1,13 +1,14 @@
 import { SvelteComponentTyped } from "svelte";
-import type { WidgetField } from "sveltecms";
-import type SvelteCMS from "sveltecms";
-import { type EntityDisplayConfigSetting } from "sveltecms/core/Display";
+import type { ConfigSetting, WidgetField } from "../../..";
+import type SvelteCMS from "../../..";
+import { type EntityDisplayConfigSetting } from "../../../core/Display";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
         field: WidgetField;
         id: string;
         value: EntityDisplayConfigSetting;
+        defaults: ConfigSetting;
     };
     events: {
         [evt: string]: CustomEvent<any>;

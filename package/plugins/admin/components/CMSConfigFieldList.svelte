@@ -1,11 +1,11 @@
 <script>import { isEqual } from "lodash-es";
-import Modal from 'sveltecms/ui/Modal.svelte';
-import Button from 'sveltecms/ui/Button.svelte';
-import ConfigurableEntityWidget from 'sveltecms/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte';
+import Modal from '../../../ui/Modal.svelte';
+import Button from '../../../ui/Button.svelte';
+import ConfigurableEntityWidget from '../widgets/CMSWidgetConfigurableEntity.svelte';
 import { tick } from "svelte/internal";
-import { Field } from "sveltecms/core/Field";
-import AddItemLine from "sveltecms/ui/AddItemLine.svelte";
-import ScriptableButton from "sveltecms/ui/ScriptableButton.svelte";
+import { Field } from "../../../core/Field";
+import AddItemLine from "../../../ui/AddItemLine.svelte";
+import ScriptableButton from "../../../ui/ScriptableButton.svelte";
 export let cms;
 export let data = {};
 export let options = {};

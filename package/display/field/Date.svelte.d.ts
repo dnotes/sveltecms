@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from "sveltecms";
-import type Field from "sveltecms/core/Field";
+import type SvelteCMS from "../..";
+import type Field from "../../core/Field";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;

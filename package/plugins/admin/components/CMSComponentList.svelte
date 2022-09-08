@@ -1,6 +1,6 @@
-<script>import Button from "sveltecms/ui/Button.svelte";
-import Modal from "sveltecms/ui/Modal.svelte";
-import CmsConfigForm from "sveltecms/plugins/admin/components/CMSConfigForm.svelte";
+<script>import Button from "../../../ui/Button.svelte";
+import Modal from "../../../ui/Modal.svelte";
+import CmsConfigForm from "./CMSConfigForm.svelte";
 export let cms;
 export let data; // An array of all files in the $lib folder
 export let adminPath;

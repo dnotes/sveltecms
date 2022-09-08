@@ -1,4 +1,4 @@
-<script>import Display from "sveltecms/core/Display";
+<script>import Display from "../core/Display";
 import FieldValue from "./FieldValue.svelte";
 import Wrapper from "./Wrapper.svelte";
 export let cms;

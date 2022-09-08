@@ -1,5 +1,5 @@
-import type { Component, ComponentType } from "sveltecms/core/Component";
-import type SvelteCMS from "sveltecms";
+import type { Component, ComponentType } from "./Component";
+import type SvelteCMS from "..";
 import type { EntityTemplate } from "./EntityTemplate";
 export declare type DisplayConfig = {
     type: string;

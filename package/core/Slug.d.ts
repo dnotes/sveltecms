@@ -1,6 +1,6 @@
-import type SvelteCMS from 'sveltecms';
-import type { ConfigSetting, ConfigurableEntityConfigSettingValue } from 'sveltecms';
-import type { TransformerConfigSetting } from 'sveltecms/core/Transformer';
+import type SvelteCMS from '..';
+import type { ConfigSetting, ConfigurableEntityConfigSettingValue } from '..';
+import type { TransformerConfigSetting } from './Transformer';
 import type { EntityTemplate } from './EntityTemplate';
 export interface SlugConfigSetting extends ConfigSetting {
     fields: string | string[];

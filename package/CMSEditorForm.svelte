@@ -1,5 +1,5 @@
 <script>import CmsFieldGroup from './CMSFieldGroup.svelte';
-import DisplayResult from 'sveltecms/ui/DisplayResult.svelte';
+import DisplayResult from './ui/DisplayResult.svelte';
 import { cloneDeep, debounce } from 'lodash-es';
 import Button from './ui/Button.svelte';
 import ContentItem from './display/ContentItem.svelte';

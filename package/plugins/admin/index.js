@@ -1,5 +1,5 @@
 import * as components from './components';
-import { adminPages } from 'sveltecms/core/AdminPage';
+import { adminPages } from '../../core/AdminPage';
 import CMSWidgetEntity from './widgets/CMSWidgetEntity.svelte';
 import CMSWidgetEntityList from './widgets/CMSWidgetEntityList.svelte';
 import CMSWidgetList from './widgets/CMSWidgetList.svelte';

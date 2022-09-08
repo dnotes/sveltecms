@@ -1,5 +1,5 @@
 <script>import { get, set, isEqual } from 'lodash-es';
-import Button from "sveltecms/ui/Button.svelte";
+import Button from "../../../ui/Button.svelte";
 import yaml from 'js-yaml';
 export let cms;
 export let data;

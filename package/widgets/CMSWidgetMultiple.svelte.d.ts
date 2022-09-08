@@ -6,7 +6,7 @@ declare const __propDef: {
         field: WidgetField;
         id: string;
         cms: SvelteCMS;
-        value?: any[];
+        value?: any | any[];
     };
     events: {
         click: MouseEvent;

@@ -1,5 +1,5 @@
 import { get, set } from 'lodash-es';
-import Fieldgroup from 'sveltecms/core/Fieldgroup';
+import Fieldgroup from '../core/Fieldgroup';
 export async function collapseFormItem(cms, contentType, fields, data, prefix) {
     // Get all fields, as promises (some formDataHandler functions are async)
     let promises = Object.entries(fields).map(async ([id, field]) => {

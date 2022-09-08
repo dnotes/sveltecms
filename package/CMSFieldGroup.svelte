@@ -1,4 +1,4 @@
-<script>import CmsField from 'sveltecms/CMSField.svelte';
+<script>import CmsField from './CMSField.svelte';
 import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 export let cms;
 export let values = {};

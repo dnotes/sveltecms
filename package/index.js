@@ -7,9 +7,9 @@ import { templateContentStore } from './core/ContentStore';
 import { Fieldgroup, templateFieldgroup } from './core/Fieldgroup';
 import { transformers, templateTransformer } from './core/Transformer';
 import { ScriptFunction, scriptFunctions, parseScript } from './core/ScriptFunction';
-import { templateComponent } from 'sveltecms/core/Component';
-import { displayComponents, templateDisplay, defaultDisplayModes, isDisplayConfig } from 'sveltecms/core/Display';
-import staticFilesPlugin from 'sveltecms/plugins/staticFiles';
+import { templateComponent } from './core/Component';
+import { displayComponents, templateDisplay, defaultDisplayModes, isDisplayConfig } from './core/Display';
+import staticFilesPlugin from './plugins/staticFiles';
 import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual, merge, uniq } from 'lodash-es';
 import SlugConfig, { templateSlug } from './core/Slug';
 import { Indexer, templateIndexer } from './core/Indexer';
@@ -221,7 +221,7 @@ export default class SvelteCMS {
                         }
                         else {
                             let container = field.type === 'reference'
-                                ? this.getContentType(values[id]?.['_type'])
+                                ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
                                 : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field;
                             // @ts-ignore the typecheck above should be sufficient
                             res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id];
@@ -259,7 +259,7 @@ export default class SvelteCMS {
                         }
                         else {
                             let container = field.type === 'reference'
-                                ? this.getContentType(values[id]?.['_type'])
+                                ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
                                 : values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field;
                             // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
                             // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
@@ -807,8 +807,8 @@ export default class SvelteCMS {
     /**
      * Get the full config setting for a particular entity
      * @param type The Entity Type, e.g. 'field'
-     * @param entity The ID of the particular entity to get
-     * @param options The list of options and properties for the entity (so they aren't looked up more than once)
+     * @param id The ID of the particular entity to get
+     * @param parentOnly If true, the config for the current entity will be ignored
      * @returns ConfigSetting
      */
     getEntityConfig(type, id, parentOnly = false) {

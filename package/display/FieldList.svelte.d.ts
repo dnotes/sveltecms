@@ -1,7 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from "sveltecms";
-import type { FieldableEntity } from "sveltecms";
-import type { Value } from "sveltecms/core/ContentStore";
+import type SvelteCMS from "..";
+import type { FieldableEntity } from "..";
+import type { Value } from "../core/ContentStore";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;

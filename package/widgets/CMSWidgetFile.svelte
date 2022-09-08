@@ -33,8 +33,8 @@ export class CMSFile {
 }
 </script>
 
-<script>import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
-import Button from "sveltecms/ui/Button.svelte";
+<script>import DisplayResult from "../ui/DisplayResult.svelte";
+import Button from "../ui/Button.svelte";
 export let field;
 export let id;
 //@ts-ignore

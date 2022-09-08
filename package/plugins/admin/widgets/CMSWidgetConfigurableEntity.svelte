@@ -1,6 +1,6 @@
-<script>import Modal from 'sveltecms/ui/Modal.svelte';
-import Button from 'sveltecms/ui/Button.svelte';
-import CmsFieldGroup from "sveltecms/CMSFieldGroup.svelte";
+<script>import Modal from '../../../ui/Modal.svelte';
+import Button from '../../../ui/Button.svelte';
+import CmsFieldGroup from "../../../CMSFieldGroup.svelte";
 import { isEqual, isNull } from "lodash-es";
 import { createEventDispatcher } from "svelte";
 import yaml from 'js-yaml';

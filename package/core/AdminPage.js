@@ -1,5 +1,5 @@
-import { Component } from "sveltecms/core/Component";
-import { saveContentEndpoint, deleteContentEndpoint } from 'sveltecms/utils';
+import { Component } from "./Component";
+import { saveContentEndpoint, deleteContentEndpoint } from '../utils';
 export class AdminPage {
     constructor(conf, cms) {
         this.id = conf.id;
@@ -85,6 +85,16 @@ export const adminPages = [
                 component: 'CMSConfigEntityList',
             }
         }
+    },
+    {
+        id: 'contentTypes/*',
+        label: 'Content Types',
+        component: {
+            type: 'CMSConfigForm',
+            options: {
+                component: 'CMSConfigEntity'
+            },
+        },
     },
     // {
     //   id: 'lists',

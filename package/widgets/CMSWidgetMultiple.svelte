@@ -1,6 +1,6 @@
 <script>import { onMount, tick } from "svelte";
 import CmsWidgetFieldgroup from "./CMSWidgetFieldgroup.svelte";
-import Button from "sveltecms/ui/Button.svelte";
+import Button from "../ui/Button.svelte";
 import { cloneDeep } from "lodash-es";
 export let field;
 export let id;

@@ -1,7 +1,7 @@
-<script>import { parseScript } from 'sveltecms/core/ScriptFunction';
-import Modal from 'sveltecms/ui/Modal.svelte';
-import CMSField from 'sveltecms/CMSField.svelte';
-import Button from 'sveltecms/ui/Button.svelte';
+<script>import { parseScript } from '../core/ScriptFunction';
+import Modal from '../ui/Modal.svelte';
+import CMSField from '../CMSField.svelte';
+import Button from '../ui/Button.svelte';
 export let cms;
 export let field = {};
 export let id = field?.['id'];

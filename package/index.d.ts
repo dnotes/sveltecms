@@ -7,8 +7,8 @@ import { type Content, type ContentStoreConfigSetting, type ContentStoreType, ty
 import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup } from './core/Fieldgroup';
 import { type Transformer, type TransformerConfigSetting } from './core/Transformer';
 import { type ScriptFunctionType, type ScriptFunctionConfig } from './core/ScriptFunction';
-import { type ComponentType, type ComponentConfigSetting, type Component } from 'sveltecms/core/Component';
-import { type EntityDisplayConfigSetting, type DisplayConfigSetting, type FullEntityDisplayConfig } from 'sveltecms/core/Display';
+import { type ComponentType, type ComponentConfigSetting, type Component } from './core/Component';
+import { type EntityDisplayConfigSetting, type DisplayConfigSetting, type FullEntityDisplayConfig } from './core/Display';
 import type { EntityTemplate } from './core/EntityTemplate';
 import SlugConfig from './core/Slug';
 import { Indexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer';
@@ -294,8 +294,8 @@ export default class SvelteCMS {
     /**
      * Get the full config setting for a particular entity
      * @param type The Entity Type, e.g. 'field'
-     * @param entity The ID of the particular entity to get
-     * @param options The list of options and properties for the entity (so they aren't looked up more than once)
+     * @param id The ID of the particular entity to get
+     * @param parentOnly If true, the config for the current entity will be ignored
      * @returns ConfigSetting
      */
     getEntityConfig(type: string, id: string, parentOnly?: boolean): ConfigSetting;

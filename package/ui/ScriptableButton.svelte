@@ -1,6 +1,6 @@
-<script>import { parseScript, ScriptError } from 'sveltecms/core/ScriptFunction';
-import Modal from 'sveltecms/ui/Modal.svelte';
-import Button from 'sveltecms/ui/Button.svelte';
+<script>import { parseScript, ScriptError } from '../core/ScriptFunction';
+import Modal from './Modal.svelte';
+import Button from './Button.svelte';
 export let cms;
 export let value; // the value that is scriptable
 let defaultValue; // the default value of the field, if not a script

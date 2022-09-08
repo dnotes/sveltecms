@@ -1,10 +1,10 @@
-import type SvelteCMS from 'sveltecms';
-import type { ConfigSetting, DisplayableEntity, DisplayableEntityConfigSetting, FieldableEntity, LabeledEntity } from 'sveltecms';
-import { SlugConfig, type SlugConfigSetting } from 'sveltecms/core/Slug';
-import { ContentStore, type ContentStoreConfigSetting } from 'sveltecms/core/ContentStore';
-import type { MediaStoreConfigSetting } from 'sveltecms/core/MediaStore';
-import Field, { type FieldConfigSetting } from 'sveltecms/core/Field';
-import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
+import type SvelteCMS from '..';
+import type { ConfigSetting, DisplayableEntity, DisplayableEntityConfigSetting, FieldableEntity, LabeledEntity } from '..';
+import { SlugConfig, type SlugConfigSetting } from './Slug';
+import { ContentStore, type ContentStoreConfigSetting } from './ContentStore';
+import type { MediaStoreConfigSetting } from './MediaStore';
+import Field, { type FieldConfigSetting } from './Field';
+import type { EntityTemplate } from './EntityTemplate';
 import type { EntityDisplayConfigSetting } from './Display';
 export declare const templateContentType: EntityTemplate;
 export declare type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {

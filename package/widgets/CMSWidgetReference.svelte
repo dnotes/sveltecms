@@ -1,6 +1,6 @@
 <script>import Tags from 'svelte-tags-input';
 import { onMount } from 'svelte';
-import SlugConfig from 'sveltecms/core/Slug';
+import SlugConfig from '../core/Slug';
 export let cms;
 export let field;
 export let id;

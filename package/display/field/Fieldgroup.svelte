@@ -1,5 +1,5 @@
-<script>import ContentItem from 'sveltecms/display/ContentItem.svelte';
-import Fieldgroup from "sveltecms/core/Fieldgroup";
+<script>import ContentItem from '../ContentItem.svelte';
+import Fieldgroup from "../../core/Fieldgroup";
 export let cms;
 export let entity;
 export let item;

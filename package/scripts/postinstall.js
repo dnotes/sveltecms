@@ -4,16 +4,22 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fromPath = path.resolve(__dirname, '../install');
-const toPath = path.resolve(process.env.INIT_CWD, 'src');
+const toPath = path.resolve(process.env.INIT_CWD);
 const files = [
-    [`${fromPath}/routes/[...path].svelte`, `${toPath}/routes/[...path].svelte`],
-    [`${fromPath}/routes/[...path].ts`, `${toPath}/routes/[...path].ts`],
-    [`${fromPath}/routes/admin/[...adminPath].svelte`, `${toPath}/routes/admin/[...adminPath].svelte`],
-    [`${fromPath}/routes/admin/[...adminPath].ts`, `${toPath}/routes/admin/[...adminPath].ts`],
-    [`${fromPath}/routes/admin/__layout.svelte`, `${toPath}/routes/admin/__layout.svelte`],
-    [`${fromPath}/cms.ts`, `${toPath}/lib/cms.ts`],
-    [`${fromPath}/sveltecms.config.json`, `${toPath}/lib/sveltecms.config.json`],
-    [`${fromPath}/sveltecms.config.yml`, `${toPath}/lib/sveltecms.config.yml`],
+    // The '/[...path]' routes
+    [`${fromPath}/routes/(cms)/[...path]/+page.svelte`, `${toPath}/src/routes/(cms)/[...path]/+page.svelte`],
+    [`${fromPath}/routes/(cms)/[...path]/+page.ts`, `${toPath}/src/routes/(cms)/[...path]/+page.ts`],
+    // The '/admin' routes
+    [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.svelte`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.svelte`],
+    [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.ts`],
+    [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.server.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.server.ts`],
+    [`${fromPath}/routes/(cms)/admin/+layout.svelte`, `${toPath}/src/routes/(cms)/admin/+layout.svelte`],
+    // Files for the $lib folder
+    [`${fromPath}/cms.ts`, `${toPath}/src/lib/cms.ts`],
+    [`${fromPath}/sveltecms.config.json`, `${toPath}/src/lib/sveltecms.config.json`],
+    [`${fromPath}/sveltecms.config.yml`, `${toPath}/src/lib/sveltecms.config.yml`],
+    // Files for dependencies (SvelteKit, Vite, Tailwind)
+    [`${fromPath}/tailwind.config.cjs`, `${toPath}/tailwind.config.cjs`],
 ];
 files.forEach(([file, dest]) => {
     try {

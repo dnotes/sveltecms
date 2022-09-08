@@ -1,9 +1,9 @@
 <script>import { cloneDeep, isEqual, isNull } from "lodash-es";
 import yaml from 'js-yaml';
 import { createEventDispatcher } from "svelte";
-import CmsFieldGroup from "sveltecms/CMSFieldGroup.svelte";
-import Button from "sveltecms/ui/Button.svelte";
-import Modal from "sveltecms/ui/Modal.svelte";
+import CmsFieldGroup from "../../../CMSFieldGroup.svelte";
+import Button from "../../../ui/Button.svelte";
+import Modal from "../../../ui/Modal.svelte";
 import CmsWidgetDisplayList from "./CMSWidgetDisplayList.svelte";
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 export let cms;
@@ -192,6 +192,7 @@ $: if (conf)
       id="{formBaseID}[displays]"
       field={widgetFieldGroup.fields.displays}
       bind:value={conf['displays']}
+      {defaults}
     />
   {/if}
 
@@ -216,6 +217,7 @@ $: if (conf)
         items={typeOptions}
         on:change={setType}
         required={field?.required ?? false}
+        placeholder={opts.placeholder ?? ''}
       />
     {/if}
 

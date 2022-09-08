@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from 'sveltecms';
-import type { FieldableEntity } from 'sveltecms';
+import type SvelteCMS from './';
+import type { FieldableEntity } from './';
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
@@ -9,7 +9,7 @@ declare const __propDef: {
         touched?: {};
         id?: string;
         fieldgroup?: FieldableEntity;
-        widgetFieldGroup?: import("sveltecms").WidgetFieldFieldgroup;
+        widgetFieldGroup?: import("./").WidgetFieldFieldgroup;
     };
     events: {
         change: CustomEvent<any>;

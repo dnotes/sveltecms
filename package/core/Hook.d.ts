@@ -1,4 +1,4 @@
-import type SvelteCMS from "sveltecms";
+import type SvelteCMS from "..";
 import type { Content } from "./ContentStore";
 import type ContentType from "./ContentType";
 export declare type Change = {

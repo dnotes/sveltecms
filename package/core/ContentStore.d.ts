@@ -1,7 +1,7 @@
-import type SvelteCMS from 'sveltecms';
-import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms';
-import type { ContentType } from 'sveltecms/core/ContentType';
-import type { EntityTemplate } from 'sveltecms/core/EntityTemplate';
+import type SvelteCMS from '..';
+import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
+import type { ContentType } from './ContentType';
+import type { EntityTemplate } from './EntityTemplate';
 export declare type Value = string | number | boolean | null | undefined | Date | Content | Array<Value>;
 export declare type Content = {
     _type?: string;

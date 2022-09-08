@@ -1,13 +1,12 @@
-<script>import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte';
-// @ts-ignore
+<script>import CmsEditorForm from '../../../CMSEditorForm.svelte';
 import { goto } from '$app/navigation';
-// @ts-ignore
-import { browser } from '$app/env';
+import { browser } from '$app/environment';
 export let cms;
 export let basePath;
 export let adminPath;
 export let data;
 let [contentPath, contentTypeID, slug] = adminPath.split('/');
+$: ([contentPath, contentTypeID, slug] = adminPath.split('/'));
 // If new content was just posted, goto the new url
 let isNew = slug === '_';
 if (browser && data._slug) {
@@ -16,7 +15,7 @@ if (browser && data._slug) {
     else if (slug !== data._slug)
         goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`);
 }
-let content = data ?? cms.getContent(contentTypeID, slug, { getRaw: true });
+$: content = data ?? cms.getContent(contentTypeID, slug, { getRaw: true });
 </script>
 
 {#await content}

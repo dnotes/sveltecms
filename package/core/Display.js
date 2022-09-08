@@ -1,8 +1,8 @@
-import Image from "sveltecms/display/field/Image.svelte";
-import File from "sveltecms/display/field/File.svelte";
-import Fieldgroup from "sveltecms/display/field/Fieldgroup.svelte";
-import Reference from "sveltecms/display/field/Reference.svelte";
-import DateSvelte from "sveltecms/display/field/Date.svelte";
+import Image from "../display/field/Image.svelte";
+import File from "../display/field/File.svelte";
+import Fieldgroup from "../display/field/Fieldgroup.svelte";
+import Reference from "../display/field/Reference.svelte";
+import DateSvelte from "../display/field/Date.svelte";
 export function isDisplayConfig(item) {
     return item?.type !== undefined;
 }

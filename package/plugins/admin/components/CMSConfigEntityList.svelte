@@ -1,13 +1,13 @@
-<script>import Button from 'sveltecms/ui/Button.svelte';
+<script>import Button from '../../../ui/Button.svelte';
 import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
 export let cms;
 export let data;
 export let options;
-let opts = Object.assign({}, options);
-let entityType = cms.getEntityType(opts.configType);
+$: opts = Object.assign({}, options);
+$: entityType = cms.getEntityType(opts.configType);
 let addEntity;
 // All entities of the type being configured
-let entities = cms.listEntities(opts.configPath);
+$: entities = cms.listEntities(opts.configPath);
 // All config items for the type of entities being configured, as an array
 $: items = Object.entries(data);
 // A list of items that are not configured at all

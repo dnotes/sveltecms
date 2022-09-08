@@ -1,4 +1,4 @@
-<script>import { getLabelFromID } from "sveltecms/utils";
+<script>import { getLabelFromID } from "../utils";
 export let cms;
 export let adminPath;
 export let basePath;
@@ -13,6 +13,7 @@ $: crumbs = adminPath.split('/').reduce((agg, val, i, arr) => {
     }
     return agg;
 }, [['admin', '']]);
+$: console.log(basePath);
 </script>
 
 <nav>

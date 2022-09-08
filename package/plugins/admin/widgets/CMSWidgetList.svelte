@@ -1,4 +1,4 @@
-<script>import CmsWidgetMultiple from 'sveltecms/widgets/CMSWidgetMultiple.svelte';
+<script>import CmsWidgetMultiple from '../../../widgets/CMSWidgetMultiple.svelte';
 export let cms;
 export let field;
 export let id;

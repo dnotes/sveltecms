@@ -1,5 +1,5 @@
-import type { ConfigurableEntity, ConfigurableEntityType } from "sveltecms";
-import type SvelteCMS from 'sveltecms';
+import type { ConfigurableEntity, ConfigurableEntityType } from "..";
+import type SvelteCMS from '..';
 import type Field from './Field';
 export declare class ScriptFunction implements ConfigurableEntity {
     id: string;

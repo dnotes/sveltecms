@@ -1,5 +1,5 @@
-import type SvelteCMS from "sveltecms";
-import type { ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntityConfigSetting, ConfigurableEntity, ConfigSetting, TypedEntity, EntityType } from "sveltecms";
+import type SvelteCMS from "..";
+import type { ConfigurableEntityConfigSetting, ConfigurableEntityType, TypedEntityConfigSetting, ConfigurableEntity, ConfigSetting, TypedEntity, EntityType } from "..";
 import type { EntityTemplate } from "./EntityTemplate";
 /**
  * Note: Components must be pre-registered for ANY type of import in SvelteKit.

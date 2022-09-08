@@ -1,5 +1,5 @@
-<script>import Display from "sveltecms/core/Display";
-import { browser } from '$app/env';
+<script>import Display from "../../core/Display";
+import { browser } from '$app/environment';
 export let cms;
 export let entity;
 export let item;

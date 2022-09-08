@@ -1,7 +1,7 @@
-import MediaStore, {} from "sveltecms/core/MediaStore";
-import { parseScript, ScriptFunctionConfig } from 'sveltecms/core/ScriptFunction';
-import Widget, {} from 'sveltecms/core/Widget';
-import { getLabelFromID, splitTags } from 'sveltecms/utils';
+import MediaStore, {} from "./MediaStore";
+import { parseScript, ScriptFunctionConfig } from './ScriptFunction';
+import Widget, {} from './Widget';
+import { getLabelFromID, splitTags } from '../utils';
 export const templateField = {
     id: 'field',
     label: 'Field',

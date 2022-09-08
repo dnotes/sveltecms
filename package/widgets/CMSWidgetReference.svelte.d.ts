@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from 'sveltecms';
-import type { WidgetField } from 'sveltecms';
+import type SvelteCMS from '..';
+import type { WidgetField } from '..';
 declare const __propDef: {
     props: {
         cms: SvelteCMS;

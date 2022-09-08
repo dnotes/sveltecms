@@ -1,9 +1,9 @@
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
 import bytes from 'bytes';
 import { cloneDeep, get } from 'lodash-es';
-import { dirname } from 'sveltecms/utils/path';
+import { dirname } from '../../utils/path';
 import Fuse from 'fuse.js';
-import { findReferenceIndex } from 'sveltecms/utils';
+import { findReferenceIndex } from '../../utils';
 const fs = {};
 const allIndexes = import.meta.glob('/src/content/_*.index.json', { eager: true });
 const allContent = import.meta.glob('/src/content/*/**/*.{md,yml,yaml,json}', { as: 'raw' });

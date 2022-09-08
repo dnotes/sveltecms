@@ -1,10 +1,12 @@
 <script>import { cloneDeep, uniq } from "lodash-es";
-import { isDisplayConfig, isDisplayNone } from "sveltecms/core/Display";
+import { isDisplayConfig, isDisplayNone } from "../../../core/Display";
 import CmsWidgetEntity from "./CMSWidgetEntity.svelte";
 export let cms;
 export let field;
 export let id;
 export let value;
+export let defaults;
+$: displayDefaults = cms.parseEntityDisplayConfigSetting(defaults?.['displays']);
 // The items should always be an array of [id, DisplayConfig]
 let startConf = {
     ...Object.fromEntries(cms.displayModes.map(k => [k, ''])),
@@ -76,6 +78,7 @@ function dumpEntityDisplayConfigSetting(items) {
 // Now transform the items back.
 $: if (items)
     value = dumpEntityDisplayConfigSetting(items);
+// $: console.log(displayDefaults) // TODO: get this to display the correct defaults for ContentTypes, Fields, and Fieldgroups
 </script>
 
 {#each items as [mode, display], i}
@@ -85,7 +88,16 @@ $: if (items)
       {field}
       id="{id}[{mode}]"
       label="{mode}"
-      options={{entityType:'display'}}
+      options={{
+        entityType:'display',
+        placeholder:(
+          displayDefaults?.['mode']?.['type'] ??
+          displayDefaults?.['mode'] ??
+          displayDefaults?.['default']?.['type'] ??
+          displayDefaults?.['default'] ??
+          ''
+        )
+      }}
       bind:value={display}
     />
   </div>

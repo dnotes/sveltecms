@@ -1,7 +1,7 @@
-import { SlugConfig } from 'sveltecms/core/Slug';
-import { ContentStore } from 'sveltecms/core/ContentStore';
-import Field, {} from 'sveltecms/core/Field';
-import { getLabelFromID, splitTags } from 'sveltecms/utils';
+import { SlugConfig } from './Slug';
+import { ContentStore } from './ContentStore';
+import Field, {} from './Field';
+import { getLabelFromID, splitTags } from '../utils';
 export const templateContentType = {
     id: 'contentType',
     label: 'Content Type',

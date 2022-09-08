@@ -1,4 +1,4 @@
-import { splitTags } from 'sveltecms/utils';
+import { splitTags } from '../utils';
 export function isIndexItem(item) {
     return item?._type !== undefined;
 }

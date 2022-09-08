@@ -1,10 +1,10 @@
 <script>import { tick } from "svelte";
 import { page } from "$app/stores";
-import CmsWidgetEntity from "sveltecms/plugins/admin/widgets/CMSWidgetEntity.svelte";
-import Button from "sveltecms/ui/Button.svelte";
-import Modal from "sveltecms/ui/Modal.svelte";
+import CmsWidgetEntity from "./CMSWidgetEntity.svelte";
+import Button from "../../../ui/Button.svelte";
+import Modal from "../../../ui/Modal.svelte";
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
-import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte";
+import EntityListSectionToggle from "../../../ui/EntityListSectionToggle.svelte";
 export let cms;
 export let id;
 export let field = undefined;

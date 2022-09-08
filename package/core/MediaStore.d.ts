@@ -1,5 +1,5 @@
-import type SvelteCMS from 'sveltecms';
-import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms';
+import type SvelteCMS from '..';
+import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
 import type { EntityTemplate } from './EntityTemplate';
 export declare type Media = {
     src: string;

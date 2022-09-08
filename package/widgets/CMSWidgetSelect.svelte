@@ -1,4 +1,4 @@
-<script>import { getList } from "sveltecms/utils/list";
+<script>import { getList } from "../utils/list";
 export let field;
 export let id;
 export let value = field.multiple ? (Array.isArray(field.default) ? field.default : [field.default || '']) : (field.default || '');

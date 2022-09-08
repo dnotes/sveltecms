@@ -1,4 +1,4 @@
-<script>import { pad, formatTimezoneOffset } from 'sveltecms/utils/date';
+<script>import { pad, formatTimezoneOffset } from '../utils/date';
 export let field;
 export let id;
 export let value = field.default;

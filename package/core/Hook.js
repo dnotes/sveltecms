@@ -1,6 +1,6 @@
 import { cloneDeep, get, isEqual, set } from "lodash-es";
 import { isIndexItem } from "./Indexer";
-import { findReferenceIndex } from "sveltecms/utils";
+import { findReferenceIndex } from "../utils";
 // TODO: Make a special kind of Error for Hooks, including:
 // - some way to collect multiple errors into one
 // - some way to indicate a URL to check on each error

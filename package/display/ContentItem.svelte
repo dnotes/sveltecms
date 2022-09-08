@@ -1,4 +1,4 @@
-<script>import Display from "sveltecms/core/Display";
+<script>import Display from "../core/Display";
 import FieldList from "./FieldList.svelte";
 export let cms;
 export let entity = undefined;

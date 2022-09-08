@@ -1,4 +1,4 @@
-<script>import ContentItem from 'sveltecms/display/ContentItem.svelte';
+<script>import ContentItem from '../ContentItem.svelte';
 export let cms;
 export let entity;
 export let item;

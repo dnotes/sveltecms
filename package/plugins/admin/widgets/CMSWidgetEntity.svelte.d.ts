@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
-import type SvelteCMS from "sveltecms";
-import type { EntityConfigSetting, WidgetField } from "sveltecms";
+import type SvelteCMS from "../../..";
+import type { EntityConfigSetting, WidgetField } from "../../..";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
@@ -12,6 +12,7 @@ declare const __propDef: {
             fieldType?: string;
             skipDetail?: boolean;
             isTopLevelEntity?: boolean;
+            placeholder?: string;
         };
         entityID?: string | null;
         nested?: boolean;

@@ -1,8 +1,8 @@
 <script>import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
 import { cloneDeep, get } from 'lodash-es';
-import splitTags from 'sveltecms/utils/splitTags';
-import Button from 'sveltecms/ui/Button.svelte';
+import splitTags from '../utils/splitTags';
+import Button from '../ui/Button.svelte';
 const split = splitTags();
 let parentField;
 let parentID = '';

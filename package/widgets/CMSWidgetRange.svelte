@@ -1,5 +1,5 @@
 <script>import { sortBy } from "lodash-es";
-import { getList } from "sveltecms/utils";
+import { getList } from "../utils";
 export let field;
 export let id;
 export let value = field.default;

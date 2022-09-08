@@ -1,8 +1,8 @@
 <script context="module">export {};
 </script>
 
-<script>import DisplayResult from "sveltecms/ui/DisplayResult.svelte";
-import Button from "sveltecms/ui/Button.svelte";
+<script>import DisplayResult from "../ui/DisplayResult.svelte";
+import Button from "../ui/Button.svelte";
 let result;
 export let field;
 export let id;
@@ -144,7 +144,7 @@ function releaseObjectUrls() {
     <Button helptext={'Upload a new image'} on:click={()=>{input.click()}}>Upload</Button>
   </label>
 
-  {#if value && value !== {} && value !== []}
+  {#if value && Object.keys(value).length}
     <div class="cms-image-preview">
       {#if Array.isArray(value)}
         {#each previews as preview, i}

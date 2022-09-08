@@ -1,5 +1,5 @@
-import type { CMSPlugin } from 'sveltecms';
-import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
+import type { CMSPlugin } from '../..';
+import type { ConfigFieldConfigSetting } from '../../core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs';
 export declare function getFs(databaseName: any): Promise<PromisifiedFS>;
 export declare const databaseNameField: ConfigFieldConfigSetting;

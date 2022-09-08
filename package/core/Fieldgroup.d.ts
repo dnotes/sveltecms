@@ -1,5 +1,5 @@
-import type { FieldableEntityConfigSetting, EntityType, FieldableEntity, DisplayableEntity, DisplayableEntityConfigSetting } from "sveltecms";
-import type SvelteCMS from "sveltecms";
+import type { FieldableEntityConfigSetting, EntityType, FieldableEntity, DisplayableEntity, DisplayableEntityConfigSetting } from "..";
+import type SvelteCMS from "..";
 import type { EntityDisplayConfigSetting } from "./Display";
 import type { EntityTemplate } from "./EntityTemplate";
 import Field, { type ConfigFieldConfigSetting } from "./Field";

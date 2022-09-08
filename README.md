@@ -1,9 +1,11 @@
-## Pre-install: Setup SvelteKit app
+## Pre-install: Setup SvelteKit app WITH THE PROPER SVELTEKIT VERSION
 
 You can start up a SvelteKit app as you usually would. However, be aware that
 SvelteCMS will require some additional tinkering if you are not using TypeScript.
 Therefore, we recommend using TypeScript for your SvelteKit app if you can.
 
+After you have set up your SvelteKit app, ensure that you have installed the
+proper versions of SvelteKit and Vite to work with SvelteCMS applications.
 
 ## Installation
 
@@ -59,43 +61,10 @@ and how to recognize the classes.
     You can either do this manually or with a svelte-add command, e.g.
     `npx svelte-add@latest tailwindcss --tailwindcss-typography`
 
-* Modify the `tailwind.config.cjs` file:
+* Modify the `tailwind.config.cjs` file provided by SvelteCMS
 
-    This file is where you tell Tailwind how to find the classes in your config
-    and content. Replace the first part of the `config` variable with the code below:
-
-    ``` js
-    /**
-     * Function to extract classes from the text of matching content files.
-     * The regex-based search matches class names preceeded by a period.
-     * Class names are alpha-numeric plus dashes, underscores, and colons.
-     * This should work for SvelteCMS Displays and class attributes added
-     * with markdown-it-attrs, as both use the ".class-name" syntax.
-     */
-    const extract = (content) => {
-        return content.match(/(?<=\.)[-\w:]+/g) || []
-    }
-
-    const config = {
-        // The content array must be expanded into an object.
-        content: {
-            // Files in this list should be checked for tailwind classes.
-            files: [
-                "./src/**/*.{html,js,svelte,ts}", // This line is default.
-                "./src/sveltecms.config.{json,yml}",
-                "./content/**/*.{md,yml,json}",
-            ],
-            // The content.extract configuration tells Tailwind to use
-            // the function defined above for .json, .yml, and .md files.
-            extract: {
-                json: extract,
-                yml: extract,
-                md: extract,
-            },
-        },
-        ...
-    }
-    ```
+    The configuration provided by SvelteCMS includes several TailwindCSS plugins.
+    If you haven't installed them, remove them from the configuration.
 
 ### Optional: Use plain JS
 

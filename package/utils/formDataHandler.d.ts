@@ -1,6 +1,6 @@
-import type SvelteCMS from 'sveltecms';
-import type ContentType from 'sveltecms/core/ContentType';
-import type Field from 'sveltecms/core/Field';
+import type SvelteCMS from '..';
+import type ContentType from '../core/ContentType';
+import type Field from '../core/Field';
 export declare function collapseFormItem(cms: SvelteCMS, contentType: ContentType, fields: {
     [id: string]: Field;
 }, data: any, prefix?: string): Promise<any>;

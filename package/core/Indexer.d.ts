@@ -1,5 +1,5 @@
-import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms';
-import type SvelteCMS from 'sveltecms';
+import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
+import type SvelteCMS from '..';
 import type { Content } from './ContentStore';
 import type ContentType from './ContentType';
 import type { EntityTemplate } from './EntityTemplate';

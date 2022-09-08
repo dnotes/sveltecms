@@ -1,5 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
-import type { EntityTemplate } from "sveltecms/core/EntityTemplate";
+import type { EntityTemplate } from "../../../core/EntityTemplate";
 declare const __propDef: {
     props: {
         entityType: EntityTemplate;
@@ -8,6 +8,7 @@ declare const __propDef: {
         id: string;
         required?: boolean;
         unset?: string;
+        placeholder?: string;
     };
     events: {
         change: Event;

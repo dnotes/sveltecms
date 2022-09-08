@@ -1,4 +1,4 @@
-import type { ConfigurableEntityType, ConfigSetting, ConfigurableEntityConfigSetting } from "sveltecms";
+import type { ConfigurableEntityType, ConfigSetting, ConfigurableEntityConfigSetting } from "..";
 export declare type TransformerConfigSetting = ConfigurableEntityConfigSetting;
 export declare const templateTransformer: {
     id: string;
