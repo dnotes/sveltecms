@@ -1,4 +1,4 @@
-## Pre-install: Setup SvelteKit app WITH THE PROPER SVELTEKIT VERSION
+## Pre-install: Setup SvelteKit app (with the proper SvelteKit version)
 
 You can start up a SvelteKit app as you usually would. However, be aware that
 SvelteCMS will require some additional tinkering if you are not using TypeScript.
@@ -6,6 +6,9 @@ Therefore, we recommend using TypeScript for your SvelteKit app if you can.
 
 After you have set up your SvelteKit app, ensure that you have installed the
 proper versions of SvelteKit and Vite to work with SvelteCMS applications.
+
+*Note: At present you will need to install the exact release of SvelteKit,
+e.g. @1.0.0-next.XXX, until SvelteKit has a stable release.*
 
 ## Installation
 
