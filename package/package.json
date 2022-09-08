@@ -1,10 +1,10 @@
 {
   "name": "sveltecms",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
-    "@sveltejs/kit": "^1.0.0-next.471",
+    "@sveltejs/kit": "1.0.0-next.471",
     "@sveltejs/package": "^1.0.0-next.3",
     "browser-or-node": "^2.0.0",
     "bytes": "^3.1.2",
@@ -26,7 +26,7 @@
     "validatorjs": "^3.22.1"
   },
   "peerDependencies": {
-    "@sveltejs/kit": "^1.0.0-next.471",
+    "@sveltejs/kit": "1.0.0-next.471",
     "vite": "^3.1.0"
   },
   "devDependencies": {
@@ -117,6 +117,7 @@
     "./display/field/Reference.svelte": "./display/field/Reference.svelte",
     ".": "./index.js",
     "./plugins/admin/components/CMSComponentList.svelte": "./plugins/admin/components/CMSComponentList.svelte",
+    "./plugins/admin/components/CMSComponentListOld.svelte": "./plugins/admin/components/CMSComponentListOld.svelte",
     "./plugins/admin/components/CMSConfigContentTypeList.svelte": "./plugins/admin/components/CMSConfigContentTypeList.svelte",
     "./plugins/admin/components/CMSConfigEntity.svelte": "./plugins/admin/components/CMSConfigEntity.svelte",
     "./plugins/admin/components/CMSConfigEntityList.svelte": "./plugins/admin/components/CMSConfigEntityList.svelte",

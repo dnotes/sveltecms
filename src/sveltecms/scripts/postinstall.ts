@@ -8,9 +8,14 @@ const fromPath = path.resolve(__dirname, '../install')
 const toPath = path.resolve(process.env.INIT_CWD)
 
 const files = [
+  // The default front page route
+  [`${fromPath}/routes/+page.svelte`, `${toPath}/src/routes/+page.svelte`],
+
   // The '/[...path]' routes
   [`${fromPath}/routes/(cms)/[...path]/+page.svelte`, `${toPath}/src/routes/(cms)/[...path]/+page.svelte`],
   [`${fromPath}/routes/(cms)/[...path]/+page.ts`,     `${toPath}/src/routes/(cms)/[...path]/+page.ts`],
+  [`${fromPath}/routes/(cms)/[...path]/+layout.svelte`, `${toPath}/src/routes/(cms)/[...path]/+layout.svelte`],
+  [`${fromPath}/routes/(cms)/[...path]/+layout.ts`,     `${toPath}/src/routes/(cms)/[...path]/+layout.ts`],
 
   // The '/admin' routes
   [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.svelte`,    `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.svelte`],

@@ -9,6 +9,9 @@ let packageJSON = JSON.parse(
 )
 
 const files = [
+  // The default front page route
+  ['src/install/+page.svelte', `package/install/routes/+page.svelte`],
+
   // The '/[...path]' routes
   ['src/routes/(cms)/[...path]/+layout.ts',     'package/install/routes/(cms)/[...path]/+layout.ts'],
   ['src/routes/(cms)/[...path]/+layout.svelte', 'package/install/routes/(cms)/[...path]/+layout.svelte'],
