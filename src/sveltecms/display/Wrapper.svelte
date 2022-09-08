@@ -8,8 +8,8 @@ import type Field from "sveltecms/core/Field";
 import type Fieldgroup from "./field/Fieldgroup.svelte";
   export let cms:SvelteCMS
   export let entity:ContentType|Field|Fieldgroup
-  export let item:Content|Value
-  export let parent:Content|Value
+  export let item:Content|Value|undefined = undefined
+  export let parent:Content|Value|undefined = undefined
   export let displayMode:string
   export let display:Display
   let classes:string = ''

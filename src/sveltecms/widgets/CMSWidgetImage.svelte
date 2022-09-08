@@ -189,7 +189,7 @@ let result
     <Button helptext={'Upload a new image'} on:click={()=>{input.click()}}>Upload</Button>
   </label>
 
-  {#if value && value !== {} && value !== []}
+  {#if value && Object.keys(value).length}
     <div class="cms-image-preview">
       {#if Array.isArray(value)}
         {#each previews as preview, i}
