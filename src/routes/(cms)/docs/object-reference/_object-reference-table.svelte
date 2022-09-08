@@ -23,7 +23,7 @@
   </div>
 {/each}
 
-<style>
+<style lang="postcss">
   div.flex div {
     @apply w-20 flex-shrink-0 text-center;
   }

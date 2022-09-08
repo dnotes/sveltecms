@@ -4,8 +4,7 @@ import cms from '$lib/cms' // TODO: pare this down; we shouldn't need the full C
 import type { Content } from 'sveltecms/core/ContentStore';
 import Wrapper from 'sveltecms/display/Wrapper.svelte';
 import ContentItem from 'sveltecms/display/ContentItem.svelte'
-import { Display } from 'sveltecms/core/Display';
-import ContentType from 'sveltecms/core/ContentType';
+import { Display, isDisplayConfig, type DisplayConfigSetting } from 'sveltecms/core/Display';
 
   export let data:PageData
   let contentTypeID:string
@@ -18,16 +17,22 @@ import ContentType from 'sveltecms/core/ContentType';
   $: items = Array.isArray(content) ? content : [content]
 
   // Get the proper display
-  let display:Display
+  let display:Display, displayConfigSetting:string|DisplayConfigSetting
   $: displayMode = Array.isArray(content) ? 'teaser' : 'page'
-  $: display = new Display(contentType?.displayModes?.[displayMode] ?? contentType?.display ?? 'div', cms)
+  $: displayConfigSetting = (typeof contentType.displays === 'string' || isDisplayConfig(contentType.displays)) ? contentType.displays : (contentType?.displays?.[displayMode] ?? contentType?.displays?.default ?? 'div')
+  $: display = new Display(displayConfigSetting, cms)
 
 </script>
 
 {#if display.isDisplayed}
   {#if display?.wrapper?.isDisplayed}
 
-    <Wrapper display={display.wrapper}>
+    <Wrapper
+      {cms}
+      entity={contentType}
+      {displayMode}
+      display={display.wrapper}
+    >
       {#each items as item}
         <ContentItem
           {cms}
