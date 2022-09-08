@@ -9,14 +9,26 @@ let packageJSON = JSON.parse(
 )
 
 const files = [
-  ['src/routes/[...path].svelte',             'package/install/routes/[...path].svelte'],
-  ['src/routes/[...path].ts',                 'package/install/routes/[...path].ts'],
-  ['src/routes/admin/[...adminPath].svelte',  'package/install/routes/admin/[...adminPath].svelte'],
-  ['src/routes/admin/[...adminPath].ts',      'package/install/routes/admin/[...adminPath].ts'],
-  ['src/routes/admin/__layout.svelte',        'package/install/routes/admin/__layout.svelte'],
-  ['src/install/cms.ts',                      'package/install/cms.ts'],
-  ['src/install/sveltecms.config.json',       'package/install/sveltecms.config.json'],
-  ['src/install/sveltecms.config.yml',        'package/install/sveltecms.config.yml'],
+  // The '/[...path]' routes
+  ['src/routes/(cms)/[...path]/+layout.ts',     'package/install/routes/(cms)/[...path]/+layout.ts'],
+  ['src/routes/(cms)/[...path]/+layout.svelte', 'package/install/routes/(cms)/[...path]/+layout.svelte'],
+  ['src/routes/(cms)/[...path]/+page.ts',       'package/install/routes/(cms)/[...path]/+page.ts'],
+  ['src/routes/(cms)/[...path]/+page.svelte',   'package/install/routes/(cms)/[...path]/+page.svelte'],
+
+  // The '/admin' routes
+  ['src/routes/(cms)/admin/+layout.svelte',                 'package/install/routes/(cms)/admin/+layout.svelte'],
+  ['src/routes/(cms)/admin/[...adminPath]/+page.server.ts', 'package/install/routes/(cms)/admin/[...adminPath]/+page.server.ts'],
+  ['src/routes/(cms)/admin/[...adminPath]/+page.ts',        'package/install/routes/(cms)/admin/[...adminPath]/+page.ts'],
+  ['src/routes/(cms)/admin/[...adminPath]/+page.svelte',    'package/install/routes/(cms)/admin/[...adminPath]/+page.svelte'],
+
+  // Files for the $lib folder
+  ['src/install/cms.ts',                'package/install/cms.ts'],
+  ['src/install/sveltecms.config.json', 'package/install/sveltecms.config.json'],
+  ['src/install/sveltecms.config.yml',  'package/install/sveltecms.config.yml'],
+
+  // Files for dependencies (SvelteKit, Vite, Tailwind)
+  ['tailwind.config.cjs', 'package/install/tailwind.config.cjs'],
+
 ]
 files.forEach(([file,dest]) => {
   try {

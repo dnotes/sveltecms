@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "package": "svelte-kit package && ./scripts/postpackage.js",
+    "package": "svelte-package && ./scripts/postpackage.js",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "postinstall": "node ./package/scripts/postinstall.js",
@@ -35,6 +35,10 @@
     "sanitize-html": "^2.5.3",
     "svelte-tags-input": "https://github.com/dnotes/svelte-tags-input#deac0e954e74ae0c4b7686f11abf2daffda8cff3",
     "validatorjs": "^3.22.1"
+  },
+  "peerDependencies": {
+    "@sveltejs/kit":  "^1.0.0-next.471",
+    "vite": "^3.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-yaml": "^3.1.0",

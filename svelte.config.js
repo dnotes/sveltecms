@@ -16,9 +16,7 @@ const config = {
 		},
 	},
 	package: {
-		exports: (filepath) => {
-			return !(filepath.match(/\/local\//))
-		}
+		source: 'src/sveltecms'
 	},
 };
 
