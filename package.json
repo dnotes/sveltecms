@@ -15,8 +15,8 @@
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
-    "@sveltejs/kit": "1.0.0-next.471",
-    "@sveltejs/package": "^1.0.0-next.3",
+    "@sveltejs/kit": "1.0.0-next.510",
+    "@sveltejs/package": "^1.0.0-next.5",
     "browser-or-node": "^2.0.0",
     "bytes": "^3.1.2",
     "cp-file": "^9.1.0",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-yaml": "^3.1.0",
-    "@sveltejs/adapter-static": "^1.0.0-next.42",
+    "@sveltejs/adapter-static": "^1.0.0-next.44",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.4.0",
     "@tailwindcss/typography": "^0.5.2",

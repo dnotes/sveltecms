@@ -21,7 +21,7 @@ export const templateComponent:EntityTemplate = {
 
 export type ComponentType = EntityType & ConfigurableEntityType & {
   admin?:true
-  component:Object // TODO: find type for svelte component
+  component:ConstructorOfATypedSvelteComponent // TODO: find type for svelte component
 }
 
 export type ComponentConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting
@@ -29,7 +29,7 @@ export type ComponentConfigSetting = TypedEntityConfigSetting & ConfigurableEnti
 export class Component implements ConfigurableEntity, TypedEntity {
   id: string
   type: string
-  component: Object
+  component: ConstructorOfATypedSvelteComponent
   admin?:true
   plugin?:string
   options?: ConfigSetting

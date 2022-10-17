@@ -20,7 +20,7 @@ import ContentItem from './display/ContentItem.svelte';
   export const contentType = cms.getContentType(contentTypeID)
   let widgetFieldGroup = cms.getWidgetFields(contentType, { values, errors, touched })
 
-  export let action = contentType?.form?.action ?? ''
+  export let action = contentType?.form?.action ?? '?/post'
   export let method = contentType?.form?.method ?? 'POST'
 
   values['_oldSlug'] = values['_slug'] ?? ''

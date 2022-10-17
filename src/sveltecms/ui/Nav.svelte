@@ -19,8 +19,6 @@ import { getLabelFromID } from "sveltecms/utils";
     return agg
   }, [['admin', '']])
 
-  $: console.log(basePath)
-
 </script>
 
 <nav>
