@@ -11,7 +11,7 @@ let adminPage;
 let adminPagePromise;
 $: basePath = $page.url.pathname.replace('/' + adminPath, '');
 $: if (adminPath)
-    adminPagePromise = (async () => { console.log(cms.getAdminPage(adminPath)); adminPage = cms.getAdminPage(adminPath); })();
+    adminPagePromise = (async () => { adminPage = cms.getAdminPage(adminPath); })();
 $: title = adminPage ? adminPath.split('/').map((t, i) => adminPage.label[i] || getLabelFromID(t)).join(' : ') : 'Site Admin';
 </script>
 

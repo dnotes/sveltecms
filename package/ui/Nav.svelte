@@ -13,7 +13,6 @@ $: crumbs = adminPath.split('/').reduce((agg, val, i, arr) => {
     }
     return agg;
 }, [['admin', '']]);
-$: console.log(basePath);
 </script>
 
 <nav>

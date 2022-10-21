@@ -17,6 +17,7 @@ const files = [
     [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.svelte`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.svelte`],
     [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.ts`],
     [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.server.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.server.ts`],
+    [`${fromPath}/routes/(cms)/admin/[...adminPath]/+server.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+server.ts`],
     [`${fromPath}/routes/(cms)/admin/+layout.svelte`, `${toPath}/src/routes/(cms)/admin/+layout.svelte`],
     // Files for the $lib folder
     [`${fromPath}/cms.ts`, `${toPath}/src/lib/cms.ts`],

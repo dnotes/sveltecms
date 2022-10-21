@@ -23,6 +23,7 @@ const files = [
   ['src/routes/(cms)/admin/[...adminPath]/+page.server.ts', 'package/install/routes/(cms)/admin/[...adminPath]/+page.server.ts'],
   ['src/routes/(cms)/admin/[...adminPath]/+page.ts',        'package/install/routes/(cms)/admin/[...adminPath]/+page.ts'],
   ['src/routes/(cms)/admin/[...adminPath]/+page.svelte',    'package/install/routes/(cms)/admin/[...adminPath]/+page.svelte'],
+  ['src/routes/(cms)/admin/[...adminPath]/+server.ts',      'package/install/routes/(cms)/admin/[...adminPath]/+server.ts'],
 
   // Files for the $lib folder
   ['src/install/cms.ts',                'package/install/cms.ts'],
