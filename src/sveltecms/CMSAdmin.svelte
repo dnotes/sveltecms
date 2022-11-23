@@ -1,7 +1,5 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms"
-// @ts-ignore TODO: why can't it find this?
-import { page } from '$app/stores'
 import getLabelFromID from "./utils/getLabelFromID";
 import Nav from "sveltecms/ui/Nav.svelte";
 import type { AdminPage } from "./core/AdminPage";
@@ -9,13 +7,14 @@ import type { AdminPage } from "./core/AdminPage";
   export let cms:SvelteCMS
   export let adminPath:string
   export let data:Object = undefined
+  export let url:URL
 
   $: sections = Object.values(cms.adminPages)
     .filter(o => !o.id.match('/'))
   let adminPage:AdminPage
   let adminPagePromise:Promise<void>
 
-  $: basePath = $page.url.pathname.replace('/' + adminPath, '')
+  $: basePath = url.pathname.replace('/' + adminPath, '')
   $: if (adminPath) adminPagePromise = (async () => { adminPage = cms.getAdminPage(adminPath); })()
   $: title = adminPage ? adminPath.split('/').map((t,i) => adminPage.label[i] || getLabelFromID(t) ).join(' : ') : 'Site Admin'
 

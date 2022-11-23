@@ -3,7 +3,6 @@ import type SvelteCMS from '../../..';
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
-        basePath: string;
         adminPath: string;
         data: any;
     };

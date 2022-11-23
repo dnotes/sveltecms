@@ -2,11 +2,10 @@
 import type SvelteCMS from 'sveltecms'
 import CmsEditorForm from 'sveltecms/CMSEditorForm.svelte'
 
-import { goto } from '$app/navigation';
-import { browser } from '$app/environment'
+// import { goto } from '$app/navigation';
+// import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 
   export let cms:SvelteCMS
-  export let basePath:string
   export let adminPath:string
   export let data
 
@@ -15,10 +14,10 @@ import { browser } from '$app/environment'
 
   // If new content was just posted, goto the new url
   let isNew = slug === '_'
-  if (browser && data._slug) {
-    if (isNew) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
-    else if (slug !== data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
-  }
+  // if (isBrowser && data._slug) {
+  //   if (isNew) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+  //   else if (slug !== data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+  // }
 
   $: content = data ?? cms.getContent(contentTypeID, slug, { getRaw:true })
 

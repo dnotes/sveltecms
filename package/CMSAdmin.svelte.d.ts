@@ -5,6 +5,7 @@ declare const __propDef: {
         cms: SvelteCMS;
         adminPath: string;
         data?: Object;
+        url: URL;
     };
     events: {
         [evt: string]: CustomEvent<any>;

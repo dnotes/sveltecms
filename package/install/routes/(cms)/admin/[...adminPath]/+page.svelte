@@ -20,5 +20,5 @@
 {#await data}
   fetching data...
 {:then data}
-  <CmsAdmin {cms} data={adminData} {adminPath} />
+  <CmsAdmin {cms} data={adminData} {adminPath} url={$page.url} />
 {/await}

@@ -1,5 +1,4 @@
 <script>import { tick } from "svelte";
-import { page } from "$app/stores";
 import CmsWidgetEntity from "./CMSWidgetEntity.svelte";
 import Button from "../../../ui/Button.svelte";
 import Modal from "../../../ui/Modal.svelte";
@@ -9,6 +8,7 @@ export let cms;
 export let id;
 export let field = undefined;
 export let value;
+export let url;
 // @ts-ignore
 export let options = field?.widget?.options;
 let opts = Object.assign({}, options);
@@ -18,7 +18,7 @@ let addIDEl;
 let newEntityID;
 let newEntityType;
 let newEntityTypeList = cms.listEntities(entityType.id);
-let section = $page.url.searchParams.get('section') || 'config';
+let section = url.searchParams.get('section') || 'config';
 export function addEntity(id) {
     items = [...items, [id, id]];
 }

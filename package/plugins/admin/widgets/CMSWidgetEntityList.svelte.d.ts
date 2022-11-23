@@ -9,6 +9,7 @@ declare const __propDef: {
         value: {
             [id: string]: string | EntityConfigSetting;
         };
+        url: URL;
         options?: {
             entityType: string;
             isTopLevelEntity?: boolean;

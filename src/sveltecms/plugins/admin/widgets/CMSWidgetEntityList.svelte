@@ -3,7 +3,6 @@ import type { EntityConfigSetting, WidgetField } from "sveltecms";
 import type SvelteCMS from "sveltecms";
 
 import { tick } from "svelte";
-import { page } from "$app/stores";
 
 import CmsWidgetEntity from "sveltecms/plugins/admin/widgets/CMSWidgetEntity.svelte";
 import Button from "sveltecms/ui/Button.svelte";
@@ -15,6 +14,7 @@ import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte
   export let id:string
   export let field:WidgetField = undefined
   export let value:{[id:string]:string|EntityConfigSetting}
+  export let url:URL
   // @ts-ignore
   export let options:{
     entityType:string,
@@ -31,7 +31,7 @@ import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte
   let newEntityType
   let newEntityTypeList = cms.listEntities(entityType.id)
 
-  let section = $page.url.searchParams.get('section') || 'config'
+  let section = url.searchParams.get('section') || 'config'
 
   export function addEntity(id) {
     items = [...items, [id,id]]

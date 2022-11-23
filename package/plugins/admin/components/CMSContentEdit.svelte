@@ -1,20 +1,17 @@
 <script>import CmsEditorForm from '../../../CMSEditorForm.svelte';
-import { goto } from '$app/navigation';
-import { browser } from '$app/environment';
+// import { goto } from '$app/navigation';
+// import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 export let cms;
-export let basePath;
 export let adminPath;
 export let data;
 let [contentPath, contentTypeID, slug] = adminPath.split('/');
 $: ([contentPath, contentTypeID, slug] = adminPath.split('/'));
 // If new content was just posted, goto the new url
 let isNew = slug === '_';
-if (browser && data._slug) {
-    if (isNew)
-        goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`);
-    else if (slug !== data._slug)
-        goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`);
-}
+// if (isBrowser && data._slug) {
+//   if (isNew) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+//   else if (slug !== data._slug) goto(`${basePath}/${contentPath}/${contentTypeID}/${data._slug}`)
+// }
 $: content = data ?? cms.getContent(contentTypeID, slug, { getRaw: true });
 </script>
 

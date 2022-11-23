@@ -2,7 +2,7 @@
 import type SvelteCMS from "sveltecms";
 import Display from "sveltecms/core/Display";
 import type Field from "sveltecms/core/Field";
-import { browser } from '$app/environment'
+import { isBrowser } from 'browser-or-node'
 
   export let cms:SvelteCMS
   export let entity:Field
@@ -10,7 +10,7 @@ import { browser } from '$app/environment'
   export let displayMode:string
 
   let lang = 'en-US'
-  $: if (browser && window?.navigator?.language) lang = window.navigator.language
+  $: if (isBrowser && window?.navigator?.language) lang = window.navigator.language
   $: realDate = typeof (item) === 'string' ? new Date(item) || item : item
   $: displayDate = realDate?.toLocaleString(lang) || 'no date'
 
