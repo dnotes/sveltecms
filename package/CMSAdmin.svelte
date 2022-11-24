@@ -2,8 +2,8 @@
 import Nav from "./ui/Nav.svelte";
 export let cms;
 export let adminPath;
-export let data = undefined;
 export let url;
+export let data = undefined;
 $: sections = Object.values(cms.adminPages)
     .filter(o => !o.id.match('/'));
 let adminPage;
@@ -35,6 +35,7 @@ $: title = adminPage ? adminPath.split('/').map((t, i) => adminPage.label[i] || 
       {adminPage}
       {basePath}
       {data}
+      {url}
       options={adminPage?.component?.options || {}}
     />
   {:else}

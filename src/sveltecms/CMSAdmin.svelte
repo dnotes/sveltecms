@@ -6,8 +6,8 @@ import type { AdminPage } from "./core/AdminPage";
 
   export let cms:SvelteCMS
   export let adminPath:string
-  export let data:Object = undefined
   export let url:URL
+  export let data:Object = undefined
 
   $: sections = Object.values(cms.adminPages)
     .filter(o => !o.id.match('/'))
@@ -41,6 +41,7 @@ import type { AdminPage } from "./core/AdminPage";
       {adminPage}
       {basePath}
       {data}
+      {url}
       options={adminPage?.component?.options || {}}
     />
   {:else}

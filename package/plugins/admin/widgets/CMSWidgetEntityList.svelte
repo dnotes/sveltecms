@@ -18,7 +18,7 @@ let addIDEl;
 let newEntityID;
 let newEntityType;
 let newEntityTypeList = cms.listEntities(entityType.id);
-let section = url.searchParams.get('section') || 'config';
+let section = url?.searchParams?.get('section') || 'config';
 export function addEntity(id) {
     items = [...items, [id, id]];
 }

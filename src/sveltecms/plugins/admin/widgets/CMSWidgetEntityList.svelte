@@ -31,7 +31,7 @@ import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte
   let newEntityType
   let newEntityTypeList = cms.listEntities(entityType.id)
 
-  let section = url.searchParams.get('section') || 'config'
+  let section = url?.searchParams?.get('section') || 'config'
 
   export function addEntity(id) {
     items = [...items, [id,id]]
