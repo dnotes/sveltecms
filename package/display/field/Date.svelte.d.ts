@@ -13,9 +13,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type DateProps = typeof __propDef.props;
-export declare type DateEvents = typeof __propDef.events;
-export declare type DateSlots = typeof __propDef.slots;
+export type DateProps = typeof __propDef.props;
+export type DateEvents = typeof __propDef.events;
+export type DateSlots = typeof __propDef.slots;
 export default class Date extends SvelteComponentTyped<DateProps, DateEvents, DateSlots> {
 }
 export {};

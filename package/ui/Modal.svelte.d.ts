@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
 declare const __propDef: {
-    props: {};
+    props: Record<string, never>;
     events: {
         cancel: CustomEvent<any>;
     } & {
@@ -10,9 +10,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type ModalProps = typeof __propDef.props;
-export declare type ModalEvents = typeof __propDef.events;
-export declare type ModalSlots = typeof __propDef.slots;
+export type ModalProps = typeof __propDef.props;
+export type ModalEvents = typeof __propDef.events;
+export type ModalSlots = typeof __propDef.slots;
 export default class Modal extends SvelteComponentTyped<ModalProps, ModalEvents, ModalSlots> {
 }
 export {};

@@ -12,9 +12,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsAdminProps = typeof __propDef.props;
-export declare type CmsAdminEvents = typeof __propDef.events;
-export declare type CmsAdminSlots = typeof __propDef.slots;
+export type CmsAdminProps = typeof __propDef.props;
+export type CmsAdminEvents = typeof __propDef.events;
+export type CmsAdminSlots = typeof __propDef.slots;
 export default class CmsAdmin extends SvelteComponentTyped<CmsAdminProps, CmsAdminEvents, CmsAdminSlots> {
 }
 export {};

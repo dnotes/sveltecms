@@ -3,12 +3,12 @@ import type { ConfigSetting, TypedEntityConfigSetting, ConfigurableEntityConfigS
 import type ContentType from "./ContentType";
 import type Field from "./Field";
 import type { EntityTemplate } from "./EntityTemplate";
-export declare type FormDataHandler = (value: {
+export type FormDataHandler = (value: {
     [key: string]: any;
 }, cms: SvelteCMS, contentType: ContentType, field: Field) => Promise<any>;
-export declare type WidgetConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting & {};
+export type WidgetConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting & {};
 export declare const templateWidget: EntityTemplate;
-export declare type WidgetType = ConfigurableEntityType & {
+export type WidgetType = ConfigurableEntityType & {
     description: string;
     widget: Object;
     fieldTypes: string[];

@@ -12,9 +12,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsComponentListOldProps = typeof __propDef.props;
-export declare type CmsComponentListOldEvents = typeof __propDef.events;
-export declare type CmsComponentListOldSlots = typeof __propDef.slots;
+export type CmsComponentListOldProps = typeof __propDef.props;
+export type CmsComponentListOldEvents = typeof __propDef.events;
+export type CmsComponentListOldSlots = typeof __propDef.slots;
 export default class CmsComponentListOld extends SvelteComponentTyped<CmsComponentListOldProps, CmsComponentListOldEvents, CmsComponentListOldSlots> {
 }
 export {};

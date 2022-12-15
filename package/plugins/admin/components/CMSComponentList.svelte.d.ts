@@ -1,7 +1,9 @@
 /** @typedef {typeof __propDef.props}  CmsComponentListProps */
 /** @typedef {typeof __propDef.events}  CmsComponentListEvents */
 /** @typedef {typeof __propDef.slots}  CmsComponentListSlots */
-export default class CmsComponentList extends SvelteComponentTyped<{}, {
+export default class CmsComponentList extends SvelteComponentTyped<{
+    [x: string]: never;
+}, {
     [evt: string]: CustomEvent<any>;
 }, {}> {
 }
@@ -10,7 +12,9 @@ export type CmsComponentListEvents = typeof __propDef.events;
 export type CmsComponentListSlots = typeof __propDef.slots;
 import { SvelteComponentTyped } from "svelte";
 declare const __propDef: {
-    props: {};
+    props: {
+        [x: string]: never;
+    };
     events: {
         [evt: string]: CustomEvent<any>;
     };

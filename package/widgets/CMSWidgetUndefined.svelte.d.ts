@@ -10,9 +10,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsWidgetUndefinedProps = typeof __propDef.props;
-export declare type CmsWidgetUndefinedEvents = typeof __propDef.events;
-export declare type CmsWidgetUndefinedSlots = typeof __propDef.slots;
+export type CmsWidgetUndefinedProps = typeof __propDef.props;
+export type CmsWidgetUndefinedEvents = typeof __propDef.events;
+export type CmsWidgetUndefinedSlots = typeof __propDef.slots;
 export default class CmsWidgetUndefined extends SvelteComponentTyped<CmsWidgetUndefinedProps, CmsWidgetUndefinedEvents, CmsWidgetUndefinedSlots> {
 }
 export {};

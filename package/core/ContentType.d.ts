@@ -7,7 +7,7 @@ import Field, { type FieldConfigSetting } from './Field';
 import type { EntityTemplate } from './EntityTemplate';
 import type { EntityDisplayConfigSetting } from './Display';
 export declare const templateContentType: EntityTemplate;
-export declare type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {
+export type ContentTypeConfigSetting = ConfigSetting & DisplayableEntityConfigSetting & {
     label?: string;
     fields: {
         [id: string]: string | FieldConfigSetting;

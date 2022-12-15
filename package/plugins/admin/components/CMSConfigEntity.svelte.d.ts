@@ -17,9 +17,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsConfigEntityProps = typeof __propDef.props;
-export declare type CmsConfigEntityEvents = typeof __propDef.events;
-export declare type CmsConfigEntitySlots = typeof __propDef.slots;
+export type CmsConfigEntityProps = typeof __propDef.props;
+export type CmsConfigEntityEvents = typeof __propDef.events;
+export type CmsConfigEntitySlots = typeof __propDef.slots;
 export default class CmsConfigEntity extends SvelteComponentTyped<CmsConfigEntityProps, CmsConfigEntityEvents, CmsConfigEntitySlots> {
 }
 export {};

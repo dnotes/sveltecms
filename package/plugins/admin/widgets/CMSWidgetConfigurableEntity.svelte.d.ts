@@ -19,9 +19,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsWidgetConfigurableEntityProps = typeof __propDef.props;
-export declare type CmsWidgetConfigurableEntityEvents = typeof __propDef.events;
-export declare type CmsWidgetConfigurableEntitySlots = typeof __propDef.slots;
+export type CmsWidgetConfigurableEntityProps = typeof __propDef.props;
+export type CmsWidgetConfigurableEntityEvents = typeof __propDef.events;
+export type CmsWidgetConfigurableEntitySlots = typeof __propDef.slots;
 export default class CmsWidgetConfigurableEntity extends SvelteComponentTyped<CmsWidgetConfigurableEntityProps, CmsWidgetConfigurableEntityEvents, CmsWidgetConfigurableEntitySlots> {
 }
 export {};

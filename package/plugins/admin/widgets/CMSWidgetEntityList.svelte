@@ -125,7 +125,6 @@ $: value = items.length ? Object.fromEntries(items) : undefined;
   }
   :global(.sveltecms) :global(.entitylist)>:global(div) {
     display:flex;
-    min-width:-webkit-max-content;
     min-width:-moz-max-content;
     min-width:max-content;
     border: 1px solid var(--cms-border);
@@ -141,7 +140,6 @@ $: value = items.length ? Object.fromEntries(items) : undefined;
   :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.field),
   :global(.sveltecms) :global(.entitylist)>:global(div)>:global(div.cell) {
     padding: .2em .5em;
-    width:-webkit-max-content;
     width:-moz-max-content;
     width:max-content;
     position: relative;

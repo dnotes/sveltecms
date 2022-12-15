@@ -2,7 +2,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 import type SvelteCMS from "..";
 import { Component, type ComponentConfigSetting } from "./Component";
 import type { Content } from "./ContentStore";
-export declare type AdminPageConfig = {
+export type AdminPageConfig = {
     id: string;
     component: string | ComponentConfigSetting;
     label?: string | (string | undefined | false)[];

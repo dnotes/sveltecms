@@ -3,7 +3,7 @@ import type { ConfigFieldConfigSetting } from '../../core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs';
 export declare function getFs(databaseName: any): Promise<PromisifiedFS>;
 export declare const databaseNameField: ConfigFieldConfigSetting;
-export declare type staticFilesContentOptions = {
+export type staticFilesContentOptions = {
     contentDirectory: string;
     fileExtension: "md" | "json" | "yml" | "yaml";
     markdownBodyField: string;
@@ -11,7 +11,7 @@ export declare type staticFilesContentOptions = {
 export declare const staticFilesContentOptionFields: {
     [key: string]: ConfigFieldConfigSetting;
 };
-export declare type staticFilesMediaOptions = {
+export type staticFilesMediaOptions = {
     staticDirectory: string;
     mediaDirectory: string;
     allowMediaTypes: string | string[];

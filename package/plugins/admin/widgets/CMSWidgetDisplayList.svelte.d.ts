@@ -15,9 +15,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsWidgetDisplayListProps = typeof __propDef.props;
-export declare type CmsWidgetDisplayListEvents = typeof __propDef.events;
-export declare type CmsWidgetDisplayListSlots = typeof __propDef.slots;
+export type CmsWidgetDisplayListProps = typeof __propDef.props;
+export type CmsWidgetDisplayListEvents = typeof __propDef.events;
+export type CmsWidgetDisplayListSlots = typeof __propDef.slots;
 export default class CmsWidgetDisplayList extends SvelteComponentTyped<CmsWidgetDisplayListProps, CmsWidgetDisplayListEvents, CmsWidgetDisplayListSlots> {
 }
 export {};

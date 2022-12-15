@@ -3,11 +3,11 @@ import type SvelteCMS from "..";
 import type { EntityDisplayConfigSetting } from "./Display";
 import type { EntityTemplate } from "./EntityTemplate";
 import Field, { type ConfigFieldConfigSetting } from "./Field";
-export declare type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & DisplayableEntityConfigSetting & {
+export type FieldgroupConfigSetting = FieldableEntityConfigSetting & EntityType & DisplayableEntityConfigSetting & {
     admin?: boolean;
     type?: string;
 };
-export declare type AdminFieldgroupConfigSetting = FieldgroupConfigSetting & {
+export type AdminFieldgroupConfigSetting = FieldgroupConfigSetting & {
     admin: true;
     fields: {
         [id: string]: ConfigFieldConfigSetting;
@@ -26,7 +26,7 @@ export declare class Fieldgroup implements EntityType, FieldableEntity, Displaya
     };
     constructor(conf: string | FieldgroupConfigSetting, cms: SvelteCMS);
 }
-export declare type AdminFieldgroup = Fieldgroup & {
+export type AdminFieldgroup = Fieldgroup & {
     admin: true;
 };
 export default Fieldgroup;

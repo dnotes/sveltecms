@@ -38,7 +38,7 @@ export declare class ScriptError extends Error {
     tail: string;
     constructor(message: string, state: string, tail?: string);
 }
-export declare type ScriptFunctionType = ConfigurableEntityType & {
+export type ScriptFunctionType = ConfigurableEntityType & {
     admin?: boolean;
     helptext?: string;
     fn: (vars: {
@@ -52,7 +52,7 @@ export declare type ScriptFunctionType = ConfigurableEntityType & {
         [key: string]: any;
     }, event?: Event, el?: HTMLElement) => any;
 };
-export declare type ScriptFunctionConfigSetting = string | {
+export type ScriptFunctionConfigSetting = string | {
     function?: string;
     fn?: string;
     params: (string | number | boolean | null | ScriptFunctionConfigSetting)[];

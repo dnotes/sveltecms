@@ -1,12 +1,12 @@
 import { SvelteComponentTyped } from "svelte";
-export declare type CMSImage = {
+export type CMSImage = {
     src: string;
     filename?: string;
     alt?: string;
     title?: string;
     attribution?: string;
 };
-export declare type CMSPreviewImage = CMSImage & {
+export type CMSPreviewImage = CMSImage & {
     title: string;
 };
 import type { WidgetField } from "..";
@@ -31,9 +31,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type CmsWidgetImageProps = typeof __propDef.props;
-export declare type CmsWidgetImageEvents = typeof __propDef.events;
-export declare type CmsWidgetImageSlots = typeof __propDef.slots;
+export type CmsWidgetImageProps = typeof __propDef.props;
+export type CmsWidgetImageEvents = typeof __propDef.events;
+export type CmsWidgetImageSlots = typeof __propDef.slots;
 export default class CmsWidgetImage extends SvelteComponentTyped<CmsWidgetImageProps, CmsWidgetImageEvents, CmsWidgetImageSlots> {
 }
 export {};

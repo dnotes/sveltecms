@@ -14,9 +14,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsWidgetFieldgroupProps = typeof __propDef.props;
-export declare type CmsWidgetFieldgroupEvents = typeof __propDef.events;
-export declare type CmsWidgetFieldgroupSlots = typeof __propDef.slots;
+export type CmsWidgetFieldgroupProps = typeof __propDef.props;
+export type CmsWidgetFieldgroupEvents = typeof __propDef.events;
+export type CmsWidgetFieldgroupSlots = typeof __propDef.slots;
 export default class CmsWidgetFieldgroup extends SvelteComponentTyped<CmsWidgetFieldgroupProps, CmsWidgetFieldgroupEvents, CmsWidgetFieldgroupSlots> {
 }
 export {};

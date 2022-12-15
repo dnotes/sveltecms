@@ -1,18 +1,18 @@
 import type SvelteCMS from '..';
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
 import type { EntityTemplate } from './EntityTemplate';
-export declare type Media = {
+export type Media = {
     src: string;
     [key: string]: string | number | boolean | null | undefined | Date | Array<string | number | boolean | null | undefined | Date>;
 };
-export declare type MediaStoreType = EntityType & ConfigurableEntityType & {
+export type MediaStoreType = EntityType & ConfigurableEntityType & {
     listMedia?: (path: string | null, opts: ConfigSetting) => Promise<string[]>;
     getMedia?: (filename: string | number | null, opts: ConfigSetting) => Promise<string | string[]>;
     saveMedia?: (file: File, opts: ConfigSetting) => Promise<string>;
     deleteMedia?: (filename: string, opts: ConfigSetting) => Promise<any>;
     immediateUpload?: boolean;
 };
-export declare type MediaStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
+export type MediaStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
 export declare const templateMediaStore: EntityTemplate;
 export declare class MediaStore implements ConfigurableEntity, TypedEntity {
     id: string;

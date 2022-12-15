@@ -13,9 +13,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type ReferenceProps = typeof __propDef.props;
-export declare type ReferenceEvents = typeof __propDef.events;
-export declare type ReferenceSlots = typeof __propDef.slots;
+export type ReferenceProps = typeof __propDef.props;
+export type ReferenceEvents = typeof __propDef.events;
+export type ReferenceSlots = typeof __propDef.slots;
 export default class Reference extends SvelteComponentTyped<ReferenceProps, ReferenceEvents, ReferenceSlots> {
 }
 export {};

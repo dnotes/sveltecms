@@ -13,9 +13,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type DisplayResultProps = typeof __propDef.props;
-export declare type DisplayResultEvents = typeof __propDef.events;
-export declare type DisplayResultSlots = typeof __propDef.slots;
+export type DisplayResultProps = typeof __propDef.props;
+export type DisplayResultEvents = typeof __propDef.events;
+export type DisplayResultSlots = typeof __propDef.slots;
 export default class DisplayResult extends SvelteComponentTyped<DisplayResultProps, DisplayResultEvents, DisplayResultSlots> {
 }
 export {};

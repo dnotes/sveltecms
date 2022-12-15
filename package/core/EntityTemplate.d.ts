@@ -1,5 +1,5 @@
 import type { ConfigFieldConfigSetting } from "./Field";
-export declare type EntityTemplate = {
+export type EntityTemplate = {
     id: string;
     label: string;
     labelPlural: string;

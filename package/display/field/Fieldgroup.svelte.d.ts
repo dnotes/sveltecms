@@ -16,9 +16,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type FieldgroupProps = typeof __propDef.props;
-export declare type FieldgroupEvents = typeof __propDef.events;
-export declare type FieldgroupSlots = typeof __propDef.slots;
+export type FieldgroupProps = typeof __propDef.props;
+export type FieldgroupEvents = typeof __propDef.events;
+export type FieldgroupSlots = typeof __propDef.slots;
 export default class Fieldgroup extends SvelteComponentTyped<FieldgroupProps, FieldgroupEvents, FieldgroupSlots> {
 }
 export {};

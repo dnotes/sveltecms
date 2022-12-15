@@ -1,17 +1,5 @@
 <script context="module">import bytes from 'bytes';
 export class CMSFile {
-    constructor(src, stringify, file) {
-        this.isCMSFile = true;
-        this.stringify = false;
-        this.stringify = stringify;
-        this.src = typeof src === 'string' ? src : src.src;
-        this.title = src?.['title'];
-        this.filename = typeof file === 'string' ? file : (file?.['name'] || src?.['name']);
-        this.attribution = src?.['attribution'];
-        this.size = file?.['size'] || src?.['size'];
-        this.type = file?.['type'] || src?.['type'];
-        this.date = src?.['date'] ? new Date(src?.['date']) : new Date();
-    }
     toString() {
         return this.src;
     }
@@ -23,6 +11,18 @@ export class CMSFile {
             size: this.size,
             date: this.date,
         };
+    }
+    constructor(src, stringify, file) {
+        this.isCMSFile = true;
+        this.stringify = false;
+        this.stringify = stringify;
+        this.src = typeof src === 'string' ? src : src.src;
+        this.title = src?.['title'];
+        this.filename = typeof file === 'string' ? file : (file?.['name'] || src?.['name']);
+        this.attribution = src?.['attribution'];
+        this.size = file?.['size'] || src?.['size'];
+        this.type = file?.['type'] || src?.['type'];
+        this.date = src?.['date'] ? new Date(src?.['date']) : new Date();
     }
     get displayDate() {
         return `${this.date.getFullYear()}-${this.date.getMonth()}-${this.date.getDate()} ${this.date.getHours()}:${this.date.getMinutes()}`;

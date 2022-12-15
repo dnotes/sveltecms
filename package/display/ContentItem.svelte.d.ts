@@ -15,9 +15,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type ContentItemProps = typeof __propDef.props;
-export declare type ContentItemEvents = typeof __propDef.events;
-export declare type ContentItemSlots = typeof __propDef.slots;
+export type ContentItemProps = typeof __propDef.props;
+export type ContentItemEvents = typeof __propDef.events;
+export type ContentItemSlots = typeof __propDef.slots;
 export default class ContentItem extends SvelteComponentTyped<ContentItemProps, ContentItemEvents, ContentItemSlots> {
 }
 export {};

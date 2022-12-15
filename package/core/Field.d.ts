@@ -8,7 +8,7 @@ import Widget, { type WidgetConfigSetting } from './Widget';
 import type { EntityDisplayConfigSetting } from './Display';
 import type { EntityTemplate } from './EntityTemplate';
 import type { Component } from './Component';
-export declare type FieldConfigSetting = DisplayableEntityConfigSetting & {
+export type FieldConfigSetting = DisplayableEntityConfigSetting & {
     type: string;
     label?: string | ScriptFunctionConfigSetting;
     index?: boolean | ScriptFunctionConfigSetting;
@@ -37,7 +37,7 @@ export declare type FieldConfigSetting = DisplayableEntityConfigSetting & {
     mediaStore?: string | MediaStoreConfigSetting;
     [id: string]: string | number | boolean | ConfigSetting | ScriptFunctionConfigSetting | (string | number | ConfigSetting)[];
 };
-export declare type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display|displayModes"> & {
+export type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display|displayModes"> & {
     type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'entity' | 'entityList' | 'list';
     entity?: string;
     default: any;
@@ -46,7 +46,7 @@ export declare type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display
         [key: string]: ConfigFieldConfigSetting;
     };
 };
-export declare type FieldType = EntityType & DisplayableEntityType & {
+export type FieldType = EntityType & DisplayableEntityType & {
     default: any;
     widget: string | WidgetConfigSetting;
     preSave?: Array<string | TransformerConfigSetting>;

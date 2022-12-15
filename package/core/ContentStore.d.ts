@@ -2,20 +2,20 @@ import type SvelteCMS from '..';
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
 import type { ContentType } from './ContentType';
 import type { EntityTemplate } from './EntityTemplate';
-export declare type Value = string | number | boolean | null | undefined | Date | Content | Array<Value>;
-export declare type Content = {
+export type Value = string | number | boolean | null | undefined | Date | Content | Array<Value>;
+export type Content = {
     _type?: string;
     _slug?: string;
     _oldSlug?: string;
     [id: string]: Value;
 };
-export declare type ContentStoreType = EntityType & ConfigurableEntityType & {
+export type ContentStoreType = EntityType & ConfigurableEntityType & {
     listContent?: (contentType: ContentType, opts: ConfigSetting) => Promise<Content[]>;
     getContent?: (contentType: ContentType, opts: ConfigSetting, slug?: string | number) => Promise<Content | Content[]>;
     saveContent?: (content: Content, contentType: ContentType, opts: ConfigSetting) => Promise<Content>;
     deleteContent?: (content: Content, contentType: ContentType, opts: ConfigSetting) => Promise<Content>;
 };
-export declare type ContentStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
+export type ContentStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
 export declare const templateContentStore: EntityTemplate;
 export declare class ContentStore implements ConfigurableEntity, TypedEntity {
     id: string;

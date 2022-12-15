@@ -13,9 +13,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type CmsWidgetCheckboxProps = typeof __propDef.props;
-export declare type CmsWidgetCheckboxEvents = typeof __propDef.events;
-export declare type CmsWidgetCheckboxSlots = typeof __propDef.slots;
+export type CmsWidgetCheckboxProps = typeof __propDef.props;
+export type CmsWidgetCheckboxEvents = typeof __propDef.events;
+export type CmsWidgetCheckboxSlots = typeof __propDef.slots;
 export default class CmsWidgetCheckbox extends SvelteComponentTyped<CmsWidgetCheckboxProps, CmsWidgetCheckboxEvents, CmsWidgetCheckboxSlots> {
 }
 export {};

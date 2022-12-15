@@ -26,9 +26,9 @@ declare const __propDef: {
         submit: {};
     };
 };
-export declare type CmsEditorFormProps = typeof __propDef.props;
-export declare type CmsEditorFormEvents = typeof __propDef.events;
-export declare type CmsEditorFormSlots = typeof __propDef.slots;
+export type CmsEditorFormProps = typeof __propDef.props;
+export type CmsEditorFormEvents = typeof __propDef.events;
+export type CmsEditorFormSlots = typeof __propDef.slots;
 export default class CmsEditorForm extends SvelteComponentTyped<CmsEditorFormProps, CmsEditorFormEvents, CmsEditorFormSlots> {
     get contentType(): import("./core/ContentType").ContentType;
 }

@@ -1,7 +1,7 @@
 import type { Component, ComponentType } from "./Component";
 import type SvelteCMS from "..";
 import type { EntityTemplate } from "./EntityTemplate";
-export declare type DisplayConfig = {
+export type DisplayConfig = {
     type: string;
     wrapper?: string;
     label?: string;
@@ -9,14 +9,14 @@ export declare type DisplayConfig = {
     link?: boolean;
 };
 export declare function isDisplayConfig(item: DisplayConfig | any): item is DisplayConfig;
-export declare type DisplayConfigSetting = string | DisplayConfig;
-export declare type EntityDisplayConfigSetting = DisplayConfigSetting | {
+export type DisplayConfigSetting = string | DisplayConfig;
+export type EntityDisplayConfigSetting = DisplayConfigSetting | {
     [id: string]: DisplayConfigSetting;
 };
-export declare type EntityDisplayConfig = {
+export type EntityDisplayConfig = {
     [id: string]: DisplayConfigSetting;
 };
-export declare type FullEntityDisplayConfig = EntityDisplayConfig & {
+export type FullEntityDisplayConfig = EntityDisplayConfig & {
     default: DisplayConfigSetting;
     page: DisplayConfigSetting;
     teaser: DisplayConfigSetting;

@@ -17,9 +17,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type FileProps = typeof __propDef.props;
-export declare type FileEvents = typeof __propDef.events;
-export declare type FileSlots = typeof __propDef.slots;
+export type FileProps = typeof __propDef.props;
+export type FileEvents = typeof __propDef.events;
+export type FileSlots = typeof __propDef.slots;
 export default class File extends SvelteComponentTyped<FileProps, FileEvents, FileSlots> {
 }
 export {};

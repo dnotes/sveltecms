@@ -22,9 +22,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type WrapperProps = typeof __propDef.props;
-export declare type WrapperEvents = typeof __propDef.events;
-export declare type WrapperSlots = typeof __propDef.slots;
+export type WrapperProps = typeof __propDef.props;
+export type WrapperEvents = typeof __propDef.events;
+export type WrapperSlots = typeof __propDef.slots;
 export default class Wrapper extends SvelteComponentTyped<WrapperProps, WrapperEvents, WrapperSlots> {
 }
 export {};

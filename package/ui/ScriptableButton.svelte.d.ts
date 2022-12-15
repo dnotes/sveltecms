@@ -18,9 +18,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type ScriptableButtonProps = typeof __propDef.props;
-export declare type ScriptableButtonEvents = typeof __propDef.events;
-export declare type ScriptableButtonSlots = typeof __propDef.slots;
+export type ScriptableButtonProps = typeof __propDef.props;
+export type ScriptableButtonEvents = typeof __propDef.events;
+export type ScriptableButtonSlots = typeof __propDef.slots;
 export default class ScriptableButton extends SvelteComponentTyped<ScriptableButtonProps, ScriptableButtonEvents, ScriptableButtonSlots> {
 }
 export {};

@@ -4,13 +4,13 @@ import type { Content } from './ContentStore';
 import type ContentType from './ContentType';
 import type { EntityTemplate } from './EntityTemplate';
 import type { Media } from './MediaStore';
-export declare type IndexItem = Content;
-export declare type IndexChange = {
+export type IndexItem = Content;
+export type IndexChange = {
     before?: IndexItem;
     after?: IndexItem;
 };
 export declare function isIndexItem(item: IndexItem | any): item is IndexItem;
-export declare type IndexerType = EntityType & ConfigurableEntityType & {
+export type IndexerType = EntityType & ConfigurableEntityType & {
     getIndex: (id: string) => Promise<IndexItem[]>;
     updateIndex: (id: string, changes: IndexChange[]) => Promise<void>;
     saveIndex: (id: string, index: IndexItem[]) => Promise<void>;
@@ -29,7 +29,7 @@ export declare type IndexerType = EntityType & ConfigurableEntityType & {
     }[]>;
 };
 export declare const templateIndexer: EntityTemplate;
-export declare type IndexerConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting & {
+export type IndexerConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting & {
     mediaKeys?: string | string[];
 };
 export declare class Indexer implements ConfigurableEntity, TypedEntity {

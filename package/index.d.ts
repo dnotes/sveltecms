@@ -15,69 +15,69 @@ import { Indexer, type IndexerConfigSetting, type IndexerType, type IndexItem } 
 import { type CMSHookFunctions, type PluginHooks } from './core/Hook';
 export declare const FieldPropsAllowFunctions: string[];
 export declare const cmsConfigurables: string[];
-export declare type TypedEntity = {
+export type TypedEntity = {
     id: string;
     type: string;
 };
-export declare type TypedEntityConfigSetting = {
+export type TypedEntityConfigSetting = {
     id?: string;
     type: string;
 };
-export declare type ConfigurableEntity = {
+export type ConfigurableEntity = {
     options?: ConfigSetting;
 };
-export declare type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & {
+export type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & {
     options?: ConfigSetting;
 };
-export declare type ConfigurableEntityConfigSettingValue<T> = string | T | (string | T)[];
-export declare type LabeledEntity = {
+export type ConfigurableEntityConfigSettingValue<T> = string | T | (string | T)[];
+export type LabeledEntity = {
     label: string | ScriptFunctionConfig;
 };
-export declare type FieldableEntityType = {
+export type FieldableEntityType = {
     isFieldable?: boolean;
     fields?: {
         [id: string]: FieldConfigSetting;
     };
 };
-export declare type FieldableEntity = {
+export type FieldableEntity = {
     isFieldable: boolean;
     fields?: {
         [id: string]: Field;
     };
 };
-export declare type FieldableEntityConfigSetting = {
+export type FieldableEntityConfigSetting = {
     fields: {
         [id: string]: string | FieldConfigSetting;
     };
 };
-export declare type DisplayableEntity = {
+export type DisplayableEntity = {
     displays: EntityDisplayConfigSetting;
     displayComponent?: Component;
 };
-export declare type DisplayableEntityType = EntityType & {
+export type DisplayableEntityType = EntityType & {
     displays: EntityDisplayConfigSetting;
     displayComponent?: string;
 };
-export declare type DisplayableEntityConfigSetting = {
+export type DisplayableEntityConfigSetting = {
     displays?: EntityDisplayConfigSetting;
 };
-export declare type EntityType = {
+export type EntityType = {
     id: string;
 };
-export declare type ConfigurableEntityType = EntityType & {
+export type ConfigurableEntityType = EntityType & {
     optionFields?: {
         [key: string]: ConfigFieldConfigSetting;
     };
     options?: ConfigSetting;
 };
-declare type CMSSettings = ConfigSetting & {
+type CMSSettings = ConfigSetting & {
     adminStore?: string | ContentStoreConfigSetting;
     indexer?: string | IndexerConfigSetting;
     rootContentType?: string;
     frontPageSlug?: string;
     defaultContentDisplays?: EntityDisplayConfigSetting;
 };
-export declare type CMSConfigSetting = {
+export type CMSConfigSetting = {
     configPath?: string;
     settings?: CMSSettings;
     adminStore?: string | ContentStoreConfigSetting;
@@ -344,7 +344,7 @@ export default class SvelteCMS {
         [id: string]: DisplayConfigSetting;
     };
 }
-export declare type WidgetField = Field & {
+export type WidgetField = Field & {
     label: string;
     helptext?: string;
     required?: boolean;
@@ -356,7 +356,7 @@ export declare type WidgetField = Field & {
     multipleMin?: number;
     multipleMax?: number;
 };
-export declare type WidgetFieldFieldgroup = {
+export type WidgetFieldFieldgroup = {
     fields: {
         [id: string]: WidgetField;
     };
@@ -370,14 +370,14 @@ export declare function getConfigPathFromValuePath(path: string): string;
 /**
  * All "Setting" types must fit the pattern of ConfigSetting
  */
-export declare type ConfigSetting = {
+export type ConfigSetting = {
     [key: string]: string | number | boolean | null | undefined | ConfigSetting | Array<string | number | ConfigSetting>;
 };
-export declare type EntityConfigSetting = ConfigSetting & {
+export type EntityConfigSetting = ConfigSetting & {
     id?: string;
     type?: string;
 };
-export declare type CMSPlugin = {
+export type CMSPlugin = {
     id: string;
     adminPages?: AdminPageConfig[];
     fieldTypes?: FieldType[];
@@ -399,8 +399,8 @@ export declare type CMSPlugin = {
     hooks?: PluginHooks;
     scriptFunctions?: ScriptFunctionType[];
 };
-export declare type CMSPluginBuilder = (config: any) => CMSPlugin;
-export declare type CMSListConfig = {
+export type CMSPluginBuilder = (config: any) => CMSPlugin;
+export type CMSListConfig = {
     [key: string]: Array<string | number | {
         id: string | number;
         value: any;

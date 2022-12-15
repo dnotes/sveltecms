@@ -13,9 +13,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export declare type CmsWidgetSelectProps = typeof __propDef.props;
-export declare type CmsWidgetSelectEvents = typeof __propDef.events;
-export declare type CmsWidgetSelectSlots = typeof __propDef.slots;
+export type CmsWidgetSelectProps = typeof __propDef.props;
+export type CmsWidgetSelectEvents = typeof __propDef.events;
+export type CmsWidgetSelectSlots = typeof __propDef.slots;
 export default class CmsWidgetSelect extends SvelteComponentTyped<CmsWidgetSelectProps, CmsWidgetSelectEvents, CmsWidgetSelectSlots> {
 }
 export {};

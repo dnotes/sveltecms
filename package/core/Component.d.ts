@@ -7,11 +7,11 @@ import type { EntityTemplate } from "./EntityTemplate";
  * is a limitation of the bundler. See https://github.com/sveltejs/svelte/issues/6702.
  */
 export declare const templateComponent: EntityTemplate;
-export declare type ComponentType = EntityType & ConfigurableEntityType & {
+export type ComponentType = EntityType & ConfigurableEntityType & {
     admin?: true;
     component: Object;
 };
-export declare type ComponentConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
+export type ComponentConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
 export declare class Component implements ConfigurableEntity, TypedEntity {
     id: string;
     type: string;

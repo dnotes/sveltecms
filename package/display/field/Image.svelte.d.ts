@@ -17,9 +17,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type ImageProps = typeof __propDef.props;
-export declare type ImageEvents = typeof __propDef.events;
-export declare type ImageSlots = typeof __propDef.slots;
+export type ImageProps = typeof __propDef.props;
+export type ImageEvents = typeof __propDef.events;
+export type ImageSlots = typeof __propDef.slots;
 export default class Image extends SvelteComponentTyped<ImageProps, ImageEvents, ImageSlots> {
 }
 export {};

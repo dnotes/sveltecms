@@ -1,7 +1,9 @@
 /** @typedef {typeof __propDef.props}  AddItemLineProps */
 /** @typedef {typeof __propDef.events}  AddItemLineEvents */
 /** @typedef {typeof __propDef.slots}  AddItemLineSlots */
-export default class AddItemLine extends SvelteComponentTyped<{}, {
+export default class AddItemLine extends SvelteComponentTyped<{
+    [x: string]: never;
+}, {
     [evt: string]: CustomEvent<any>;
 }, {
     default: {};
@@ -12,7 +14,9 @@ export type AddItemLineEvents = typeof __propDef.events;
 export type AddItemLineSlots = typeof __propDef.slots;
 import { SvelteComponentTyped } from "svelte";
 declare const __propDef: {
-    props: {};
+    props: {
+        [x: string]: never;
+    };
     events: {
         [evt: string]: CustomEvent<any>;
     };

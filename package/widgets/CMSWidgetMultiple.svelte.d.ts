@@ -15,9 +15,9 @@ declare const __propDef: {
     };
     slots: {};
 };
-export declare type CmsWidgetMultipleProps = typeof __propDef.props;
-export declare type CmsWidgetMultipleEvents = typeof __propDef.events;
-export declare type CmsWidgetMultipleSlots = typeof __propDef.slots;
+export type CmsWidgetMultipleProps = typeof __propDef.props;
+export type CmsWidgetMultipleEvents = typeof __propDef.events;
+export type CmsWidgetMultipleSlots = typeof __propDef.slots;
 export default class CmsWidgetMultiple extends SvelteComponentTyped<CmsWidgetMultipleProps, CmsWidgetMultipleEvents, CmsWidgetMultipleSlots> {
 }
 export {};
