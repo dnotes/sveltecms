@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",

@@ -8,7 +8,7 @@ $: sections = Object.values(cms.adminPages)
     .filter(o => !o.id.match('/'));
 let adminPage;
 let adminPagePromise;
-$: basePath = url.pathname.replace('/' + adminPath, '');
+$: basePath = url?.pathname?.replace('/' + adminPath, '');
 $: if (adminPath)
     adminPagePromise = (async () => { adminPage = cms.getAdminPage(adminPath); })();
 $: title = adminPage ? adminPath.split('/').map((t, i) => adminPage.label[i] || getLabelFromID(t)).join(' : ') : 'Site Admin';
