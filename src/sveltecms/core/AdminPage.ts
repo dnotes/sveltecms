@@ -1,4 +1,4 @@
-import { redirect, type RequestEvent } from "@sveltejs/kit"
+import { error, redirect, type RequestEvent } from "@sveltejs/kit"
 import type SvelteCMS from "sveltecms"
 import { Component, type ComponentConfigSetting } from "sveltecms/core/Component"
 import { saveContentEndpoint, deleteContentEndpoint } from 'sveltecms/utils'
@@ -40,7 +40,15 @@ export const adminPages:AdminPageConfig[] = [
     id: 'content/*',
     component: 'CMSContentList',
     GET: async({cms, args})=>{
-      return cms.listContent(args[1])
+      let contentType = cms.contentTypes[args[1]]
+      if (!contentType) throw error(404, 'Not Found')
+      let content = await cms.listContent(contentType)
+      return content.map(item => {
+        return {
+          ...Object.fromEntries(contentType.slug.fields.map(id => ([id, item[id]]))),
+          ...item,
+        }
+      })
     }
   },
   {
