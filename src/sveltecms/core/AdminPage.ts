@@ -1,4 +1,4 @@
-import type { RequestEvent } from "@sveltejs/kit"
+import { redirect, type RequestEvent } from "@sveltejs/kit"
 import type SvelteCMS from "sveltecms"
 import { Component, type ComponentConfigSetting } from "sveltecms/core/Component"
 import { saveContentEndpoint, deleteContentEndpoint } from 'sveltecms/utils'
@@ -52,9 +52,12 @@ export const adminPages:AdminPageConfig[] = [
       return cms.getContent(args[1], args[2], { getRaw:true })
     },
     POST: async({cms, args, event, values})=>{
-      if (event) return saveContentEndpoint(cms, args[1], event.request)
-      else if (values) return cms.saveContent(args[1], values)
-      throw new Error('Empty POST to content/*/*')
+      let content
+      if (event) content = await saveContentEndpoint(cms, args[1], event.request)
+      else if (values) content = await cms.saveContent(args[1], values)
+      else throw new Error('Empty POST to content/*/*')
+      if (args[2] !== content._slug) throw redirect(301, `/admin/${args[0]}/${args[1]}/${content._slug}`)
+      return content
     },
     DELETE: async({cms, args, event, values})=>{
       if (event) return deleteContentEndpoint(cms, args[1], event.request)
