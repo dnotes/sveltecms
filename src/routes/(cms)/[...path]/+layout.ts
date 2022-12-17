@@ -32,12 +32,12 @@ export async function load(event) {
         let rootContent = await cms.listContent(rootContentType)
         if (rootContent && rootContent.length && rootContent.find(item => item._slug === contentTypeID)) content = await cms.getContent(rootContentType, contentTypeID)
         if (content) {
-          teasers = await cms.listContent(contentTypeID)
+          teasers = await cms.listContent(contentTypeID) // e.g. create a "page" content named "blog", and it will list "blog" content under the page
           contentTypeID = cms.conf.settings.rootContentType.toString()
         }
 
       }
-      if (!content) content = await cms.listContent(contentTypeID)
+      if (!content && cms.contentTypes?.[contentTypeID]) content = await cms.listContent(contentTypeID)
       if (!content) {
         // console.log(`\n43 type:${contentTypeID} slug:${slug} no content list\n`)
         throw error(404)
