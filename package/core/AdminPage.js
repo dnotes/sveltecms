@@ -1,3 +1,4 @@
+import { error, redirect } from "@sveltejs/kit";
 import { Component } from "./Component";
 import { saveContentEndpoint, deleteContentEndpoint } from '../utils';
 export class AdminPage {
@@ -22,7 +23,16 @@ export const adminPages = [
         id: 'content/*',
         component: 'CMSContentList',
         GET: async ({ cms, args }) => {
-            return cms.listContent(args[1]);
+            let contentType = cms.contentTypes[args[1]];
+            if (!contentType)
+                throw error(404, 'Not Found');
+            let content = await cms.listContent(contentType);
+            return content.map(item => {
+                return {
+                    ...Object.fromEntries(contentType.slug.fields.map(id => ([id, item[id]]))),
+                    ...item,
+                };
+            });
         }
     },
     {
@@ -35,11 +45,16 @@ export const adminPages = [
             return cms.getContent(args[1], args[2], { getRaw: true });
         },
         POST: async ({ cms, args, event, values }) => {
+            let content;
             if (event)
-                return saveContentEndpoint(cms, args[1], event.request);
+                content = await saveContentEndpoint(cms, args[1], event.request);
             else if (values)
-                return cms.saveContent(args[1], values);
-            throw new Error('Empty POST to content/*/*');
+                content = await cms.saveContent(args[1], values);
+            else
+                throw new Error('Empty POST to content/*/*');
+            if (args[2] !== content._slug)
+                throw redirect(301, `/admin/${args[0]}/${args[1]}/${content._slug}`);
+            return content;
         },
         DELETE: async ({ cms, args, event, values }) => {
             if (event)

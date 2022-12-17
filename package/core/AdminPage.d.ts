@@ -1,4 +1,4 @@
-import type { RequestEvent } from "@sveltejs/kit";
+import { type RequestEvent } from "@sveltejs/kit";
 import type SvelteCMS from "..";
 import { Component, type ComponentConfigSetting } from "./Component";
 import type { Content } from "./ContentStore";

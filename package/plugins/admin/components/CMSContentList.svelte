@@ -1,18 +1,38 @@
-<script>import { isArray } from "lodash-es";
-import Button from "../../../ui/Button.svelte";
+<script>import Button from "../../../ui/Button.svelte";
+import { PowerTable } from '@muonw/powertable';
+import { goto } from "$app/navigation";
 export let adminPath;
 export let basePath;
 export let data = [];
+const ptOptions = {
+    footerText: false,
+    footerFilters: false,
+};
 </script>
 
 <Button primary href="{basePath}/{adminPath}/_">+ add</Button>
 
-<ul>
-  {#if Array.isArray(data)}
-    {#each (data || []) as item}
-      <li>{item._slug} <a href="{basePath}/{adminPath}/{item._slug}">[edit]</a></li>
-    {:else}
-      No items found.
-    {/each}
-  {/if}
-</ul>
+{#if Array.isArray(data)}
+  <div>
+    <PowerTable {ptOptions} ptData={data} on:rowClicked={(e) => goto(`/admin/content/${e.detail.data._type}/${e.detail.data._slug}`)} />
+  </div>
+{/if}
+
+<style>
+  div :global(td) {
+    cursor: pointer;
+  }
+  div :global(button) {
+    border: none;
+  }
+  div :global(th[data-dir="asc"]:after) {
+    content: "🔼";
+    font-weight: normal;
+    opacity: .6;
+  }
+  div :global(th[data-dir="desc"]:after) {
+    content: "🔽";
+    font-weight: normal;
+    opacity: .6;
+  }
+  div :global([data-key^="_"]) { display:none; }</style>

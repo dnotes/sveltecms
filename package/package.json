@@ -3,6 +3,7 @@
   "version": "0.0.19",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
+    "@muonw/powertable": "github:muonw/powertable",
     "@sindresorhus/slugify": "^2.1.0",
     "@sveltejs/kit": "1.0.0",
     "@sveltejs/package": "1.0.0",
