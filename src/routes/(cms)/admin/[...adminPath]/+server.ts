@@ -9,8 +9,6 @@ export const POST:ServerLoad = async (event) => {
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)
 
-  console.log(adminPage)
-
   if (!adminPage) throw error(404)
 
   if (!adminPage.POST) throw error(405)
