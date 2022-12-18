@@ -15,6 +15,8 @@ import type { EntityTemplate } from './core/EntityTemplate'
 import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
 import { hooks, type CMSHookFunctions, type PluginHooks } from './core/Hook'
+import type { CMSPlugin, CMSPluginBuilder } from './core/Plugin'
+export { CMSPlugin, CMSPluginBuilder }
 
 // import { default as Validator, Rules } from 'validatorjs'
 
@@ -1173,26 +1175,5 @@ export type EntityConfigSetting = ConfigSetting & {
   id?:string
   type?:string
 }
-
-export type CMSPlugin = {
-  id: string
-  adminPages?: AdminPageConfig[]
-  fieldTypes?: FieldType[]
-  widgetTypes?: WidgetType[]
-  transformers?: Transformer[]
-  indexers?: IndexerType[]
-  contentStores?: ContentStoreType[]
-  mediaStores?: MediaStoreType[]
-  fieldgroups?: FieldgroupConfigSetting[]
-  adminFieldgroups?: FieldgroupConfigSetting[]
-  components?: ComponentType[]
-  lists?: CMSListConfig
-  optionFields?:{[key:string]:ConfigFieldConfigSetting}
-  fieldWidgets?:{[key:string]:string[]}
-  hooks?:PluginHooks
-  scriptFunctions?:ScriptFunctionType[]
-}
-
-export type CMSPluginBuilder = (config:any) => CMSPlugin
 
 export type CMSListConfig = {[key:string]: Array<string|number|{id:string|number,value:any}>}

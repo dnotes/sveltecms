@@ -1,4 +1,4 @@
-import type { CMSPlugin } from 'sveltecms';
+import type { CMSPlugin } from 'sveltecms/core/Plugin';
 import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'

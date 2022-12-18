@@ -1,4 +1,4 @@
-import type { CMSPlugin } from 'sveltecms'
+import type { CMSPlugin } from 'sveltecms/core/Plugin'
 import * as components from './components'
 import { adminPages } from 'sveltecms/core/AdminPage'
 import CMSWidgetEntity from './widgets/CMSWidgetEntity.svelte'

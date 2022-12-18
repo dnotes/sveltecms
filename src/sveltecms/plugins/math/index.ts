@@ -1,4 +1,4 @@
-import type { CMSPlugin } from "sveltecms";
+import type { CMSPlugin } from "sveltecms/core/Plugin";
 
 const nums = (num)=>(typeof num === 'number' ? num : Number(num))
 

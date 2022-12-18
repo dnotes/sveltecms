@@ -1,4 +1,4 @@
-import type { CMSPlugin } from "sveltecms";
+import type { CMSPlugin } from "sveltecms/core/Plugin";
 import CheckboxText from "./CheckboxText.svelte";
 
 export const plugin:CMSPlugin = {

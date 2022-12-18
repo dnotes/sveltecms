@@ -1,4 +1,5 @@
-import type { CMSPlugin, CMSPluginBuilder, ConfigSetting } from "sveltecms"
+import type { CMSPlugin, CMSPluginBuilder } from "sveltecms/core/Plugin"
+import type { ConfigSetting } from "sveltecms"
 import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field'
 
 const defaultOptions = {

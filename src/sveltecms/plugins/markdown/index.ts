@@ -1,4 +1,4 @@
-import type { CMSPluginBuilder, CMSPlugin } from '../..'
+import type { CMSPluginBuilder, CMSPlugin } from 'sveltecms/core/Plugin'
 // import CMSWidgetMarkdown from './CMSWidgetMarkdown.svelte'
 import MarkdownIT from 'markdown-it'
 import type { Options as MarkdownITOptions } from 'markdown-it'
