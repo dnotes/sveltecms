@@ -6,6 +6,7 @@ import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
 
   export let cms:SvelteCMS
   export let data:{[id:string]:string|ConfigSetting}
+  export let url:URL
   export let options:{
     configType:string
     configPath:string
@@ -30,6 +31,7 @@ import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
   id="{opts.configType}"
   bind:value={data}
   bind:addEntity
+  {url}
   options={{ entityType:entityType.id, isTopLevelEntity:true }}
 />
 

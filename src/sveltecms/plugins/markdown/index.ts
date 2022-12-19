@@ -5,19 +5,21 @@ import type { Options as MarkdownITOptions } from 'markdown-it'
 
 let md:MarkdownIT
 
-const pluginBuilder:CMSPluginBuilder = (config:{
+const pluginBuilder:CMSPluginBuilder = (config?:{
   md?:MarkdownIT,
   commonmark?:boolean,
   opts?:MarkdownITOptions
+  // TODO: Make optionFields for markdown-it configuration, and disable/hide on admin screens when when config.md is provided
 }) => {
 
   config = Object.assign({}, {
     commonmark: true,
-  }, config)
+    opts: {}
+  }, config || {})
 
   if (config.md) md = config.md
   else {
-    md = new MarkdownIT(config.commonmark ? 'commonmark' : 'default')
+    md = new MarkdownIT(config.commonmark ? 'commonmark' : 'default', config.opts)
   }
 
   const plugin:CMSPlugin = {

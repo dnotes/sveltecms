@@ -1,11 +1,11 @@
 import type SvelteCMS from 'sveltecms'
 import type { CMSListConfig, ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
-import type { ContentType } from 'sveltecms/core/ContentType'
+import type { ContentTypeConfigSetting } from 'sveltecms/core/ContentType'
 import type { ComponentType } from './Component'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 import type { AdminPageConfig } from './AdminPage'
 import type { ContentStoreType } from './ContentStore'
-import type { ConfigFieldConfigSetting, FieldType } from './Field'
+import type { ConfigFieldConfigSetting, FieldConfigSetting, FieldType } from './Field'
 import type { FieldgroupConfigSetting } from './Fieldgroup'
 import type { PluginHooks } from './Hook'
 import type { IndexerType } from './Indexer'
@@ -32,8 +32,10 @@ export type CMSPlugin = {
   indexers?: IndexerType[]
   contentStores?: ContentStoreType[]
   mediaStores?: MediaStoreType[]
+  fields?: FieldConfigSetting[]
   fieldgroups?: FieldgroupConfigSetting[]
   adminFieldgroups?: FieldgroupConfigSetting[]
+  contentTypes?: (ContentTypeConfigSetting & { id:string })[]
   components?: ComponentType[]
   lists?: CMSListConfig
   optionFields?:{[key:string]:ConfigFieldConfigSetting}
@@ -42,4 +44,4 @@ export type CMSPlugin = {
   scriptFunctions?:ScriptFunctionType[]
 }
 
-export type CMSPluginBuilder = (config:any) => CMSPlugin
+export type CMSPluginBuilder = (config?:any) => CMSPlugin

@@ -124,6 +124,7 @@ export type CMSConfigSetting = {
   fieldgroups?: {[key:string]: FieldgroupConfigSetting}
   transformers?: {[key:string]: TransformerConfigSetting}
   components?: {[key:string]: ComponentConfigSetting}
+  plugins?: {[key:string]: ConfigSetting}
 }
 
 export default class SvelteCMS {
@@ -160,6 +161,7 @@ export default class SvelteCMS {
   defaultContentType: ContentType
   defaultContentDisplays: FullEntityDisplayConfig
   lists:CMSListConfig = {}
+  plugins:{[key:string]:CMSPlugin} = {}
   hooks:CMSHookFunctions = {
     contentPreSave: [],
     contentPreDelete: [],
@@ -288,12 +290,12 @@ export default class SvelteCMS {
   }
 
   use(plugin:CMSPlugin, config?:any) {
-    // TODO: allow function that returns plugin
+    // TODO: allow CMSPluginBuilder function, in case people pass the function instead of the plugin
 
     ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups','indexers','scriptFunctions'].forEach(k => {
       try {
         plugin?.[k]?.forEach(conf => {
-          this[k][conf.id] = conf
+          if (conf) this[k][conf.id] = conf
         })
       }
       catch(e) {
@@ -301,6 +303,27 @@ export default class SvelteCMS {
         throw e
       }
     });
+
+    ['fields', 'widgets'].forEach(objectType => {
+      if (plugin?.[objectType]) {
+        let typesKey = objectType.replace('s','Types')
+        plugin[objectType].forEach(item => {
+          if (!item?.id) return
+          let type:string = item['type']
+          if (!type || typeof type !== 'string') throw new Error(`Type is required for ${item.id} (received ${JSON.stringify(type)})`)
+          let _parent = this[objectType][type] ?? this[typesKey][type]
+          if (!_parent) throw new Error(`Parent not found for ${item.id}. Is "${item.id}" a typo? Did you define ${item.id} before ${objectType}.${item?.['type']}?`)
+          // @ts-ignore This has been type checked by now
+          this[objectType][item.id] = { ...item, _parent }
+        })
+      }
+    })
+
+    if (plugin.contentTypes) {
+      plugin.contentTypes.forEach((contentType) => {
+        if (contentType && contentType?.id) this.contentTypes[contentType.id] = new ContentType(contentType.id, contentType, this)
+      })
+    }
 
     // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
     if (plugin.hooks) plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook) })

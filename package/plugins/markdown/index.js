@@ -4,11 +4,12 @@ let md;
 const pluginBuilder = (config) => {
     config = Object.assign({}, {
         commonmark: true,
-    }, config);
+        opts: {}
+    }, config || {});
     if (config.md)
         md = config.md;
     else {
-        md = new MarkdownIT(config.commonmark ? 'commonmark' : 'default');
+        md = new MarkdownIT(config.commonmark ? 'commonmark' : 'default', config.opts);
     }
     const plugin = {
         id: 'markdown',

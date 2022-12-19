@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@muonw/powertable": "github:muonw/powertable",
@@ -100,6 +100,7 @@
     "./core/Hook": "./core/Hook.js",
     "./core/Indexer": "./core/Indexer.js",
     "./core/MediaStore": "./core/MediaStore.js",
+    "./core/Plugin": "./core/Plugin.js",
     "./core/ScriptFunction": "./core/ScriptFunction.js",
     "./core/Slug": "./core/Slug.js",
     "./core/Transformer": "./core/Transformer.js",
@@ -136,6 +137,7 @@
     "./plugins/admin/widgets/CMSWidgetList.svelte": "./plugins/admin/widgets/CMSWidgetList.svelte",
     "./plugins/checkboxes/CheckboxText.svelte": "./plugins/checkboxes/CheckboxText.svelte",
     "./plugins/checkboxes": "./plugins/checkboxes/index.js",
+    "./plugins/defaultContent": "./plugins/defaultContent/index.js",
     "./plugins/firebaseFirestore": "./plugins/firebaseFirestore/index.js",
     "./plugins/firebaseStorage": "./plugins/firebaseStorage/index.js",
     "./plugins/markdown": "./plugins/markdown/index.js",

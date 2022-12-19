@@ -7,6 +7,7 @@ declare const __propDef: {
         data: {
             [id: string]: string | ConfigSetting;
         };
+        url: URL;
         options: {
             configType: string;
             configPath: string;

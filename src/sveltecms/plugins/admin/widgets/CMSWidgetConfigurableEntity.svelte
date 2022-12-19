@@ -6,7 +6,6 @@ import Button from 'sveltecms/ui/Button.svelte'
 import CmsFieldGroup from "sveltecms/CMSFieldGroup.svelte";
 import { isEqual, isNull } from "lodash-es";
 import { createEventDispatcher } from "svelte";
-import yaml from 'js-yaml';
 
   export let cms:SvelteCMS
   export let type:string // The type of configurable entity being configured

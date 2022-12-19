@@ -2,6 +2,7 @@
 import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
 export let cms;
 export let data;
+export let url;
 export let options;
 $: opts = Object.assign({}, options);
 $: entityType = cms.getEntityType(opts.configType);
@@ -19,6 +20,7 @@ $: defaultItems = entities.filter(id => !items.find(item => item[0] === id));
   id="{opts.configType}"
   bind:value={data}
   bind:addEntity
+  {url}
   options={{ entityType:entityType.id, isTopLevelEntity:true }}
 />
 

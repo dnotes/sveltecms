@@ -3,7 +3,6 @@ import type SvelteCMS from "sveltecms";
 import type { ConfigSetting, EntityConfigSetting, WidgetField, WidgetFieldFieldgroup } from "sveltecms";
 
 import { cloneDeep, isEqual, isNull } from "lodash-es";
-import yaml from 'js-yaml'
 import { createEventDispatcher } from "svelte";
 import CmsFieldGroup from "sveltecms/CMSFieldGroup.svelte";
 import Button from "sveltecms/ui/Button.svelte";
@@ -266,7 +265,7 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
             disabled={!conf[entityTypeFieldID]}
             highlight={conf[entityTypeFieldID] && typeof value !== 'string'}
           >
-            <span title="{yaml.dump(value)}">...</span>
+            <span title="{JSON.stringify(conf, null, 2)}">...</span>
           </Button>
         {/if}
       </div>

@@ -3,6 +3,7 @@ import CMS from 'sveltecms'
 import conf from './sveltecms.config.yml'
 import components from './sveltecms.config.yml.components'
 import markdownPlugin from 'sveltecms/plugins/markdown'
+import defaultContent from 'sveltecms/plugins/defaultContent'
 
 import MarkdownIT from 'markdown-it'
 import MarkdownAttrs from 'markdown-it-attrs'
@@ -20,6 +21,7 @@ const md = new MarkdownIT({
 
 const cms = new CMS(conf, [
   markdownPlugin({ md }),
+  defaultContent,
   {
     id: 'customComponents',
     components

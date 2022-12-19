@@ -1,4 +1,4 @@
-import type { CMSPlugin } from '../..';
+import type { CMSPlugin } from '../../core/Plugin';
 import type { ConfigFieldConfigSetting } from '../../core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs';
 export declare function getFs(databaseName: any): Promise<PromisifiedFS>;

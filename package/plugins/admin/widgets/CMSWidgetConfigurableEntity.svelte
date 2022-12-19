@@ -3,7 +3,6 @@ import Button from '../../../ui/Button.svelte';
 import CmsFieldGroup from "../../../CMSFieldGroup.svelte";
 import { isEqual, isNull } from "lodash-es";
 import { createEventDispatcher } from "svelte";
-import yaml from 'js-yaml';
 export let cms;
 export let type; // The type of configurable entity being configured
 export let id; // The 'name' attribute of the form element

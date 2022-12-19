@@ -12,7 +12,9 @@ import { type EntityDisplayConfigSetting, type DisplayConfigSetting, type FullEn
 import type { EntityTemplate } from './core/EntityTemplate';
 import SlugConfig from './core/Slug';
 import { Indexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer';
-import { type CMSHookFunctions, type PluginHooks } from './core/Hook';
+import { type CMSHookFunctions } from './core/Hook';
+import type { CMSPlugin, CMSPluginBuilder } from './core/Plugin';
+export { CMSPlugin, CMSPluginBuilder };
 export declare const FieldPropsAllowFunctions: string[];
 export declare const cmsConfigurables: string[];
 export type TypedEntity = {
@@ -111,6 +113,9 @@ export type CMSConfigSetting = {
     components?: {
         [key: string]: ComponentConfigSetting;
     };
+    plugins?: {
+        [key: string]: ConfigSetting;
+    };
 };
 export default class SvelteCMS {
     conf: CMSConfigSetting;
@@ -185,6 +190,9 @@ export default class SvelteCMS {
     defaultContentType: ContentType;
     defaultContentDisplays: FullEntityDisplayConfig;
     lists: CMSListConfig;
+    plugins: {
+        [key: string]: CMSPlugin;
+    };
     hooks: CMSHookFunctions;
     constructor(conf: CMSConfigSetting, plugins?: CMSPlugin[]);
     use(plugin: CMSPlugin, config?: any): void;
@@ -377,33 +385,9 @@ export type EntityConfigSetting = ConfigSetting & {
     id?: string;
     type?: string;
 };
-export type CMSPlugin = {
-    id: string;
-    adminPages?: AdminPageConfig[];
-    fieldTypes?: FieldType[];
-    widgetTypes?: WidgetType[];
-    transformers?: Transformer[];
-    indexers?: IndexerType[];
-    contentStores?: ContentStoreType[];
-    mediaStores?: MediaStoreType[];
-    fieldgroups?: FieldgroupConfigSetting[];
-    adminFieldgroups?: FieldgroupConfigSetting[];
-    components?: ComponentType[];
-    lists?: CMSListConfig;
-    optionFields?: {
-        [key: string]: ConfigFieldConfigSetting;
-    };
-    fieldWidgets?: {
-        [key: string]: string[];
-    };
-    hooks?: PluginHooks;
-    scriptFunctions?: ScriptFunctionType[];
-};
-export type CMSPluginBuilder = (config: any) => CMSPlugin;
 export type CMSListConfig = {
     [key: string]: Array<string | number | {
         id: string | number;
         value: any;
     }>;
 };
-export {};

@@ -141,6 +141,15 @@ export const adminPages:AdminPageConfig[] = [
       },
     },
   },
+  // {
+  //   id: 'plugins',
+  //   component: {
+  //     type: 'CMSConfigForm',
+  //     options: {
+  //       component: 'CMSConfigEntityList',
+  //     }
+  //   }
+  // }, TODO: add config settings for Plugins
   {
     id: 'settings',
     component: {
