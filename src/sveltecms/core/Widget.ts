@@ -58,7 +58,7 @@ export class Widget implements ConfigurableEntity {
   handlesMultiple: boolean
   handlesMedia: boolean
   handlesFields: boolean
-  options?: ConfigSetting
+  options: ConfigSetting
   formDataHandler?:FormDataHandler
   constructor(conf:string|WidgetConfigSetting, cms:SvelteCMS) {
     // TODO: change per CMSContentField changes
@@ -79,7 +79,7 @@ export class Widget implements ConfigurableEntity {
     if (widgetType?.formDataHandler) { // formDataHandler can only be set on the widget type
       this.formDataHandler = widgetType.formDataHandler
     }
-    if (widgetType?.optionFields) this.options = cms.getInstanceOptions(widgetType, conf)
+    this.options = (widgetType?.optionFields) ? cms.getInstanceOptions(widgetType, conf) : {}
   }
 }
 

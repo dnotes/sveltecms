@@ -38,7 +38,7 @@ export type FieldConfigSetting = DisplayableEntityConfigSetting & {
 }
 
 export type ConfigFieldConfigSetting = Omit<FieldConfigSetting,"display|displayModes"> & {
-  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'entity'|'entityList'|'list'
+  type: 'text'|'number'|'boolean'|'date'|'fieldgroup'|'entity'|'entityList'|'list'|'defaultValue'
   entity?: string
   default: any
   helptext: string
@@ -203,6 +203,11 @@ export const templateField:EntityTemplate = {
         }
       }
     },
+    default: {
+      type: 'defaultValue',
+      default: undefined,
+      helptext: 'The default value for this field when new content is created.'
+    }
   }
 }
 

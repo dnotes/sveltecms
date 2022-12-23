@@ -4,6 +4,7 @@ import { adminPages } from 'sveltecms/core/AdminPage'
 import CMSWidgetEntity from './widgets/CMSWidgetEntity.svelte'
 import CMSWidgetEntityList from './widgets/CMSWidgetEntityList.svelte'
 import CMSWidgetList from './widgets/CMSWidgetList.svelte'
+import CMSWidgetDefaultValue from './widgets/CMSWidgetDefaultValue.svelte'
 
 export const adminPlugin:CMSPlugin = {
   id: 'admin',
@@ -32,6 +33,13 @@ export const adminPlugin:CMSPlugin = {
       widget: 'entityList',
       displays: 'none',
     },
+    {
+      id: 'defaultValue',
+      admin: true,
+      default: undefined,
+      widget: 'defaultValue',
+      displays: 'none',
+    }
   ],
   widgetTypes: [
     {
@@ -79,6 +87,13 @@ export const adminPlugin:CMSPlugin = {
         },
       }
     },
+    {
+      id: 'defaultValue',
+      fieldTypes: ['defaultValue'],
+      admin: true,
+      description: 'Widget for inputting the default value of a field',
+      widget: CMSWidgetDefaultValue,
+    }
   ]
 }
 
