@@ -58,7 +58,7 @@ let scriptValue = ""
           {cms}
           bind:value
         />
-        {#if field.isScriptable}
+        {#if field.scriptable}
           <ScriptableButton
             {cms}
             {field}

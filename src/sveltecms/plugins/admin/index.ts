@@ -63,11 +63,13 @@ export const adminPlugin:CMSPlugin = {
           type: 'text',
           required: true,
           default: '',
+          scriptable: true,
           helptext: 'The type of entity to be configured.',
         },
         fieldType: {
           type: 'text',
           default: '',
+          scriptable: true,
           helptext: 'The field type for which a widget will be chosen. Only used when Entity Type is "widget".',
         },
       }
@@ -83,6 +85,7 @@ export const adminPlugin:CMSPlugin = {
           type: 'text',
           required: true,
           default: 'field',
+          scriptable: true,
           helptext: 'The type of entity to be configured.',
         },
       }

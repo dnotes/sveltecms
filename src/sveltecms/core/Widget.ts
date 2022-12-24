@@ -39,7 +39,6 @@ export const templateWidget:EntityTemplate = {
   typeRequired: true,
   typeRestricted: true,
   isConfigurable: true,
-  isScriptable: true,
 }
 
 export type WidgetType = ConfigurableEntityType & {
@@ -108,6 +107,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       placeholder: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: 'This text will be displayed when the field is empty.',
       }
     }
@@ -135,16 +135,19 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       min: {
         type: 'number',
         default: 0,
+        scriptable: true,
         helptext: 'The minimum number allowed on the form. Does not validate form submissions!',
       },
       max: {
         type: 'number',
         default: undefined,
+        scriptable: true,
         helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
       },
       step: {
         type: 'number',
         default: 1,
+        scriptable: true,
         helptext: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
       },
     }
@@ -158,32 +161,38 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       min: {
         type: 'number',
         default: 0,
+        scriptable: true,
         helptext: 'The minimum number allowed on the form. Does not validate form submissions!',
       },
       max: {
         type: 'number',
         default: 5,
+        scriptable: true,
         helptext: 'The maximum number allowed on the form. Does not validate form submissions!',
       },
       step: {
         type: 'number',
         default: 1,
+        scriptable: true,
         helptext: 'The amount between each selectable value, e.g. "2" would allow 0,2,4,6.... Does not validate form submissions!',
       },
       showValue: {
         type: 'boolean',
         default: true,
+        scriptable: true,
         helptext: 'Whether to show the exact value while editing.',
       },
       showScale: {
         type: 'boolean',
         default: true,
+        scriptable: true,
         helptext: 'Whether to show min and max values when editing.',
       },
       items: {
         type: 'list',
         label: 'Context Items',
         default: [],
+        scriptable: true,
         helptext: `Text values that correspond to a certain value or range of values, `+
           `similar to value:label items for a select input. `+
           `The list must be keyed with numbers, e.g. "0:low", "3:medium", "8:high".`,
@@ -199,6 +208,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       time: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: `Whether and how to store the time. Choosing "none" will store only the date
         as yyyy-mm-dd; which is useful when using the date widget with a text field, or as a slug,
         but not useful for saving dates. "Time only" is similar, but stores only a time in hours
@@ -223,6 +233,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           time: '',
         },
         default: '',
+        scriptable: true,
         helptext: 'The earliest date allowable.',
         hidden: '$equal($values.time,timeonly)',
       },
@@ -233,12 +244,14 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           time: '',
         },
         default: '',
+        scriptable: true,
         helptext: 'The latest date allowable.',
         hidden: '$equal($values.time,timeonly)',
       },
       seconds: {
         type: 'boolean',
         default: false,
+        scriptable: true,
         label: 'Use seconds',
         helptext: 'Whether to store and keep seconds in the time.',
         hidden: '$not($values.time)'
@@ -251,6 +264,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           seconds: '$if($values.seconds)'
         },
         default: '',
+        scriptable: true,
         helptext: 'The earliest time allowed.',
         hidden: '$not($values.time)'
       },
@@ -262,6 +276,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
           seconds: '$values.seconds',
         },
         default: '',
+        scriptable: true,
         helptext: 'The latest time allowed.',
         hidden: '$not($values.time)'
       },
@@ -276,22 +291,26 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       placeholder: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: 'This text will be displayed when the field is empty.',
       },
       rows: {
         type: 'number',
         default: 3,
+        scriptable: true,
         helptext: 'The height, in "rows", of the textarea element.',
       },
       cols: {
         type: 'number',
         default: 20,
+        scriptable: true,
         helptext: 'The width, in "columns", of the textarea element.',
       },
       resize: {
         type: 'text',
         helptext: 'Whether to allow resizing of the textarea element.',
         default: 'none',
+        scriptable: true,
         widget: {
           type: 'select',
           options: {
@@ -303,6 +322,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       autosize: {
         type: 'boolean',
         default: false,
+        scriptable: true,
         helptext: 'If selected, the textarea element will be automatically resized to accommodate the entered text.'
       },
     }
@@ -316,6 +336,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       labelBeforeCheckbox: {
         type: 'boolean',
         default: false,
+        scriptable: true,
         helptext: 'Render the text label before the checkbox element in HTML markup.',
       }
     }
@@ -445,17 +466,20 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         type: 'number',
         widget: 'text',
         default: 0,
+        scriptable: true,
         helptext: 'The maximum number of items shown in the dropdown area of a select box.'
       },
       unset: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: 'The title text to use for a blank entry. If this is provided, or if the field is not '+
           'required, a blank value will be available. The default title for the blank value is "- none -".',
       },
       items: {
         type: 'list',
         default: [],
+        scriptable: true,
         helptext: 'The list of values allowed for this select input, along with the labels for display.',
       },
     }
@@ -473,11 +497,13 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       value: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: 'The value of the field. Use a Script Function to determine this based on other fields.',
       },
       display: {
         type: 'boolean',
         default: false,
+        scriptable: true,
         helptext: 'Can display the calculated value on the editing form in a disabled text field.',
       }
     }
@@ -589,6 +615,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       placeholder: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: 'Placeholder text when the input is empty.',
       },
       allowBlur: {
@@ -615,6 +642,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         multiple: true,
         default: [],
         widget: 'multiselect',
+        scriptable: true,
         helptext: `A list of possible values to be presented to content editors. `+
           `Values should be text strings, but may use the "[value][:label]" format, `+
           `e.g. "1:First Place". `+
@@ -623,21 +651,25 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       restrictToItems: {
         type: 'boolean',
         default: false,
+        scriptable: true,
         helptext: 'Only accept items from the provided items.',
       },
       itemsFilter: {
         type: 'boolean',
         default: true,
+        scriptable: true,
         helptext: 'Turn this off to disable filtering the items. May be useful for some APIs.',
       },
       placeholder: {
         type: 'text',
         default: '',
+        scriptable: true,
         helptext: 'Placeholder text when the input is empty.',
       },
       onlyUnique: {
         type: 'boolean',
         default: true,
+        scriptable: true,
         helptext: 'Ensure that all entered items are unique.',
       },
       allowBlur: {
@@ -663,6 +695,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
       splitWith: {
         type: 'text',
         default: ',',
+        scriptable: true,
         helptext: 'The character that splits a group of items.',
         hidden: {function:'not', params:[
           {function:'or', params:[

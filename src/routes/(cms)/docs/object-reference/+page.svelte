@@ -53,7 +53,7 @@
                 option: propID,
                 type: field.type,
                 default: JSON.stringify(field.default),
-                script: (field.isScriptable ?? cms.getEntityType(id)?.isScriptable) ? 'yes' : '',
+                script: field.scriptable ? 'yes' : '',
                 description: field.helptext,
               }
             })
