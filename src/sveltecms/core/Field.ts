@@ -238,7 +238,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
   value?: any
   events?: {on:string,function:ScriptFunctionConfig}[]
   displayComponent?: Component
-  isScriptable?: boolean
+  scriptable?: boolean
 
   // implemented only in Multiple and Fieldgroup widgets
   // implement as needed in custom widgets
@@ -303,7 +303,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       this.widget = new Widget(conf.widget || fieldType.widget, cms)
 
       this.displays = { default:'none', ...cms.parseEntityDisplayConfigSetting(fieldType.displays), ...cms.parseEntityDisplayConfigSetting(conf.displays) }
-      this.isScriptable = conf.scriptable
+      this.scriptable = conf.scriptable
 
       if (fieldType.displayComponent) this.displayComponent = cms.getEntity('components', fieldType.displayComponent)
 
