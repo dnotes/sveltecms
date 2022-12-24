@@ -24,14 +24,18 @@ import { createEventDispatcher } from "svelte";
   }
   .modal {
     position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
+    right: 0;
+    top: 60px;
+    height: calc(100% - 80px);
     z-index:11;
     padding: 1em;
-    max-width: 85vw;
-    max-height: 92vh;
     overflow-y:scroll;
+    overflow-x: hidden;
     background:var(--cms-bg);
   }
+  :global(.sveltecms .modal) { width:calc(100% - 20px) }
+  :global(.sveltecms .modal .modal) { width:calc(100% - 40px) }
+  :global(.sveltecms .modal .modal .modal) { width:calc(100% - 60px) }
+  :global(.sveltecms .modal .modal .modal .modal) { width:calc(100% - 80px) }
+  :global(.sveltecms .modal .modal .modal .modal .modal) { width:calc(100% - 100px) }
 </style>
