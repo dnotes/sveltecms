@@ -64,7 +64,7 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
 
 {#if show}
 <Modal on:cancel={()=>{show=false}}>
-  <h3>Script configuration for <code>{field.id}</code></h3>
+  <h3 slot="title">Script configuration for <code>{field.id}</code></h3>
   <input type="text" class:valid={isScript} bind:value={scriptValue} />
   <div class="script" class:valid={isScript}>
     {#if isScript}

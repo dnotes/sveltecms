@@ -6,9 +6,11 @@ import { createEventDispatcher } from "svelte";
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="modalbg" on:click|stopPropagation={cancel}></div>
 <div class="modal" on:keydown={(e)=>{if (e.key === 'Escape') cancel()}}>
-  <slot></slot>
+  <div class="title"><slot name="title"></slot></div>
+  <div class="body"><slot></slot></div>
 </div>
 
 <style>
@@ -28,10 +30,18 @@ import { createEventDispatcher } from "svelte";
     top: 60px;
     height: calc(100% - 80px);
     z-index:11;
-    padding: 1em;
     overflow-y:scroll;
     overflow-x: hidden;
     background:var(--cms-bg);
+  }
+  .modal>div.body {
+    padding: 20px;
+  }
+  .modal>div.title {
+    position: sticky;
+    top: 0;
+    padding: 8px 20px;
+    background-color: var(--cms-bg);
   }
   :global(.sveltecms .modal) { width:calc(100% - 20px) }
   :global(.sveltecms .modal .modal) { width:calc(100% - 40px) }

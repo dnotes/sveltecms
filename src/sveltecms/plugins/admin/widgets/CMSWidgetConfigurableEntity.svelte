@@ -111,7 +111,7 @@ import { createEventDispatcher } from "svelte";
 
 {#if fieldgroup}
   <Modal on:cancel={saveOptions}>
-    <h2>Configure {type}.{value?.['type'] ?? value}</h2>
+    <h2 slot="title">Configure {type}.{value?.['type'] ?? value}</h2>
     <form on:submit|preventDefault={saveOptions}>
       <CmsFieldGroup {cms} {fieldgroup} bind:values={optionValues} />
     </form>

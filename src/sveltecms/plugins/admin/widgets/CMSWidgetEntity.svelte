@@ -274,7 +274,7 @@ import CmsField from "sveltecms/CMSField.svelte";
 
 {#if modalOpen}
   <Modal on:cancel={setValue}>
-    <h2>Configure {entityType.label} "{entityID ?? value?.[entityTypeFieldID] ?? value}"</h2>
+    <h2 slot="title">Configure {entityType.label} "{entityID ?? value?.[entityTypeFieldID] ?? value}"</h2>
     <form on:submit|preventDefault={setValue}>
       <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} />
     </form>
