@@ -3,6 +3,7 @@ import { adminPages } from '../../core/AdminPage';
 import CMSWidgetEntity from './widgets/CMSWidgetEntity.svelte';
 import CMSWidgetEntityList from './widgets/CMSWidgetEntityList.svelte';
 import CMSWidgetList from './widgets/CMSWidgetList.svelte';
+import CMSWidgetDefaultValue from './widgets/CMSWidgetDefaultValue.svelte';
 export const adminPlugin = {
     id: 'admin',
     components: Object.entries(components).map(([id, component]) => ({ id, component, admin: true })),
@@ -30,6 +31,13 @@ export const adminPlugin = {
             widget: 'entityList',
             displays: 'none',
         },
+        {
+            id: 'defaultValue',
+            admin: true,
+            default: undefined,
+            widget: 'defaultValue',
+            displays: 'none',
+        }
     ],
     widgetTypes: [
         {
@@ -53,11 +61,13 @@ export const adminPlugin = {
                     type: 'text',
                     required: true,
                     default: '',
+                    scriptable: true,
                     helptext: 'The type of entity to be configured.',
                 },
                 fieldType: {
                     type: 'text',
                     default: '',
+                    scriptable: true,
                     helptext: 'The field type for which a widget will be chosen. Only used when Entity Type is "widget".',
                 },
             }
@@ -73,10 +83,18 @@ export const adminPlugin = {
                     type: 'text',
                     required: true,
                     default: 'field',
+                    scriptable: true,
                     helptext: 'The type of entity to be configured.',
                 },
             }
         },
+        {
+            id: 'defaultValue',
+            fieldTypes: ['defaultValue'],
+            admin: true,
+            description: 'Widget for inputting the default value of a field',
+            widget: CMSWidgetDefaultValue,
+        }
     ]
 };
 export default adminPlugin;

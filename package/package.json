@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@muonw/powertable": "github:muonw/powertable",
@@ -121,7 +121,6 @@
     "./plugins/admin/components/CMSConfigContentTypeList.svelte": "./plugins/admin/components/CMSConfigContentTypeList.svelte",
     "./plugins/admin/components/CMSConfigEntity.svelte": "./plugins/admin/components/CMSConfigEntity.svelte",
     "./plugins/admin/components/CMSConfigEntityList.svelte": "./plugins/admin/components/CMSConfigEntityList.svelte",
-    "./plugins/admin/components/CMSConfigFieldList.svelte": "./plugins/admin/components/CMSConfigFieldList.svelte",
     "./plugins/admin/components/CMSConfigForm.svelte": "./plugins/admin/components/CMSConfigForm.svelte",
     "./plugins/admin/components/CMSConfigSettings.svelte": "./plugins/admin/components/CMSConfigSettings.svelte",
     "./plugins/admin/components/CMSContentEdit.svelte": "./plugins/admin/components/CMSContentEdit.svelte",
@@ -130,6 +129,7 @@
     "./plugins/admin/components": "./plugins/admin/components/index.js",
     "./plugins/admin": "./plugins/admin/index.js",
     "./plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte": "./plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte",
+    "./plugins/admin/widgets/CMSWidgetDefaultValue.svelte": "./plugins/admin/widgets/CMSWidgetDefaultValue.svelte",
     "./plugins/admin/widgets/CMSWidgetDisplayList.svelte": "./plugins/admin/widgets/CMSWidgetDisplayList.svelte",
     "./plugins/admin/widgets/CMSWidgetEntity.svelte": "./plugins/admin/widgets/CMSWidgetEntity.svelte",
     "./plugins/admin/widgets/CMSWidgetEntityList.svelte": "./plugins/admin/widgets/CMSWidgetEntityList.svelte",
@@ -171,7 +171,6 @@
     "./widgets/CMSWidgetNumber.svelte": "./widgets/CMSWidgetNumber.svelte",
     "./widgets/CMSWidgetRange.svelte": "./widgets/CMSWidgetRange.svelte",
     "./widgets/CMSWidgetReference.svelte": "./widgets/CMSWidgetReference.svelte",
-    "./widgets/CMSWidgetScriptable.svelte": "./widgets/CMSWidgetScriptable.svelte",
     "./widgets/CMSWidgetSelect.svelte": "./widgets/CMSWidgetSelect.svelte",
     "./widgets/CMSWidgetText.svelte": "./widgets/CMSWidgetText.svelte",
     "./widgets/CMSWidgetTextarea.svelte": "./widgets/CMSWidgetTextarea.svelte",

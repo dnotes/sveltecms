@@ -14,16 +14,12 @@ export const templateField = {
     isConfigurable: true,
     isDisplayable: true,
     isFieldable: true,
-    listFields: ['widget', 'index', 'required', 'multiple'],
-    scriptableProps: [
-        'label', 'helptext', 'default', 'index',
-        'multiple', 'multipleLabelFields', 'multipleMin', 'multipleMax',
-        'required', 'disabled', 'hidden', 'class'
-    ],
+    listFields: ['widget', 'index', 'required', 'hidden', 'disabled', 'multiple'],
     configFields: {
         label: {
             type: 'text',
             default: '',
+            scriptable: true,
             helptext: 'The label for the field.'
         },
         widget: {
@@ -42,6 +38,7 @@ export const templateField = {
             type: 'boolean',
             label: 'Index',
             default: false,
+            scriptable: true,
             helptext: 'Whether the field data should be indexed.',
         },
         mediaStore: {
@@ -58,35 +55,41 @@ export const templateField = {
         helptext: {
             type: 'text',
             default: '',
+            scriptable: true,
             helptext: 'The help text to describe the purpose of the field for content editors.'
         },
         class: {
             type: 'text',
             default: '',
+            scriptable: true,
             helptext: 'Any classes to add to the form and display.'
         },
         required: {
             type: 'boolean',
             label: 'Req​uired',
             default: false,
+            scriptable: true,
             helptext: 'Whether the field is required.'
         },
         hidden: {
             type: 'boolean',
             label: 'Hid​den',
             default: false,
+            scriptable: true,
             helptext: 'Whether the field is hidden.'
         },
         disabled: {
             type: 'boolean',
             label: 'Dis​abled',
             default: false,
+            scriptable: true,
             helptext: 'Whether the field is disabled.'
         },
         multiple: {
             type: 'boolean',
             label: 'Mult​iple',
             default: false,
+            scriptable: true,
             helptext: 'Whether the field takes multiple values.'
         },
         multipleOrSingle: {
@@ -98,18 +101,21 @@ export const templateField = {
         // multipleMin: {
         //   type: 'number',
         //   default: undefined,
+        //   scriptable: true,
         //   helptext: 'The minimum number of values for a multiple field.',
         //   hidden: '$not($values.multiple)',
         // },
         // multipleMax: {
         //   type: 'number',
         //   default: undefined,
+        //   scriptable: true,
         //   helptext: 'The maximum number of values for a multiple field.',
         //   hidden: '$not($values.multiple)',
         // },
         multipleLabelFields: {
             type: 'text',
             default: '',
+            scriptable: true,
             helptext: 'For fieldgroups, the fields to concatenate when creating a label for each item.',
             hidden: '$not($values.multiple)',
         },
@@ -151,6 +157,12 @@ export const templateField = {
                 }
             }
         },
+        default: {
+            type: 'defaultValue',
+            default: undefined,
+            scriptable: true,
+            helptext: 'The default value for this field when new content is created.'
+        }
     }
 };
 export class Field {
@@ -198,6 +210,7 @@ export class Field {
             this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false);
             this.widget = new Widget(conf.widget || fieldType.widget, cms);
             this.displays = { default: 'none', ...cms.parseEntityDisplayConfigSetting(fieldType.displays), ...cms.parseEntityDisplayConfigSetting(conf.displays) };
+            this.scriptable = conf.scriptable;
             if (fieldType.displayComponent)
                 this.displayComponent = cms.getEntity('components', fieldType.displayComponent);
             // this.validator = conf.validator ?? fieldType.defaultValidator

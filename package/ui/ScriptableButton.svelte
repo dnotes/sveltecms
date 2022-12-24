@@ -3,14 +3,13 @@ import Modal from './Modal.svelte';
 import Button from './Button.svelte';
 export let cms;
 export let value; // the value that is scriptable
-let defaultValue; // the default value of the field, if not a script
-export { defaultValue as default };
-export let label; // The field or a label (for ID)
-export let isScript; // Whether the value is overridden by a script
+export let field; // the field that is scriptable
+// Informational
+export let isScript = false; // Whether the value is overridden by a script
 export let scriptValue = ''; // the value as a script
+export let overridden = false; // whether the value is overridden
 scriptValue = value;
 let parsedScriptValue;
-let overridden; // whether the value is overridden
 let show; // whether the configuration modal is open
 let parsedScript = '';
 let scriptError;
@@ -39,7 +38,7 @@ function removeOverride() {
     // Remove the override
     if (overridden) {
         overridden = false;
-        value = defaultValue;
+        value = field.default;
     }
 }
 function fnHelp(fn) {
@@ -55,7 +54,7 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
 
 {#if show}
 <Modal on:cancel={()=>{show=false}}>
-  <h3>Script configuration for <code>{label}</code></h3>
+  <h3 slot="title">Script configuration for <code>{field.id}</code></h3>
   <input type="text" class:valid={isScript} bind:value={scriptValue} />
   <div class="script" class:valid={isScript}>
     {#if isScript}

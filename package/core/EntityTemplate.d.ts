@@ -12,7 +12,6 @@ export type EntityTemplate = {
     isDisplayable?: boolean;
     listFields?: string[];
     isFieldable?: boolean;
-    scriptableProps?: string[];
     configFields?: {
         [id: string]: ConfigFieldConfigSetting;
     };

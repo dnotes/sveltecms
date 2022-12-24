@@ -24,7 +24,7 @@ export declare class Widget implements ConfigurableEntity {
     handlesMultiple: boolean;
     handlesMedia: boolean;
     handlesFields: boolean;
-    options?: ConfigSetting;
+    options: ConfigSetting;
     formDataHandler?: FormDataHandler;
     constructor(conf: string | WidgetConfigSetting, cms: SvelteCMS);
 }

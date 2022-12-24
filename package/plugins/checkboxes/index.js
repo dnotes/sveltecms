@@ -12,17 +12,20 @@ export const plugin = {
                     type: 'text',
                     size: '1',
                     default: '☐',
+                    scriptable: true,
                     helptext: 'Character to show when the checkbox is not checked.',
                 },
                 trueText: {
                     type: 'text',
                     size: '1',
                     default: '☑︎',
+                    scriptable: true,
                     helptext: 'Character to show when the checkbox is not checked.',
                 },
                 fontSize: {
                     type: 'number',
                     default: 150,
+                    scriptable: true,
                     helptext: 'The relative size of the checkbox text, as a percentage.',
                     widget: {
                         type: 'number',
@@ -36,6 +39,7 @@ export const plugin = {
                 labelBeforeCheckbox: {
                     type: 'boolean',
                     default: false,
+                    scriptable: true,
                     helptext: 'Render the text label before the checkbox element in HTML markup.',
                 },
             }

@@ -5,6 +5,7 @@ import Button from "../../../ui/Button.svelte";
 import Modal from "../../../ui/Modal.svelte";
 import CmsWidgetDisplayList from "./CMSWidgetDisplayList.svelte";
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
+import CmsField from "../../../CMSField.svelte";
 export let cms;
 export let id;
 export let value;
@@ -173,15 +174,12 @@ $: if (conf)
 
   {#each (entityType?.listFields || []) as fieldID}
     {#if widgetFieldGroup?.fields?.[fieldID]}
-      <div class="field config">
-        <svelte:component
-          this={widgetFieldGroup.fields[fieldID].widget.widget}
-          field={widgetFieldGroup.fields[fieldID]}
-          id="{formBaseID}[{fieldID}]"
-          {cms}
-          bind:value={conf[fieldID]}
-        />
-      </div>
+      <CmsField
+        field={widgetFieldGroup.fields[fieldID]}
+        id="{formBaseID}[{fieldID}]"
+        {cms}
+        bind:value={conf[fieldID]}
+      />
     {/if}
   {/each}
 
@@ -240,7 +238,7 @@ $: if (conf)
 
 {#if modalOpen}
   <Modal on:cancel={setValue}>
-    <h2>Configure {entityType.label} "{entityID ?? value?.[entityTypeFieldID] ?? value}"</h2>
+    <h2 slot="title">Configure {entityType.label} "{entityID ?? value?.[entityTypeFieldID] ?? value}"</h2>
     <form on:submit|preventDefault={setValue}>
       <CmsFieldGroup {cms} {widgetFieldGroup} bind:values={conf} />
     </form>

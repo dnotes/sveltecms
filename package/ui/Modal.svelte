@@ -5,9 +5,11 @@ function cancel() {
 }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="modalbg" on:click|stopPropagation={cancel}></div>
 <div class="modal" on:keydown={(e)=>{if (e.key === 'Escape') cancel()}}>
-  <slot></slot>
+  <div class="title"><slot name="title"></slot></div>
+  <div class="body"><slot></slot></div>
 </div>
 
 <style>
@@ -25,13 +27,26 @@ function cancel() {
   }
   .modal {
     position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
+    right: 0;
+    top: 60px;
+    height: calc(100% - 80px);
     z-index:11;
-    padding: 1em;
-    max-width: 85vw;
-    max-height: 92vh;
     overflow-y:scroll;
+    overflow-x: hidden;
     background:var(--cms-bg);
-  }</style>
+  }
+  .modal>div.body {
+    padding: 20px;
+  }
+  .modal>div.title:not(:empty) {
+    position: sticky;
+    top: 0;
+    padding: 8px 20px;
+    background-color: var(--cms-bg);
+    z-index: 1;
+  }
+  :global(.sveltecms .modal) { width:calc(100% - 20px) }
+  :global(.sveltecms .modal .modal) { width:calc(100% - 40px) }
+  :global(.sveltecms .modal .modal .modal) { width:calc(100% - 60px) }
+  :global(.sveltecms .modal .modal .modal .modal) { width:calc(100% - 80px) }
+  :global(.sveltecms .modal .modal .modal .modal .modal) { width:calc(100% - 100px) }</style>

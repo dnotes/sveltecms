@@ -35,12 +35,14 @@ export type FieldConfigSetting = DisplayableEntityConfigSetting & {
         function: ScriptFunctionConfigSetting;
     }[];
     mediaStore?: string | MediaStoreConfigSetting;
+    scriptable?: boolean;
     [id: string]: string | number | boolean | ConfigSetting | ScriptFunctionConfigSetting | (string | number | ConfigSetting)[];
 };
 export type ConfigFieldConfigSetting = Omit<FieldConfigSetting, "display|displayModes"> & {
-    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'entity' | 'entityList' | 'list';
+    type: 'text' | 'number' | 'boolean' | 'date' | 'fieldgroup' | 'entity' | 'entityList' | 'list' | 'defaultValue';
     entity?: string;
     default: any;
+    scriptable?: boolean;
     helptext: string;
     fields?: {
         [key: string]: ConfigFieldConfigSetting;
@@ -72,6 +74,7 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
         function: ScriptFunctionConfig;
     }[];
     displayComponent?: Component;
+    scriptable?: boolean;
     multiple?: boolean | ScriptFunctionConfig | ScriptFunctionConfigSetting;
     multipleOrSingle?: boolean;
     multipleLabelFields?: string | string[] | ScriptFunctionConfig;

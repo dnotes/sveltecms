@@ -8,6 +8,8 @@ export let cms;
 export let id;
 export let field = undefined;
 export let value;
+if (typeof value === 'string')
+    value = { default: value }; // TODO: figure out why this happens with Displays
 export let url;
 // @ts-ignore
 export let options = field?.widget?.options;

@@ -1,13 +1,14 @@
 import { SvelteComponentTyped } from "svelte";
 import type SvelteCMS from '..';
+import type { WidgetField } from '..';
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
         value: any;
-        default: any;
-        label: string;
-        isScript: any;
+        field: WidgetField;
+        isScript?: boolean;
         scriptValue?: string;
+        overridden?: boolean;
     };
     events: {
         click: MouseEvent;
