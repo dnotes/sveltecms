@@ -11,10 +11,10 @@ export type EntityTemplate = {
   typeRequired?:boolean,      // Whether a "type" is required for entities of this Entity Type
   typeRestricted?:boolean,    // Whether the "type" is restricted to existing entity ids (e.g. Fields, Widgets) or can be anything (e.g. Fieldgroups)
   isConfigurable?:boolean,    // Whether the Entity Type allows optionFields for configuration (implements ConfigurableEntity types)
+  isScriptable?:boolean,      // Whether the Entity Type's optionFields are scriptable
   isDisplayable?:boolean,     // Whether the Entity Type allows Display fields for display (implements DisplayableEntity types)
   listFields?:string[],       // Which fields should be displayed in entity list views
   isFieldable?:boolean,       // Whether the Entity Type allows fields
-  scriptableProps?: string[], // Which properties are scriptable (TODO: make this a prop on ConfigFieldConfigSetting)
   // adminFieldgroup?: string,
   configFields?: {            // The fields used to configure the Entity Type
     [id:string]:ConfigFieldConfigSetting

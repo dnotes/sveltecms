@@ -4,19 +4,20 @@ import { parseScript, ScriptError } from 'sveltecms/core/ScriptFunction';
 import type SvelteCMS from 'sveltecms';
 import Modal from 'sveltecms/ui/Modal.svelte'
 import Button from 'sveltecms/ui/Button.svelte';
+import type { WidgetField } from 'sveltecms';
 
   export let cms:SvelteCMS
-  export let value            // the value that is scriptable
-  let defaultValue            // the default value of the field, if not a script
-  export { defaultValue as default}
-  export let label:string     // The field or a label (for ID)
-  export let isScript         // Whether the value is overridden by a script
-  export let scriptValue = '' // the value as a script
+  export let value              // the value that is scriptable
+  export let field:WidgetField  // the field that is scriptable
+
+  // Informational
+  export let isScript = false   // Whether the value is overridden by a script
+  export let scriptValue = ''   // the value as a script
+  export let overridden = false // whether the value is overridden
 
   scriptValue = value
   let parsedScriptValue
 
-  let overridden  // whether the value is overridden
   let show        // whether the configuration modal is open
 
   let parsedScript = ''
@@ -24,7 +25,6 @@ import Button from 'sveltecms/ui/Button.svelte';
 
   // Whether the script is valid
   $: isScript = Boolean(parsedScript?.toString())
-
 
   $: if (scriptValue) {
     if (scriptValue !== parsedScriptValue) {
@@ -47,7 +47,7 @@ import Button from 'sveltecms/ui/Button.svelte';
     // Remove the override
     if (overridden) {
       overridden = false
-      value = defaultValue
+      value = field.default
     }
   }
 
@@ -64,7 +64,7 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
 
 {#if show}
 <Modal on:cancel={()=>{show=false}}>
-  <h3>Script configuration for <code>{label}</code></h3>
+  <h3>Script configuration for <code>{field.id}</code></h3>
   <input type="text" class:valid={isScript} bind:value={scriptValue} />
   <div class="script" class:valid={isScript}>
     {#if isScript}

@@ -10,6 +10,7 @@ import Modal from "sveltecms/ui/Modal.svelte";
 import CmsWidgetDisplayList from "./CMSWidgetDisplayList.svelte";
 
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
+import CmsField from "sveltecms/CMSField.svelte";
 
   export let cms:SvelteCMS
   export let id:string
@@ -209,15 +210,12 @@ import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 
   {#each (entityType?.listFields || []) as fieldID}
     {#if widgetFieldGroup?.fields?.[fieldID]}
-      <div class="field config">
-        <svelte:component
-          this={widgetFieldGroup.fields[fieldID].widget.widget}
-          field={widgetFieldGroup.fields[fieldID]}
-          id="{formBaseID}[{fieldID}]"
-          {cms}
-          bind:value={conf[fieldID]}
-        />
-      </div>
+      <CmsField
+        field={widgetFieldGroup.fields[fieldID]}
+        id="{formBaseID}[{fieldID}]"
+        {cms}
+        bind:value={conf[fieldID]}
+      />
     {/if}
   {/each}
 

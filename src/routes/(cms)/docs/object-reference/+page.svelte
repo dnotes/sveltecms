@@ -16,7 +16,7 @@
             ...field,
             property: id,
             default: JSON.stringify(field.default),
-            script: (entityType.scriptableProps || []).includes(id) ? 'yes' : '',
+            script: (field.scriptable) ? 'yes' : '',
             description: field.helptext
           }
         }),
@@ -53,7 +53,7 @@
                 option: propID,
                 type: field.type,
                 default: JSON.stringify(field.default),
-                script: '',
+                script: (field.isScriptable ?? cms.getEntityType(id)?.isScriptable) ? 'yes' : '',
                 description: field.helptext,
               }
             })

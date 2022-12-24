@@ -39,6 +39,7 @@ export const templateWidget:EntityTemplate = {
   typeRequired: true,
   typeRestricted: true,
   isConfigurable: true,
+  isScriptable: true,
 }
 
 export type WidgetType = ConfigurableEntityType & {
