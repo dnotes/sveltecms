@@ -14,6 +14,7 @@ import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte
   export let id:string
   export let field:WidgetField = undefined
   export let value:{[id:string]:string|EntityConfigSetting}
+  if (typeof value === 'string') value = { default: value } // TODO: figure out why this happens with Displays
   export let url:URL
   // @ts-ignore
   export let options:{
