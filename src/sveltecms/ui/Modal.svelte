@@ -37,11 +37,12 @@ import { createEventDispatcher } from "svelte";
   .modal>div.body {
     padding: 20px;
   }
-  .modal>div.title {
+  .modal>div.title:not(:empty) {
     position: sticky;
     top: 0;
     padding: 8px 20px;
     background-color: var(--cms-bg);
+    z-index: 1;
   }
   :global(.sveltecms .modal) { width:calc(100% - 20px) }
   :global(.sveltecms .modal .modal) { width:calc(100% - 40px) }
