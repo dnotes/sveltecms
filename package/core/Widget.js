@@ -543,9 +543,8 @@ export const widgetTypes = {
             },
             referenceKey: {
                 type: 'text',
-                default: '',
-                disabled: { function: 'getValue', params: ['contentTypes.0'] },
-                helptext: 'The ID of a "reference" type field on the associated Content Types. ' +
+                default: 'referencedContent',
+                helptext: 'The ID of a "reference" type field on the associated Content Type(s). ' +
                     'If provided, that field in referenced content will be populated with backlinks to the referencing content.',
             },
             displayMode: {

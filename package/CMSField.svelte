@@ -6,12 +6,14 @@ export let cms;
 export let id;
 export let field;
 export let value;
+let cls = "";
+export { cls as class };
 let overridden = false;
 let scriptValue = "";
 </script>
 
 {#if !field.hidden}
-  <div class="field field-{id} {field?.class || ''}">
+  <div class="field field-{id} {cls} {field?.class || ''}">
     {#if !field?.widget?.widget}
       <CmsWidgetUndefined {field} {id} />
     {:else if field.multiple && !field.widget.handlesMultiple}

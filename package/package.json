@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@muonw/powertable": "github:muonw/powertable",
@@ -140,6 +140,8 @@
     "./plugins/defaultContent": "./plugins/defaultContent/index.js",
     "./plugins/firebaseFirestore": "./plugins/firebaseFirestore/index.js",
     "./plugins/firebaseStorage": "./plugins/firebaseStorage/index.js",
+    "./plugins/importContent/ImportContent.svelte": "./plugins/importContent/ImportContent.svelte",
+    "./plugins/importContent": "./plugins/importContent/index.js",
     "./plugins/markdown": "./plugins/markdown/index.js",
     "./plugins/math": "./plugins/math/index.js",
     "./plugins/staticFiles": "./plugins/staticFiles/index.js",
