@@ -211,6 +211,7 @@ import CmsField from "sveltecms/CMSField.svelte";
   {#each (entityType?.listFields || []) as fieldID}
     {#if widgetFieldGroup?.fields?.[fieldID]}
       <CmsField
+        class="config"
         field={widgetFieldGroup.fields[fieldID]}
         id="{formBaseID}[{fieldID}]"
         {cms}

@@ -10,6 +10,8 @@ export let cms:SvelteCMS
 export let id:string
 export let field:WidgetField
 export let value
+let cls:string = ""
+export { cls as class }
 
 let overridden = false
 let scriptValue = ""
@@ -17,7 +19,7 @@ let scriptValue = ""
 </script>
 
 {#if !field.hidden}
-  <div class="field field-{id} {field?.class || ''}">
+  <div class="field field-{id} {cls} {field?.class || ''}">
     {#if !field?.widget?.widget}
       <CmsWidgetUndefined {field} {id} />
     {:else if field.multiple && !field.widget.handlesMultiple}
