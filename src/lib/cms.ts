@@ -9,6 +9,8 @@ import MarkdownIT from 'markdown-it'
 import MarkdownAttrs from 'markdown-it-attrs'
 import MarkdownFootnotes from 'markdown-it-footnote'
 
+import importContent from 'sveltecms/plugins/importContent'
+
 const md = new MarkdownIT({
   html:false,
   linkify:true,
@@ -22,6 +24,7 @@ const md = new MarkdownIT({
 const cms = new CMS(conf, [
   markdownPlugin({ md }),
   defaultContent,
+  importContent,
   {
     id: 'customComponents',
     components
