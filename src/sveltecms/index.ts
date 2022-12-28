@@ -18,6 +18,8 @@ import { hooks, type CMSHookFunctions, type PluginHooks } from './core/Hook'
 import type { CMSPlugin, CMSPluginBuilder } from './core/Plugin'
 export { CMSPlugin, CMSPluginBuilder }
 
+const customComponents = import.meta.glob('/src/cms/*.svelte')
+
 // import { default as Validator, Rules } from 'validatorjs'
 
 const splitter = /\s*,\s*/g
@@ -183,6 +185,14 @@ export default class SvelteCMS {
       this.components[c.id] = c
     })
     plugins.forEach(p => this.use(p))
+
+    Object.keys(customComponents).forEach(filepath => {
+      let id = filepath.replace('/src/cms/', '')
+      this.components[id] = {
+        id,
+        component: customComponents[filepath]().then(c => c?.default),
+      }
+    })
 
     // Build out config for the lists
     // This must happen before the content types and fields are built, as fields may have values in $lists
