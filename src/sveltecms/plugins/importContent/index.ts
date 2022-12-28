@@ -175,7 +175,6 @@ const plugin:CMSPlugin = {
                   [rf.displayKey]: v
                 }
               }))
-              console.log(get(item, rf.id))
             })
 
             // @ts-ignore TODO: fix types so if you save a single piece of content, it returns a single piece of content
