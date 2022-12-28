@@ -15,7 +15,7 @@ export type ComponentConfigSetting = TypedEntityConfigSetting & ConfigurableEnti
 export declare class Component implements ConfigurableEntity, TypedEntity {
     id: string;
     type: string;
-    component: Object;
+    component: Object | Promise<Object>;
     admin?: true;
     plugin?: string;
     options?: ConfigSetting;

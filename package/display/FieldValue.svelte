@@ -1,4 +1,5 @@
-<script>import { Display } from "../core/Display";
+<script>import { add_attribute } from "svelte/internal";
+import { Display } from "../core/Display";
 import Wrapper from "./Wrapper.svelte";
 export let cms;
 export let entity;
@@ -22,7 +23,9 @@ $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['
 
   {#each items as item}
     {#if display.component}
-      <svelte:component this={display.component.component} {cms} {item} {entity} {parent} {displayMode} />
+      {#await display.component.component then component}
+        <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode} />
+      {/await}
     {:else}
       <svelte:element
         this={display.tag}
@@ -30,7 +33,9 @@ $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['
         class="field-{entity.id} field-type-{entity.type} {display.classList}"
       >
         {#if entity.displayComponent}
-          <svelte:component this={entity.displayComponent.component} {cms} {item} {entity} {parent} {displayMode} />
+          {#await entity.displayComponent.component then component}
+            <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode} />
+          {/await}
         {:else if display?.html}
           {@html item}
         {:else if display?.link}

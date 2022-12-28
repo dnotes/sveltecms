@@ -120,13 +120,19 @@ const plugin = {
                             let value = get(item, rf.id);
                             if (Array.isArray(value))
                                 set(item, rf.id, value.map(v => {
-                                    return (v?.constructor === Object) ? v : {
-                                        _type: rf.id.replace(/.+\./, ''),
-                                        _slug: cms.getSlug({ title: v }, rf.slugConfig, false),
-                                        [rf.displayKey]: v
-                                    };
+                                    return (v?.constructor === Object)
+                                        ? {
+                                            // @ts-ignore I thought I just established that v is an Object?
+                                            ...v,
+                                            _type: rf.id.replace(/.+\./, ''),
+                                            _slug: cms.getSlug(v, rf.slugConfig, false),
+                                        }
+                                        : {
+                                            _type: rf.id.replace(/.+\./, ''),
+                                            _slug: cms.getSlug({ title: v }, rf.slugConfig, false),
+                                            [rf.displayKey]: v
+                                        };
                                 }));
-                            console.log(get(item, rf.id));
                         });
                         // @ts-ignore TODO: fix types so if you save a single piece of content, it returns a single piece of content
                         content[i] = await cms.saveContent(id, item);

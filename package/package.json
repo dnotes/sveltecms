@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@muonw/powertable": "github:muonw/powertable",
