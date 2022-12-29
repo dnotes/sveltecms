@@ -9,7 +9,9 @@
       <ul>
         <li><a href="/blog">Blog</a></li>
         <li><a href="/docs">Docs</a></li>
-        <li><a href="/admin">Admin</a></li>
+        {#if import.meta.env.MODE === 'development'}
+          <li><a href="/admin">Admin</a></li>
+        {/if}
       </ul>
     </nav>
   </header>

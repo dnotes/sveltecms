@@ -10,7 +10,9 @@ const config = {
     }),
   ],
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			strict: false,
+		}),
 		alias: {
       sveltecms: path.resolve('src/sveltecms'),
 		},
