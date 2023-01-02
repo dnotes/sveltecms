@@ -19,6 +19,7 @@ import CMSWidgetSelect from 'sveltecms/widgets/CMSWidgetSelect.svelte'
 import CMSWidgetValue from "sveltecms/widgets/CMSWidgetValue.svelte"
 import CMSWidgetReference from "sveltecms/widgets/CMSWidgetReference.svelte"
 import CMSWidgetMultiselect from "sveltecms/widgets/CMSWidgetMultiselect.svelte"
+import CMSWidgetOptions from "sveltecms/widgets/CMSWidgetOptions.svelte"
 
 import SlugConfig from "./Slug"
 import { isReferenceString } from "sveltecms/utils"
@@ -119,9 +120,44 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     handlesFields: true,
     widget: CMSWidgetFieldgroup,
     optionFields: { // TODO: add "fieldgroups" and "fieldgroupTypes" to the options
+      useComponents: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Allow users to choose a Fieldgroup Component when editing.'
+          +'For component-driven content, choose this option and set field.multiple.',
+      },
+      fieldgroupTags: {
+        type: 'text',
+        multiple: true,
+        default: [],
+        hidden: '$not($values.useComponents)',
+        helptext: 'Allow the specified fieldgroup formats to be chosen by the editors. '+
+          'To allow only specific fieldgroups, set this field blank.',
+        widget: {
+          type: 'options',
+          items: ['fullwidth', 'block', 'inline'],
+          oneline: true,
+        }
+      },
+      fieldgroups: {
+        type: 'text',
+        multiple: true,
+        default: [],
+        hidden: '$not($values.useComponents)',
+        helptext: 'Allow the specified fieldgroups to be chosen by the editors.',
+        widget: {
+          type: 'multiselect',
+          items: {
+            function: 'listEntities',
+            params: ['fieldgroups'],
+          },
+          restrictToItems: true,
+        }
+      },
       oneline: {
         type: 'boolean',
         default: false,
+        disabled: '$values.useComponents',
         helptext: 'add the "oneline" class to a fieldgroup fieldset',
       },
     }
@@ -457,7 +493,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   },
   select: {
     id: 'select',
-    fieldTypes: ['text','number','date'],
+    fieldTypes: ['text','number','float','date'],
     description: `An HTML select box.`,
     widget: CMSWidgetSelect,
     handlesMultiple: true,
@@ -482,6 +518,21 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         scriptable: true,
         helptext: 'The list of values allowed for this select input, along with the labels for display.',
       },
+    }
+  },
+  options: {
+    id: 'options',
+    fieldTypes: ['text','number','float','date'],
+    description: 'Options presented as option buttons or checkboxes.',
+    widget: CMSWidgetOptions,
+    handlesMultiple: true,
+    optionFields: {
+      items: {
+        type: 'list',
+        default: [],
+        scriptable: true,
+        helptext: 'The list of values allowed for this options field, along with the labels for display.',
+      }
     }
   },
   value: {

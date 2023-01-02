@@ -187,7 +187,7 @@ export default class SvelteCMS {
     plugins.forEach(p => this.use(p))
 
     Object.keys(customComponents).forEach(filepath => {
-      let id = filepath.replace('/src/cms/', '')
+      let id = filepath.replace('/src/cms/', '').replace(/\.svelte$/i, '')
       this.components[id] = {
         id,
         component: customComponents[filepath]().then(c => c?.default),

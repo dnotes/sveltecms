@@ -54,7 +54,7 @@
         },
         {
           "heading": "tooling",
-          "text": "SvelteCMS lets you use the tools you know: Svelte components, markdown, tailwind[*](#_){.fn}, sass[*](#_){.fn}, or even plain old HTML and CSS.",
+          "text": "SvelteCMS lets you use the tools you know: Svelte components, markdown, tailwind, sass[*](#_){.fn}, or even plain old HTML and CSS.",
           "icon": {
             "src": "/images/icons/code.png",
             "alt": "SvelteCMS lets you use your coding tools"
@@ -70,8 +70,14 @@
         }
       ],
       "_fieldgroup": "frontslides"
+    },
+    {
+      "quote": "SvelteCMS is the best. I love SvelteCMS!",
+      "cite": "",
+      "_fieldgroup": "quoteBlock"
     }
   ],
   "_slug": "front",
+  "_oldSlug": "front",
   "_type": "landingPage"
 }

@@ -3,7 +3,7 @@ import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
 import type { WidgetField, WidgetFieldFieldgroup } from "sveltecms";
 import type SvelteCMS from 'sveltecms';
-import { cloneDeep, get } from 'lodash-es';
+import { cloneDeep, get, intersection } from 'lodash-es';
 import splitTags from 'sveltecms/utils/splitTags'
 import Button from 'sveltecms/ui/Button.svelte';
 const split = splitTags()
@@ -17,30 +17,33 @@ const split = splitTags()
 
   let originalValue = Object.assign({}, value)
 
-  let fieldgroups = typeof parentField.widget.options.fieldgroups === 'string' ?
-    split(parentField.widget.options.fieldgroups) :
-    (parentField.widget.options.fieldgroups || [])
-  let fieldgroupTypes = typeof parentField.widget.options.fieldgroupTypes === 'string' ?
-    split(parentField.widget.options.fieldgroupTypes) :
-    (parentField.widget.options.fieldgroupTypes || [])
   let opts:{
+    useComponents:boolean
     fieldgroups:string[]
-    fieldgroupTypes:string[]
+    fieldgroupTags:string|string[]
     oneline?:boolean
-  } = Object.assign({}, parentField.widget.options, { fieldgroups, fieldgroupTypes })
+  } = Object.assign({
+    useComponents: false,
+    fieldgroups: [],
+    fieldgroupTags: [],
+    oneline: false,
+  }, parentField.widget.options)
+  if (!Array.isArray(opts.fieldgroupTags)) opts.fieldgroupTags = opts.fieldgroupTags.split(/[\s,]+/)
 
   let parentFieldProxy:WidgetField = cloneDeep(parentField)
   let fieldgroup:WidgetFieldFieldgroup
 
-  let isSelectable = [...opts.fieldgroups, ...opts.fieldgroupTypes].length
+  let unrestricted = !opts?.fieldgroups?.length && !opts?.fieldgroupTags?.length
 
   let label = parentField.label
   $: if (parentField.multipleLabelFields?.['length'] && value) label = Array.isArray(parentField.multipleLabelFields) ?
     parentField.multipleLabelFields.map(s=>s?.toString()) :
     split(parentField?.multipleLabelFields?.toString()).map(id => get(value, id) ?? id).join(', ')
 
-  $: fieldgroupTypes = Object.entries(cms.fieldgroups)
-    .filter(([id,fieldgroup])=>opts.fieldgroupTypes.includes(fieldgroup?.['type']) || opts.fieldgroups.includes(id))
+  $: fieldgroupItems = unrestricted ? Object.entries(cms.fieldgroups) : Object.entries(cms.fieldgroups)
+    .filter(([id,fieldgroup])=>{
+      return (opts?.fieldgroups ?? []).includes(id) || intersection((opts?.fieldgroupTags || []), fieldgroup.tags).length
+    })
 
   $: selectedFields = value?.['_fieldgroup'] ?
       (cms.fieldgroups?.[value['_fieldgroup']]?.fields || {}) :
@@ -65,14 +68,14 @@ const split = splitTags()
 
   <legend><Button highlight on:click={()=>{collapsed=!collapsed}}>{label}</Button></legend>
 
-  {#if isSelectable}
-    <label class="fieldgroup-type">
-      Fieldgroup Type:
+  {#if opts.useComponents}
+    <label class="fieldgroup-choice">
+      Fieldgroup:
       <select
         name="{parentID}._fieldgroup"
         bind:value={value['_fieldgroup']}
       >
-        {#each fieldgroupTypes as [id,fieldgroup]}
+        {#each fieldgroupItems as [id,fieldgroup]}
           <option value="{id}">{id}</option>
         {/each}
       </select>
@@ -118,7 +121,7 @@ const split = splitTags()
 </fieldset>
 
 <style global>
-  .sveltecms fieldset.fieldgroup>.fieldgroup-type {
+  .sveltecms fieldset.fieldgroup>.fieldgroup-choice {
     background: var(--cms-main);
     color: var(--cms-bg);
   }
@@ -133,7 +136,7 @@ const split = splitTags()
     border-top: 3px solid var(--cms-main);
   }
   .sveltecms fieldset.fieldgroup.collapsed>div>.field,
-  .sveltecms fieldset.fieldgroup.collapsed>.fieldgroup-type {
+  .sveltecms fieldset.fieldgroup.collapsed>.fieldgroup-choice {
     display: none;
   }
 </style>

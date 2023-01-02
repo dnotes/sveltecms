@@ -1,7 +1,6 @@
 import CMS from 'sveltecms'
 // @ts-ignore TODO: why can't it find this?
 import conf from './sveltecms.config.yml'
-import components from './sveltecms.config.yml.components'
 import markdownPlugin from 'sveltecms/plugins/markdown'
 import defaultContent from 'sveltecms/plugins/defaultContent'
 
@@ -25,10 +24,6 @@ const cms = new CMS(conf, [
   markdownPlugin({ md }),
   defaultContent,
   importContent,
-  {
-    id: 'customComponents',
-    components
-  }
 ])
 
 export default cms

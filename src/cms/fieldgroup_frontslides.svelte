@@ -26,55 +26,56 @@ import { page } from '$app/stores'
 
 </script>
 
-<section class="hero" on:pointerenter="{()=>{clearInterval(interval)}}" on:pointerleave="{()=>{interval = setInterval(autonext, timing)}}">
+<section class="hero backgroundpicture not-prose" on:pointerenter="{()=>{clearInterval(interval)}}" on:pointerleave="{()=>{interval = setInterval(autonext, timing)}}">
 
-  <div class="hero-links">
-    {#each item.slides as slide, idx}
-      {#if slide?.icon?.['src']}
-        <a href="?i={idx}" on:click|preventDefault={()=>{ clearInterval(interval); i=idx; }}>
-          <img
-            class:on={idx === i}
-            src="{slide.icon['src']}"
-            alt="{slide.icon?.['alt'] || ''}"
-            title="{slide.icon?.['alt'] || ''}"
-          >
-        </a>
-      {/if}
-    {/each}
-    &nbsp;<span class="red">SvelteCMS</span>
-  </div>
+  <div class="heroimage" style="background-image: url(/images/pexels-andrea-piacquadio-3861923.jpg);">
 
-  <div class="hero-content">
-
-
-    {#if i < -1}
-    <div class="hero-title">
-      <div transition:fade|local>
-        <h1>SvelteCMS</h1>
-        <h3 class="red big">it's&nbsp;<wbr/>really&nbsp;<wbr/>yours.</h3>
-      </div>
-    </div>
-    {:else if i > -1}
-    <div class="hero-title">
-      <h2>What if your<br>
-        {#if heading}
-          <span class="red" transition:fade|local>{heading}</span>
+    <div class="hero-links">
+      {#each item.slides as slide, idx}
+        {#if slide?.icon?.['src']}
+          <a href="?i={idx}" on:click|preventDefault={()=>{ clearInterval(interval); i=idx; }}>
+            <img
+              class:on={idx === i}
+              src="{slide.icon['src']}"
+              alt="{slide.icon?.['alt'] || ''}"
+              title="{slide.icon?.['alt'] || ''}"
+            >
+          </a>
         {/if}
-        <br>were really yours
-      </h2>
+      {/each}
+      &nbsp;<span class="red">SvelteCMS</span>
     </div>
-    {/if}
 
-    {#if text}
-      <div class="text" transition:fade|local>{@html text.replace(/sveltecms/i, '<span class="red">SvelteCMS</span>')}</div>
-    {/if}
+    <div class="hero-content">
 
-    <!-- <Button {button}/> -->
+      {#if i < -1}
+      <div class="hero-title">
+        <div transition:fade|local>
+          <h1>SvelteCMS</h1>
+          <h3 class="red big">it's&nbsp;<wbr/>really&nbsp;<wbr/>yours.</h3>
+        </div>
+      </div>
+      {:else if i > -1}
+      <div class="hero-title">
+        <h2>What if your<br>
+          {#if heading}
+            <span class="red" transition:fade|local>{heading}</span>
+          {/if}
+          <br>were really yours
+        </h2>
+      </div>
+      {/if}
 
+      {#if text}
+        <div class="text" transition:fade|local>{@html text.replace(/sveltecms/i, '<span class="red">SvelteCMS</span>')}</div>
+      {/if}
+
+    </div>
+
+    <div id="_"><span class="fn">*</span>&nbsp; statements are in some measure aspirational</div>
 
   </div>
 
-  <div id="_"><span class="fn">*</span>&nbsp; statements are in some measure aspirational</div>
 </section>
 
 <style>
@@ -83,27 +84,22 @@ import { page } from '$app/stores'
     line-height: 1.25em;
   }
   .hero {
-    position:relative;
     width:100%;
     height:80vh;
   }
-  .hero:before {
-    content:"";
+  .heroimage {
     position: absolute;
-    top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 80vh;
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
-
-    background-image: url(/images/pexels-andrea-piacquadio-3861923.jpg);
     filter: contrast(1.3) saturate(1.2);
   }
   .hero-links {
     position: absolute;
-    bottom: 1.4em;
+    bottom: 0;
     right: 2em;
     display: flex;
     justify-content: center;
@@ -165,15 +161,13 @@ import { page } from '$app/stores'
   }
   #_ {
     position: absolute;
-    bottom: .2em;
+    bottom: -2.2em;
     right: 2em;
     opacity: .7;
-    color: var(--dark);
+    color: var(--text);
     font-size: 11px;
-    background: rgba(255,255,255,.7);
     padding: .3em 1em;
     border-radius: 4px;
-    box-shadow: -2px 0 10px white;
   }
   @media (orientation:landscape) and (max-height:400px) {
     h1,h2 { font-size: 3vw; }

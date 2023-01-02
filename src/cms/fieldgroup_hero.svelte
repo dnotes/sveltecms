@@ -1,5 +1,4 @@
 <script lang="ts">
-import Button from '$lib/element/Button.svelte'
 import type { Content } from 'sveltecms/core/ContentStore';
 import type { Media } from 'sveltecms/core/MediaStore';
 export let item:Content & {
@@ -30,8 +29,6 @@ export let item:Content & {
     {#if item.text}
     <div class="text">{@html item.text}</div>
     {/if}
-
-    <!-- <Button {button}/> -->
 
   </div>
 

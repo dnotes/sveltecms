@@ -92,11 +92,12 @@ export const adminPages:AdminPageConfig[] = [
     },
   },
   {
-    id: 'fieldgroups',
+    id: 'components',
     component: {
       type: 'CMSConfigForm',
       options: {
         component: 'CMSConfigEntityList',
+        configPath: 'fieldgroups',
       }
     }
   },

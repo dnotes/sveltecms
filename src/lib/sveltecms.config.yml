@@ -3,10 +3,9 @@ settings:
   rootContentType: landingPage
   frontPageSlug: front
   defaultContentDisplays:
-    default: div.prose.prose-xl.dark:prose-invert.mx-auto
+    default: div
     reference: span
-    teaser: >-
-      div.prose.prose-xl.dark:prose-invert.mx-auto.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
+    teaser: div.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
 contentTypes:
   blog:
     slug: date,title
@@ -18,9 +17,6 @@ contentTypes:
       tags: tags
     label: ''
   landingPage:
-    displays:
-      default: none
-      page: content_LandingPage
     fields:
       title:
         type: title
@@ -32,7 +28,10 @@ contentTypes:
         multipleLabelFields: _fieldgroup
         widget:
           type: fieldgroup
-          fieldgroupTypes: fullwidth
+          useComponents: true
+          fieldgroupTags:
+            - fullwidth
+            - block
     contentStore:
       type: staticFiles
       fileExtension: json
@@ -162,7 +161,6 @@ widgets:
     altField: false
 fieldgroups:
   hero:
-    type: fullwidth
     fields:
       image:
         type: image
@@ -175,6 +173,9 @@ fieldgroups:
           rows: 2
       text: slideText
       textStyle: style
+    tags:
+      - fullwidth
+    displays: fieldgroup_hero
   frontslides:
     type: fullwidth
     fields:
@@ -188,8 +189,17 @@ fieldgroups:
           icon:
             type: image
             mediaStore: icons
+    tags:
+      - fullwidth
+    displays: fieldgroup_frontslides
   quoteBlock:
     fields:
-      quote: markdown
+      quote:
+        type: markdown
+        required: true
+      cite: text
+    tags:
+      - block
+    displays: blockquote
 _slug: sveltecms.config
 _type: admin
