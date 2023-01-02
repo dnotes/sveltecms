@@ -14,7 +14,6 @@ const files = [
 
   // The '/[...path]' routes
   ['src/routes/(cms)/[...path]/+layout.ts',     'package/install/routes/(cms)/[...path]/+layout.ts'],
-  ['src/routes/(cms)/[...path]/+layout.svelte', 'package/install/routes/(cms)/[...path]/+layout.svelte'],
   ['src/routes/(cms)/[...path]/+page.svelte',   'package/install/routes/(cms)/[...path]/+page.svelte'],
 
   // The '/admin' routes

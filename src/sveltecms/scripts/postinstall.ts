@@ -13,7 +13,6 @@ const files = [
 
   // The '/[...path]' routes
   [`${fromPath}/routes/(cms)/[...path]/+page.svelte`, `${toPath}/src/routes/(cms)/[...path]/+page.svelte`],
-  [`${fromPath}/routes/(cms)/[...path]/+layout.svelte`, `${toPath}/src/routes/(cms)/[...path]/+layout.svelte`],
   [`${fromPath}/routes/(cms)/[...path]/+layout.ts`,     `${toPath}/src/routes/(cms)/[...path]/+layout.ts`],
 
   // The '/admin' routes
