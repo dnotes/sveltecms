@@ -1,16 +1,20 @@
-## Pre-install: Setup SvelteKit app (with the proper SvelteKit version)
+## Pre-install: Setup SvelteKit with version 1.0.x
 
-You can start up a SvelteKit app as you usually would. However, be aware that
+You can create a SvelteKit app as you usually would.
+
+* `npm create svelte`
+
 SvelteCMS will require some additional tinkering if you are not using TypeScript.
-Therefore, we recommend using TypeScript for your SvelteKit app if you can.
+Therefore, it is easiest to choose TypeScript syntax for your SvelteKit app.
 
-After you have set up your SvelteKit app, ensure that you have installed the
-proper versions of SvelteKit and Vite to work with SvelteCMS applications.
-
-*Note: At present you will need to install the exact release of SvelteKit,
-e.g. @1.0.0-next.XXX, until SvelteKit has a stable release.*
+* *select the option* :  `Yes, using TypeScript syntax`
 
 ## Installation
+
+If you want to start out with a link to the Admin UI, you can delete the default
+front page:
+
+`rm src/routes/+page.svelte`
 
 Install SvelteCMS into your SvelteKit app using the package manager of your choice:
 
@@ -28,8 +32,6 @@ the script manually from the command line:
 
 **If you want to use YAML** instead of JSON for storing SvelteCMS configuration,
 you will want to install and configure `@rollup/plugin-yaml`.
-This is recommended at present because some relatively common functionality must
-still be configured manually.
 
 * Install the plugin: \
     `npm install @rollup/plugin-yaml`
@@ -52,12 +54,11 @@ still be configured manually.
     **`import conf from './sveltecms.config.yml'`**
 
 
-### Optional: Use TailwindCSS
+### Recommended: Use TailwindCSS
 
-**TailwindCSS works very well with SvelteCMS** for display of elements and ad-hoc
-styles in content. TailwindCSS can parse classes in the SvelteCMS config file and in
-locally stored content, but it needs to be configured with where to look for the files
-and how to recognize the classes.
+**SvelteCMS works very well with TailwindCSS** (and likely with similar utility css
+frameworks like WindyCSS) for display of elements and ad-hoc styles in content.
+TailwindCSS can parse classes in the SvelteCMS config file and in locally stored content, but it needs to be told where to look for the files and how to recognize the classes.
 
 * Install Tailwind (and any plugins):
 
@@ -68,6 +69,7 @@ and how to recognize the classes.
 
     The configuration provided by SvelteCMS includes several TailwindCSS plugins.
     If you haven't installed them, remove them from the configuration.
+
 
 ### Optional: Use plain JS
 
@@ -81,10 +83,42 @@ the install files copied by SvelteCMS to conform to plain JS syntax.
 
 ## Usage
 
-SvelteCMS is now a part of your SvelteKit app. For local development, you can
-run SvelteKit as you normally would:
+SvelteCMS is now a part of your SvelteKit app. You will find SvelteCMS files in the
+`src/routes/(cms)` folder.
+
+For local development, you can run SvelteKit as you normally would:
 
 `npm run dev`
 
 Then go to the admin interface in your browser, which is located by default at
-[//localhost:3000/admin](//localhost:3000/admin).
+[//localhost:5173/admin](//localhost:5173/admin).
+
+## ...Why?
+
+> What is this? A center for ANTS!? It needs to be at least ... three times bigger!
+  \- Derek Zoolander
+
+SvelteCMS is currently an individual project. It's not an MVP or a startup yet,
+it's more like a demonstration. But it has lofty goals, and if nothing else it
+has helped me to explain my vision for how a CMS should function, which is so
+different from what the Javascript world accepts as a CMS. Hopefully this helps
+move things forward, and I think there's a tiny chance it'll take off and replace
+Wordpress. Fingers crossed.
+
+SvelteCMS...
+
+* [x] is **software**, not a product or service.
+* [x] runs **as part of the site**, not on a separate system.
+* [x] builds **performant web apps**, with minimal code on content pages, SSR and prerendering.
+* [x] builds **sites that work without Javascript**, so no more blank white screens.
+* [x] is **database agnostic**: so store content in a server, repository, or database provider.
+* [x] supports **data portability**: mix, match, and migrate content between databases.
+* [ ] supports **community interaction**: manage user accounts from install.
+* [x] supports **serverless architecture**: deploy CMS endpoints to any serverless provider.
+* [x] supports **static site generation**: build locally and deploy to any web host.
+* [ ] works **in the browser**: go truly "serverless" with Web Containers or isomorphic git.
+* [x] supports **complex content models**: conditional, nested, and calculated fields.
+* [x] manages the **full content cycle**: entry, storage, retrieval and display.
+* [x] enables **code-free site building**: go from data architecture to display with no code.
+* [x] is **extensible**: extend CMS functionality with components, plugins and hooks.
+* [x] is **free** for any number of sites, users, content types, plugins, etc.
