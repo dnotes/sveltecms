@@ -43,7 +43,8 @@ export const templateDisplay:EntityTemplate = {
   id: 'display',
   label: 'Display',
   labelPlural: 'Displays',
-  description: 'A Display configuration determines how SvelteCMS will display a field by default.',
+  description: 'A Display configuration is part of the configuraiton for a Field, Fieldgroup, or ContentType '
+    +'which determines how it will be displayed by SvelteCMS.',
   typeField: true,
   listFields: ['wrapper','label','html','link'],
   configFields: {

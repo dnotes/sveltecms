@@ -3,6 +3,15 @@ import type SvelteCMS from "sveltecms"
 import { Component, type ComponentConfigSetting } from "sveltecms/core/Component"
 import { saveContentEndpoint, deleteContentEndpoint } from 'sveltecms/utils'
 import type { Content } from "./ContentStore"
+import type { EntityTemplate } from "./EntityTemplate"
+
+export const templateAdminPage:EntityTemplate = {
+  id: 'adminPage',
+  label: 'Admin Page',
+  labelPlural: 'Admin Pages',
+  description: 'An Admin Page provides a configuration or information page for the Admin UI. Admin Pages are provided by plugins.',
+  typeField: false,
+}
 
 export type AdminPageConfig = {
   id:string

@@ -7,6 +7,7 @@ export const mathPlugin:CMSPlugin = {
   scriptFunctions: [
     {
       id: 'mathAdd',
+      description: 'Adds two or more numbers together.',
       fn: (vars, opts) => {
         const f = (a,b)=>a+b
         return opts.numbers.map(nums).reduce(f)
@@ -16,12 +17,13 @@ export const mathPlugin:CMSPlugin = {
           type: 'number',
           multiple: true,
           default: undefined,
-          helptext: 'First number to add.'
+          helptext: 'A list of two or more numbers.'
         },
       }
     },
     {
       id: 'mathSubtract',
+      description: 'Subtracts the second number from the first number, then the third from the result, etc.',
       fn: (vars, opts) => {
         const f = (a,b)=>a-b
         return opts.numbers.map(nums).reduce(f)
@@ -31,12 +33,13 @@ export const mathPlugin:CMSPlugin = {
           type: 'number',
           multiple: true,
           default: undefined,
-          helptext: 'A list of numbers to subtract, consecutively, from the first number in the list.'
+          helptext: 'A list of two or more numbers.'
         }
       }
     },
     {
       id: 'mathMultiply',
+      description: 'Multiplies two or more numbers together.',
       fn: (vars, opts) => {
         const f = (a,b)=>a*b
         return opts.numbers.map(nums).reduce(f)
@@ -46,12 +49,13 @@ export const mathPlugin:CMSPlugin = {
           type: 'number',
           multiple: true,
           default: undefined,
-          helptext: 'A list of numbers to multiply together.'
+          helptext: 'A list of two or more numbers.'
         }
       }
     },
     {
       id: 'mathDivide',
+      description: 'Divides the first number by the second, then the result by the third, etc.',
       fn: (vars, opts) => {
         const f = (a,b)=>a/b
         return opts.numbers.map(nums).reduce(f)
@@ -61,7 +65,7 @@ export const mathPlugin:CMSPlugin = {
           type: 'number',
           multiple: true,
           default: undefined,
-          helptext: 'Divide the first number by the second number, then the result by the third, etc.'
+          helptext: 'A list of two or more numbers.'
         }
       }
     },

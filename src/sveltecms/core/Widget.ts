@@ -452,7 +452,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
   },
   file: {
     id: 'file',
-    fieldTypes: ['image'],
+    fieldTypes: ['image','file'],
     description: `The default cms file input. Handles multiple files.`,
     widget: CMSWidgetFile,
     handlesMultiple: true,

@@ -1,4 +1,3 @@
-import type SvelteCMS from 'sveltecms'
 import type { CMSListConfig, ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
 import type { ContentTypeConfigSetting } from 'sveltecms/core/ContentType'
 import type { ComponentType } from './Component'

@@ -1,4 +1,4 @@
-import { AdminPage, type AdminPageConfig } from './core/AdminPage'
+import { AdminPage, templateAdminPage, type AdminPageConfig } from './core/AdminPage'
 import { Field, templateField, fieldTypes, type FieldType, type FieldConfigSetting, type ConfigFieldConfigSetting } from './core/Field'
 import { widgetTypes, templateWidget, type WidgetType, type WidgetConfigSetting } from './core/Widget'
 import { ContentType, templateContentType, type ContentTypeConfigSetting } from "./core/ContentType"
@@ -6,7 +6,7 @@ import { type MediaStoreType, type MediaStoreConfigSetting, templateMediaStore }
 import { templateContentStore, type Content, type ContentStoreConfigSetting, type ContentStoreType, type Value } from './core/ContentStore'
 import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, templateFieldgroup } from './core/Fieldgroup'
 import { transformers, templateTransformer, type Transformer, type TransformerConfigSetting } from './core/Transformer'
-import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig, parseScript } from './core/ScriptFunction'
+import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig, parseScript, templateScriptFunction } from './core/ScriptFunction'
 import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
 import { displayComponents, templateDisplay, type EntityDisplayConfigSetting, type EntityDisplayConfig, defaultDisplayModes, isDisplayConfig, type DisplayConfigSetting, type FullEntityDisplayConfig } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
@@ -14,8 +14,8 @@ import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual, merge, un
 import type { EntityTemplate } from './core/EntityTemplate'
 import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
-import { hooks, type CMSHookFunctions, type PluginHooks } from './core/Hook'
-import type { CMSPlugin, CMSPluginBuilder } from './core/Plugin'
+import { hooks, templateHook, type CMSHookFunctions, type PluginHooks } from './core/Hook'
+import { templatePlugin, type CMSPlugin, type CMSPluginBuilder } from './core/Plugin'
 export { CMSPlugin, CMSPluginBuilder }
 
 const customComponents = import.meta.glob('/src/cms/*.svelte')
@@ -132,17 +132,23 @@ export type CMSConfigSetting = {
 export default class SvelteCMS {
   conf:CMSConfigSetting = {}
   entityTypes = {
+    // If an Entity Type name ever ends in "s", change getEntity and listEntities.
+    // TODO: make this not be a thing.
+    adminPage: templateAdminPage,
     component: templateComponent,
     contentStore: templateContentStore,
     contentType: templateContentType,
     display: templateDisplay,
     field: templateField,
     fieldgroup: templateFieldgroup,
+    hook: templateHook,
+    indexer: templateIndexer,
     mediaStore: templateMediaStore,
+    plugin: templatePlugin,
+    scriptFunction: templateScriptFunction,
     slug: templateSlug,
     transformer: templateTransformer,
     widget: templateWidget,
-    indexer: templateIndexer,
   }
   admin: ContentType
   indexer: Indexer
@@ -171,13 +177,23 @@ export default class SvelteCMS {
   }
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
-    this.conf = conf
+    this.conf = merge({
+      configPath: 'src/lib/sveltecms.config.yml',
+      settings: {
+        rootContentType: 'page',
+        frontPageSlug: 'front',
+        defaultContentDisplays: {
+          default: 'div',
+          reference: 'span',
+        }
+      }
+    }, conf)
     this.defaultContentDisplays = {
       default: 'div',
       page: 'div',
       teaser: 'div',
       reference: 'span',
-      ...this.parseEntityDisplayConfigSetting(conf?.settings?.defaultContentDisplays)
+      ...this.parseEntityDisplayConfigSetting((this?.conf?.settings?.defaultContentDisplays || {}))
     }
 
     this.use(staticFilesPlugin)
@@ -203,6 +219,7 @@ export default class SvelteCMS {
 
     // Initialize all of the stores, widgets, and transformers specified in config
     ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups', 'indexers'].forEach(objectType => {
+
       if (conf?.[objectType]) {
         Object.entries(conf[objectType]).forEach(([id,settings]) => {
 
@@ -301,6 +318,7 @@ export default class SvelteCMS {
 
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow CMSPluginBuilder function, in case people pass the function instead of the plugin
+    this.plugins[plugin.id] = plugin;
 
     ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups','indexers','scriptFunctions'].forEach(k => {
       try {
@@ -442,39 +460,19 @@ export default class SvelteCMS {
   }
 
   listEntities(type:string, includeAdmin?:boolean, entityID?:string):string[] {
-    if (!type.match(/s$/)) type += 's'
-    switch (type) {
-      case 'fields':
+    let typeSingular = type.replace(/s$/,'')
+    let typePlural = `${typeSingular}s`
+    if (typePlural === 'fields') {
         if (entityID) return Object.keys(this.getContentType(entityID)?.fields || {})
         return this.getFieldTypes(includeAdmin)
-      case 'widgets':
-        return this.getFieldTypeWidgets(includeAdmin, entityID)
-      case 'fieldTypes':
-      case 'widgetTypes':
-      case 'contentTypes':
-      case 'lists':
-      case 'contentStores':
-      case 'mediaStores':
-      case 'fieldgroups':
-      case 'transformers':
-      case 'components':
-      case 'indexers':
-        return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']))
-      default:
-        return [
-          'adminPages',
-          'fieldgroups',
-          'adminFieldgroups',
-          'components',
-          'contentStores',
-          'fields',
-          'scriptFunctions',
-          'mediaStores',
-          'transformers',
-          'contentTypes',
-          'widgets',
-        ]
     }
+    else if (typePlural === 'widgets') {
+        return this.getFieldTypeWidgets(includeAdmin, entityID)
+    }
+    else if ([ 'widgetType', 'fieldType', ...Object.keys(this.entityTypes)].includes(typeSingular)) {
+        return Object.keys(this[typePlural] ?? {}).filter(k => (includeAdmin || !this[typePlural][k]?.['admin']))
+    }
+        return Object.keys(this.entityTypes)
   }
 
   getEntityType(type:string):EntityTemplate {
@@ -484,7 +482,7 @@ export default class SvelteCMS {
 
   getEntity(type:string, id:string) {
     if (!type || !id) return
-    if (!this[type]) type += 's'
+    if (!type.match(/s$/)) type += 's'
     if (type === 'fields') return this.fields[id] ?? this.fieldTypes[id]
     if (type === 'widgets') return this.widgets[id] ?? this.widgetTypes[id]
     return this?.[type]?.[id]
@@ -1119,7 +1117,7 @@ export default class SvelteCMS {
         let fn = this.scriptFunctions[id]
         return {
           id,
-          helptext: fn.helptext || '',
+          helptext: fn.description || '',
           params: Object.entries(fn.optionFields || {})
             .map(([id, param]) => {
               return {

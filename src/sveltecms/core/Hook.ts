@@ -5,6 +5,16 @@ import type ContentType from "./ContentType"
 import type Field from "./Field"
 import { isIndexItem, type IndexChange, type IndexItem } from "./Indexer"
 import { findReferenceIndex } from "sveltecms/utils"
+import type { EntityTemplate } from "./EntityTemplate"
+
+export const templateHook:EntityTemplate = {
+  id: 'hook',
+  label: 'Hook',
+  labelPlural: 'Hooks',
+  description: 'A Hook is a function provided by a Plugin that executes at a certain point in the content life cycle.',
+  typeField: true,
+  typeInherits: false,
+}
 
 export type Change = {
   before?:Content,

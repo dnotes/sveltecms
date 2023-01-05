@@ -1,10 +1,11 @@
 import type { ConfigurableEntityType, ConfigSetting, ConfigurableEntityConfigSetting } from "sveltecms";
 
 import slugify from '@sindresorhus/slugify'
+import type { EntityTemplate } from "./EntityTemplate";
 
 export type TransformerConfigSetting = ConfigurableEntityConfigSetting
 
-export const templateTransformer = {
+export const templateTransformer:EntityTemplate = {
   id: 'transformer',
   label: 'Transformer',
   labelPlural: 'Transformers',
