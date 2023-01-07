@@ -67,8 +67,10 @@ export class Indexer implements ConfigurableEntity, TypedEntity {
   searchMedia:(search:string|Object, options?:Object)=>Promise<Media[]> = noop([])
   mediaKeys:string[] = ['type', 'size', 'height', 'width', 'duration', 'date']
   options:ConfigSetting = {}
-  constructor(conf:string|IndexerConfigSetting, cms:SvelteCMS) {
+  constructor(id:string, conf:string|IndexerConfigSetting, cms:SvelteCMS) {
+    this.id = id
     if (typeof conf === 'string') conf = { type:conf }
+    this.type = conf.type
     let indexer = cms.indexers[conf.type]
     if (!indexer) return this
     this.getIndex = indexer.getIndex.bind(this)

@@ -3,11 +3,12 @@ import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
-import { cloneDeep, get } from 'lodash-es';
+import { cloneDeep, difference } from 'lodash-es';
 import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
 import { findReferenceIndex } from 'sveltecms/utils';
 import type { IndexItem } from 'sveltecms/core/Indexer';
+import type { ContentPostWriteHook } from 'sveltecms/core/Hook';
 const fs = {}
 
 const allIndexes:{[key:string]:{default:IndexItem[]}} = import.meta.glob('/src/content/_*.index.json', { eager:true })
@@ -494,6 +495,35 @@ const plugin:CMSPlugin = {
       },
     }
   ],
+  hooks: [
+    <ContentPostWriteHook> {
+      type: 'contentPostWrite',
+      label: 'Admin Tasks for Static Files',
+      description: 'Runs after saving the SvelteCMS configuration, to ensure creation of local index files.',
+      fn: async (change, cms) => {
+        if (change.contentType.id === 'admin' && change.after?.contentTypes) {
+
+          // Save the index file for new content types
+          console.log(change)
+          let newContentTypes = difference(Object.keys(change.after.contentTypes), Object.keys(change?.before?.contentTypes ?? {}))
+          console.log({newContentTypes})
+          if (newContentTypes.length) {
+            for (let i=0; i<newContentTypes.length; i++) {
+              let contentTypeID = newContentTypes[i]
+              let contentType = change.after.contentTypes[contentTypeID]
+              let indexerType = contentType?.indexer?.type ?? contentType?.indexer ?? cms.indexer.type
+              let indexerRoot = cms.getEntityRoot('indexers', indexerType)
+              console.log({ contentTypeID, indexerType, indexerRoot, contentType:change.after.contentTypes[contentTypeID], indexer:cms.indexer, indexers:cms.indexers })
+              if (indexerRoot?.id === 'staticFiles') {
+                cms.indexers[indexerType].saveIndex(contentTypeID, [])
+              }
+            }
+          }
+
+        }
+      }
+    }
+  ]
 }
 
 /**

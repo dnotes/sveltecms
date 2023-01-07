@@ -16,6 +16,7 @@ import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
 import { hooks, templateHook, type CMSHookFunctions, type PluginHooks } from './core/Hook'
 import { templatePlugin, type CMSPlugin, type CMSPluginBuilder } from './core/Plugin'
+import cms from '$lib/cms'
 export { CMSPlugin, CMSPluginBuilder }
 
 const customComponents = import.meta.glob('/src/cms/*.svelte')
@@ -312,7 +313,7 @@ export default class SvelteCMS {
       this.hooks[k] = sortBy(this.hooks[k], ['weight', 'label'])
     })
 
-    this.indexer = new Indexer(conf?.settings?.indexer ?? 'staticFiles', this)
+    this.indexer = new Indexer('default', conf?.settings?.indexer ?? 'staticFiles', this)
 
   }
 
@@ -656,7 +657,8 @@ export default class SvelteCMS {
 
       // Set up old Content for contentPostWrite hooks
       let before
-      if (items[i]._oldSlug && !options.skipHooks) {
+      if (contentType === cms.admin) before = cloneDeep(cms.conf)
+      else if (items[i]._oldSlug && !options.skipHooks) {
         before = await db.getContent(contentType, {...db.options, options}, items[i]._oldSlug)
         before = this.slugifyContent(this.preSave(contentType, before), contentType)
       }
