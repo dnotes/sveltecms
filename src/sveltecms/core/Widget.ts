@@ -628,17 +628,38 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         ]}
       },
       displayKey: {
+        label: 'Index Field',
         type: 'text',
         required: true,
         default: 'title',
-        helptext: 'The field used and for search and display in form inputs, and for storing the text value when free tagging. '+
-          'If this field is linked with Content Types, then each linked Content Type should have a text field with this ID.',
+        multiple: false,
+        helptext: 'The field used for search and display on form inputs, and for storing the display value for free tagging.'
+          +' If this field is linked with Content Types, then each linked Content Type should have an indexed field with this ID.'
+          +' For free tagging, or when not linked to a Content Type, you can use any generic Field that is both indexed and required.',
+        widget: {
+          type: 'multiselect',
+          items: {function:'slugFields',params:[
+            {function:'getValue',params:[
+              {function:'if',params:[
+                {function:'typeof',params:[
+                  {function:'getValue',params:['contentTypes']},
+                  'string',
+                ]},
+                'contentTypes',
+                'contentTypes.0'
+              ]}
+            ]}
+          ]},
+          restrictToItems: true,
+          allowBlur: true,
+        }
       },
       referenceKey: {
+        label: 'Reverse Reference Field',
         type: 'text',
         default: 'referencedContent',
         helptext: 'The ID of a "reference" type field on the associated Content Type(s). '+
-          'If provided, that field in referenced content will be populated with backlinks to the referencing content.',
+          'If provided, that field in referenced content will be populated with references back to this content.',
       },
       displayMode: {
         type: 'text',

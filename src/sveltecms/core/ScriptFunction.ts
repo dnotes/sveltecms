@@ -568,6 +568,25 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
       },
     }
   },
+  slugFields: {
+    id: 'slugFields',
+    description: 'Lists slug fields for a Content Type, or generic Fields that are required and indexed.'
+      +' Used to populate options for Reference widgets.',
+    admin: true,
+    fn: (vars, opts) => {
+      if (!opts.entityType || !opts.entityID) return vars.cms.listEntities('fields').filter(id => (vars?.cms?.fields?.[id]?.index && vars?.cms?.fields?.[id]?.required))
+      let contentType = vars.cms?.contentTypes?.[opts.contentTypeID]
+      if (!contentType) return vars.cms.listEntities('fields').filter(id => (vars?.cms?.fields?.[id]?.index && vars?.cms?.fields?.[id]?.required))
+      return contentType.slug.fields
+    },
+    optionFields: {
+      contentTypeID: {
+        type: 'text',
+        default: '',
+        helptext: 'The ID of the Content Type.'
+      },
+    }
+  },
   widgetHandles: {
     id: 'widgetHandles',
     description: 'Whether the widget handles fields, media, or multiple values.',
