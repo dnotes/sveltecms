@@ -5,50 +5,64 @@ import type SvelteCMS from 'sveltecms';
 import Modal from 'sveltecms/ui/Modal.svelte'
 import Button from 'sveltecms/ui/Button.svelte';
 import type { WidgetField } from 'sveltecms';
+import { onMount } from 'svelte';
 
   export let cms:SvelteCMS
-  export let value              // the value that is scriptable
+  export let id:string
+  export let value:any          // the value that is scriptable
   export let field:WidgetField  // the field that is scriptable
 
   // Informational
-  export let isScript = false   // Whether the value is overridden by a script
-  export let scriptValue = ''   // the value as a script
-  export let overridden = false // whether the value is overridden
+  let scriptValue = (value && typeof value === 'string') ? parseScript(value).toString() : ''  // the value as a script
+  let overridden = Boolean(scriptValue) // whether the value is overridden
+  let fieldValue = overridden ? field.default : value // the value as a standard field value
 
-  scriptValue = value
-  let parsedScriptValue
+  let newScriptValue:string = ''          // the value of the script input in the modal window
+  let newScriptValueParsed:string = ''    // the new script as evaluated by the script parser
+  let newScriptValueValid:boolean = false // whether the new script is valid
 
-  let show        // whether the configuration modal is open
-
-  let parsedScript = ''
-  let scriptError:Error|ScriptError
-
-  // Whether the script is valid
-  $: isScript = Boolean(parsedScript?.toString())
-
-  $: if (scriptValue) {
-    if (scriptValue !== parsedScriptValue) {
-      parsedScriptValue = scriptValue
-      try { parsedScript = parseScript(scriptValue)?.toString() }
-      catch(e) { scriptError = e }
+  $: if (newScriptValue) {
+    try {
+      newScriptValueParsed = parseScript(newScriptValue).toString()
+      newScriptValueValid = Boolean(newScriptValueParsed)
     }
+    catch(e) {
+      newScriptValueParsed = ''
+      newScriptValueValid = false
+    }
+  }
+
+  $: if (!overridden) { value = fieldValue }
+
+  let show:boolean = false // whether the configuration modal is open
+
+  let el:HTMLElement // the element that holds the form widget input
+
+  onMount(() => {
+    // @ts-ignore should be fine for input / select
+    el.parentElement.querySelectorAll('input,select').forEach(e => { if (overridden) { e.indeterminate=true; e.disabled=true; }})
+  })
+
+  function showModal() {
+    newScriptValue = scriptValue
+    show = true
   }
 
   function setOverride() {
+    scriptValue = newScriptValue
+    overridden = true
+    value = scriptValue
+    // @ts-ignore should be fine for input / select
+    el.parentElement.querySelectorAll('input,select').forEach(e => {e.indeterminate=true; e.disabled=true})
     show = false
-    if (isScript) {
-      value = scriptValue
-      overridden = true
-    }
   }
 
   function removeOverride() {
+    scriptValue = newScriptValue
+    overridden = false
+    // @ts-ignore should be fine for input / select
+    el.parentElement.querySelectorAll('input,select').forEach(e => {e.indeterminate=false; e.disabled=field.disabled})
     show = false
-    // Remove the override
-    if (overridden) {
-      overridden = false
-      value = field.default
-    }
   }
 
   function fnHelp(fn) {
@@ -60,15 +74,34 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
 
 </script>
 
-<Button small highlight={isScript} on:click={()=>{show=true}}><slot><em>fn</em></slot></Button>
+<input type="hidden" name="{id}" bind:value bind:this={el}>
+<svelte:component
+  this={field.widget.widget}
+  {field}
+  id=""
+  {cms}
+  bind:value={fieldValue}
+/>
+<Button
+  small
+  highlight={overridden}
+  on:click={showModal}
+  helptext="{overridden ? scriptValue : 'Use a dynamic function'}"
+  disabled={field.disabled}
+>
+  <slot>
+    <em>fn</em>
+  </slot>
+</Button>
+
 
 {#if show}
 <Modal on:cancel={()=>{show=false}}>
   <h3 slot="title">Script configuration for <code>{field.id}</code></h3>
-  <input type="text" class:valid={isScript} bind:value={scriptValue} />
-  <div class="script" class:valid={isScript}>
-    {#if isScript}
-      {parsedScript.toString()}
+  <input type="text" class:valid={newScriptValueValid} bind:value={newScriptValue} />
+  <div class="script" class:valid={newScriptValueValid}>
+    {#if newScriptValueValid}
+      {newScriptValueParsed.toString()}
     {:else}
       <em>invalid script</em>
     {/if}
@@ -91,7 +124,7 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
     </div>
   </div>
   <div class="actions">
-    <Button primary disabled={!isScript} on:click={setOverride}>Save</Button>
+    <Button primary disabled={!newScriptValueValid} on:click={setOverride}>Save</Button>
     {#if overridden}
       <Button on:click={removeOverride}>Remove</Button>
     {/if}
