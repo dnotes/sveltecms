@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.25",
+  "version": "0.0.27",
   "scripts": {
     "debug": "echo 'To debug, open Google Chrome to chrome://inspect' && node --inspect node_modules/.bin/vite dev",
     "dev": "vite dev",

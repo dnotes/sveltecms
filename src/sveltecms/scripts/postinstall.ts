@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import cp from 'cp-file'
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -39,4 +40,12 @@ files.forEach(([file,dest]) => {
   catch(e) {
     console.error(`Error copying SvelteCMS file "${file}" -> "${dest}":\n${e.message}`)
   }
+});
+
+if (!fs.existsSync(`${toPath}/src/content`)) fs.mkdirSync(`${toPath}/src/content`)
+
+const contentTypes = ['page','blog','tags']
+contentTypes.forEach(id => {
+  let filepath = `${toPath}/src/content/_${id}.index.json`
+  if (!fs.existsSync(filepath)) fs.writeFileSync(filepath, '[]', { encoding:'utf8' })
 })
