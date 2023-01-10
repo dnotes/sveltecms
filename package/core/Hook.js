@@ -1,6 +1,14 @@
 import { cloneDeep, get, isEqual, set } from "lodash-es";
 import { isIndexItem } from "./Indexer";
 import { findReferenceIndex } from "../utils";
+export const templateHook = {
+    id: 'hook',
+    label: 'Hook',
+    labelPlural: 'Hooks',
+    description: 'A Hook is a function provided by a Plugin that executes at a certain point in the content life cycle.',
+    typeField: true,
+    typeInherits: false,
+};
 // TODO: Make a special kind of Error for Hooks, including:
 // - some way to collect multiple errors into one
 // - some way to indicate a URL to check on each error

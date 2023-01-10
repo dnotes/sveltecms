@@ -1,6 +1,6 @@
 <script>import CmsWidgetUndefined from './CMSWidgetUndefined.svelte';
 import CmsWidgetMultiple from './CMSWidgetMultiple.svelte';
-import { cloneDeep, get } from 'lodash-es';
+import { cloneDeep, get, intersection } from 'lodash-es';
 import splitTags from '../utils/splitTags';
 import Button from '../ui/Button.svelte';
 const split = splitTags();
@@ -11,23 +11,26 @@ export let cms;
 export let value = {};
 export let collapsed = undefined;
 let originalValue = Object.assign({}, value);
-let fieldgroups = typeof parentField.widget.options.fieldgroups === 'string' ?
-    split(parentField.widget.options.fieldgroups) :
-    (parentField.widget.options.fieldgroups || []);
-let fieldgroupTypes = typeof parentField.widget.options.fieldgroupTypes === 'string' ?
-    split(parentField.widget.options.fieldgroupTypes) :
-    (parentField.widget.options.fieldgroupTypes || []);
-let opts = Object.assign({}, parentField.widget.options, { fieldgroups, fieldgroupTypes });
+let opts = Object.assign({
+    useComponents: false,
+    fieldgroups: [],
+    fieldgroupTags: [],
+    oneline: false,
+}, parentField.widget.options);
+if (!Array.isArray(opts.fieldgroupTags))
+    opts.fieldgroupTags = opts.fieldgroupTags.split(/[\s,]+/);
 let parentFieldProxy = cloneDeep(parentField);
 let fieldgroup;
-let isSelectable = [...opts.fieldgroups, ...opts.fieldgroupTypes].length;
+let unrestricted = !opts?.fieldgroups?.length && !opts?.fieldgroupTags?.length;
 let label = parentField.label;
 $: if (parentField.multipleLabelFields?.['length'] && value)
     label = Array.isArray(parentField.multipleLabelFields) ?
         parentField.multipleLabelFields.map(s => s?.toString()) :
         split(parentField?.multipleLabelFields?.toString()).map(id => get(value, id) ?? id).join(', ');
-$: fieldgroupTypes = Object.entries(cms.fieldgroups)
-    .filter(([id, fieldgroup]) => opts.fieldgroupTypes.includes(fieldgroup?.['type']) || opts.fieldgroups.includes(id));
+$: fieldgroupItems = unrestricted ? Object.entries(cms.fieldgroups) : Object.entries(cms.fieldgroups)
+    .filter(([id, fieldgroup]) => {
+    return (opts?.fieldgroups ?? []).includes(id) || intersection((opts?.fieldgroupTags || []), fieldgroup.tags).length;
+});
 $: selectedFields = value?.['_fieldgroup'] ?
     (cms.fieldgroups?.[value['_fieldgroup']]?.fields || {}) :
     {};
@@ -46,14 +49,14 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
 
   <legend><Button highlight on:click={()=>{collapsed=!collapsed}}>{label}</Button></legend>
 
-  {#if isSelectable}
-    <label class="fieldgroup-type">
-      Fieldgroup Type:
+  {#if opts.useComponents}
+    <label class="fieldgroup-choice">
+      Fieldgroup:
       <select
         name="{parentID}._fieldgroup"
         bind:value={value['_fieldgroup']}
       >
-        {#each fieldgroupTypes as [id,fieldgroup]}
+        {#each fieldgroupItems as [id,fieldgroup]}
           <option value="{id}">{id}</option>
         {/each}
       </select>
@@ -99,7 +102,7 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
 </fieldset>
 
 <style global>
-  :global(.sveltecms) :global(fieldset.fieldgroup)>:global(.fieldgroup-type) {
+  :global(.sveltecms) :global(fieldset.fieldgroup)>:global(.fieldgroup-choice) {
     background: var(--cms-main);
     color: var(--cms-bg);
   }
@@ -114,6 +117,6 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
     border-top: 3px solid var(--cms-main);
   }
   :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(div)>:global(.field),
-  :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(.fieldgroup-type) {
+  :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(.fieldgroup-choice) {
     display: none;
   }</style>

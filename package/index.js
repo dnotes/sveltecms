@@ -1,4 +1,4 @@
-import { AdminPage } from './core/AdminPage';
+import { AdminPage, templateAdminPage } from './core/AdminPage';
 import { Field, templateField, fieldTypes } from './core/Field';
 import { widgetTypes, templateWidget } from './core/Widget';
 import { ContentType, templateContentType } from "./core/ContentType";
@@ -6,14 +6,16 @@ import { templateMediaStore } from './core/MediaStore';
 import { templateContentStore } from './core/ContentStore';
 import { Fieldgroup, templateFieldgroup } from './core/Fieldgroup';
 import { transformers, templateTransformer } from './core/Transformer';
-import { ScriptFunction, scriptFunctions, parseScript } from './core/ScriptFunction';
+import { ScriptFunction, scriptFunctions, parseScript, templateScriptFunction } from './core/ScriptFunction';
 import { templateComponent } from './core/Component';
 import { displayComponents, templateDisplay, defaultDisplayModes, isDisplayConfig } from './core/Display';
 import staticFilesPlugin from './plugins/staticFiles';
 import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual, merge, uniq } from 'lodash-es';
 import SlugConfig, { templateSlug } from './core/Slug';
 import { Indexer, templateIndexer } from './core/Indexer';
-import { hooks } from './core/Hook';
+import { hooks, templateHook } from './core/Hook';
+import { templatePlugin } from './core/Plugin';
+import cms from './cms';
 const customComponents = import.meta.glob('/src/cms/*.svelte');
 // import { default as Validator, Rules } from 'validatorjs'
 const splitter = /\s*,\s*/g;
@@ -39,17 +41,23 @@ export default class SvelteCMS {
     constructor(conf, plugins = []) {
         this.conf = {};
         this.entityTypes = {
+            // If an Entity Type name ever ends in "s", change getEntity and listEntities.
+            // TODO: make this not be a thing.
+            adminPage: templateAdminPage,
             component: templateComponent,
             contentStore: templateContentStore,
             contentType: templateContentType,
             display: templateDisplay,
             field: templateField,
             fieldgroup: templateFieldgroup,
+            hook: templateHook,
+            indexer: templateIndexer,
             mediaStore: templateMediaStore,
+            plugin: templatePlugin,
+            scriptFunction: templateScriptFunction,
             slug: templateSlug,
             transformer: templateTransformer,
             widget: templateWidget,
-            indexer: templateIndexer,
         };
         this.adminPages = {};
         this.adminFieldgroups = {};
@@ -72,13 +80,23 @@ export default class SvelteCMS {
             contentPreDelete: [],
             contentPostWrite: [],
         };
-        this.conf = conf;
+        this.conf = merge({
+            configPath: 'src/lib/sveltecms.config.yml',
+            settings: {
+                rootContentType: 'page',
+                frontPageSlug: 'front',
+                defaultContentDisplays: {
+                    default: 'div',
+                    reference: 'span',
+                }
+            }
+        }, conf);
         this.defaultContentDisplays = {
             default: 'div',
             page: 'div',
             teaser: 'div',
             reference: 'span',
-            ...this.parseEntityDisplayConfigSetting(conf?.settings?.defaultContentDisplays)
+            ...this.parseEntityDisplayConfigSetting((this?.conf?.settings?.defaultContentDisplays || {}))
         };
         this.use(staticFilesPlugin);
         displayComponents.forEach(c => {
@@ -86,7 +104,7 @@ export default class SvelteCMS {
         });
         plugins.forEach(p => this.use(p));
         Object.keys(customComponents).forEach(filepath => {
-            let id = filepath.replace('/src/cms/', '');
+            let id = filepath.replace('/src/cms/', '').replace(/\.svelte$/i, '');
             this.components[id] = {
                 id,
                 component: customComponents[filepath]().then(c => c?.default),
@@ -187,10 +205,11 @@ export default class SvelteCMS {
         Object.keys(this.hooks).forEach(k => {
             this.hooks[k] = sortBy(this.hooks[k], ['weight', 'label']);
         });
-        this.indexer = new Indexer(conf?.settings?.indexer ?? 'staticFiles', this);
+        this.indexer = new Indexer('default', conf?.settings?.indexer ?? 'staticFiles', this);
     }
     use(plugin, config) {
         // TODO: allow CMSPluginBuilder function, in case people pass the function instead of the plugin
+        this.plugins[plugin.id] = plugin;
         ['fieldTypes', 'widgetTypes', 'transformers', 'contentStores', 'mediaStores', 'lists', 'adminPages', 'components', 'fieldgroups', 'indexers', 'scriptFunctions'].forEach(k => {
             try {
                 plugin?.[k]?.forEach(conf => {
@@ -333,41 +352,20 @@ export default class SvelteCMS {
         }
     }
     listEntities(type, includeAdmin, entityID) {
-        if (!type.match(/s$/))
-            type += 's';
-        switch (type) {
-            case 'fields':
-                if (entityID)
-                    return Object.keys(this.getContentType(entityID)?.fields || {});
-                return this.getFieldTypes(includeAdmin);
-            case 'widgets':
-                return this.getFieldTypeWidgets(includeAdmin, entityID);
-            case 'fieldTypes':
-            case 'widgetTypes':
-            case 'contentTypes':
-            case 'lists':
-            case 'contentStores':
-            case 'mediaStores':
-            case 'fieldgroups':
-            case 'transformers':
-            case 'components':
-            case 'indexers':
-                return Object.keys(this[type]).filter(k => (includeAdmin || !this[type][k]?.['admin']));
-            default:
-                return [
-                    'adminPages',
-                    'fieldgroups',
-                    'adminFieldgroups',
-                    'components',
-                    'contentStores',
-                    'fields',
-                    'scriptFunctions',
-                    'mediaStores',
-                    'transformers',
-                    'contentTypes',
-                    'widgets',
-                ];
+        let typeSingular = type.replace(/s$/, '');
+        let typePlural = `${typeSingular}s`;
+        if (typePlural === 'fields') {
+            if (entityID)
+                return Object.keys(this.getContentType(entityID)?.fields || {});
+            return this.getFieldTypes(includeAdmin);
         }
+        else if (typePlural === 'widgets') {
+            return this.getFieldTypeWidgets(includeAdmin, entityID);
+        }
+        else if (['widgetType', 'fieldType', ...Object.keys(this.entityTypes)].includes(typeSingular)) {
+            return Object.keys(this[typePlural] ?? {}).filter(k => (includeAdmin || !this[typePlural][k]?.['admin']));
+        }
+        return Object.keys(this.entityTypes);
     }
     getEntityType(type) {
         if (this?.entityTypes?.[type])
@@ -378,7 +376,7 @@ export default class SvelteCMS {
     getEntity(type, id) {
         if (!type || !id)
             return;
-        if (!this[type])
+        if (!type.match(/s$/))
             type += 's';
         if (type === 'fields')
             return this.fields[id] ?? this.fieldTypes[id];
@@ -534,7 +532,9 @@ export default class SvelteCMS {
         for (let i = 0; i < items.length; i++) {
             // Set up old Content for contentPostWrite hooks
             let before;
-            if (items[i]._oldSlug && !options.skipHooks) {
+            if (contentType === cms.admin)
+                before = cloneDeep(cms.conf);
+            else if (items[i]._oldSlug && !options.skipHooks) {
                 before = await db.getContent(contentType, { ...db.options, options }, items[i]._oldSlug);
                 before = this.slugifyContent(this.preSave(contentType, before), contentType);
             }
@@ -950,7 +950,7 @@ export default class SvelteCMS {
             let fn = this.scriptFunctions[id];
             return {
                 id,
-                helptext: fn.helptext || '',
+                helptext: fn.description || '',
                 params: Object.entries(fn.optionFields || {})
                     .map(([id, param]) => {
                     return {

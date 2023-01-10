@@ -1,6 +1,13 @@
 import { error, redirect } from "@sveltejs/kit";
 import { Component } from "./Component";
 import { saveContentEndpoint, deleteContentEndpoint } from '../utils';
+export const templateAdminPage = {
+    id: 'adminPage',
+    label: 'Admin Page',
+    labelPlural: 'Admin Pages',
+    description: 'An Admin Page provides a configuration or information page for the Admin UI. Admin Pages are provided by plugins.',
+    typeField: false,
+};
 export class AdminPage {
     constructor(conf, cms) {
         this.id = conf.id;
@@ -83,11 +90,12 @@ export const adminPages = [
         },
     },
     {
-        id: 'fieldgroups',
+        id: 'components',
         component: {
             type: 'CMSConfigForm',
             options: {
                 component: 'CMSConfigEntityList',
+                configPath: 'fieldgroups',
             }
         }
     },

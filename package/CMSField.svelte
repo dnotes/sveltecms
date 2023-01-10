@@ -8,8 +8,6 @@ export let field;
 export let value;
 let cls = "";
 export { cls as class };
-let overridden = false;
-let scriptValue = "";
 </script>
 
 {#if !field.hidden}
@@ -30,39 +28,21 @@ let scriptValue = "";
         bind:value
         {cms}
       />
+    {:else if field.scriptable}
+      <ScriptableButton
+        {field}
+        {id}
+        {cms}
+        bind:value
+      />
     {:else}
-      {#if overridden}
-        <svelte:component
-          this={field.widget.widget}
-          {field}
-          {id}
-          {cms}
-          value={undefined}
-          disabled={true}
-        />
-        <ScriptableButton
-          {cms}
-          {field}
-          bind:value
-          bind:overridden
-        />
-      {:else}
-        <svelte:component
-          this={field.widget.widget}
-          {field}
-          {id}
-          {cms}
-          bind:value
-        />
-        {#if field.scriptable}
-          <ScriptableButton
-            {cms}
-            {field}
-            bind:value={scriptValue}
-            bind:overridden
-          />
-        {/if}
-      {/if}
+      <svelte:component
+        this={field.widget.widget}
+        {field}
+        {id}
+        {cms}
+        bind:value
+      />
     {/if}
     {#if field.helptext}
       <div class="cms-helptext">{field.helptext}</div>

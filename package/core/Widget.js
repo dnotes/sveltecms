@@ -13,6 +13,7 @@ import CMSWidgetSelect from '../widgets/CMSWidgetSelect.svelte';
 import CMSWidgetValue from "../widgets/CMSWidgetValue.svelte";
 import CMSWidgetReference from "../widgets/CMSWidgetReference.svelte";
 import CMSWidgetMultiselect from "../widgets/CMSWidgetMultiselect.svelte";
+import CMSWidgetOptions from "../widgets/CMSWidgetOptions.svelte";
 import SlugConfig from "./Slug";
 import { isReferenceString } from "../utils";
 export const templateWidget = {
@@ -83,9 +84,44 @@ export const widgetTypes = {
         handlesFields: true,
         widget: CMSWidgetFieldgroup,
         optionFields: {
+            useComponents: {
+                type: 'boolean',
+                default: false,
+                helptext: 'Allow users to choose a Fieldgroup Component when editing.'
+                    + 'For component-driven content, choose this option and set field.multiple.',
+            },
+            fieldgroupTags: {
+                type: 'text',
+                multiple: true,
+                default: [],
+                hidden: '$not($values.useComponents)',
+                helptext: 'Allow the specified fieldgroup formats to be chosen by the editors. ' +
+                    'To allow only specific fieldgroups, set this field blank.',
+                widget: {
+                    type: 'options',
+                    items: ['fullwidth', 'block', 'inline'],
+                    oneline: true,
+                }
+            },
+            fieldgroups: {
+                type: 'text',
+                multiple: true,
+                default: [],
+                hidden: '$not($values.useComponents)',
+                helptext: 'Allow the specified fieldgroups to be chosen by the editors.',
+                widget: {
+                    type: 'multiselect',
+                    items: {
+                        function: 'listEntities',
+                        params: ['fieldgroups'],
+                    },
+                    restrictToItems: true,
+                }
+            },
             oneline: {
                 type: 'boolean',
                 default: false,
+                disabled: '$values.useComponents',
                 helptext: 'add the "oneline" class to a fieldgroup fieldset',
             },
         }
@@ -377,7 +413,7 @@ export const widgetTypes = {
     },
     file: {
         id: 'file',
-        fieldTypes: ['image'],
+        fieldTypes: ['image', 'file'],
         description: `The default cms file input. Handles multiple files.`,
         widget: CMSWidgetFile,
         handlesMultiple: true,
@@ -418,7 +454,7 @@ export const widgetTypes = {
     },
     select: {
         id: 'select',
-        fieldTypes: ['text', 'number', 'date'],
+        fieldTypes: ['text', 'number', 'float', 'date'],
         description: `An HTML select box.`,
         widget: CMSWidgetSelect,
         handlesMultiple: true,
@@ -443,6 +479,21 @@ export const widgetTypes = {
                 scriptable: true,
                 helptext: 'The list of values allowed for this select input, along with the labels for display.',
             },
+        }
+    },
+    options: {
+        id: 'options',
+        fieldTypes: ['text', 'number', 'float', 'date'],
+        description: 'Options presented as option buttons or checkboxes.',
+        widget: CMSWidgetOptions,
+        handlesMultiple: true,
+        optionFields: {
+            items: {
+                type: 'list',
+                default: [],
+                scriptable: true,
+                helptext: 'The list of values allowed for this options field, along with the labels for display.',
+            }
         }
     },
     value: {
@@ -535,17 +586,38 @@ export const widgetTypes = {
                     ] }
             },
             displayKey: {
+                label: 'Index Field',
                 type: 'text',
                 required: true,
                 default: 'title',
-                helptext: 'The field used and for search and display in form inputs, and for storing the text value when free tagging. ' +
-                    'If this field is linked with Content Types, then each linked Content Type should have a text field with this ID.',
+                multiple: false,
+                helptext: 'The field used for search and display on form inputs, and for storing the display value for free tagging.'
+                    + ' If this field is linked with Content Types, then each linked Content Type should have an indexed field with this ID.'
+                    + ' For free tagging, or when not linked to a Content Type, you can use any generic Field that is both indexed and required.',
+                widget: {
+                    type: 'multiselect',
+                    items: { function: 'slugFields', params: [
+                            { function: 'getValue', params: [
+                                    { function: 'if', params: [
+                                            { function: 'typeof', params: [
+                                                    { function: 'getValue', params: ['contentTypes'] },
+                                                    'string',
+                                                ] },
+                                            'contentTypes',
+                                            'contentTypes.0'
+                                        ] }
+                                ] }
+                        ] },
+                    restrictToItems: true,
+                    allowBlur: true,
+                }
             },
             referenceKey: {
+                label: 'Reverse Reference Field',
                 type: 'text',
                 default: 'referencedContent',
                 helptext: 'The ID of a "reference" type field on the associated Content Type(s). ' +
-                    'If provided, that field in referenced content will be populated with backlinks to the referencing content.',
+                    'If provided, that field in referenced content will be populated with references back to this content.',
             },
             displayMode: {
                 type: 'text',

@@ -12,13 +12,17 @@ $: classes = classes || `content-type-${entity.id} display-mode-${displayMode}`;
 
 {#if display?.component}
 
-  <svelte:component
-    this={display.component.component}
-    {cms}
-    {item}
-    {entity}
-    {displayMode}
-  />
+  {#await display.component.component then component}
+
+    <svelte:component
+      this={component}
+      {cms}
+      {item}
+      {entity}
+      {displayMode}
+    />
+
+  {/await}
 
 {:else if display?.isDisplayed}
 

@@ -1,4 +1,14 @@
 import { get, has, isEqual, set, cloneDeep } from 'lodash-es';
+export const templateScriptFunction = {
+    id: 'scriptFunction',
+    label: 'Script Function',
+    labelPlural: 'Script Functions',
+    description: 'Script Functions provide dynamic values for some properties and options'
+        + ' of Fields and Widgets when editing and saving content, allowing for conditional and'
+        + ' calculated fields, for example.',
+    typeField: false,
+    isConfigurable: true,
+};
 function getFullPath(path, id) {
     if (!path)
         return id;
@@ -111,12 +121,14 @@ export class ScriptFunctionConfig {
 export const scriptFunctions = {
     now: {
         id: 'now',
+        description: 'Returns the current date.',
         fn: () => {
             return new Date();
         }
     },
     contains: {
         id: 'contains',
+        description: 'Determines whether string or array contains a particular value.',
         fn: (vars, opts) => {
             return opts.textOrArray?.includes(opts.searchFor);
         },
@@ -135,6 +147,7 @@ export const scriptFunctions = {
     },
     once: {
         id: 'once',
+        description: 'Runs a function once only, when the form is first loaded.',
         fn: (vars, opts) => {
             return opts.function;
         },
@@ -148,6 +161,8 @@ export const scriptFunctions = {
     },
     transform: {
         id: 'transform',
+        description: 'Runs a Transformer function on a value. Note that the Transformer options cannot be set on this Function'
+            + '; if the defaults must be overridden, then a new Transformer should be created of the type desired.',
         fn: (vars, opts) => {
             return vars.cms.transform(opts.value, opts.transformer);
         },
@@ -168,6 +183,7 @@ export const scriptFunctions = {
     },
     getProperty: {
         id: 'getProperty',
+        description: 'Gets a single property from the Entity being configured. Shortname: "$prop" or "$props.[PropertyName]".',
         fn: (vars, opts) => {
             return get(vars.field, opts.property);
         },
@@ -195,6 +211,7 @@ export const scriptFunctions = {
     // },
     setProperty: {
         id: 'setProperty',
+        description: 'Sets a single property on the Entity being configured.',
         fn: (vars, opts) => {
             vars.field[opts.property] = opts.value;
         },
@@ -213,12 +230,14 @@ export const scriptFunctions = {
     },
     id: {
         id: 'id',
+        description: 'Gets the ID of the Entity being configured. Shortname: "$id".',
         fn: (vars, opts) => {
             return opts.id || '';
         }
     },
     getValue: {
         id: 'getValue',
+        description: 'Gets the value of a field from the form being submitted. Shortname: "$value" or "$values.[FieldID]"',
         fn: (vars, opts) => {
             let path = getFullPath(vars.id, opts.fieldID);
             if (has(vars.values, path))
@@ -228,7 +247,7 @@ export const scriptFunctions = {
         optionFields: {
             fieldID: {
                 type: 'text',
-                helptext: 'The name of the item field to get.',
+                helptext: 'The name of the item field to get. Defaults to the current field, so "$value" === "$values($id)".',
                 default: {
                     function: 'id',
                 },
@@ -237,6 +256,7 @@ export const scriptFunctions = {
     },
     setValue: {
         id: 'setValue',
+        description: 'Sets the value of a field.',
         fn: (vars, opts) => {
             let path = getFullPath(vars.id, opts.fieldID);
             if (has(vars.values, path))
@@ -261,6 +281,7 @@ export const scriptFunctions = {
     },
     isError: {
         id: 'isError',
+        description: 'Determines whether a field has an error. Shortname: "$errors" or "$errors.[FieldID]". UNUSED AS YET: requires validators.',
         fn: (vars, opts) => {
             let path = getFullPath(vars.id, opts.fieldID);
             if (has(vars.errors, path))
@@ -279,6 +300,7 @@ export const scriptFunctions = {
     },
     isTouched: {
         id: 'isTouched',
+        description: 'Determines whether a field has been touched. Shortname: "$touched" or "$touched.[FieldID]".',
         fn: (vars, opts) => {
             let path = getFullPath(vars.id, opts.fieldID);
             if (has(vars.touched, path))
@@ -297,6 +319,7 @@ export const scriptFunctions = {
     },
     not: {
         id: 'not',
+        description: 'Negates the value of the provided parameter.',
         fn: (vars, opts) => {
             return !opts.value;
         },
@@ -312,6 +335,8 @@ export const scriptFunctions = {
     },
     if: {
         id: 'if',
+        description: 'A conditional or ternary operator, with the condition to be tested first,'
+            + ' followed by the value if true and then the value if false.',
         fn: (vars, opts) => {
             return opts.condition ? opts.ifTrue : opts.ifFalse;
         },
@@ -335,6 +360,7 @@ export const scriptFunctions = {
     },
     or: {
         id: 'or',
+        description: 'Tests if any of the parameters are truthy.',
         fn: (vars, opts) => {
             let passed = Object.keys(opts.conditions).filter(k => Boolean(opts[k]));
             return passed.length > 0;
@@ -350,6 +376,7 @@ export const scriptFunctions = {
     },
     and: {
         id: 'and',
+        description: 'Tests if all of the parameters are truthy.',
         fn: (vars, opts) => {
             let passed = Object.keys(opts.conditions).filter(k => Boolean(opts[k]));
             return passed.length > 0;
@@ -365,6 +392,7 @@ export const scriptFunctions = {
     },
     equal: {
         id: 'equal',
+        description: 'Tests if all of the parameters are equal. Should work with arrays.',
         fn: (vars, opts) => {
             const number = Object.keys(opts.values).length;
             if (number < 2)
@@ -384,6 +412,7 @@ export const scriptFunctions = {
     },
     isLessThan: {
         id: 'isLessThan',
+        description: 'Tests whether one value is less than another. Also supports less than or equal.',
         fn: (vars, opts) => {
             return opts.orEqual ? opts.value <= opts.isLessThan : opts.value < opts.isLessThan;
         },
@@ -407,6 +436,7 @@ export const scriptFunctions = {
     },
     isGreaterThan: {
         id: 'isGreaterThan',
+        description: 'Tests whether one value is greater than another. Also supports greater than or equal.',
         fn: (vars, opts) => {
             return opts.orEqual ? opts.value >= opts.isGreaterThan : opts.value > opts.isGreaterThan;
         },
@@ -430,6 +460,7 @@ export const scriptFunctions = {
     },
     isNull: {
         id: 'isNull',
+        description: 'Tests whether a value is the "null" value.',
         fn: (vars, opts) => {
             return (opts?.value === undefined || opts?.value === null);
         },
@@ -445,6 +476,7 @@ export const scriptFunctions = {
     },
     concat: {
         id: 'concat',
+        description: 'Concatenates several strings into a single string. Shorthand for join("",[...values]).',
         fn: (vars, opts) => {
             return Array.isArray(opts.strings) ? opts.strings.join('') : opts.strings;
         },
@@ -459,6 +491,7 @@ export const scriptFunctions = {
     },
     join: {
         id: 'join',
+        description: 'Joins several values into a string using a particular join string.',
         fn: (vars, opts) => {
             return Array.isArray(opts.values) ? opts.values.join(opts.joinString) : opts.values;
         },
@@ -466,7 +499,7 @@ export const scriptFunctions = {
             joinString: {
                 type: 'text',
                 default: ' ',
-                helptext: 'The character used to join the provided values.'
+                helptext: 'The string of characters used to join the provided values.'
             },
             values: {
                 type: 'text',
@@ -478,6 +511,7 @@ export const scriptFunctions = {
     },
     length: {
         id: 'length',
+        description: 'Gets the length of a string or array.',
         fn: (vars, opts) => {
             return opts?.value?.length || 0;
         },
@@ -491,8 +525,9 @@ export const scriptFunctions = {
     },
     typeof: {
         id: 'typeof',
+        description: 'Gets the variable type of a value, or tests that a value matches a particular type.',
         fn: (vars, opts) => {
-            return typeof opts?.value === opts?.type;
+            return (typeof opts?.value === opts?.type) ? opts.type : (opts.type ? false : typeof opts?.value);
         },
         optionFields: {
             value: {
@@ -509,6 +544,7 @@ export const scriptFunctions = {
     },
     listEntities: {
         id: 'listEntities',
+        description: 'Lists the registered Entities of a partuclar type.',
         admin: true,
         fn: (vars, opts) => {
             return vars.cms.listEntities(opts.entityType, opts.includeAdmin);
@@ -526,8 +562,30 @@ export const scriptFunctions = {
             },
         }
     },
+    slugFields: {
+        id: 'slugFields',
+        description: 'Lists slug fields for a Content Type, or generic Fields that are required and indexed.'
+            + ' Used to populate options for Reference widgets.',
+        admin: true,
+        fn: (vars, opts) => {
+            if (!opts.entityType || !opts.entityID)
+                return vars.cms.listEntities('fields').filter(id => (vars?.cms?.fields?.[id]?.index && vars?.cms?.fields?.[id]?.required));
+            let contentType = vars.cms?.contentTypes?.[opts.contentTypeID];
+            if (!contentType)
+                return vars.cms.listEntities('fields').filter(id => (vars?.cms?.fields?.[id]?.index && vars?.cms?.fields?.[id]?.required));
+            return contentType.slug.fields;
+        },
+        optionFields: {
+            contentTypeID: {
+                type: 'text',
+                default: '',
+                helptext: 'The ID of the Content Type.'
+            },
+        }
+    },
     widgetHandles: {
         id: 'widgetHandles',
+        description: 'Whether the widget handles fields, media, or multiple values.',
         admin: true,
         fn: (vars, opts) => {
             if (!vars.values?.widget)
@@ -553,6 +611,7 @@ export const scriptFunctions = {
     },
     debug: {
         id: 'debug',
+        description: 'Logs the value of the parameter to the console.',
         fn: (vars, opts) => {
             console.log({ returnValue: opts.value, ...vars });
             return opts.value;

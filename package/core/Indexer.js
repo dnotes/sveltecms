@@ -22,7 +22,7 @@ export const templateIndexer = {
     }
 };
 export class Indexer {
-    constructor(conf, cms) {
+    constructor(id, conf, cms) {
         this.getIndex = noop();
         this.saveIndex = noop();
         this.searchIndex = noop();
@@ -34,8 +34,10 @@ export class Indexer {
         this.searchMedia = noop([]);
         this.mediaKeys = ['type', 'size', 'height', 'width', 'duration', 'date'];
         this.options = {};
+        this.id = id;
         if (typeof conf === 'string')
             conf = { type: conf };
+        this.type = conf.type;
         let indexer = cms.indexers[conf.type];
         if (!indexer)
             return this;

@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@muonw/powertable": "github:muonw/powertable",
@@ -171,6 +171,7 @@
     "./widgets/CMSWidgetMultiple.svelte": "./widgets/CMSWidgetMultiple.svelte",
     "./widgets/CMSWidgetMultiselect.svelte": "./widgets/CMSWidgetMultiselect.svelte",
     "./widgets/CMSWidgetNumber.svelte": "./widgets/CMSWidgetNumber.svelte",
+    "./widgets/CMSWidgetOptions.svelte": "./widgets/CMSWidgetOptions.svelte",
     "./widgets/CMSWidgetRange.svelte": "./widgets/CMSWidgetRange.svelte",
     "./widgets/CMSWidgetReference.svelte": "./widgets/CMSWidgetReference.svelte",
     "./widgets/CMSWidgetSelect.svelte": "./widgets/CMSWidgetSelect.svelte",
