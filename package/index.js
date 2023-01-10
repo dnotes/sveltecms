@@ -15,7 +15,6 @@ import SlugConfig, { templateSlug } from './core/Slug';
 import { Indexer, templateIndexer } from './core/Indexer';
 import { hooks, templateHook } from './core/Hook';
 import { templatePlugin } from './core/Plugin';
-import cms from './cms';
 const customComponents = import.meta.glob('/src/cms/*.svelte');
 // import { default as Validator, Rules } from 'validatorjs'
 const splitter = /\s*,\s*/g;
@@ -532,8 +531,8 @@ export default class SvelteCMS {
         for (let i = 0; i < items.length; i++) {
             // Set up old Content for contentPostWrite hooks
             let before;
-            if (contentType === cms.admin)
-                before = cloneDeep(cms.conf);
+            if (contentType === this.admin)
+                before = cloneDeep(this.conf);
             else if (items[i]._oldSlug && !options.skipHooks) {
                 before = await db.getContent(contentType, { ...db.options, options }, items[i]._oldSlug);
                 before = this.slugifyContent(this.preSave(contentType, before), contentType);
