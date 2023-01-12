@@ -1,5 +1,4 @@
 <script>
-  import CmsMenu from "src/install/CmsMenu.svelte";
   // This file was created by SvelteCMS, but feel free to change it.
 </script>
 
