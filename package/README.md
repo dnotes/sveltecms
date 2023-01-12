@@ -11,11 +11,6 @@ Therefore, it is easiest to choose TypeScript syntax for your SvelteKit app.
 
 ## Installation
 
-If you want to start out with a link to the Admin UI, you can delete the default
-front page:
-
-`rm src/routes/+page.svelte`
-
 Install SvelteCMS into your SvelteKit app using the package manager of your choice:
 
 `npm install sveltecms`
