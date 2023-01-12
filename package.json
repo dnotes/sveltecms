@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "scripts": {
     "debug": "echo 'To debug, open Google Chrome to chrome://inspect' && node --inspect node_modules/.bin/vite dev",
     "dev": "vite dev",
@@ -17,7 +17,7 @@
     "@muonw/powertable": "github:muonw/powertable",
     "@sindresorhus/slugify": "^2.1.0",
     "@sveltejs/kit": "1.0.0",
-    "@sveltejs/package": "1.0.0",
+    "@sveltejs/package": "^1.0.1",
     "browser-or-node": "^2.0.0",
     "bytes": "^3.1.2",
     "cp-file": "^9.1.0",

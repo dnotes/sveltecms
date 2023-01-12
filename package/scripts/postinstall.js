@@ -8,7 +8,7 @@ const fromPath = path.resolve(__dirname, '../install');
 const toPath = path.resolve(process.env.INIT_CWD);
 const files = [
     // The default front page route
-    [`${fromPath}/routes/+page.svelte`, `${toPath}/src/routes/+page.svelte`],
+    [`${fromPath}/routes/+layout.svelte`, `${toPath}/src/routes/+layout.svelte`],
     // The '/[...path]' routes
     [`${fromPath}/routes/(cms)/[...path]/+page.svelte`, `${toPath}/src/routes/(cms)/[...path]/+page.svelte`],
     [`${fromPath}/routes/(cms)/[...path]/+layout.ts`, `${toPath}/src/routes/(cms)/[...path]/+layout.ts`],
@@ -42,3 +42,10 @@ contentTypes.forEach(id => {
     if (!fs.existsSync(filepath))
         fs.writeFileSync(filepath, '[]', { encoding: 'utf8' });
 });
+if (!fs.existsSync(`${toPath}/src/cms`))
+    fs.mkdirSync(`${toPath}/src/cms`);
+if (!fs.existsSync(`${toPath}/src/cms/README.txt`))
+    fs.writeFileSync(`${toPath}/src/cms/README.txt`, `This is the folder where SvelteCMS looks for custom components.
+
+Any .svelte files in this folder will be available when configuring
+the display of fields, fieldgroups, and content types in the Admin UI.`, { encoding: 'utf8' });
