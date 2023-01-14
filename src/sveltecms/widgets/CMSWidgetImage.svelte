@@ -74,7 +74,7 @@ let result
   }
 
   // Handles uploads to the file field
-  export let handleUpload = () => {
+  export let handleUpload = async () => {
 
     // ensure that there is a mediastore
     if (!field?.['mediaStore']) throw new Error(`There is no media store for field ${field.id}`)
@@ -83,7 +83,7 @@ let result
     let srcs = previews.map(img => img.title); // The filename/url is always the title of a CMSPreviewImage
 
     // Check each of the uploaded files
-    [...files].forEach(async file => {
+    let promises = [...files].map(async file => {
 
       // If it does not have a previewUrl (i.e. it has not been parsed yet)
       if (!previewUrls.hasOwnProperty(file.name)) {
@@ -131,6 +131,21 @@ let result
       }
 
     })
+
+    await Promise.all(promises)
+
+    let filenames = [...files].map(f => f.name)
+    let usedFilenames = []
+
+    console.log({value,files,previews,previewUrls,filenames})
+
+    if (Array.isArray(value)) {
+      value = value.filter(f => {
+        let ok = (f.src && !f.src.match(/^blob:/)) || (filenames.includes(f?.filename) && !usedFilenames.includes(f?.filename))
+        if (ok && f?.filename) usedFilenames.push(f.filename)
+        return ok
+      })
+    }
 
     // Finally, release any unused objectUrl entries
     releaseObjectUrls()
@@ -187,6 +202,13 @@ let result
       style="display:none"
     />
     <Button helptext={'Upload a new image'} on:click={()=>{input.click()}}>Upload</Button>
+    {#if multiple}
+      <span class="cms-image-warning">
+        Warning: It is not possible to upload multiple files in series;
+        either select all the files at the same time, or save the form
+        multiple times. (Work in progress.)
+      </span>
+    {/if}
   </label>
 
   {#if value && Object.keys(value).length}
@@ -337,6 +359,17 @@ let result
   position: absolute;
   top: 8px;
   right: 8px;
+}
+.cms-image-warning {
+  display: inline-block;
+  font-family: helvetica, arial, sans-serif;
+  font-size: 10px;
+  line-height: 1em;
+  width: 248px;
+  vertical-align: middle;
+  padding: 0;
+  margin: 0;
+  opacity: .5;
 }
 
 </style>
