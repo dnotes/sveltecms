@@ -149,6 +149,7 @@ button[type="submit"]:disabled {
 
 .danger {
   background: var(--cms-danger);
+  border: 1px solid var(--cms-bg);
 }
 
 </style>

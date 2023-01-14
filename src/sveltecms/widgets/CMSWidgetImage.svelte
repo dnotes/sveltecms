@@ -248,10 +248,12 @@ let result
               >
             {/if}
 
-            <Button type=cancel small
-              helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}"
-              on:click="{() => {deleteImage(i)}}"
-            />
+            <div class="delete">
+              <Button type=cancel small danger
+                helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}"
+                on:click="{() => {deleteImage(i)}}"
+              />
+            </div>
 
           </div>
         {/each}
@@ -303,7 +305,7 @@ let result
             {/if}
 
             <div class="delete">
-              <Button type=cancel small
+              <Button type=cancel small danger
                 helptext="Delete image {i+1}: {value['alt'] || value['filename']}"
                 on:click="{() => {deleteImage(i)}}" />
             </div>
@@ -318,7 +320,7 @@ let result
 
 </fieldset>
 
-<style global>
+<style>
 
 .cms-image-preview>div {
   position: relative;
