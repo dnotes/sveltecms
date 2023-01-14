@@ -84,7 +84,7 @@ const split = splitTags()
 
   {#each Object.entries(fieldgroup?.fields || {}) as [id, field] }
 
-  <div class="field field-{field.id} {field?.class || ''}">
+  <div class="field field-{field.id} field-type-{field.type} widget-type-{field.widget.type} {field?.class || ''}">
     {#if !field.hidden}
       {#if !field.widget.widget}
         <CmsWidgetUndefined {field} id="{parentID}.{id}" />
@@ -120,15 +120,28 @@ const split = splitTags()
 
 </fieldset>
 
-<style global>
-  .sveltecms fieldset.fieldgroup>.fieldgroup-choice {
+<style>
+
+  .oneline {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .oneline :global(div.field) {
+    flex-grow:1;
+    width:5%;
+  }
+
+  legend {
+    background: var(--cms-main);
+  }
+  .fieldgroup-choice {
     background: var(--cms-main);
     color: var(--cms-bg);
   }
-  .sveltecms fieldset.fieldgroup {
+  .fieldgroup {
     background: var(--cms-main);
   }
-  .sveltecms fieldset.fieldgroup .field {
+  .fieldgroup .field {
     background: var(--cms-bg);
   }
   .sveltecms fieldset.fieldgroup.collapsed {
