@@ -2,7 +2,7 @@
 import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
 import CmsWidgetFieldgroup from './widgets/CMSWidgetFieldgroup.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
-import ScriptableButton from 'sveltecms/ui/ScriptableButton.svelte';
+import ScriptableButton from 'sveltecms/widgets/ScriptableButton.svelte';
 import type SvelteCMS from 'sveltecms';
 import type { WidgetField } from 'sveltecms';
 

@@ -33,9 +33,7 @@
   class:small
   class:borderless
   class:highlight
->
-<slot>{text}</slot>
-</a>
+>{#if cancel}<slot>&times;</slot>{:else}<slot>{text}</slot>{/if}</a>
 
 {:else}
 
@@ -45,14 +43,86 @@
   aria-label="{helptext}"
   type={ submit ? 'submit' : 'button'}
   {disabled}
+  class:disabled
   class:primary
   class:cancel
   class:danger
   class:small
   class:borderless
   class:highlight
->
-<slot>{text}</slot>
-</button>
+>{#if cancel}<slot>&times;</slot>{:else}<slot>{text}</slot>{/if}</button>
 
 {/if}
+
+<style>
+button,
+.button {
+  font-family: var(--cms-font);
+  font-size: 90%;
+  text-decoration:none;
+  cursor:pointer;
+  color:var(--cms-main);
+  border-color:var(--cms-main);
+  background:transparent;
+  padding: 0 .8em;
+  line-height: 2.2em;
+  border-radius: 1em;
+  border: 2px solid var(--cms-main);
+  display: inline-block;
+  text-transform: lowercase;
+}
+.small {
+  font-size: 80%;
+  border-width: 1px;
+  padding:1px 4px;
+  line-height:1em;
+}
+
+.primary,
+.highlight,
+.danger,
+button[type="submit"] {
+  background: var(--cms-main);
+  color: var(--cms-bg);
+  border: none;
+  padding-top: 1px;
+}
+
+.primary,
+.danger,
+button[type="submit"] {
+  font-weight: bold;
+}
+
+.primary {
+  text-transform: uppercase;
+}
+
+.disabled,
+button[type="submit"]:disabled {
+  cursor: default;
+  opacity: .5;
+  filter: grayscale(100%);
+}
+
+.borderless {
+  border:none !important;
+}
+
+.cancel {
+  font-size:41px;
+  line-height:31px;
+  padding: 0 4px;
+  border-radius: 100%;
+}
+.cancel.small {
+  font-size:21px;
+  line-height:20px;
+  padding: 0 4px;
+}
+
+.danger {
+  background: var(--cms-danger);
+}
+
+</style>
