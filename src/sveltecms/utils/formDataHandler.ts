@@ -101,7 +101,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
 export async function formDataHandler(cms:SvelteCMS, contentType:string|ContentType, formdata:FormData) {
 
   let rawdata = {}
-  // @ts-ignore -- why does this not have a proper FormData object?!?!!
+  // @ts-ignore -- why does this not have a proper FormData object? doesn't FormData have .keys()?
   for (let k of formdata.keys()) {
     set(rawdata, k, formdata.getAll(k))
   }
