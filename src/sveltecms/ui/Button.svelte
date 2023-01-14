@@ -1,7 +1,6 @@
 <script lang="ts">
 
   export let submit:boolean = undefined
-  export let cancel:boolean = undefined
   export let disabled:boolean = undefined
   export let small:boolean = undefined
   export let borderless:boolean = undefined
@@ -10,12 +9,21 @@
   export let danger:boolean = undefined
   export let helptext:string = ''
 
+  export let type:""|"cancel"|"configure"|"fn" = undefined
+
   // Some buttons navigate.
   // This is easier than making a Link component or using goto.
   export let href:string = undefined
 
   // This is for the <slot> default
   export let text:string = ''
+
+  let html
+  $: if (type) {
+    if (type === 'cancel') html = "&times;"
+    if (type === 'configure') html = "<b>&middot;&middot;&middot;</b>"
+    if (type === 'fn') html = "<i>fn</i>"
+  }
 
 </script>
 
@@ -27,13 +35,14 @@
   aria-label="{helptext}"
   {href}
   class:disabled
-  class:cancel
+  class:type
+  data-type={type}
   class:primary
   class:danger
   class:small
   class:borderless
   class:highlight
->{#if cancel}<slot>&times;</slot>{:else}<slot>{text}</slot>{/if}</a>
+>{#if type}<slot>{@html html}</slot>{:else}<slot>{text}</slot>{/if}</a>
 
 {:else}
 
@@ -45,12 +54,13 @@
   {disabled}
   class:disabled
   class:primary
-  class:cancel
+  class:type
+  data-type={type}
   class:danger
   class:small
   class:borderless
   class:highlight
->{#if cancel}<slot>&times;</slot>{:else}<slot>{text}</slot>{/if}</button>
+>{#if type}<slot>{@html html}</slot>{:else}<slot>{text}</slot>{/if}</button>
 
 {/if}
 
@@ -74,8 +84,10 @@ button,
 .small {
   font-size: 80%;
   border-width: 1px;
-  padding:1px 4px;
-  line-height:1em;
+  padding: 1px 4px;
+  line-height: 1em;
+  min-height: 20px;
+  min-width: 20px;
 }
 
 .primary,
@@ -109,16 +121,30 @@ button[type="submit"]:disabled {
   border:none !important;
 }
 
-.cancel {
-  font-size:41px;
-  line-height:31px;
-  padding: 0 4px;
+.type {
   border-radius: 100%;
+  padding: 0;
 }
-.cancel.small {
+.type:not(.small) {
+  height: 40px;
+  line-height: 30px;
+  min-width: 40px;
+  font-size: 28px;
+}
+.type.small {
+  height:22px;
+  min-width:22px;
+}
+.type[data-type="fn"]:not(.small) {
+  font-size: 20px;
+}
+.type[data-type="cancel"] {
+  font-size:42px;
+  line-height:30px;
+}
+.small[data-type="cancel"] {
   font-size:21px;
   line-height:20px;
-  padding: 0 4px;
 }
 
 .danger {

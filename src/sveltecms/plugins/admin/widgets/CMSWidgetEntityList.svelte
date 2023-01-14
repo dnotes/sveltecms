@@ -83,9 +83,9 @@ import EntityListSectionToggle from "sveltecms/ui/EntityListSectionToggle.svelte
         {id}
         options={{ entityType:opts.entityType, isTopLevelEntity:opts.isTopLevelEntity }}
       >
-      <Button cancel
+      <Button type=cancel small
         helptext="Remove this {entityType.label}"
-        on:click={(e) => { items.splice(i,1); items=items; }}>&times;</Button>
+        on:click={(e) => { items.splice(i,1); items=items; }} />
       </CmsWidgetEntity>
     </div>
   {/each}

@@ -167,11 +167,9 @@ import CmsField from "sveltecms/CMSField.svelte";
           bind:value={conf[i]}
           on:change={setValue}
         />
-        <div class="delete">
-          <Button cancel
+          <Button type=cancel small
             helptext="Remove {field.label} item"
-            on:click={()=>{removeItem(i)}}>&times;</Button>
-        </div>
+            on:click={()=>{removeItem(i)}} />
       </div>
     {/each}
     <Button small on:click={addItem}>+ add {entityType?.label || 'unknown entity'}</Button>
@@ -231,7 +229,7 @@ import CmsField from "sveltecms/CMSField.svelte";
   {/if}
 
   <div class="field ops">
-    <Button small highlight on:click={()=>{modalOpen=true}}>...</Button>
+    <Button type=configure small highlight on:click={()=>{modalOpen=true}} />
     <slot></slot>
   </div>
 
@@ -258,14 +256,13 @@ import CmsField from "sveltecms/CMSField.svelte";
     {#if entityType.configFields || entityType.isConfigurable}
       <div class="details">
         {#if Object.keys(widgetFieldGroup?.fields || {}).length}
-          <Button
+          <Button type=configure
             small
             on:click={()=>{modalOpen=true}}
             disabled={!conf[entityTypeFieldID]}
             highlight={conf[entityTypeFieldID] && typeof value !== 'string'}
-          >
-            <span title="{JSON.stringify(conf, null, 2)}">...</span>
-          </Button>
+            helptext={JSON.stringify(conf,null,2)}
+          />
         {/if}
       </div>
     {/if}

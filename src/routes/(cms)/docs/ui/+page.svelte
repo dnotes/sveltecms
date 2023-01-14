@@ -1,8 +1,11 @@
 <script lang="ts">
   import Button from 'sveltecms/ui/Button.svelte'
-  let buttonOptions = {
+  let buttonOptions:{
+    type:""|"cancel"|"configure"|"fn",
+    [key:string]:any
+  } = {
+    type: "",
     submit: false,
-    cancel: false,
     disabled: false,
     small: false,
     borderless: false,
@@ -41,7 +44,15 @@
       {#each Object.keys(buttonOptions) as k}
         <div>
           <label>
-            {#if typeof buttonOptions[k] === 'boolean'}
+            {#if k === 'type'}
+              <span>type</span>
+              <select bind:value={buttonOptions.type}>
+                <option value="">- none -</option>
+                <option value="cancel">cancel</option>
+                <option value="configure">configure</option>
+                <option value="fn">fn</option>
+              </select>
+            {:else if typeof buttonOptions[k] === 'boolean'}
               <input type="checkbox" bind:checked={buttonOptions[k]}>
               <span>{k}</span>
             {:else if typeof buttonOptions[k] === 'string'}
@@ -56,8 +67,8 @@
     <div class="preview">
       <div class="inline-block">
         <Button
+          bind:type={buttonOptions.type}
           bind:submit={buttonOptions.submit}
-          bind:cancel={buttonOptions.cancel}
           bind:disabled={buttonOptions.disabled}
           bind:small={buttonOptions.small}
           bind:borderless={buttonOptions.borderless}

@@ -248,7 +248,7 @@ let result
               >
             {/if}
 
-            <Button cancel
+            <Button type=cancel small
               helptext="Delete image {i+1}: {value[i]['alt'] || value[i]['filename']}"
               on:click="{() => {deleteImage(i)}}"
             />
@@ -303,9 +303,9 @@ let result
             {/if}
 
             <div class="delete">
-              <Button cancel
+              <Button type=cancel small
                 helptext="Delete image {i+1}: {value['alt'] || value['filename']}"
-                on:click="{() => {deleteImage(i)}}">&times;</Button>
+                on:click="{() => {deleteImage(i)}}" />
             </div>
 
           </div>

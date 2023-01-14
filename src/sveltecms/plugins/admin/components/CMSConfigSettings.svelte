@@ -113,7 +113,7 @@ import Button from "sveltecms/ui/Button.svelte";
 {#if open}
   <Modal on:cancel={()=>{open=false}}>
     <div style="position:absolute;right:1em;user-select:none;">
-      <Button cancel on:click={()=>{open=false}}>&times;</Button>
+      <Button type=cancel on:click={()=>{open=false}} />
     </div>
     <div class="wrapper">
       <div style:user-select="none">

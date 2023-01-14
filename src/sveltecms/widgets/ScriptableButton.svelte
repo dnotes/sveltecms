@@ -83,16 +83,13 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
   bind:value={fieldValue}
 />
 <Button
+  type=fn
   small
   highlight={overridden}
   on:click={showModal}
   helptext="{overridden ? scriptValue : 'Use a dynamic function'}"
   disabled={field.disabled}
->
-  <slot>
-    <em>fn</em>
-  </slot>
-</Button>
+/>
 
 
 {#if show}
