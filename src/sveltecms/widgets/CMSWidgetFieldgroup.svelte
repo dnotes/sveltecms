@@ -15,7 +15,13 @@ const split = splitTags()
   export let value = {}
   export let collapsed = undefined
 
-  let originalValue = Object.assign({}, value)
+  let w
+  let minWidth = 0
+  $: if (parentField?.widget?.options?.oneline) minWidth = Object.keys(parentField.fields || {}).reduce(getWidths,0)
+  function getWidths(num:number, id:string) {
+    return num + (parentField.fields[id].type === 'boolean' ? 40 : 80)
+  }
+
 
   let opts:{
     useComponents:boolean
@@ -64,7 +70,7 @@ const split = splitTags()
 
 </script>
 
-<fieldset class="fieldgroup" class:oneline={opts?.oneline} class:collapsed>
+<fieldset class="fieldgroup" class:oneline={opts?.oneline && w >= minWidth} class:collapsed bind:clientWidth={w}>
 
   <legend><Button highlight on:click={()=>{collapsed=!collapsed}}>{label}</Button></legend>
 

@@ -158,7 +158,9 @@ export const widgetTypes:{[key:string]:WidgetType} = {
         type: 'boolean',
         default: false,
         disabled: '$values.useComponents',
-        helptext: 'add the "oneline" class to a fieldgroup fieldset',
+        helptext: 'Attempts to make the fieldgroup display in a single line using CSS.'
+          +' This may make a simple fieldgroup widget look like a spreadsheet entry form,'
+          +' but it is not very robust.',
       },
     }
   },

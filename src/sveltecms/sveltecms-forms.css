@@ -120,9 +120,6 @@ html.dark {
   border-radius: .5em;
   padding: .8em .5em;
 }
-.sveltecms fieldset.fieldgroup>legend {
-  background: var(--cms-main);
-}
 .sveltecms fieldset.multiple>legend {
   padding:0;
 }
@@ -151,3 +148,9 @@ html.dark {
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
 div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; max-height:100vh; position:relative; }
 div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; max-height:100vh; }
+
+.sveltecms input,
+.sveltecms select,
+.sveltecms textarea {
+  max-width: 100%;
+}
