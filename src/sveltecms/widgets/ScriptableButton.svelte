@@ -13,7 +13,7 @@ import { onMount } from 'svelte';
   export let field:WidgetField  // the field that is scriptable
 
   // Informational
-  let scriptValue = (value && typeof value === 'string') ? parseScript(value).toString() : ''  // the value as a script
+  let scriptValue = (value && typeof value === 'string') ? parseScript(value)?.toString() ?? '' : ''  // the value as a script
   let overridden = Boolean(scriptValue) // whether the value is overridden
   let fieldValue = overridden ? field.default : value // the value as a standard field value
 
