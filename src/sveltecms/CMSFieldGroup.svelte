@@ -16,7 +16,7 @@ let dispatch = createEventDispatcher()
 
 // One of the below is required; widgetFieldGroup overrides fieldgroup
 export let fieldgroup:FieldableEntity = undefined
-export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, touched, id })
+export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, touched, path:id })
 
   let root:HTMLElement
 

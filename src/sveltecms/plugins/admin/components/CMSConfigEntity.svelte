@@ -11,7 +11,7 @@ import CmsFieldGroup from 'sveltecms/CMSFieldGroup.svelte';
   }
   $: opts = Object.assign({}, options)
   $: entityType = cms.getEntityType(opts.configType)
-  $: widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(entityType.id), {values:data, errors:{}, touched:{}, id:options.configPath})
+  $: widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(entityType.id), { values:data, errors:{}, touched:{} })
 
 </script>
 

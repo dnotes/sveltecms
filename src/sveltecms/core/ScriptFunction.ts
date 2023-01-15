@@ -16,23 +16,18 @@ export const templateScriptFunction:EntityTemplate = {
   isConfigurable: true,
 }
 
-function getFullPath(path, id) {
-  if (!path) return id
-  if (!id) return path
-  return `${path}.${id}`
-}
-
 export class ScriptFunction implements ConfigurableEntity {
   id: string
-  fn: (vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, options:{[key:string]:any}) => any
-  vars: { cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string}
+  fn: (vars:ScriptVars, options:{[key:string]:any}) => any
+  vars: ScriptVars
   options: {[key:string]:string|number|boolean|null|undefined}
-  constructor(conf:string|ScriptFunctionConfig, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }, cms:SvelteCMS) {
+  constructor(conf:string|ScriptFunctionConfig, vars:ScriptVars) {
+    let cms = vars.cms
     if (typeof conf === 'string') conf = parseScript(conf) // this should be rare, but just in case...
     let func:ScriptFunctionType = cms.scriptFunctions[conf.function]
     if (!func) throw `Script function not found for ${conf}` // this will also happen if the config is bad
     this.id = func.id
-    this.vars = {...vars, cms}
+    this.vars = vars
     this.fn = func.fn
     // @ts-ignore
     this.options = cms.getConfigOptionsFromFields(func?.optionFields || {})
@@ -73,10 +68,23 @@ export class ScriptError extends Error {
   }
 }
 
+/**
+ * These variables are available to all Script Functions as they are run.
+ */
+export type ScriptVars = {
+  cms:SvelteCMS // the full CMS object
+  field:Field // the field to which the script function is attached
+  values:any // the full values object of the content being saved
+  errors:any // any errors on the form elements (not implemented yet)
+  touched:any // any form elements that have been touched (not implemented yet)
+  path?:string // the parent path to the field
+  id:string // the ID of the field
+}
+
 export type ScriptFunctionType = ConfigurableEntityType & {
   admin?:boolean
   description:string
-  fn:(vars:{ cms:SvelteCMS, field:Field, values:any, errors:any, touched:any, id?:string }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
+  fn:(vars:ScriptVars & { cms:SvelteCMS }, opts:{[key:string]:any}, event?:Event, el?:HTMLElement) => any
 }
 
 export type ScriptFunctionConfigSetting = string | {
@@ -251,9 +259,7 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'getValue',
     description: 'Gets the value of a field from the form being submitted. Shortname: "$value" or "$values.[FieldID]"',
     fn: (vars, opts) => {
-      let path = getFullPath(vars.id, opts.fieldID)
-      if (has(vars.values, path)) return get(vars.values, path)
-      return get(vars.values, opts.fieldID)
+      return get(vars.values, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -262,6 +268,11 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
         default: {
           function: 'id',
         },
+      },
+      fromTopLevel: {
+        type: 'boolean',
+        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        default: false,
       }
     }
   },
@@ -269,9 +280,7 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'setValue',
     description: 'Sets the value of a field.',
     fn: (vars, opts) => {
-      let path = getFullPath(vars.id, opts.fieldID)
-      if (has(vars.values, path)) set(vars.values, path, opts.value)
-      else set(vars.values, opts.fieldID, opts.value)
+      set(vars.values, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID, opts.value)
     },
     optionFields: {
       fieldID: {
@@ -285,16 +294,19 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
         type: 'text',
         helptext: 'The value to set.',
         default: '',
-      }
+      },
+      fromTopLevel: {
+        type: 'boolean',
+        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        default: false,
+      },
     }
   },
   isError: {
     id: 'isError',
     description: 'Determines whether a field has an error. Shortname: "$errors" or "$errors.[FieldID]". UNUSED AS YET: requires validators.',
     fn: (vars,opts) => {
-      let path = getFullPath(vars.id, opts.fieldID)
-      if (has(vars.errors, path)) return get(vars.errors, path)
-      return get(vars.errors, opts.fieldID)
+      return get(vars.errors, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -303,16 +315,19 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
         default: {
           function: 'id'
         },
-      }
-    }
+      },
+      fromTopLevel: {
+        type: 'boolean',
+        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        default: false,
+      },
+    },
   },
   isTouched: {
     id: 'isTouched',
     description: 'Determines whether a field has been touched. Shortname: "$touched" or "$touched.[FieldID]".',
     fn: (vars, opts) => {
-      let path = getFullPath(vars.id, opts.fieldID)
-      if (has(vars.touched, path)) return get(vars.touched, path)
-      return get(vars.touched, opts.fieldID)
+      return get(vars.touched, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -321,7 +336,12 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
         default: {
           function: 'id'
         },
-      }
+      },
+      fromTopLevel: {
+        type: 'boolean',
+        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        default: false,
+      },
     }
   },
   not: {

@@ -65,7 +65,7 @@ const split = splitTags()
     values: parentField.values,
     errors: parentField.errors,
     touched: parentField.touched,
-    id: parentID
+    path: parentID
   })
 
 </script>

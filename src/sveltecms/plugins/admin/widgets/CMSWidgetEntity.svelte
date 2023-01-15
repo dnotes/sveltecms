@@ -86,7 +86,7 @@ import CmsField from "sveltecms/CMSField.svelte";
       defaults = (opts.isTopLevelEntity && (entityID === type))
         ? cms.getEntityConfig(opts.entityType, entityID, true)
         : cms.getEntityConfig(opts.entityType, type)
-      widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, id })
+      widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, path:id })
     }
     setValue()
   }

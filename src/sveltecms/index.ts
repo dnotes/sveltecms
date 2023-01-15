@@ -6,7 +6,7 @@ import { type MediaStoreType, type MediaStoreConfigSetting, templateMediaStore }
 import { templateContentStore, type Content, type ContentStoreConfigSetting, type ContentStoreType, type Value } from './core/ContentStore'
 import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup, templateFieldgroup } from './core/Fieldgroup'
 import { transformers, templateTransformer, type Transformer, type TransformerConfigSetting } from './core/Transformer'
-import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig, parseScript, templateScriptFunction } from './core/ScriptFunction'
+import { ScriptFunction, scriptFunctions, type ScriptFunctionType, type ScriptFunctionConfig, parseScript, templateScriptFunction, type ScriptVars } from './core/ScriptFunction'
 import { type ComponentType, type ComponentConfigSetting, type Component, templateComponent } from 'sveltecms/core/Component'
 import { displayComponents, templateDisplay, type EntityDisplayConfigSetting, type EntityDisplayConfig, defaultDisplayModes, isDisplayConfig, type DisplayConfigSetting, type FullEntityDisplayConfig } from 'sveltecms/core/Display'
 import staticFilesPlugin from 'sveltecms/plugins/staticFiles'
@@ -834,7 +834,7 @@ export default class SvelteCMS {
 
   getWidgetFields(
     fieldgroup:FieldableEntity,
-    vars:{ values:any, errors:any, touched:any, id?:string },
+    vars:Omit<ScriptVars, 'cms'|'id'|'field'> & { field?:Field },
   ):WidgetFieldFieldgroup {
     let c = cloneDeep(fieldgroup) || { id:'temp', fields: {} }
     // @ts-ignore
@@ -842,7 +842,7 @@ export default class SvelteCMS {
     Object.keys(c?.fields || {}).forEach(id => {
       // @ts-ignore (this is a type check)
       if (!c.fields[id]?.values) c.fields[id] = new Field(id, c.fields[id], this)
-      this.initializeContentField(c.fields[id], {...vars, id})
+      this.initializeContentField(c.fields[id], {...vars, id, cms:this})
       // @ts-ignore
       c.fields[id].events?.forEach(e => c.eventListeners.push(e))
     })
@@ -870,7 +870,7 @@ export default class SvelteCMS {
     return foundFields
   }
 
-  initializeContentField(field:Field, vars:{ values:any, errors:any, touched:any, id?:string }) {
+  initializeContentField(field:Field, vars:Omit<ScriptVars, 'field'>) {
     field.values = vars?.values || {}
     field.errors = vars?.errors || {}
     field.touched = vars?.touched || {}
@@ -884,7 +884,7 @@ export default class SvelteCMS {
     field.events = field?.events?.map(e => { return {
       on: e.on,
       id: vars.id,
-      function: new ScriptFunction(e.function, {...vars, field}, this)
+      function: new ScriptFunction(e.function, {...vars, field})
     }})
 
     if (field.widget.options) this.initializeConfigOptions(field.widget.options, {...vars, field})
@@ -897,10 +897,10 @@ export default class SvelteCMS {
    * @param prop The name of the property
    * @param vars The vars object for the defined function
    */
-  initializeFunction(obj:{[key:string]:any}, prop:string, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }) {
+  initializeFunction(obj:{[key:string]:any}, prop:string, vars:ScriptVars) {
     let conf = cloneDeep(getProp(obj, prop))
     // console.log({name:'preInitializeFunction', obj, prop, conf:cloneDeep(conf)}) // debug functions
-    let func = new ScriptFunction(conf, vars, this)
+    let func = new ScriptFunction(conf, vars)
     // special case for the function that only runs once
     let parentPath = prop.replace(/(?:(?:^|\.)[^\.]+|\[[^\]]\])$/, '')
     let propPath = prop.replace(/^.+\./, '')
@@ -920,7 +920,7 @@ export default class SvelteCMS {
     // console.log({name:'postInitializeFunction',obj,conf:cloneDeep(conf),func,parentPath,propPath,parent,vars}) // debug functions
   }
 
-  initializeConfigOptions(options, vars:{ field:Field, values:any, errors:any, touched:any, id?:string }) {
+  initializeConfigOptions(options, vars:ScriptVars) {
     // console.log({name:'initializeConfigOptions', count:Object.keys(options).length, options:cloneDeep(options)}) // debug functions
     Object.keys(options).forEach(k => {
       options[k] = parseScript(options[k]) ?? options[k]
