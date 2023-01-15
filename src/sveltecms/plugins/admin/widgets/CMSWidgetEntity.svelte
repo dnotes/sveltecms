@@ -56,16 +56,21 @@ import CmsField from "sveltecms/CMSField.svelte";
 
   // The full config of the entity
   value = value ?? field?.default
+
+  // The conf variable is what is passed around as variables in the Svelte components
   let conf:EntityConfigSetting|EntityConfigSetting[]
 
-  // For Arrays, we leave them exactly as is, as these will be handled by the nested element
-  if (Array.isArray(value)) conf = value
-  // For strings, we make an EntityConfigSetting object
-  else if (typeof value === 'string') conf = { [entityTypeFieldID]:value }
-  // For EntityConfigSetting object, we clone it
-  else if (value) conf = cloneDeep(value)
-  // For other (e.g. undefined) values, we create an EntityConfigSetting object
-  else conf = { [entityTypeFieldID]:field?.default }
+  function setConf() {
+    // For Arrays, we leave them exactly as is, as these will be handled by the nested element
+    if (Array.isArray(value)) conf = value
+    // For strings, we make an EntityConfigSetting object
+    else if (typeof value === 'string') conf = { [entityTypeFieldID]:value }
+    // For EntityConfigSetting object, we clone it
+    else if (value) conf = cloneDeep(value)
+    // For other (e.g. undefined) values, we create an EntityConfigSetting object
+    else conf = { [entityTypeFieldID]:field?.default }
+  }
+  setConf()
 
   // Type options
   let typeOptions = cms.listEntities(opts.entityType, false, opts.fieldType) // TODO: ensure no circular dependencies are choices
@@ -119,7 +124,7 @@ import CmsField from "sveltecms/CMSField.svelte";
     }
     // TODO: figure out how to remove the "type" field if this is a default entity type
     // Now set the value
-    value = newValue
+    if (!isEqual(value,newValue)) value = newValue
 
     // And dispatch the change event
     dispatch('change', { value })
@@ -149,6 +154,7 @@ import CmsField from "sveltecms/CMSField.svelte";
 
   // Push upstream value reactively
   $: if (conf) setValue('skipClose')
+  $: if (value && !entityID) setConf()
 
 </script>
 
@@ -190,6 +196,10 @@ import CmsField from "sveltecms/CMSField.svelte";
     </label>
   </div>
 
+  <div class="field ops">
+    <Button type=configure small highlight on:click={()=>{modalOpen=true}} />
+  </div>
+
   {#if entityType?.typeField}
     <div class="field config">
       <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -229,7 +239,6 @@ import CmsField from "sveltecms/CMSField.svelte";
   {/if}
 
   <div class="field ops">
-    <Button type=configure small highlight on:click={()=>{modalOpen=true}} />
     <slot></slot>
   </div>
 
