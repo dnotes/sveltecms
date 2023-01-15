@@ -1,5 +1,4 @@
-import type { CMSListConfig, ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
-import type { ContentTypeConfigSetting } from 'sveltecms/core/ContentType'
+import type { CMSConfigSetting, CMSListConfig} from 'sveltecms'
 import type { ComponentType } from './Component'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 import type { AdminPageConfig } from './AdminPage'
@@ -31,16 +30,14 @@ export type CMSPlugin = {
   indexers?: IndexerType[]
   contentStores?: ContentStoreType[]
   mediaStores?: MediaStoreType[]
-  fields?: FieldConfigSetting[]
-  fieldgroups?: FieldgroupConfigSetting[]
   adminFieldgroups?: FieldgroupConfigSetting[]
-  contentTypes?: (ContentTypeConfigSetting & { id:string })[]
   components?: ComponentType[]
   lists?: CMSListConfig
   optionFields?:{[key:string]:ConfigFieldConfigSetting}
   fieldWidgets?:{[key:string]:string[]}
   hooks?:PluginHooks
-  scriptFunctions?:ScriptFunctionType[]
+  scriptFunctions?:ScriptFunctionType[],
+  conf: Omit<CMSConfigSetting, 'configPath'>,
 }
 
 export type CMSPluginBuilder = (config?:any) => CMSPlugin

@@ -7,6 +7,8 @@ export { pad, formatTimezoneOffset } from './date'
 export { isReferenceString, referencesEqual, findReferenceIndex } from './reference'
 export { getList } from './list'
 
+export function mergeOverwritingArrays(a,b) { if (Array.isArray(a) || Array.isArray(b)) return b }
+
 export {
   getLabelFromID,
   splitTags,

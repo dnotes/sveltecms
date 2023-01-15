@@ -16,6 +16,7 @@ import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
 import { hooks, templateHook, type CMSHookFunctions, type PluginHooks } from './core/Hook'
 import { templatePlugin, type CMSPlugin, type CMSPluginBuilder } from './core/Plugin'
+import { mergeOverwritingArrays } from './utils'
 export { CMSPlugin, CMSPluginBuilder }
 
 const customComponents = import.meta.glob('/src/cms/*.svelte')
@@ -130,7 +131,46 @@ export type CMSConfigSetting = {
 }
 
 export default class SvelteCMS {
-  conf:CMSConfigSetting = {}
+  conf:CMSConfigSetting = {
+    configPath: '',
+    settings: {},
+    contentTypes: {},
+    lists: {},
+    contentStores: {},
+    mediaStores: {},
+    fields: {},
+    widgets: {},
+    fieldgroups: {},
+    transformers: {},
+    components: {},
+    plugins: {},
+  }
+  defaultConf:CMSConfigSetting = {
+    settings: {
+      defaultContentDisplays: {
+        default: 'div',
+        reference: 'span',
+      }
+    },
+    fields: {
+      title: {
+        type: 'text',
+        index: true,
+        required: true,
+        displays: {
+          default: {
+            type: 'h2',
+            link: true,
+          },
+          reference: {
+            type: 'span',
+            link: true,
+          },
+          page: 'h1'
+        }
+      },
+    }
+  }
   entityTypes = {
     // If an Entity Type name ever ends in "s", change getEntity and listEntities.
     // TODO: make this not be a thing.
@@ -177,17 +217,14 @@ export default class SvelteCMS {
   }
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
-    this.conf = merge({
-      configPath: 'src/lib/sveltecms.config.yml',
-      settings: {
-        rootContentType: 'page',
-        frontPageSlug: 'front',
-        defaultContentDisplays: {
-          default: 'div',
-          reference: 'span',
-        }
-      }
-    }, conf)
+    this.use(staticFilesPlugin)
+    displayComponents.forEach(c => {
+      this.components[c.id] = c
+    })
+    plugins.forEach(p => this.use(p))
+
+    mergeWith(this.conf, this.defaultConf, conf, mergeOverwritingArrays)
+
     this.defaultContentDisplays = {
       default: 'div',
       page: 'div',
@@ -195,12 +232,6 @@ export default class SvelteCMS {
       reference: 'span',
       ...this.parseEntityDisplayConfigSetting((this?.conf?.settings?.defaultContentDisplays || {}))
     }
-
-    this.use(staticFilesPlugin)
-    displayComponents.forEach(c => {
-      this.components[c.id] = c
-    })
-    plugins.forEach(p => this.use(p))
 
     Object.keys(customComponents).forEach(filepath => {
       let id = filepath.replace('/src/cms/', '').replace(/\.svelte$/i, '')
@@ -212,7 +243,7 @@ export default class SvelteCMS {
 
     // Build out config for the lists
     // This must happen before the content types and fields are built, as fields may have values in $lists
-    Object.entries(conf?.lists || []).forEach(([key,list]) => {
+    Object.entries(this?.conf?.lists || []).forEach(([key,list]) => {
       if (typeof list === 'string') this.lists[key] = list.split(splitter)
       else this.lists[key] = list
     });
@@ -220,14 +251,14 @@ export default class SvelteCMS {
     // Initialize all of the stores, widgets, and transformers specified in config
     ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups', 'indexers'].forEach(objectType => {
 
-      if (conf?.[objectType]) {
-        Object.entries(conf[objectType]).forEach(([id,settings]) => {
+      if (this?.conf?.[objectType]) {
+        Object.entries(this.conf[objectType]).forEach(([id,settings]) => {
 
           // config can:
           // - create a new item (`conf.widgetTypes.newItem = ...`)
           // - modify an existing item (`conf.widgetTypes.text = ...`)
           // - create a new item based on an existing item (`conf.widgetTypes.longtext = { type:"text", ... })
-          const type = conf[objectType][id].type || conf[objectType][id].id || id
+          const type = this.conf[objectType][id].type || this.conf[objectType][id].id || id
 
           // we merge all of the following
           this[objectType][id] = this.mergeConfigOptions(
@@ -249,9 +280,9 @@ export default class SvelteCMS {
     });
 
     ['fields', 'widgets'].forEach(objectType => {
-      if (conf?.[objectType]) {
+      if (this?.conf?.[objectType]) {
         let typesKey = objectType.replace('s','Types')
-        Object.entries(conf[objectType]).forEach(([id,item]) => {
+        Object.entries(this.conf[objectType]).forEach(([id,item]) => {
           item = typeof item === 'string' ? { type: item } : item
           let type:string = item['type']
           if (!type || typeof type !== 'string') throw new Error(`Type is required for ${objectType}.${id} (received ${JSON.stringify(type)})`)
@@ -264,7 +295,7 @@ export default class SvelteCMS {
     })
 
     // Build out config for the content types
-    Object.entries(conf?.contentTypes || {}).forEach(([id,conf]) => {
+    Object.entries(this.conf?.contentTypes || {}).forEach(([id,conf]) => {
       this.contentTypes[id] = new ContentType(id, conf, this)
     });
 
@@ -278,7 +309,7 @@ export default class SvelteCMS {
       }))
     }, this)
 
-    let adminStore = conf.adminStore || conf.configPath || 'src/lib/sveltecms.config.json'
+    let adminStore = this?.conf?.adminStore || this?.conf?.configPath || 'src/lib/sveltecms.config.json'
     if (typeof adminStore === 'string' && !this.contentStores[adminStore]) {
       let contentDirectory = adminStore.replace(/\/[^\/]+$/, '')
       let fileExtension = adminStore.replace(/.+[\.]/, '')
@@ -312,13 +343,15 @@ export default class SvelteCMS {
       this.hooks[k] = sortBy(this.hooks[k], ['weight', 'label'])
     })
 
-    this.indexer = new Indexer('default', conf?.settings?.indexer ?? 'staticFiles', this)
+    this.indexer = new Indexer('default', this?.conf?.settings?.indexer ?? 'staticFiles', this)
 
   }
 
   use(plugin:CMSPlugin, config?:any) {
     // TODO: allow CMSPluginBuilder function, in case people pass the function instead of the plugin
     this.plugins[plugin.id] = plugin;
+
+    if (plugin.conf) mergeWith(this.defaultConf, plugin.conf, mergeOverwritingArrays);
 
     ['fieldTypes','widgetTypes','transformers','contentStores','mediaStores','lists','adminPages','components','fieldgroups','indexers','scriptFunctions'].forEach(k => {
       try {
@@ -331,27 +364,6 @@ export default class SvelteCMS {
         throw e
       }
     });
-
-    ['fields', 'widgets'].forEach(objectType => {
-      if (plugin?.[objectType]) {
-        let typesKey = objectType.replace('s','Types')
-        plugin[objectType].forEach(item => {
-          if (!item?.id) return
-          let type:string = item['type']
-          if (!type || typeof type !== 'string') throw new Error(`Type is required for ${item.id} (received ${JSON.stringify(type)})`)
-          let _parent = this[objectType][type] ?? this[typesKey][type]
-          if (!_parent) throw new Error(`Parent not found for ${item.id}. Is "${item.id}" a typo? Did you define ${item.id} before ${objectType}.${item?.['type']}?`)
-          // @ts-ignore This has been type checked by now
-          this[objectType][item.id] = { ...item, _parent }
-        })
-      }
-    })
-
-    if (plugin.contentTypes) {
-      plugin.contentTypes.forEach((contentType) => {
-        if (contentType && contentType?.id) this.contentTypes[contentType.id] = new ContentType(contentType.id, contentType, this)
-      })
-    }
 
     // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
     if (plugin.hooks) plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook) })
