@@ -252,14 +252,15 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'id',
     description: 'Gets the ID of the Entity being configured. Shortname: "$id".',
     fn: (vars, opts) => {
-      return opts.id || ''
+      return vars.id || ''
     }
   },
   getValue: {
     id: 'getValue',
     description: 'Gets the value of a field from the form being submitted. Shortname: "$value" or "$values.[FieldID]"',
     fn: (vars, opts) => {
-      return get(vars.values, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID)
+      if (has(vars.values, vars.path)) return get(vars.values, `${vars.path}[${opts.fieldID}]`)
+      if (!opts.noFallback && vars.path) return get(vars.values, opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -269,9 +270,9 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
           function: 'id',
         },
       },
-      fromTopLevel: {
+      noFallback: {
         type: 'boolean',
-        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
         default: false,
       }
     }
@@ -280,7 +281,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'setValue',
     description: 'Sets the value of a field.',
     fn: (vars, opts) => {
-      set(vars.values, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID, opts.value)
+      if (has(vars.values, vars.path)) set(vars.values, `${vars.path}[${opts.fieldID}]`, opts.value)
+      else if (!opts.noFallback && vars.path) set(vars.values, opts.fieldID, opts.value)
     },
     optionFields: {
       fieldID: {
@@ -295,18 +297,19 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
         helptext: 'The value to set.',
         default: '',
       },
-      fromTopLevel: {
+      noFallback: {
         type: 'boolean',
-        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
         default: false,
-      },
+      }
     }
   },
   isError: {
     id: 'isError',
     description: 'Determines whether a field has an error. Shortname: "$errors" or "$errors.[FieldID]". UNUSED AS YET: requires validators.',
     fn: (vars,opts) => {
-      return get(vars.errors, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID)
+      if (has(vars.errors, vars.path)) return get(vars.errors, `${vars.path}[${opts.fieldID}]`)
+      if (!opts.noFallback && vars.path) return get(vars.errors, opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -316,18 +319,19 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
           function: 'id'
         },
       },
-      fromTopLevel: {
+      noFallback: {
         type: 'boolean',
-        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
         default: false,
-      },
+      }
     },
   },
   isTouched: {
     id: 'isTouched',
     description: 'Determines whether a field has been touched. Shortname: "$touched" or "$touched.[FieldID]".',
     fn: (vars, opts) => {
-      return get(vars.touched, (vars.path && !opts.fromTopLevel) ? `${vars.path}[${opts.fieldID}]` : opts.fieldID)
+      if (has(vars.touched, vars.path)) return get(vars.touched, `${vars.path}[${opts.fieldID}]`)
+      if (!opts.noFallback && vars.path) return get(vars.touched, opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -337,11 +341,11 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
           function: 'id'
         },
       },
-      fromTopLevel: {
+      noFallback: {
         type: 'boolean',
-        helptext: 'If true, the fieldID will descend from the top level instead of the level of the field.',
+        helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
         default: false,
-      },
+      }
     }
   },
   not: {
