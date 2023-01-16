@@ -28,7 +28,11 @@ import FieldList from "./FieldList.svelte";
       {item}
       {entity}
       {displayMode}
-    />
+    >
+
+      <FieldList {cms} {entity} {item} {displayMode} />
+
+    </svelte:component>
 
   {/await}
 

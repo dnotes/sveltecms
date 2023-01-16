@@ -19,14 +19,18 @@ import type Fieldgroup from "./field/Fieldgroup.svelte";
 {#if display?.wrapper?.isDisplayed}
   <svelte:self {cms} {entity} {item} {parent} {displayMode} display={display.wrapper} class="{classes}">
     {#if display.component}
-      <svelte:component {cms} {entity} {item} {parent} {displayMode} {display} this={display.component.component}><slot></slot></svelte:component>
+      {#await display.component.component then component}
+        <svelte:component {cms} {entity} {item} {parent} {displayMode} {display} this={component}><slot></slot></svelte:component>
+      {/await}
     {:else}
       <svelte:element this={display.tag} id={display.id} class="{[classes, ...display.classes].join(' ')}"><slot></slot></svelte:element>
     {/if}
   </svelte:self>
 {:else}
   {#if display.component}
-    <svelte:component {cms} {entity} {item} {parent} {displayMode} {display} this={display.component.component}><slot></slot></svelte:component>
+    {#await display.component.component then component}
+      <svelte:component {cms} {entity} {item} {parent} {displayMode} {display} this={component}><slot></slot></svelte:component>
+    {/await}
   {:else}
     <svelte:element this={display.tag} id={display.id} class="{[classes, ...display.classes].join(' ')}"><slot></slot></svelte:element>
   {/if}

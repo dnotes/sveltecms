@@ -14,6 +14,7 @@ export type DisplayConfig = {
   label?: string    // the label element or registered component
   html?: boolean    // if true, the item will be displayed as {@html}
   link?: boolean    // if true, the item will be wrapped in a link
+  multiple?: boolean // if true, "multiple" fields will be passed as an array instead of one-at-a-time
 }
 export function isDisplayConfig(item:DisplayConfig|any): item is DisplayConfig {
   return (<DisplayConfig>item)?.type !== undefined
@@ -76,6 +77,17 @@ export const templateDisplay:EntityTemplate = {
       default: false,
       helptext: `Whether to display the field value as a link to its parent Content.`
     },
+    multiple: {
+      type: 'boolean',
+      default: false,
+      helptext: `Whether to handle multiple values with this display.`,
+      hidden: {function:'not', params:[
+        {function:'contains', params:[
+          {function:'listEntities', params:['component']},
+          {function:'getValue', params:['type']}
+        ]}
+      ]}
+    },
   }
 }
 
@@ -83,6 +95,7 @@ export class Display {
   type: string = ''
   isDisplayed: boolean = false
   link: boolean = false
+  multiple: boolean = false
   component?: Component
   wrapper?: Display
   label?: Display
@@ -101,6 +114,7 @@ export class Display {
     this.type = conf.type.trim()
     this.component = cms.getEntity('component', this.type)
     this.link = conf.link ? true : false
+    this.multiple = (this.component && conf.multiple) ? true : false
     if (!this.component) {
       this.html = conf?.html
       let el, classes, tag, id
