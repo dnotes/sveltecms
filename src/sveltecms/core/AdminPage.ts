@@ -151,6 +151,15 @@ export const adminPages:AdminPageConfig[] = [
       },
     },
   },
+  {
+    id: 'displays',
+    component: {
+      type: 'CMSConfigForm',
+      options: {
+        component: 'CMSConfigDisplays'
+      }
+    }
+  },
   // {
   //   id: 'plugins',
   //   component: {

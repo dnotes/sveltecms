@@ -11,6 +11,7 @@ import CmsWidgetDisplayList from "./CMSWidgetDisplayList.svelte";
 
 import CmsWidgetEntityTypeField from "./CMSWidgetEntityTypeField.svelte";
 import CmsField from "sveltecms/CMSField.svelte";
+import type { FullEntityDisplayConfig } from "sveltecms/core/Display";
 
   export let cms:SvelteCMS
   export let id:string
@@ -82,15 +83,21 @@ import CmsField from "sveltecms/CMSField.svelte";
   let modalOpen = false
 
   // Initialize vars for entity and inherited config
-  let defaults:ConfigSetting, widgetFieldGroup:WidgetFieldFieldgroup
+  let defaults:ConfigSetting, widgetFieldGroup:WidgetFieldFieldgroup, displayDefaults:FullEntityDisplayConfig
 
   // Whenever the type changes, set the entity, inherited config, and value
   function setType() {
     if (!Array.isArray(conf)) {
       let type = conf[entityTypeFieldID]?.toString()
-      defaults = (opts.isTopLevelEntity && (entityID === type))
-        ? cms.getEntityConfig(opts.entityType, entityID, true)
-        : cms.getEntityConfig(opts.entityType, type)
+
+      // get the defaults
+      if (opts.isTopLevelEntity && entityID === type) { // The entity being configured is a top-level entity like cms.fields
+        defaults = cms.getEntityConfig(opts.entityType, entityID, true)
+      }
+      else defaults = cms.getEntityConfig(opts.entityType, type)
+
+      if (entityType.isDisplayable) displayDefaults = cms.getFullEntityDisplayConfig(entityType.id, cms.getEntity(entityType.id, type))
+
       widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, path:id })
     }
     setValue()
@@ -154,7 +161,7 @@ import CmsField from "sveltecms/CMSField.svelte";
 
   // Push upstream value reactively
   $: if (conf) setValue('skipClose')
-  $: if (value && !entityID) setConf()
+  $: if ((value || !value) && !entityID) setConf()
 
 </script>
 
@@ -232,9 +239,8 @@ import CmsField from "sveltecms/CMSField.svelte";
     <CmsWidgetDisplayList
       {cms}
       id="{formBaseID}[displays]"
-      field={widgetFieldGroup.fields.displays}
       bind:value={conf['displays']}
-      {defaults}
+      options={{displayDefaults}}
     />
   {/if}
 

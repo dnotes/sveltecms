@@ -71,21 +71,6 @@ import Button from "sveltecms/ui/Button.svelte";
         helptext: 'The slug for the front page. If provided, the content of '+
           'the Root Content Type that has this slug will be the front page of the site/app.'
       },
-      defaultContentDisplays: {
-        type: 'entityList',
-        default: {},
-        helptext: 'Default displays for all Content Types. By default, SvelteCMS uses four display modes: '+
-          'page, teaser, reference, and default. Any display modes not specified will use the "default" display mode. '+
-          'As a hint, if you use TailwindCSS with Typography plugin, you might try a "page" display of '+
-          'e.g. "div.prose.dark:prose-invert".',
-        widget: {
-          type: 'entityList',
-          options: {
-            legend: 'Default Content Display Modes',
-            entityType: 'display'
-          }
-        }
-      },
     }
   }, cms)
 

@@ -9,7 +9,7 @@ export type EntityTemplate = {
   typeField:string|boolean,   // Whether the field has a "type" field. If true, a "type" field will be created. If a string is specified, which configField should be considered the "type" field, e.g. for SlugConfig.
   typeInherits?:boolean,      // Whether the "type" inherits properties and options from its parent
   typeRequired?:boolean,      // Whether a "type" is required for entities of this Entity Type
-  typeRestricted?:boolean,    // Whether the "type" is restricted to existing entity ids (e.g. Fields, Widgets) or can be anything (e.g. Fieldgroups)
+  typeRestricted?:boolean,    // Whether the "type" is restricted to existing entity ids (e.g. Fields, Widgets)
   isConfigurable?:boolean,    // Whether the Entity Type allows optionFields for configuration (implements ConfigurableEntity types)
   isDisplayable?:boolean,     // Whether the Entity Type allows Display fields for display (implements DisplayableEntity types)
   listFields?:string[],       // Which fields should be displayed in entity list views

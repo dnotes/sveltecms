@@ -37,7 +37,7 @@ export type CMSPlugin = {
   fieldWidgets?:{[key:string]:string[]}
   hooks?:PluginHooks
   scriptFunctions?:ScriptFunctionType[],
-  conf: Omit<CMSConfigSetting, 'configPath'>,
+  conf?:Omit<CMSConfigSetting, 'configPath'>,
 }
 
 export type CMSPluginBuilder = (config?:any) => CMSPlugin

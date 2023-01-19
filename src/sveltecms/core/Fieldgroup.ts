@@ -51,7 +51,7 @@ export class Fieldgroup implements EntityType, FieldableEntity, DisplayableEntit
     this.id = conf.id
     this.admin = conf.admin
     if (conf.tags) this.tags = typeof conf.tags === 'string' ? conf.tags.split(/[\s,]+/) : conf.tags
-    this.displays = { default:'div', ...cms.parseEntityDisplayConfigSetting(conf.displays) }
+    this.displays = cms.getFullEntityDisplayConfig('fieldgroup', conf)
     this.fields = Object.fromEntries(Object.entries(conf.fields).map(([id,conf]) => {
       return [id, new Field(id, conf, cms)]
     }))

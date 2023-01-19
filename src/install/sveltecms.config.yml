@@ -1,7 +1,1 @@
 configPath: src/lib/sveltecms.config.yml
-settings:
-  rootContentType: page
-  frontPageSlug: front
-  defaultContentDisplays:
-    default: div
-    reference: span

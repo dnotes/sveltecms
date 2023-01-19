@@ -39,8 +39,11 @@ const pluginBuilder:CMSPluginBuilder = (config?:{
         default: '',
         widget: 'textarea',
         displays: {
-          type: 'div',
-          html: true,
+          default: {
+            type: 'div',
+            html: true,
+          },
+          reference: 'none',
         },
         preMount: ['markdown'],
       },

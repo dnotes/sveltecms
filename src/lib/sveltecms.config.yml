@@ -2,11 +2,16 @@ configPath: src/lib/sveltecms.config.yml
 settings:
   rootContentType: landingPage
   frontPageSlug: front
-  defaultContentDisplays:
-    default: div
-    reference: span
+displays:
+  contentType:
     teaser: div.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
 contentTypes:
+  page:
+    slug: slug
+    fields:
+      title: title
+      slug: slug
+      body: body
   blog:
     slug: date,title
     fields:
@@ -175,7 +180,9 @@ fieldgroups:
       textStyle: style
     tags:
       - fullwidth
-    displays: fieldgroup_hero
+    displays:
+      default: none
+      page: fieldgroup_hero
   frontslides:
     type: fullwidth
     fields:
@@ -191,7 +198,9 @@ fieldgroups:
             mediaStore: icons
     tags:
       - fullwidth
-    displays: fieldgroup_frontslides
+    displays:
+      default: none
+      page: fieldgroup_frontslides
   quoteBlock:
     fields:
       quote:
@@ -200,6 +209,9 @@ fieldgroups:
       cite: text
     tags:
       - block
-    displays: blockquote
+    displays:
+      default: none
+      page: blockquote
+transformers: {}
 _slug: sveltecms.config
 _type: admin

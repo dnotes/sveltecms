@@ -52,23 +52,25 @@ import Wrapper from "./Wrapper.svelte";
       {/if}
     {/await}
   {:else}
-    <svelte:element
-      this={display.tag}
-      id={display.id}
-      class="field-{entity.id} field-type-{entity.type} {display.classList}"
-    >
-      {#if entity.displayComponent}
-        {#await entity.displayComponent.component then component}
-          <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode} />
-        {/await}
-      {:else if display?.html}
-        {@html item}
-      {:else if display?.link}
-        <a href="{cms.getUrl(parent)}">{item}</a>
-      {:else}
-        {item}
-      {/if}
-    </svelte:element>
+    {#each items as item}
+      <svelte:element
+        this={display.tag}
+        id={display.id}
+        class="field-{entity.id} field-type-{entity.type} {display.classList}"
+      >
+        {#if entity.displayComponent}
+          {#await entity.displayComponent.component then component}
+            <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode} />
+          {/await}
+        {:else if display?.html}
+          {@html item}
+        {:else if display?.link}
+          <a href="{cms.getUrl(parent)}">{item}</a>
+        {:else}
+          {item}
+        {/if}
+      </svelte:element>
+    {/each}
   {/if}
 
 {/if}
