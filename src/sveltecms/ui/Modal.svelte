@@ -7,10 +7,11 @@ import { createEventDispatcher } from "svelte";
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="modalbg" on:click|stopPropagation={cancel}></div>
-<div class="modal" on:keydown={(e)=>{if (e.key === 'Escape') cancel()}}>
+<div class="modalbg" on:click|stopPropagation={cancel}>
+<div class="modal" on:click|stopPropagation on:keydown={(e)=>{if (e.key === 'Escape') cancel()}}>
   <div class="title"><slot name="title"></slot></div>
   <div class="body"><slot></slot></div>
+</div>
 </div>
 
 <style>
@@ -23,16 +24,16 @@ import { createEventDispatcher } from "svelte";
     position:fixed;
     top:0;
     left:0;
+    display:flex;
+    padding: 40px 0;
   }
   .modal {
-    position:fixed;
-    right: 0;
     top: 60px;
     height: calc(100% - 80px);
-    z-index:11;
-    overflow-y:scroll;
-    overflow-x: hidden;
+    overflow: scroll;
     background:var(--cms-bg);
+    flex-grow:1;
+    margin-left:40px;
   }
   .modal>div.body {
     padding: 20px;
@@ -44,9 +45,25 @@ import { createEventDispatcher } from "svelte";
     background-color: var(--cms-bg);
     z-index: 1;
   }
-  :global(.sveltecms .modal) { width:calc(100% - 20px) }
-  :global(.sveltecms .modal .modal) { width:calc(100% - 40px) }
-  :global(.sveltecms .modal .modal .modal) { width:calc(100% - 60px) }
-  :global(.sveltecms .modal .modal .modal .modal) { width:calc(100% - 80px) }
-  :global(.sveltecms .modal .modal .modal .modal .modal) { width:calc(100% - 100px) }
+  .modalbg :global(.modalbg) {
+    margin-left:40px;
+    width: calc(100% - 40px);
+  }
+  .modalbg :global(.modalbg .modalbg) {
+    margin-left:80px;
+    width: calc(100% - 80px);
+  }
+  .modalbg :global(.modalbg .modalbg .modalbg) {
+    margin-left:120px;
+    width: calc(100% - 120px);
+  }
+  .modalbg :global(.modalbg .modalbg .modalbg .modalbg) {
+    margin-left:160px;
+    width: calc(100% - 160px);
+  }
+  .modalbg :global(.modalbg .modalbg .modalbg .modalbg .modalbg) {
+    margin-left:200px;
+    width: calc(100% - 200px);
+  }
+
 </style>
