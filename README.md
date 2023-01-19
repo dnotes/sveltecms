@@ -53,12 +53,13 @@ you will want to install and configure `@rollup/plugin-yaml`.
 
 **SvelteCMS works very well with TailwindCSS** (and likely with similar utility css
 frameworks like WindyCSS) for display of elements and ad-hoc styles in content.
-TailwindCSS can parse classes in the SvelteCMS config file and in locally stored content, but it needs to be told where to look for the files and how to recognize the classes.
+TailwindCSS can parse classes in the SvelteCMS config file and in locally stored content,
+but it needs to be told where to look for the files and how to recognize the classes.
 
 * Install Tailwind (and any plugins):
 
     You can either do this manually or with a svelte-add command, e.g.
-    `npx svelte-add@latest tailwindcss --tailwindcss-typography`
+    `npx svelte-add tailwindcss --tailwindcss-typography`
 
 * Modify the `tailwind.config.cjs` file provided by SvelteCMS
 
@@ -93,12 +94,10 @@ Then go to the admin interface in your browser, which is located by default at
 > What is this? A center for ANTS!? It needs to be at least ... three times bigger!
   \- Derek Zoolander
 
-SvelteCMS is currently an individual project. It's not an MVP or a startup yet,
-it's more like a demonstration. But it has lofty goals, and if nothing else it
-has helped me to explain my vision for how a CMS should function, which is so
-different from what the Javascript world accepts as a CMS. Hopefully this helps
-move things forward, and I think there's a tiny chance it'll take off and replace
-Wordpress. Fingers crossed.
+SvelteCMS was made to demonstrate and jump-start my vision for what a Content Management
+System could be in 2023. I want to build fast modern websites with content models from a
+configurable CMS, but I don't want to run a server or subscribe to a paid SAAS API.
+Hopefully this helps to move things forward.
 
 SvelteCMS...
 
@@ -106,8 +105,8 @@ SvelteCMS...
 * [x] runs **as part of the site**, not on a separate system.
 * [x] builds **performant web apps**, with minimal code on content pages, SSR and prerendering.
 * [x] builds **sites that work without Javascript**, so no more blank white screens.
-* [x] is **database agnostic**: so store content in a server, repository, or database provider.
-* [x] supports **data portability**: mix, match, and migrate content between databases.
+* [x] is **database agnostic**: store content in any server, repository, or database provider.
+* [x] supports **data portability**: mix, match, and migrate content between storage solutions.
 * [ ] supports **community interaction**: manage user accounts from install.
 * [x] supports **serverless architecture**: deploy CMS endpoints to any serverless provider.
 * [x] supports **static site generation**: build locally and deploy to any web host.
