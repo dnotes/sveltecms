@@ -35,19 +35,23 @@ let isMultiple = field?.multiple;
 let entityTypeFieldID = typeof entityType?.typeField === 'string' ? entityType.typeField : 'type';
 // The full config of the entity
 value = value ?? field?.default;
+// The conf variable is what is passed around as variables in the Svelte components
 let conf;
-// For Arrays, we leave them exactly as is, as these will be handled by the nested element
-if (Array.isArray(value))
-    conf = value;
-// For strings, we make an EntityConfigSetting object
-else if (typeof value === 'string')
-    conf = { [entityTypeFieldID]: value };
-// For EntityConfigSetting object, we clone it
-else if (value)
-    conf = cloneDeep(value);
-// For other (e.g. undefined) values, we create an EntityConfigSetting object
-else
-    conf = { [entityTypeFieldID]: field?.default };
+function setConf() {
+    // For Arrays, we leave them exactly as is, as these will be handled by the nested element
+    if (Array.isArray(value))
+        conf = value;
+    // For strings, we make an EntityConfigSetting object
+    else if (typeof value === 'string')
+        conf = { [entityTypeFieldID]: value };
+    // For EntityConfigSetting object, we clone it
+    else if (value)
+        conf = cloneDeep(value);
+    // For other (e.g. undefined) values, we create an EntityConfigSetting object
+    else
+        conf = { [entityTypeFieldID]: field?.default };
+}
+setConf();
 // Type options
 let typeOptions = cms.listEntities(opts.entityType, false, opts.fieldType); // TODO: ensure no circular dependencies are choices
 // initialize event dispatcher
@@ -55,15 +59,20 @@ const dispatch = createEventDispatcher();
 // initialize var for the modal
 let modalOpen = false;
 // Initialize vars for entity and inherited config
-let defaults, widgetFieldGroup;
+let defaults, widgetFieldGroup, displayDefaults;
 // Whenever the type changes, set the entity, inherited config, and value
 function setType() {
     if (!Array.isArray(conf)) {
         let type = conf[entityTypeFieldID]?.toString();
-        defaults = (opts.isTopLevelEntity && (entityID === type))
-            ? cms.getEntityConfig(opts.entityType, entityID, true)
-            : cms.getEntityConfig(opts.entityType, type);
-        widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values: conf, errors: {}, touched: {}, id });
+        // get the defaults
+        if (opts.isTopLevelEntity && entityID === type) { // The entity being configured is a top-level entity like cms.fields
+            defaults = cms.getEntityConfig(opts.entityType, entityID, true);
+        }
+        else
+            defaults = cms.getEntityConfig(opts.entityType, type);
+        if (entityType.isDisplayable)
+            displayDefaults = cms.getFullEntityDisplayConfig(entityType.id, cms.getEntity(entityType.id, type));
+        widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values: conf, errors: {}, touched: {}, path: id });
     }
     setValue();
 }
@@ -89,7 +98,8 @@ function setValue(skipClose) {
     }
     // TODO: figure out how to remove the "type" field if this is a default entity type
     // Now set the value
-    value = newValue;
+    if (!isEqual(value, newValue))
+        value = newValue;
     // And dispatch the change event
     dispatch('change', { value });
     // Close the Modal
@@ -114,6 +124,8 @@ $: formBaseID = entityID ? `${id}[${entityID}]` : id;
 // Push upstream value reactively
 $: if (conf)
     setValue('skipClose');
+$: if ((value || !value) && !entityID)
+    setConf();
 </script>
 
 {#if isMultiple && Array.isArray(conf)}
@@ -131,11 +143,9 @@ $: if (conf)
           bind:value={conf[i]}
           on:change={setValue}
         />
-        <div class="delete">
-          <Button cancel
+          <Button type=cancel small
             helptext="Remove {field.label} item"
-            on:click={()=>{removeItem(i)}}>&times;</Button>
-        </div>
+            on:click={()=>{removeItem(i)}} />
       </div>
     {/each}
     <Button small on:click={addItem}>+ add {entityType?.label || 'unknown entity'}</Button>
@@ -154,6 +164,10 @@ $: if (conf)
         bind:value={entityID}
       >
     </label>
+  </div>
+
+  <div class="field ops">
+    <Button type=configure small highlight on:click={()=>{modalOpen=true}} />
   </div>
 
   {#if entityType?.typeField}
@@ -188,14 +202,12 @@ $: if (conf)
     <CmsWidgetDisplayList
       {cms}
       id="{formBaseID}[displays]"
-      field={widgetFieldGroup.fields.displays}
       bind:value={conf['displays']}
-      {defaults}
+      options={{displayDefaults}}
     />
   {/if}
 
   <div class="field ops">
-    <Button small highlight on:click={()=>{modalOpen=true}}>...</Button>
     <slot></slot>
   </div>
 
@@ -222,14 +234,13 @@ $: if (conf)
     {#if entityType.configFields || entityType.isConfigurable}
       <div class="details">
         {#if Object.keys(widgetFieldGroup?.fields || {}).length}
-          <Button
+          <Button type=configure
             small
             on:click={()=>{modalOpen=true}}
             disabled={!conf[entityTypeFieldID]}
             highlight={conf[entityTypeFieldID] && typeof value !== 'string'}
-          >
-            <span title="{JSON.stringify(conf, null, 2)}">...</span>
-          </Button>
+            helptext={JSON.stringify(conf,null,2)}
+          />
         {/if}
       </div>
     {/if}

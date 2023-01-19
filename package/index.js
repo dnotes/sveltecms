@@ -15,6 +15,7 @@ import SlugConfig, { templateSlug } from './core/Slug';
 import { Indexer, templateIndexer } from './core/Indexer';
 import { hooks, templateHook } from './core/Hook';
 import { templatePlugin } from './core/Plugin';
+import { mergeCmsConfig } from './utils';
 const customComponents = import.meta.glob('/src/cms/*.svelte');
 // import { default as Validator, Rules } from 'validatorjs'
 const splitter = /\s*,\s*/g;
@@ -27,7 +28,7 @@ export const cmsConfigurables = [
     'settings',
     'adminStore',
     'contentTypes',
-    // 'lists',
+    'lists',
     'indexers',
     'contentStores',
     'mediaStores',
@@ -38,7 +39,61 @@ export const cmsConfigurables = [
 ];
 export default class SvelteCMS {
     constructor(conf, plugins = []) {
-        this.conf = {};
+        this.conf = {
+            configPath: '',
+            displays: {},
+            settings: {},
+            contentTypes: {},
+            lists: {},
+            contentStores: {},
+            mediaStores: {},
+            fields: {},
+            widgets: {},
+            fieldgroups: {},
+            transformers: {},
+            components: {},
+            plugins: {},
+        };
+        this.defaultConf = {
+            displays: {
+                contentType: {
+                    default: 'div',
+                    page: 'div',
+                    teaser: 'div',
+                    reference: 'span',
+                },
+                field: {
+                    default: 'div',
+                    page: 'div',
+                    teaser: 'div',
+                    reference: 'none',
+                },
+                fieldgroup: {
+                    default: 'div',
+                    page: 'div',
+                    teaser: 'div',
+                    reference: 'none',
+                },
+            },
+            fields: {
+                title: {
+                    type: 'text',
+                    index: true,
+                    required: true,
+                    displays: {
+                        default: {
+                            type: 'h2',
+                            link: true,
+                        },
+                        reference: {
+                            type: 'span',
+                            link: true,
+                        },
+                        page: 'h1'
+                    }
+                },
+            }
+        };
         this.entityTypes = {
             // If an Entity Type name ever ends in "s", change getEntity and listEntities.
             // TODO: make this not be a thing.
@@ -79,39 +134,26 @@ export default class SvelteCMS {
             contentPreDelete: [],
             contentPostWrite: [],
         };
-        this.conf = merge({
-            configPath: 'src/lib/sveltecms.config.yml',
-            settings: {
-                rootContentType: 'page',
-                frontPageSlug: 'front',
-                defaultContentDisplays: {
-                    default: 'div',
-                    reference: 'span',
-                }
-            }
-        }, conf);
-        this.defaultContentDisplays = {
-            default: 'div',
-            page: 'div',
-            teaser: 'div',
-            reference: 'span',
-            ...this.parseEntityDisplayConfigSetting((this?.conf?.settings?.defaultContentDisplays || {}))
-        };
         this.use(staticFilesPlugin);
         displayComponents.forEach(c => {
             this.components[c.id] = c;
         });
         plugins.forEach(p => this.use(p));
+        mergeWith(this.conf, this.defaultConf, conf, mergeCmsConfig);
+        this.displays = Object.fromEntries(Object.entries(this.conf.displays).map(([entityTypeID, displays]) => {
+            let fullDisplay = { ...{ default: 'div', page: 'div', teaser: 'div', reference: (entityTypeID === 'contentType' ? 'span' : 'none') }, ...displays };
+            return [entityTypeID, fullDisplay];
+        }));
         Object.keys(customComponents).forEach(filepath => {
             let id = filepath.replace('/src/cms/', '').replace(/\.svelte$/i, '');
             this.components[id] = {
                 id,
-                component: customComponents[filepath]().then(c => c?.default),
+                component: customComponents[filepath]().then(c => c?.['default']),
             };
         });
         // Build out config for the lists
         // This must happen before the content types and fields are built, as fields may have values in $lists
-        Object.entries(conf?.lists || []).forEach(([key, list]) => {
+        Object.entries(this?.conf?.lists || []).forEach(([key, list]) => {
             if (typeof list === 'string')
                 this.lists[key] = list.split(splitter);
             else
@@ -119,13 +161,13 @@ export default class SvelteCMS {
         });
         // Initialize all of the stores, widgets, and transformers specified in config
         ['contentStores', 'mediaStores', 'transformers', 'components', 'fieldgroups', 'indexers'].forEach(objectType => {
-            if (conf?.[objectType]) {
-                Object.entries(conf[objectType]).forEach(([id, settings]) => {
+            if (this?.conf?.[objectType]) {
+                Object.entries(this.conf[objectType]).forEach(([id, settings]) => {
                     // config can:
                     // - create a new item (`conf.widgetTypes.newItem = ...`)
                     // - modify an existing item (`conf.widgetTypes.text = ...`)
                     // - create a new item based on an existing item (`conf.widgetTypes.longtext = { type:"text", ... })
-                    const type = conf[objectType][id].type || conf[objectType][id].id || id;
+                    const type = this.conf[objectType][id].type || this.conf[objectType][id].id || id;
                     // we merge all of the following
                     this[objectType][id] = this.mergeConfigOptions(
                     // the base item of this type
@@ -143,14 +185,14 @@ export default class SvelteCMS {
             }
         });
         ['fields', 'widgets'].forEach(objectType => {
-            if (conf?.[objectType]) {
+            if (this?.conf?.[objectType]) {
                 let typesKey = objectType.replace('s', 'Types');
-                Object.entries(conf[objectType]).forEach(([id, item]) => {
+                Object.entries(this.conf[objectType]).forEach(([id, item]) => {
                     item = typeof item === 'string' ? { type: item } : item;
                     let type = item['type'];
                     if (!type || typeof type !== 'string')
                         throw new Error(`Type is required for ${objectType}.${id} (received ${JSON.stringify(type)})`);
-                    let _parent = this[objectType][type] ?? this[typesKey][type];
+                    let _parent = this.getEntity(objectType, type);
                     if (!_parent)
                         throw new Error(`Parent not found for ${objectType}.${id}. Is "${id}" a typo? Did you define ${objectType}.${id} before ${objectType}.${item?.['type'] ?? item}?`);
                     // @ts-ignore This has been type checked by now
@@ -159,19 +201,19 @@ export default class SvelteCMS {
             }
         });
         // Build out config for the content types
-        Object.entries(conf?.contentTypes || {}).forEach(([id, conf]) => {
+        Object.entries(this.conf?.contentTypes || {}).forEach(([id, conf]) => {
             this.contentTypes[id] = new ContentType(id, conf, this);
         });
         // @ts-ignore
         this.defaultContentType = new ContentType('default', {
             id: 'default',
             contentStore: '',
-            displays: this.conf.settings.defaultContentDisplays || 'div',
+            displays: this.displays.contentType,
             fields: Object.fromEntries(this.listEntities('field').map(id => {
                 return [id, this.fields[id] || id];
             }))
         }, this);
-        let adminStore = conf.adminStore || conf.configPath || 'src/lib/sveltecms.config.json';
+        let adminStore = this?.conf?.adminStore || this?.conf?.configPath || 'src/lib/sveltecms.config.json';
         if (typeof adminStore === 'string' && !this.contentStores[adminStore]) {
             let contentDirectory = adminStore.replace(/\/[^\/]+$/, '');
             let fileExtension = adminStore.replace(/.+[\.]/, '');
@@ -193,8 +235,8 @@ export default class SvelteCMS {
                 slugify: 'getFilename'
             },
             fields: {
+                ...Object.fromEntries(Object.keys(this.conf).map(k => [k, 'fieldgroup'])),
                 configPath: 'text',
-                ...Object.fromEntries(cmsConfigurables.map(k => [k, 'fieldgroup']))
             }
         }, this);
         hooks.forEach(hook => {
@@ -204,11 +246,13 @@ export default class SvelteCMS {
         Object.keys(this.hooks).forEach(k => {
             this.hooks[k] = sortBy(this.hooks[k], ['weight', 'label']);
         });
-        this.indexer = new Indexer('default', conf?.settings?.indexer ?? 'staticFiles', this);
+        this.indexer = new Indexer('default', this?.conf?.settings?.indexer ?? 'staticFiles', this);
     }
     use(plugin, config) {
         // TODO: allow CMSPluginBuilder function, in case people pass the function instead of the plugin
         this.plugins[plugin.id] = plugin;
+        if (plugin.conf)
+            mergeWith(this.defaultConf, plugin.conf, mergeCmsConfig);
         ['fieldTypes', 'widgetTypes', 'transformers', 'contentStores', 'mediaStores', 'lists', 'adminPages', 'components', 'fieldgroups', 'indexers', 'scriptFunctions'].forEach(k => {
             try {
                 plugin?.[k]?.forEach(conf => {
@@ -221,29 +265,6 @@ export default class SvelteCMS {
                 throw e;
             }
         });
-        ['fields', 'widgets'].forEach(objectType => {
-            if (plugin?.[objectType]) {
-                let typesKey = objectType.replace('s', 'Types');
-                plugin[objectType].forEach(item => {
-                    if (!item?.id)
-                        return;
-                    let type = item['type'];
-                    if (!type || typeof type !== 'string')
-                        throw new Error(`Type is required for ${item.id} (received ${JSON.stringify(type)})`);
-                    let _parent = this[objectType][type] ?? this[typesKey][type];
-                    if (!_parent)
-                        throw new Error(`Parent not found for ${item.id}. Is "${item.id}" a typo? Did you define ${item.id} before ${objectType}.${item?.['type']}?`);
-                    // @ts-ignore This has been type checked by now
-                    this[objectType][item.id] = { ...item, _parent };
-                });
-            }
-        });
-        if (plugin.contentTypes) {
-            plugin.contentTypes.forEach((contentType) => {
-                if (contentType && contentType?.id)
-                    this.contentTypes[contentType.id] = new ContentType(contentType.id, contentType, this);
-            });
-        }
         // @ts-ignore How would we do this? If there is a bad implementation, that is the fault of the plugin...
         if (plugin.hooks)
             plugin.hooks.forEach(hook => { this.hooks?.[hook.type]?.push(hook); });
@@ -702,7 +723,7 @@ export default class SvelteCMS {
             // @ts-ignore (this is a type check)
             if (!c.fields[id]?.values)
                 c.fields[id] = new Field(id, c.fields[id], this);
-            this.initializeContentField(c.fields[id], { ...vars, id });
+            this.initializeContentField(c.fields[id], { ...vars, id, cms: this });
             // @ts-ignore
             c.fields[id].events?.forEach(e => c.eventListeners.push(e));
         });
@@ -741,7 +762,7 @@ export default class SvelteCMS {
             return {
                 on: e.on,
                 id: vars.id,
-                function: new ScriptFunction(e.function, { ...vars, field }, this)
+                function: new ScriptFunction(e.function, { ...vars, field })
             };
         });
         if (field.widget.options)
@@ -757,7 +778,7 @@ export default class SvelteCMS {
     initializeFunction(obj, prop, vars) {
         let conf = cloneDeep(getProp(obj, prop));
         // console.log({name:'preInitializeFunction', obj, prop, conf:cloneDeep(conf)}) // debug functions
-        let func = new ScriptFunction(conf, vars, this);
+        let func = new ScriptFunction(conf, vars);
         // special case for the function that only runs once
         let parentPath = prop.replace(/(?:(?:^|\.)[^\.]+|\[[^\]]\])$/, '');
         let propPath = prop.replace(/^.+\./, '');
@@ -882,19 +903,18 @@ export default class SvelteCMS {
                     }
                 }
             };
-        // ...add the "display" configuration if necessary...
-        if (entityType?.isDisplayable)
-            configFields.displays = {
-                type: 'entityList',
-                default: undefined,
-                helptext: `The Display configuration for this ${entityType.label}.`,
-                widget: {
-                    type: 'entityList',
-                    options: {
-                        entityType: 'display',
-                    }
-                }
-            };
+        // // ...add the "display" configuration if necessary...
+        // if (entityType?.isDisplayable) configFields.displays = {
+        //   type: 'entityList',
+        //   default: undefined,
+        //   helptext: `The Display configuration for this ${entityType.label}.`,
+        //   widget: {
+        //     type: 'entityList',
+        //     options: {
+        //       entityType: 'display',
+        //     }
+        //   }
+        // }
         // ...and get the root entity
         let entityRoot = this.getEntityRoot(type, id);
         // bail if there is no root entity
@@ -962,38 +982,45 @@ export default class SvelteCMS {
         });
         return this._scriptFunctionHelp;
     }
+    /**
+     * @TODO: allow adding displayModes, either with config or plugins
+     */
     get displayModes() {
-        return uniq([...defaultDisplayModes, ...Object.keys(this.defaultContentDisplays || {})]);
+        return defaultDisplayModes;
     }
     /**
-     * Normalize the EntityDisplayConfigSetting into an object with any necessary display modes.
-     * @param {string|false|undefined|DisplayConfigSetting|{[id:string]:DisplayConfigSetting}} conf
-     *  The contents of the "displays" prop for a configurable object.
-     * @returns {EntityDisplayConfig}
-     * | Value type                         | Returns |
-     * | -----                              | ------- |
-     * | undefined                          | {}      |
-     * | string                             | { [(...cms.displayModes):string]:value } |
-     * | boolean                            | { [(...cms.displayModes):string]:value } |
-     * | {type:any,[id:string]:any}         | { [(...cms.displayModes):string]:value } |
-     * | {[id:string]:DisplayConfigSetting} | value |
+     *
+     * @param entityTypeID The ID of a Displayable Entity Type, e.g. "contentType", "field", or "fieldgroup"
+     * @param entity A Displayable Entity, e.g. a ContentType, Field, or Fieldgroup
+     * @param displayMode A displayMode, e.g. "default", "page", "teaser", "reference", or a custom displayMode
+     * @returns FullEntityDisplayConfig
      */
-    parseEntityDisplayConfigSetting(conf) {
-        // If the conf is undefined, it shouldn't change other configurations
-        if (typeof conf === 'undefined')
-            return {};
-        // @ts-ignore Edge case for manual config where someone types "displays: false"
-        if (typeof conf === 'boolean')
-            conf = conf.toString();
-        // If the conf is a single display mode, it covers ALL display modes.
-        // @ts-ignore for some reason, the boolean check above causes typescript to complain about this, but I think it's right
-        if (typeof conf === 'string' || isDisplayConfig(conf))
-            return Object.fromEntries(this.displayModes.map(m => [m, conf]));
-        // If the conf has a default, it covers ALL display modes not overridden in the same conf.
-        if (conf.hasOwnProperty('default'))
-            return Object.fromEntries(this.displayModes.map(m => [m, conf[m] ?? conf['default']]));
-        // Otherwise the config is already an EntityDisplayConfig
-        return conf;
+    getFullEntityDisplayConfig(entityTypeID, entity) {
+        return {
+            default: this.getEntityDisplayConfig(entityTypeID, entity, 'default'),
+            page: this.getEntityDisplayConfig(entityTypeID, entity, 'page'),
+            teaser: this.getEntityDisplayConfig(entityTypeID, entity, 'teaser'),
+            reference: this.getEntityDisplayConfig(entityTypeID, entity, 'reference'),
+            // @TODO: add custom display modes
+        };
+    }
+    /**
+     *
+     * @param entityTypeID The ID of a Displayable Entity Type, e.g. "contentType", "field", or "fieldgroup"
+     * @param entity A Displayable Entity, e.g. a ContentType, Field, or Fieldgroup
+     * @param displayMode A displayMode, e.g. "default", "page", "teaser", "reference", or a custom displayMode
+     * @returns
+     */
+    getEntityDisplayConfig(entityTypeID, entity, displayMode) {
+        if (!entity)
+            return this.displays?.[entityTypeID]?.[displayMode] ?? this.displays?.[entityTypeID]?.default;
+        if (entity?.['displays']?.[displayMode] || entity?.['displays']?.[displayMode] === false)
+            return entity['displays'][displayMode];
+        if (entity?.['displays']?.default || entity?.['displays']?.default === false)
+            return entity['displays'].default;
+        if (typeof entity?.['displays'] === 'string')
+            return entity['displays'];
+        return this.getEntityDisplayConfig(entityTypeID, entity?.['_parent'], displayMode);
     }
 }
 /**

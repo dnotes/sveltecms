@@ -1,15 +1,15 @@
-<script>import ContentItem from '../ContentItem.svelte';
-import Fieldgroup from "../../core/Fieldgroup";
+<script>import Fieldgroup from "../../core/Fieldgroup";
+import ContentItem from "../ContentItem.svelte";
 export let cms;
 export let entity;
 export let item;
 export let displayMode;
-let fieldgroupID;
-let fieldgroup;
+let fieldgroupID = item?._fieldgroup || '';
 $: fieldgroupID = item?._fieldgroup || '';
-$: fieldgroup = fieldgroupID ?
-    new Fieldgroup(fieldgroupID, cms) :
-    entity;
+let fieldgroup;
+$: fieldgroup = fieldgroupID ? new Fieldgroup(fieldgroupID, cms) : entity;
 </script>
 
-<ContentItem {cms} entity={fieldgroup} {item} {displayMode} class="fieldgroup fieldgroup-{fieldgroup.id}" />
+{#if fieldgroup}
+  <ContentItem {cms} entity={fieldgroup} {item} {displayMode} class="fieldgroup fieldgroup-{fieldgroup.id}" />
+{/if}

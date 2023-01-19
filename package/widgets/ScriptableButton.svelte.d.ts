@@ -13,9 +13,7 @@ declare const __propDef: {
     } & {
         [evt: string]: CustomEvent<any>;
     };
-    slots: {
-        default: {};
-    };
+    slots: {};
 };
 export type ScriptableButtonProps = typeof __propDef.props;
 export type ScriptableButtonEvents = typeof __propDef.events;

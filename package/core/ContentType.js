@@ -65,7 +65,7 @@ export class ContentType {
         this.label = conf.label || getLabelFromID(this.id);
         this.contentStore = new ContentStore(conf?.contentStore, cms);
         this.mediaStore = conf.mediaStore;
-        this.displays = { ...cms.defaultContentDisplays, ...cms.parseEntityDisplayConfigSetting(conf.displays) };
+        this.displays = cms.getFullEntityDisplayConfig('contentType', conf);
         this.indexFields = [];
         this.form = {
             method: conf?.form?.method,

@@ -10,7 +10,13 @@ export { parentField as field, parentID as id };
 export let cms;
 export let value = {};
 export let collapsed = undefined;
-let originalValue = Object.assign({}, value);
+let w;
+let minWidth = 0;
+$: if (parentField?.widget?.options?.oneline)
+    minWidth = Object.keys(parentField.fields || {}).reduce(getWidths, 0);
+function getWidths(num, id) {
+    return num + (parentField.fields[id].type === 'boolean' ? 40 : 80);
+}
 let opts = Object.assign({
     useComponents: false,
     fieldgroups: [],
@@ -41,11 +47,11 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
         values: parentField.values,
         errors: parentField.errors,
         touched: parentField.touched,
-        id: parentID
+        path: parentID
     });
 </script>
 
-<fieldset class="fieldgroup" class:oneline={opts?.oneline} class:collapsed>
+<fieldset class="fieldgroup" class:oneline={opts?.oneline && w >= minWidth} class:collapsed bind:clientWidth={w}>
 
   <legend><Button highlight on:click={()=>{collapsed=!collapsed}}>{label}</Button></legend>
 
@@ -65,7 +71,7 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
 
   {#each Object.entries(fieldgroup?.fields || {}) as [id, field] }
 
-  <div class="field field-{field.id} {field?.class || ''}">
+  <div class="field field-{field.id} field-type-{field.type} widget-type-{field.widget.type} {field?.class || ''}">
     {#if !field.hidden}
       {#if !field.widget.widget}
         <CmsWidgetUndefined {field} id="{parentID}.{id}" />
@@ -101,22 +107,35 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
 
 </fieldset>
 
-<style global>
-  :global(.sveltecms) :global(fieldset.fieldgroup)>:global(.fieldgroup-choice) {
+<style>
+
+  .oneline {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .oneline :global(div.field) {
+    flex-grow:1;
+    width:5%;
+  }
+
+  legend {
+    background: var(--cms-main);
+  }
+  .fieldgroup-choice {
     background: var(--cms-main);
     color: var(--cms-bg);
   }
-  :global(.sveltecms) :global(fieldset.fieldgroup) {
+  .fieldgroup {
     background: var(--cms-main);
   }
-  :global(.sveltecms) :global(fieldset.fieldgroup) :global(.field) {
+  .fieldgroup .field {
     background: var(--cms-bg);
   }
-  :global(.sveltecms) :global(fieldset.fieldgroup.collapsed) {
+  .sveltecms fieldset.fieldgroup.collapsed {
     background: transparent;
     border-top: 3px solid var(--cms-main);
   }
-  :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(div)>:global(.field),
-  :global(.sveltecms) :global(fieldset.fieldgroup.collapsed)>:global(.fieldgroup-choice) {
+  .sveltecms fieldset.fieldgroup.collapsed>div>.field,
+  .sveltecms fieldset.fieldgroup.collapsed>.fieldgroup-choice {
     display: none;
   }</style>

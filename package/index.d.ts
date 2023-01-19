@@ -6,7 +6,7 @@ import { type MediaStoreType, type MediaStoreConfigSetting } from './core/MediaS
 import { type Content, type ContentStoreConfigSetting, type ContentStoreType, type Value } from './core/ContentStore';
 import { type FieldgroupConfigSetting, type AdminFieldgroupConfigSetting, Fieldgroup } from './core/Fieldgroup';
 import { type Transformer, type TransformerConfigSetting } from './core/Transformer';
-import { type ScriptFunctionType, type ScriptFunctionConfig } from './core/ScriptFunction';
+import { type ScriptFunctionType, type ScriptFunctionConfig, type ScriptVars } from './core/ScriptFunction';
 import { type ComponentType, type ComponentConfigSetting, type Component } from './core/Component';
 import { type EntityDisplayConfigSetting, type DisplayConfigSetting, type FullEntityDisplayConfig } from './core/Display';
 import type { EntityTemplate } from './core/EntityTemplate';
@@ -17,7 +17,10 @@ import { type CMSPlugin, type CMSPluginBuilder } from './core/Plugin';
 export { CMSPlugin, CMSPluginBuilder };
 export declare const FieldPropsAllowFunctions: string[];
 export declare const cmsConfigurables: string[];
-export type TypedEntity = {
+export type Entity = {
+    _parent?: Entity;
+};
+export type TypedEntity = Entity & {
     id: string;
     type: string;
 };
@@ -25,14 +28,14 @@ export type TypedEntityConfigSetting = {
     id?: string;
     type: string;
 };
-export type ConfigurableEntity = {
+export type ConfigurableEntity = Entity & {
     options?: ConfigSetting;
 };
 export type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & {
     options?: ConfigSetting;
 };
 export type ConfigurableEntityConfigSettingValue<T> = string | T | (string | T)[];
-export type LabeledEntity = {
+export type LabeledEntity = Entity & {
     label: string | ScriptFunctionConfig;
 };
 export type FieldableEntityType = {
@@ -41,7 +44,7 @@ export type FieldableEntityType = {
         [id: string]: FieldConfigSetting;
     };
 };
-export type FieldableEntity = {
+export type FieldableEntity = Entity & {
     isFieldable: boolean;
     fields?: {
         [id: string]: Field;
@@ -52,12 +55,12 @@ export type FieldableEntityConfigSetting = {
         [id: string]: string | FieldConfigSetting;
     };
 };
-export type DisplayableEntity = {
+export type DisplayableEntity = Entity & {
     displays: EntityDisplayConfigSetting;
     displayComponent?: Component;
 };
 export type DisplayableEntityType = EntityType & {
-    displays: EntityDisplayConfigSetting;
+    displays?: EntityDisplayConfigSetting;
     displayComponent?: string;
 };
 export type DisplayableEntityConfigSetting = {
@@ -77,11 +80,15 @@ type CMSSettings = ConfigSetting & {
     indexer?: string | IndexerConfigSetting;
     rootContentType?: string;
     frontPageSlug?: string;
-    defaultContentDisplays?: EntityDisplayConfigSetting;
 };
 export type CMSConfigSetting = {
     configPath?: string;
     settings?: CMSSettings;
+    displays?: {
+        [entityTypeID: string]: {
+            [displayMode: string]: DisplayConfigSetting;
+        };
+    };
     adminStore?: string | ContentStoreConfigSetting;
     contentTypes?: {
         [key: string]: ContentTypeConfigSetting;
@@ -119,6 +126,7 @@ export type CMSConfigSetting = {
 };
 export default class SvelteCMS {
     conf: CMSConfigSetting;
+    defaultConf: CMSConfigSetting;
     entityTypes: {
         adminPage: EntityTemplate;
         component: EntityTemplate;
@@ -143,6 +151,9 @@ export default class SvelteCMS {
     };
     adminFieldgroups?: {
         [key: string]: AdminFieldgroupConfigSetting;
+    };
+    displays: {
+        [entityTypeID: string]: FullEntityDisplayConfig;
     };
     fields: {
         [key: string]: FieldConfigSetting;
@@ -183,7 +194,6 @@ export default class SvelteCMS {
         [key: string]: ContentType;
     };
     defaultContentType: ContentType;
-    defaultContentDisplays: FullEntityDisplayConfig;
     lists: CMSListConfig;
     plugins: {
         [key: string]: CMSPlugin;
@@ -245,23 +255,15 @@ export default class SvelteCMS {
         [id: string]: ConfigFieldConfigSetting;
     }): ConfigSetting;
     mergeConfigOptions(options1: ConfigSetting, ...optionsAll: Array<string | ConfigSetting>): ConfigSetting;
-    getWidgetFields(fieldgroup: FieldableEntity, vars: {
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
+    getWidgetFields(fieldgroup: FieldableEntity, vars: Omit<ScriptVars, 'cms' | 'id' | 'field'> & {
+        field?: Field;
     }): WidgetFieldFieldgroup;
     findFields(fields: {
         [id: string]: Field;
     }, query: {
         [path: string]: string | number | boolean;
     } | ((item: Field) => boolean), prefix?: string): string[];
-    initializeContentField(field: Field, vars: {
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
-    }): void;
+    initializeContentField(field: Field, vars: Omit<ScriptVars, 'field'>): void;
     /**
      * Converts an object property (e.g. on a Field or an options object) into a getter which runs
      * one of the available functions.
@@ -271,20 +273,8 @@ export default class SvelteCMS {
      */
     initializeFunction(obj: {
         [key: string]: any;
-    }, prop: string, vars: {
-        field: Field;
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
-    }): void;
-    initializeConfigOptions(options: any, vars: {
-        field: Field;
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
-    }): void;
+    }, prop: string, vars: ScriptVars): void;
+    initializeConfigOptions(options: any, vars: ScriptVars): void;
     getAdminPage(path: string): AdminPage;
     getInstanceOptions(entityType: ConfigurableEntityType, conf?: string | ConfigurableEntityConfigSetting): ConfigSetting;
     /**
@@ -329,23 +319,26 @@ export default class SvelteCMS {
             helptext: string;
         }>;
     }>;
+    /**
+     * @TODO: allow adding displayModes, either with config or plugins
+     */
     get displayModes(): string[];
     /**
-     * Normalize the EntityDisplayConfigSetting into an object with any necessary display modes.
-     * @param {string|false|undefined|DisplayConfigSetting|{[id:string]:DisplayConfigSetting}} conf
-     *  The contents of the "displays" prop for a configurable object.
-     * @returns {EntityDisplayConfig}
-     * | Value type                         | Returns |
-     * | -----                              | ------- |
-     * | undefined                          | {}      |
-     * | string                             | { [(...cms.displayModes):string]:value } |
-     * | boolean                            | { [(...cms.displayModes):string]:value } |
-     * | {type:any,[id:string]:any}         | { [(...cms.displayModes):string]:value } |
-     * | {[id:string]:DisplayConfigSetting} | value |
+     *
+     * @param entityTypeID The ID of a Displayable Entity Type, e.g. "contentType", "field", or "fieldgroup"
+     * @param entity A Displayable Entity, e.g. a ContentType, Field, or Fieldgroup
+     * @param displayMode A displayMode, e.g. "default", "page", "teaser", "reference", or a custom displayMode
+     * @returns FullEntityDisplayConfig
      */
-    parseEntityDisplayConfigSetting(conf: EntityDisplayConfigSetting): {
-        [id: string]: DisplayConfigSetting;
-    };
+    getFullEntityDisplayConfig(entityTypeID: string, entity: Entity | DisplayableEntity): FullEntityDisplayConfig;
+    /**
+     *
+     * @param entityTypeID The ID of a Displayable Entity Type, e.g. "contentType", "field", or "fieldgroup"
+     * @param entity A Displayable Entity, e.g. a ContentType, Field, or Fieldgroup
+     * @param displayMode A displayMode, e.g. "default", "page", "teaser", "reference", or a custom displayMode
+     * @returns
+     */
+    getEntityDisplayConfig(entityTypeID: string, entity: Entity | DisplayableEntity, displayMode: string): DisplayConfigSetting;
 }
 export type WidgetField = Field & {
     label: string;

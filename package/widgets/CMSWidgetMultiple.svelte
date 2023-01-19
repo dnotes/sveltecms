@@ -61,9 +61,9 @@ async function removeItem(i) {
           />
         {/if}
         <div class="delete">
-          <Button cancel
+          <Button type=cancel small
             helptext="Remove {field.label} item"
-            on:click={()=>{removeItem(i)}}>&times;</Button>
+            on:click={()=>{removeItem(i)}} />
         </div>
       </div>
     {/each}
@@ -87,9 +87,9 @@ async function removeItem(i) {
         />
       {/if}
       <div class="delete">
-        <Button cancel
+        <Button type=cancel small
           helptext="Remove {field.label} item"
-          on:click={()=>{removeItem(0)}}>&times;</Button>
+          on:click={()=>{removeItem(0)}} />
       </div>
     </div>
   {/if}

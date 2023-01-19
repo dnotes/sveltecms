@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@muonw/powertable": "github:muonw/powertable",
@@ -118,7 +118,7 @@
     ".": "./index.js",
     "./plugins/admin/components/CMSComponentList.svelte": "./plugins/admin/components/CMSComponentList.svelte",
     "./plugins/admin/components/CMSComponentListOld.svelte": "./plugins/admin/components/CMSComponentListOld.svelte",
-    "./plugins/admin/components/CMSConfigContentTypeList.svelte": "./plugins/admin/components/CMSConfigContentTypeList.svelte",
+    "./plugins/admin/components/CMSConfigDisplays.svelte": "./plugins/admin/components/CMSConfigDisplays.svelte",
     "./plugins/admin/components/CMSConfigEntity.svelte": "./plugins/admin/components/CMSConfigEntity.svelte",
     "./plugins/admin/components/CMSConfigEntityList.svelte": "./plugins/admin/components/CMSConfigEntityList.svelte",
     "./plugins/admin/components/CMSConfigForm.svelte": "./plugins/admin/components/CMSConfigForm.svelte",
@@ -147,13 +147,12 @@
     "./plugins/staticFiles": "./plugins/staticFiles/index.js",
     "./scripts/postinstall": "./scripts/postinstall.js",
     "./sveltecms-forms.css": "./sveltecms-forms.css",
-    "./ui/AddItemLine.svelte": "./ui/AddItemLine.svelte",
     "./ui/Button.svelte": "./ui/Button.svelte",
     "./ui/DisplayResult.svelte": "./ui/DisplayResult.svelte",
     "./ui/EntityListSectionToggle.svelte": "./ui/EntityListSectionToggle.svelte",
     "./ui/Modal.svelte": "./ui/Modal.svelte",
     "./ui/Nav.svelte": "./ui/Nav.svelte",
-    "./ui/ScriptableButton.svelte": "./ui/ScriptableButton.svelte",
+    "./utils/config": "./utils/config.js",
     "./utils/date": "./utils/date.js",
     "./utils/endpoints": "./utils/endpoints.js",
     "./utils/formDataHandler": "./utils/formDataHandler.js",
@@ -178,7 +177,8 @@
     "./widgets/CMSWidgetText.svelte": "./widgets/CMSWidgetText.svelte",
     "./widgets/CMSWidgetTextarea.svelte": "./widgets/CMSWidgetTextarea.svelte",
     "./widgets/CMSWidgetUndefined.svelte": "./widgets/CMSWidgetUndefined.svelte",
-    "./widgets/CMSWidgetValue.svelte": "./widgets/CMSWidgetValue.svelte"
+    "./widgets/CMSWidgetValue.svelte": "./widgets/CMSWidgetValue.svelte",
+    "./widgets/ScriptableButton.svelte": "./widgets/ScriptableButton.svelte"
   },
   "svelte": "./index.js",
   "scripts": {

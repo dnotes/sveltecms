@@ -63,21 +63,6 @@ const fieldgroup = new Field('', {
             helptext: 'The slug for the front page. If provided, the content of ' +
                 'the Root Content Type that has this slug will be the front page of the site/app.'
         },
-        defaultContentDisplays: {
-            type: 'entityList',
-            default: {},
-            helptext: 'Default displays for all Content Types. By default, SvelteCMS uses four display modes: ' +
-                'page, teaser, reference, and default. Any display modes not specified will use the "default" display mode. ' +
-                'As a hint, if you use TailwindCSS with Typography plugin, you might try a "page" display of ' +
-                'e.g. "div.prose.dark:prose-invert".',
-            widget: {
-                type: 'entityList',
-                options: {
-                    legend: 'Default Content Display Modes',
-                    entityType: 'display'
-                }
-            }
-        },
     }
 }, cms);
 $: content = encoders?.[format] ? encoders[format](cms.conf) : '';
@@ -101,7 +86,7 @@ $: if (settings)
 {#if open}
   <Modal on:cancel={()=>{open=false}}>
     <div style="position:absolute;right:1em;user-select:none;">
-      <Button cancel on:click={()=>{open=false}}>&times;</Button>
+      <Button type=cancel on:click={()=>{open=false}} />
     </div>
     <div class="wrapper">
       <div style:user-select="none">

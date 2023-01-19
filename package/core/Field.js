@@ -209,7 +209,7 @@ export class Field {
             this.disabled = parseScript(conf.disabled) ?? (typeof conf.disabled === 'boolean' ? conf.disabled : false);
             this.hidden = parseScript(conf.hidden) ?? (typeof conf.hidden === 'boolean' ? conf.hidden : false);
             this.widget = new Widget(conf.widget || fieldType.widget, cms);
-            this.displays = { default: 'none', ...cms.parseEntityDisplayConfigSetting(fieldType.displays), ...cms.parseEntityDisplayConfigSetting(conf.displays) };
+            this.displays = cms.getFullEntityDisplayConfig('field', conf);
             this.scriptable = conf.scriptable;
             if (fieldType.displayComponent)
                 this.displayComponent = cms.getEntity('components', fieldType.displayComponent);
@@ -236,7 +236,6 @@ export const fieldTypes = {
         id: 'text',
         default: '',
         widget: 'text',
-        displays: 'span',
         preSave: ['toString'],
     },
     date: {
@@ -244,21 +243,26 @@ export const fieldTypes = {
         default: '',
         widget: 'date',
         preSave: ['date'],
-        displays: 'span',
         displayComponent: 'sveltecms/display/field/Date'
     },
     image: {
         id: 'image',
         default: [],
         widget: 'image',
-        displays: 'div',
+        displays: {
+            default: 'div',
+            reference: 'none',
+        },
         displayComponent: 'sveltecms/display/field/Image' // These must be registered as admin components. See sveltecms/core/Display.ts.
     },
     file: {
         id: 'file',
         default: [],
         widget: 'file',
-        displays: 'span',
+        displays: {
+            default: 'div',
+            reference: 'none',
+        },
         displayComponent: 'sveltecms/display/field/File'
     },
     html: {
@@ -266,8 +270,11 @@ export const fieldTypes = {
         default: '',
         widget: 'textarea',
         displays: {
-            type: 'div',
-            html: true
+            default: {
+                type: 'div',
+                html: true
+            },
+            reference: 'none',
         },
         preMount: ['html'],
     },
@@ -275,35 +282,34 @@ export const fieldTypes = {
         id: 'fieldgroup',
         default: {},
         widget: 'fieldgroup',
-        displays: 'div',
+        displays: {
+            default: 'div',
+            reference: 'none',
+        },
         displayComponent: 'sveltecms/display/field/Fieldgroup',
     },
     number: {
         id: 'number',
         default: undefined,
         widget: 'number',
-        displays: 'span',
         preSave: ['parseInt'],
     },
     float: {
         id: 'float',
         default: undefined,
         widget: 'text',
-        displays: 'span',
         preSave: ['parseFloat'],
     },
     boolean: {
         id: 'boolean',
         default: undefined,
         widget: 'checkbox',
-        displays: 'span',
         preSave: ['boolean'],
     },
     value: {
         id: 'value',
         default: undefined,
         widget: 'value',
-        displays: 'span',
     },
     reference: {
         id: 'reference',

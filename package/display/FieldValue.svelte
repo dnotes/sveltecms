@@ -1,5 +1,4 @@
-<script>import { add_attribute } from "svelte/internal";
-import { Display } from "../core/Display";
+<script>import { Display } from "../core/Display";
 import Wrapper from "./Wrapper.svelte";
 export let cms;
 export let entity;
@@ -16,17 +15,35 @@ $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['
 {#if display.isDisplayed}
 
   {#if display.label}
-    <Wrapper {cms} {entity} {item} {parent} {displayMode} display={display.label}>
+    <Wrapper {cms} {entity} {item} {parent} {displayMode} display={display.label} class="field-label">
       {entity.label}
     </Wrapper>
   {/if}
 
-  {#each items as item}
-    {#if display.component}
-      {#await display.component.component then component}
-        <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode} />
-      {/await}
-    {:else}
+  {#if display.component}
+    {#await display.component.component then component}
+      {#if display.multiple}
+        <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode}/>
+      {:else}
+        {#each items as item}
+          <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode}>
+            {#if entity.displayComponent}
+              {#await entity.displayComponent.component then component}
+                <svelte:component this={component} {cms} {item} {entity} {parent} {displayMode} />
+              {/await}
+            {:else if display?.html}
+              {@html item}
+            {:else if display?.link}
+              <a href="{cms.getUrl(parent)}">{item}</a>
+            {:else}
+              {item}
+            {/if}
+          </svelte:component>
+        {/each}
+      {/if}
+    {/await}
+  {:else}
+    {#each items as item}
       <svelte:element
         this={display.tag}
         id={display.id}
@@ -44,7 +61,7 @@ $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['
           {item}
         {/if}
       </svelte:element>
-    {/if}
-  {/each}
+    {/each}
+  {/if}
 
 {/if}

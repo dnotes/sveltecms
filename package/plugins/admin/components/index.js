@@ -6,5 +6,5 @@ import CMSContentTypeList from './CMSContentTypeList.svelte';
 import CMSConfigEntityList from './CMSConfigEntityList.svelte';
 import CMSConfigEntity from './CMSConfigEntity.svelte';
 import CMSConfigForm from './CMSConfigForm.svelte';
-import CMSConfigContentTypeList from './CMSConfigContentTypeList.svelte';
-export { CMSComponentList, CMSConfigSettings, CMSContentEdit, CMSContentList, CMSConfigForm, CMSConfigEntityList, CMSConfigEntity, CMSContentTypeList, CMSConfigContentTypeList, };
+import CMSConfigDisplays from './CMSConfigDisplays.svelte';
+export { CMSComponentList, CMSConfigSettings, CMSContentEdit, CMSContentList, CMSConfigForm, CMSConfigEntityList, CMSConfigEntity, CMSContentTypeList, CMSConfigDisplays, };

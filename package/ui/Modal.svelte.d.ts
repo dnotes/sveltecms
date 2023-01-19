@@ -2,6 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 declare const __propDef: {
     props: Record<string, never>;
     events: {
+        click: MouseEvent;
         cancel: CustomEvent<any>;
     } & {
         [evt: string]: CustomEvent<any>;

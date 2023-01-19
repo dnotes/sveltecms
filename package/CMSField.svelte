@@ -1,7 +1,7 @@
 <script>import CmsWidgetMultiple from './widgets/CMSWidgetMultiple.svelte';
 import CmsWidgetFieldgroup from './widgets/CMSWidgetFieldgroup.svelte';
 import CmsWidgetUndefined from './widgets/CMSWidgetUndefined.svelte';
-import ScriptableButton from './ui/ScriptableButton.svelte';
+import ScriptableButton from './widgets/ScriptableButton.svelte';
 export let cms;
 export let id;
 export let field;
@@ -11,7 +11,7 @@ export { cls as class };
 </script>
 
 {#if !field.hidden}
-  <div class="field field-{id} {cls} {field?.class || ''}">
+  <div class="field field-{id} field-type-{field.type} widget-type-{field.widget.type} {cls} {field?.class || ''}">
     {#if !field?.widget?.widget}
       <CmsWidgetUndefined {field} {id} />
     {:else if field.multiple && !field.widget.handlesMultiple}

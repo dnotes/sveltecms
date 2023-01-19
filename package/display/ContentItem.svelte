@@ -20,7 +20,11 @@ $: classes = classes || `content-type-${entity.id} display-mode-${displayMode}`;
       {item}
       {entity}
       {displayMode}
-    />
+    >
+
+      <FieldList {cms} {entity} {item} {displayMode} />
+
+    </svelte:component>
 
   {/await}
 

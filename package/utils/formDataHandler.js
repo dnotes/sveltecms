@@ -84,7 +84,7 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
  */
 export async function formDataHandler(cms, contentType, formdata) {
     let rawdata = {};
-    // @ts-ignore -- why does this not have a proper FormData object?!?!!
+    // @ts-ignore -- why does this not have a proper FormData object? doesn't FormData have .keys()?
     for (let k of formdata.keys()) {
         set(rawdata, k, formdata.getAll(k));
     }

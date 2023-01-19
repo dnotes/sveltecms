@@ -46,6 +46,17 @@ export const templateDisplay = {
             default: false,
             helptext: `Whether to display the field value as a link to its parent Content.`
         },
+        multiple: {
+            type: 'boolean',
+            default: false,
+            helptext: `Whether to handle multiple values with this display.`,
+            hidden: { function: 'not', params: [
+                    { function: 'contains', params: [
+                            { function: 'listEntities', params: ['component'] },
+                            { function: 'getValue', params: ['type'] }
+                        ] }
+                ] }
+        },
     }
 };
 export class Display {
@@ -53,6 +64,7 @@ export class Display {
         this.type = '';
         this.isDisplayed = false;
         this.link = false;
+        this.multiple = false;
         if (!conf || isDisplayNone(conf))
             return;
         conf = typeof conf === 'string' ? { type: conf } : conf;
@@ -62,6 +74,7 @@ export class Display {
         this.type = conf.type.trim();
         this.component = cms.getEntity('component', this.type);
         this.link = conf.link ? true : false;
+        this.multiple = (this.component && conf.multiple) ? true : false;
         if (!this.component) {
             this.html = conf?.html;
             let el, classes, tag, id;

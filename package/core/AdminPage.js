@@ -140,6 +140,15 @@ export const adminPages = [
             },
         },
     },
+    {
+        id: 'displays',
+        component: {
+            type: 'CMSConfigForm',
+            options: {
+                component: 'CMSConfigDisplays'
+            }
+        }
+    },
     // {
     //   id: 'plugins',
     //   component: {

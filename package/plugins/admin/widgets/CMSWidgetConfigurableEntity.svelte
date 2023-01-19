@@ -95,7 +95,7 @@ function saveOptions() {
   {/each}
 {/if}
 
-<Button small on:click={openOptions}>...</Button>
+<Button type=configure small on:click={openOptions} />
 
 {#if fieldgroup}
   <Modal on:cancel={saveOptions}>

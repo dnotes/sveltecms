@@ -8,7 +8,7 @@ export let id = undefined;
 let dispatch = createEventDispatcher();
 // One of the below is required; widgetFieldGroup overrides fieldgroup
 export let fieldgroup = undefined;
-export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, touched, id });
+export let widgetFieldGroup = cms.getWidgetFields(fieldgroup, { values, errors, touched, path: id });
 let root;
 onMount(() => {
     widgetFieldGroup.eventListeners?.forEach(conf => {

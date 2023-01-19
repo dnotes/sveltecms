@@ -19,7 +19,7 @@ declare const __propDef: {
         previews?: any;
         input?: any;
         getPreview?: (f: string | CMSImage) => CMSPreviewImage;
-        handleUpload?: () => void;
+        handleUpload?: () => Promise<void>;
         deleteImage?: (previewIndex: any) => void;
     };
     events: {

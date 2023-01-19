@@ -9,22 +9,16 @@ export const templateScriptFunction = {
     typeField: false,
     isConfigurable: true,
 };
-function getFullPath(path, id) {
-    if (!path)
-        return id;
-    if (!id)
-        return path;
-    return `${path}.${id}`;
-}
 export class ScriptFunction {
-    constructor(conf, vars, cms) {
+    constructor(conf, vars) {
+        let cms = vars.cms;
         if (typeof conf === 'string')
             conf = parseScript(conf); // this should be rare, but just in case...
         let func = cms.scriptFunctions[conf.function];
         if (!func)
             throw `Script function not found for ${conf}`; // this will also happen if the config is bad
         this.id = func.id;
-        this.vars = { ...vars, cms };
+        this.vars = vars;
         this.fn = func.fn;
         // @ts-ignore
         this.options = cms.getConfigOptionsFromFields(func?.optionFields || {});
@@ -232,17 +226,17 @@ export const scriptFunctions = {
         id: 'id',
         description: 'Gets the ID of the Entity being configured. Shortname: "$id".',
         fn: (vars, opts) => {
-            return opts.id || '';
+            return vars.id || '';
         }
     },
     getValue: {
         id: 'getValue',
         description: 'Gets the value of a field from the form being submitted. Shortname: "$value" or "$values.[FieldID]"',
         fn: (vars, opts) => {
-            let path = getFullPath(vars.id, opts.fieldID);
-            if (has(vars.values, path))
-                return get(vars.values, path);
-            return get(vars.values, opts.fieldID);
+            if (has(vars.values, vars.path))
+                return get(vars.values, `${vars.path}[${opts.fieldID}]`);
+            if (!opts.noFallback && vars.path)
+                return get(vars.values, opts.fieldID);
         },
         optionFields: {
             fieldID: {
@@ -251,6 +245,11 @@ export const scriptFunctions = {
                 default: {
                     function: 'id',
                 },
+            },
+            noFallback: {
+                type: 'boolean',
+                helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
+                default: false,
             }
         }
     },
@@ -258,10 +257,9 @@ export const scriptFunctions = {
         id: 'setValue',
         description: 'Sets the value of a field.',
         fn: (vars, opts) => {
-            let path = getFullPath(vars.id, opts.fieldID);
-            if (has(vars.values, path))
-                set(vars.values, path, opts.value);
-            else
+            if (has(vars.values, vars.path))
+                set(vars.values, `${vars.path}[${opts.fieldID}]`, opts.value);
+            else if (!opts.noFallback && vars.path)
                 set(vars.values, opts.fieldID, opts.value);
         },
         optionFields: {
@@ -276,6 +274,11 @@ export const scriptFunctions = {
                 type: 'text',
                 helptext: 'The value to set.',
                 default: '',
+            },
+            noFallback: {
+                type: 'boolean',
+                helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
+                default: false,
             }
         }
     },
@@ -283,10 +286,10 @@ export const scriptFunctions = {
         id: 'isError',
         description: 'Determines whether a field has an error. Shortname: "$errors" or "$errors.[FieldID]". UNUSED AS YET: requires validators.',
         fn: (vars, opts) => {
-            let path = getFullPath(vars.id, opts.fieldID);
-            if (has(vars.errors, path))
-                return get(vars.errors, path);
-            return get(vars.errors, opts.fieldID);
+            if (has(vars.errors, vars.path))
+                return get(vars.errors, `${vars.path}[${opts.fieldID}]`);
+            if (!opts.noFallback && vars.path)
+                return get(vars.errors, opts.fieldID);
         },
         optionFields: {
             fieldID: {
@@ -295,17 +298,22 @@ export const scriptFunctions = {
                 default: {
                     function: 'id'
                 },
+            },
+            noFallback: {
+                type: 'boolean',
+                helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
+                default: false,
             }
-        }
+        },
     },
     isTouched: {
         id: 'isTouched',
         description: 'Determines whether a field has been touched. Shortname: "$touched" or "$touched.[FieldID]".',
         fn: (vars, opts) => {
-            let path = getFullPath(vars.id, opts.fieldID);
-            if (has(vars.touched, path))
-                return get(vars.touched, path);
-            return get(vars.touched, opts.fieldID);
+            if (has(vars.touched, vars.path))
+                return get(vars.touched, `${vars.path}[${opts.fieldID}]`);
+            if (!opts.noFallback && vars.path)
+                return get(vars.touched, opts.fieldID);
         },
         optionFields: {
             fieldID: {
@@ -314,6 +322,11 @@ export const scriptFunctions = {
                 default: {
                     function: 'id'
                 },
+            },
+            noFallback: {
+                type: 'boolean',
+                helptext: 'If this is a nested form item and the value is not found at the full path, PREVENT falling back to the root values.',
+                default: false,
             }
         }
     },

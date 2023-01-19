@@ -5,34 +5,14 @@ import type { EntityTemplate } from "./EntityTemplate";
 export declare const templateScriptFunction: EntityTemplate;
 export declare class ScriptFunction implements ConfigurableEntity {
     id: string;
-    fn: (vars: {
-        cms: SvelteCMS;
-        field: Field;
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
-    }, options: {
+    fn: (vars: ScriptVars, options: {
         [key: string]: any;
     }) => any;
-    vars: {
-        cms: SvelteCMS;
-        field: Field;
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
-    };
+    vars: ScriptVars;
     options: {
         [key: string]: string | number | boolean | null | undefined;
     };
-    constructor(conf: string | ScriptFunctionConfig, vars: {
-        field: Field;
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
-    }, cms: SvelteCMS);
+    constructor(conf: string | ScriptFunctionConfig, vars: ScriptVars);
     run(): void;
 }
 export declare class ScriptError extends Error {
@@ -40,16 +20,23 @@ export declare class ScriptError extends Error {
     tail: string;
     constructor(message: string, state: string, tail?: string);
 }
+/**
+ * These variables are available to all Script Functions as they are run.
+ */
+export type ScriptVars = {
+    cms: SvelteCMS;
+    field: Field;
+    values: any;
+    errors: any;
+    touched: any;
+    path?: string;
+    id: string;
+};
 export type ScriptFunctionType = ConfigurableEntityType & {
     admin?: boolean;
     description: string;
-    fn: (vars: {
+    fn: (vars: ScriptVars & {
         cms: SvelteCMS;
-        field: Field;
-        values: any;
-        errors: any;
-        touched: any;
-        id?: string;
     }, opts: {
         [key: string]: any;
     }, event?: Event, el?: HTMLElement) => any;

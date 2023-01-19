@@ -1,13 +1,13 @@
 <script>import { parseScript, ScriptError } from '../core/ScriptFunction';
-import Modal from './Modal.svelte';
-import Button from './Button.svelte';
+import Modal from '../ui/Modal.svelte';
+import Button from '../ui/Button.svelte';
 import { onMount } from 'svelte';
 export let cms;
 export let id;
 export let value; // the value that is scriptable
 export let field; // the field that is scriptable
 // Informational
-let scriptValue = (value && typeof value === 'string') ? parseScript(value).toString() : ''; // the value as a script
+let scriptValue = (value && typeof value === 'string') ? parseScript(value)?.toString() ?? '' : ''; // the value as a script
 let overridden = Boolean(scriptValue); // whether the value is overridden
 let fieldValue = overridden ? field.default : value; // the value as a standard field value
 let newScriptValue = ''; // the value of the script input in the modal window
@@ -72,16 +72,13 @@ ${fn.params.map(p => `${p.multiple ? '...' : ''}${p.id}: ${p.helptext}`).join('\
   bind:value={fieldValue}
 />
 <Button
+  type=fn
   small
   highlight={overridden}
   on:click={showModal}
   helptext="{overridden ? scriptValue : 'Use a dynamic function'}"
   disabled={field.disabled}
->
-  <slot>
-    <em>fn</em>
-  </slot>
-</Button>
+/>
 
 
 {#if show}

@@ -7,6 +7,7 @@ export type DisplayConfig = {
     label?: string;
     html?: boolean;
     link?: boolean;
+    multiple?: boolean;
 };
 export declare function isDisplayConfig(item: DisplayConfig | any): item is DisplayConfig;
 export type DisplayConfigSetting = string | DisplayConfig;
@@ -30,6 +31,7 @@ export declare class Display {
     type: string;
     isDisplayed: boolean;
     link: boolean;
+    multiple: boolean;
     component?: Component;
     wrapper?: Display;
     label?: Display;

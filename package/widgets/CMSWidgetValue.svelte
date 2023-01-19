@@ -1,6 +1,9 @@
 <script>export let field;
 export let id;
 export let value = field.default;
+let input;
+$: if (input)
+    input.parentElement.classList.add('sveltecms-hidden-field');
 $: value = field.widget?.options?.value ?? undefined;
 </script>
 
@@ -18,9 +21,18 @@ $: value = field.widget?.options?.value ?? undefined;
   </label>
 {:else}
   <input
+    class="sveltecms-hidden-field"
+    bind:this={input}
     name={id}
     type="hidden"
     bind:value
   />
 {/if}
 
+<style>
+  :global(.sveltecms div.field.field-type-value.widget-type-value:has(input.sveltecms-hidden-field)) {
+    display:none;
+  }
+  :global(.sveltecms div.field.sveltecms-hidden-field) {
+    display:none;
+  }</style>

@@ -96,85 +96,6 @@ html.dark {
 .sveltecms a {
   color:var(--cms-link);
 }
-.sveltecms button,
-.sveltecms a.button {
-  font-family: var(--cms-font);
-  font-size: 90%;
-  text-decoration:none;
-  cursor:pointer;
-  color:var(--cms-main);
-  border-color:var(--cms-main);
-  background:transparent;
-  padding: 0 .8em;
-  line-height: 2.2em;
-  border-radius: 1em;
-  border: 2px solid var(--cms-main);
-  display: inline-block;
-  text-transform: lowercase;
-}
-.sveltecms button.small,
-.sveltecms a.button.small {
-  font-size: 80%;
-  border-width: 1px;
-}
-
-.sveltecms .danger,
-.sveltecms a.button.danger {
-  color:var(--cms-danger);
-}
-
-.sveltecms button.link {
-  border:none;
-  background: var(--cms-bg);
-  color: var(--cms-link);
-}
-
-.sveltecms button.primary,
-.sveltecms button.highlight,
-.sveltecms a.button.primary,
-.sveltecms a.button.highlight,
-.sveltecms button.danger,
-.sveltecms button[type="submit"] {
-  background: var(--cms-main);
-  color: var(--cms-bg);
-  border: none;
-  padding-top: 1px;
-}
-
-.sveltecms button.primary,
-.sveltecms a.button.primary,
-.svetlecms a.button.danger,
-.sveltecms button[type="submit"] {
-  font-weight: bold;
-}
-
-.sveltecms button.danger,
-.sveltecms a.button.danger {
-  background: var(--cms-danger);
-}
-
-.disabled,
-.sveltecms button:disabled,
-.sveltecms button.primary:disabled,
-.sveltecms button.danger:disabled,
-.sveltecms button[type="submit"]:disabled {
-  cursor: default;
-  opacity: .5;
-  filter: grayscale(100%);
-}
-
-.sveltecms button.borderless,
-.sveltecms a.borderless {
-  border:none !important;
-}
-
-.sveltecms button.cancel,
-.sveltecms a.button.cancel {
-  font-size:22px;
-  line-height: 24px;
-  padding: 0 7px 2px;
-  background: var(--cms-bg);
-}
 
 /* Layout */
 
@@ -198,9 +119,6 @@ html.dark {
   margin: .4em 0;
   border-radius: .5em;
   padding: .8em .5em;
-}
-.sveltecms fieldset.fieldgroup>legend {
-  background: var(--cms-main);
 }
 .sveltecms fieldset.multiple>legend {
   padding:0;
@@ -230,3 +148,9 @@ html.dark {
 div.cms-editor { width:100%; overflow:hidden; display:flex; flex-direction: row-reverse; }
 div.cms-editor-preview { overflow:scroll; resize:horizontal; width:50%; max-height:100vh; position:relative; }
 div.cms-editor-form { overflow-y:scroll; flex-grow:1; width:0; max-height:100vh; }
+
+.sveltecms input,
+.sveltecms select,
+.sveltecms textarea {
+  max-width: 100%;
+}

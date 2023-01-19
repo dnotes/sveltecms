@@ -2,7 +2,6 @@ import { SvelteComponentTyped } from "svelte";
 declare const __propDef: {
     props: {
         submit?: boolean;
-        cancel?: boolean;
         disabled?: boolean;
         small?: boolean;
         borderless?: boolean;
@@ -10,6 +9,7 @@ declare const __propDef: {
         primary?: boolean;
         danger?: boolean;
         helptext?: string;
+        type?: "" | "cancel" | "configure" | "fn";
         href?: string;
         text?: string;
     };

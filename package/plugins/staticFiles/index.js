@@ -420,7 +420,8 @@ const plugin = {
                     throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`);
                 // Get file system
                 const fs = await getFs('opts.databaseName');
-                const filepath = `${getBasedir()}/${opts.staticDirectory}/${opts.mediaDirectory}/${file.name}`.replace(/\/+/g, '/');
+                let basedir = getBasedir();
+                const filepath = [basedir, opts.staticDirectory, opts.mediaDirectory, file.name].filter(Boolean).join('/');
                 // TODO: determine what to do if files exist
                 let fileStats;
                 try {
@@ -435,7 +436,7 @@ const plugin = {
                     const buffer = await file.arrayBuffer();
                     const uint8 = new Uint8Array(buffer);
                     await fs.writeFile(filepath, uint8);
-                    return `/${opts.mediaDirectory}/${file.name}`;
+                    return opts.mediaDirectory ? `${opts.mediaDirectory}/${file.name}` : '/' + file.name;
                 }
                 catch (e) {
                     throw e;
