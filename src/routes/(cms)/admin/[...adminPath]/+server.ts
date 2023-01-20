@@ -15,7 +15,7 @@ export const POST:ServerLoad = async (event) => {
 
   try {
     let data = await adminPage.POST({cms, args, event})
-    return { data }
+    return new Response(JSON.stringify(data))
   }
   catch(e) {
     throw e
@@ -33,7 +33,7 @@ export const DELETE:ServerLoad = async (event) => {
 
   try {
     let data = await adminPage.DELETE({cms, args, event})
-    return { data }
+    return new Response(JSON.stringify(data))
   }
   catch(e) {
     throw e
