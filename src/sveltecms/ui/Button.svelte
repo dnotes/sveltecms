@@ -11,6 +11,8 @@
 
   export let type:""|"cancel"|"configure"|"fn" = undefined
 
+  export let formaction:string = undefined
+
   // Some buttons navigate.
   // This is easier than making a Link component or using goto.
   export let href:string = undefined
@@ -27,7 +29,7 @@
 
 </script>
 
-{#if href}
+{#if href && !formaction}
 
 <a class="button"
   on:click
@@ -50,7 +52,7 @@
   on:click
   title={helptext}
   aria-label="{helptext}"
-  type={ submit ? 'submit' : 'button'}
+  type={ submit || formaction ? 'submit' : 'button'}
   {disabled}
   class:disabled
   class:primary
@@ -60,6 +62,7 @@
   class:small
   class:borderless
   class:highlight
+  {formaction}
 >{#if type}<slot>{@html html}</slot>{:else}<slot>{text}</slot>{/if}</button>
 
 {/if}
@@ -147,7 +150,7 @@ button[type="submit"]:disabled {
   line-height:20px;
 }
 
-.danger {
+button.danger, a.danger {
   background: var(--cms-danger);
   border: 1px solid var(--cms-bg);
 }

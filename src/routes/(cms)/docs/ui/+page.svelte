@@ -1,5 +1,7 @@
 <script lang="ts">
   import Button from 'sveltecms/ui/Button.svelte'
+  import Modal from 'sveltecms/ui/Modal.svelte';
+
   let buttonOptions:{
     type:""|"cancel"|"configure"|"fn",
     [key:string]:any
@@ -16,6 +18,13 @@
     href: '',
     text: 'text',
   }
+
+  let showModal=false
+  let modalOptions = {
+    title: 'Title',
+    small: false,
+  }
+
 </script>
 
 <div class="prose prose-xl dark:prose-invert sveltecms">
@@ -86,6 +95,43 @@
   </div>
   <!-- END BUTTON -->
 
+  <h2>Modal</h2>
+  <div class="component">
+    <div class="options sveltecms">
+      (options in the Modal window)
+    </div>
+    <div class="component">
+      <Button on:click={()=>{showModal=true}}>Show modal</Button>
+      {#if showModal}
+        <Modal small={modalOptions.small} on:cancel={()=>{showModal=false}}>
+          <div slot="title">
+            {#if modalOptions.title}
+              <pre>&lt;h3 slot="title"></pre>
+                <h3>{modalOptions.title}</h3>
+              <pre>&lt;/h3></pre>
+            {/if}
+          </div>
+          <div>
+            <pre>&lt;div></pre>
+              <div class="field">
+                <label>
+                  <input type="checkbox" bind:checked={modalOptions.small}>
+                  <span>Small</span>
+                </label>
+              </div>
+              <div class="field">
+                <label for="">
+                  <span>Title</span>
+                  <input type="text" bind:value={modalOptions.title}>
+                </label>
+              </div>
+            <pre>&lt;/div></pre>
+          </div>
+        </Modal>
+      {/if}
+    </div>
+  </div>
+
 </div>
 
 
@@ -116,4 +162,9 @@
   }
 
   .inline-block { display:inline-block; }
+
+  pre {
+    opacity:.4;
+    font-size: 80%;
+  }
 </style>

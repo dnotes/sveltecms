@@ -93,10 +93,15 @@ import ContentItem from './display/ContentItem.svelte';
         <Button
           submit
           primary
+          formaction='?/post'
           {disabled}
         >
           <slot name="submit">Submit</slot>
         </Button>
+
+        {#if values['_oldSlug']}
+          <Button danger formaction="?/delete" text="delete"/>
+        {/if}
 
         <DisplayResult bind:result />
 
