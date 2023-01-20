@@ -5,7 +5,7 @@ import { createEventDispatcher } from "svelte";
     dispatch('cancel')
   }
 
-export let small
+export let small = false
 
 </script>
 
