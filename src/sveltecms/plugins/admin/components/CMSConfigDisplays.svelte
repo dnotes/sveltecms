@@ -5,7 +5,6 @@ import CmsWidgetDisplayList from '../widgets/CMSWidgetDisplayList.svelte';
 
   export let cms:SvelteCMS
   export let data:{[id:string]:FullEntityDisplayConfig}
-  console.log(data)
 
 </script>
 

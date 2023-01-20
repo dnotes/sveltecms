@@ -137,8 +137,6 @@ let result
     let filenames = [...files].map(f => f.name)
     let usedFilenames = []
 
-    console.log({value,files,previews,previewUrls,filenames})
-
     if (Array.isArray(value)) {
       value = value.filter(f => {
         let ok = (f.src && !f.src.match(/^blob:/)) || (filenames.includes(f?.filename) && !usedFilenames.includes(f?.filename))
