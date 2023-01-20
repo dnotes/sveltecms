@@ -55,23 +55,23 @@ import type { FullEntityDisplayConfig } from "sveltecms/core/Display";
   // This is the field that will be populated if a configuration value is a string
   let entityTypeFieldID = typeof entityType?.typeField === 'string' ? entityType.typeField : 'type'
 
+  // The parent entity, used for getting the
+  let parentEntity = undefined
+
   // The full config of the entity
   value = value ?? field?.default
 
   // The conf variable is what is passed around as variables in the Svelte components
   let conf:EntityConfigSetting|EntityConfigSetting[]
 
-  function setConf() {
-    // For Arrays, we leave them exactly as is, as these will be handled by the nested element
-    if (Array.isArray(value)) conf = value
-    // For strings, we make an EntityConfigSetting object
-    else if (typeof value === 'string') conf = { [entityTypeFieldID]:value }
-    // For EntityConfigSetting object, we clone it
-    else if (value) conf = cloneDeep(value)
-    // For other (e.g. undefined) values, we create an EntityConfigSetting object
-    else conf = { [entityTypeFieldID]:field?.default }
-  }
-  setConf()
+  // For Arrays, we leave them exactly as is, as these will be handled by the nested element
+  if (Array.isArray(value)) conf = value
+  // For strings, we make an EntityConfigSetting object
+  else if (typeof value === 'string') conf = { [entityTypeFieldID]:value }
+  // For EntityConfigSetting object, we clone it
+  else if (value) conf = cloneDeep(value)
+  // For other (e.g. undefined) values, we create an EntityConfigSetting object
+  else conf = { [entityTypeFieldID]:field?.default }
 
   // Type options
   let typeOptions = cms.listEntities(opts.entityType, false, opts.fieldType) // TODO: ensure no circular dependencies are choices
@@ -89,6 +89,7 @@ import type { FullEntityDisplayConfig } from "sveltecms/core/Display";
   function setType() {
     if (!Array.isArray(conf)) {
       let type = conf[entityTypeFieldID]?.toString()
+      parentEntity = cms.getEntity(entityType.id, type)
 
       // get the defaults
       if (opts.isTopLevelEntity && entityID === type) { // The entity being configured is a top-level entity like cms.fields
@@ -96,7 +97,7 @@ import type { FullEntityDisplayConfig } from "sveltecms/core/Display";
       }
       else defaults = cms.getEntityConfig(opts.entityType, type)
 
-      if (entityType.isDisplayable) displayDefaults = cms.getFullEntityDisplayConfig(entityType.id, cms.getEntity(entityType.id, type))
+      if (entityType.isDisplayable) displayDefaults = cms.getFullEntityDisplayConfig(entityType.id, parentEntity)
 
       widgetFieldGroup = cms.getWidgetFields(cms.getEntityConfigFieldgroup(opts.entityType, type), { values:conf, errors:{}, touched:{}, path:id })
     }
@@ -161,7 +162,24 @@ import type { FullEntityDisplayConfig } from "sveltecms/core/Display";
 
   // Push upstream value reactively
   $: if (conf) setValue('skipClose')
-  $: if ((value || !value) && !entityID) setConf()
+
+  // Since this appears in listed fields in EntityLists, we have to update the 'conf' variable
+  // when the value changes, or e.g. the slug won't change on the list of Content Types when
+  // you set it in the Content Type detail.
+  // @todo: this needs work and tests
+  $: if ((value || !value) && !entityID && !Array.isArray(value)) setConf()
+  function setConf() {
+    if (Array.isArray(value)) {}
+    else if (typeof value === 'string') {
+      Object.keys(conf).forEach(k => { conf[k] = (k === entityTypeFieldID ? value : (parentEntity?.options?.[k] ?? parentEntity?.[k])) })
+    }
+    else {
+      Object.keys(conf).forEach(k => conf[k] = value[k])
+      if (value) {
+        Object.keys(value).forEach(k => conf[k] = value[k])
+      }
+    }
+  }
 
 </script>
 
