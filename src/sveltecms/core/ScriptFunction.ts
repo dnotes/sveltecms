@@ -259,8 +259,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'getValue',
     description: 'Gets the value of a field from the form being submitted. Shortname: "$value" or "$values.[FieldID]"',
     fn: (vars, opts) => {
-      if (has(vars.values, vars.path)) return get(vars.values, `${vars.path}[${opts.fieldID}]`)
-      if (!opts.noFallback && vars.path) return get(vars.values, opts.fieldID)
+      if (vars.path && has(vars.values, vars.path)) return get(vars.values, `${vars.path}[${opts.fieldID}]`)
+      if (!opts.noFallback || !vars.path) return get(vars.values, opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -281,8 +281,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'setValue',
     description: 'Sets the value of a field.',
     fn: (vars, opts) => {
-      if (has(vars.values, vars.path)) set(vars.values, `${vars.path}[${opts.fieldID}]`, opts.value)
-      else if (!opts.noFallback && vars.path) set(vars.values, opts.fieldID, opts.value)
+      if (vars.path && has(vars.values, vars.path)) set(vars.values, `${vars.path}[${opts.fieldID}]`, opts.value)
+      else if (!opts.noFallback || !vars.path) set(vars.values, opts.fieldID, opts.value)
     },
     optionFields: {
       fieldID: {
@@ -308,8 +308,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'isError',
     description: 'Determines whether a field has an error. Shortname: "$errors" or "$errors.[FieldID]". UNUSED AS YET: requires validators.',
     fn: (vars,opts) => {
-      if (has(vars.errors, vars.path)) return get(vars.errors, `${vars.path}[${opts.fieldID}]`)
-      if (!opts.noFallback && vars.path) return get(vars.errors, opts.fieldID)
+      if (vars.path && has(vars.errors, vars.path)) return get(vars.errors, `${vars.path}[${opts.fieldID}]`)
+      if (!opts.noFallback || !vars.path) return get(vars.errors, opts.fieldID)
     },
     optionFields: {
       fieldID: {
@@ -330,8 +330,8 @@ export const scriptFunctions:{[id:string]:ScriptFunctionType} = {
     id: 'isTouched',
     description: 'Determines whether a field has been touched. Shortname: "$touched" or "$touched.[FieldID]".',
     fn: (vars, opts) => {
-      if (has(vars.touched, vars.path)) return get(vars.touched, `${vars.path}[${opts.fieldID}]`)
-      if (!opts.noFallback && vars.path) return get(vars.touched, opts.fieldID)
+      if (vars.path && has(vars.touched, vars.path)) return get(vars.touched, `${vars.path}[${opts.fieldID}]`)
+      if (!opts.noFallback || !vars.path) return get(vars.touched, opts.fieldID)
     },
     optionFields: {
       fieldID: {
