@@ -1,17 +1,33 @@
 configPath: src/lib/sveltecms.config.yml
+displays:
+  contentType:
+    default: div
+    page: div
+    teaser: div.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
+    reference: span
+  field:
+    default: div
+    page: div
+    teaser: div
+    reference: none
+  fieldgroup:
+    default: div
+    page: div
+    teaser: div
+    reference: none
 settings:
   rootContentType: landingPage
   frontPageSlug: front
-displays:
-  contentType:
-    teaser: div.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
 contentTypes:
   page:
     slug: slug
     fields:
       title: title
       slug: slug
+      image: mainImage
       body: body
+    contentStore: staticFiles
+    mediaStore: staticFiles
   blog:
     slug: date,title
     fields:
@@ -20,7 +36,9 @@ contentTypes:
       date: date
       body: body
       tags: tags
+    contentStore: staticFiles
     label: ''
+    mediaStore: staticFiles
   landingPage:
     fields:
       title:
@@ -42,12 +60,16 @@ contentTypes:
       fileExtension: json
     slug: slug
     label: ''
+    mediaStore: staticFiles
   docs:
     fields:
       title: title
       body: body
     slug: title
     label: ''
+    contentStore: staticFiles
+    mediaStore: staticFiles
+lists: {}
 contentStores: {}
 mediaStores:
   images:
@@ -70,22 +92,75 @@ fields:
       default:
         type: span
         link: true
+      reference:
+        type: span
+        link: true
+      page: h1
       teaser:
         type: h2.m-0.font-bold
         link: true
-      page: h1
-  date:
+  postDate:
     type: date
     index: true
     required: true
     default: $now
   body: markdown
-  slideText:
-    type: markdown
-    widget: slideText
   slug:
     type: text
     displays: none
+    required: 'true'
+  mainImage:
+    type: image
+    index: true
+    mediaStore:
+      type: staticFiles
+      options:
+        mediaDirectory: images/main
+        allowedMediaTypes:
+          - image/jpeg
+          - image/png
+          - image/gif
+  tags:
+    type: reference
+    widget:
+      type: reference
+      options:
+        referenceKey: taggedContent
+        contentTypes: tags
+        freeTagging: true
+      referenceKey: taggedContent
+      contentTypes: tags
+      freeTagging: true
+    displays:
+      page:
+        type: >-
+          li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
+        label: h4.border-t-2.pt-2
+        wrapper: ul
+        link: true
+  taggedContent:
+    type: reference
+    widget:
+      type: reference
+      options:
+        referenceKey: tags
+        displayMode: teaser
+      referenceKey: tags
+      displayMode: teaser
+    displays:
+      page:
+        type: li.list-none
+        label: h4.border-t-2.pt-2
+        wrapper: ul
+        link: true
+  date:
+    type: date
+    index: true
+    required: true
+    default: $now
+  slideText:
+    type: markdown
+    widget: slideText
   h1:
     type: text
     displays: h1
@@ -122,32 +197,6 @@ fields:
         helptext: >-
           Any help text that should be shown for screen readers or when hovering
           over the element.
-  tags:
-    type: reference
-    displays:
-      page:
-        type: >-
-          li.inline-block.list-none.bg-gray-200.dark:bg-gray-300.px-2.mx-1.rounded
-        label: h4.border-t-2.pt-2
-        wrapper: ul
-        link: true
-    widget:
-      type: reference
-      referenceKey: taggedContent
-      contentTypes: tags
-      freeTagging: true
-  taggedContent:
-    type: reference
-    displays:
-      page:
-        type: li.list-none
-        label: h4.border-t-2.pt-2
-        wrapper: ul
-        link: true
-    widget:
-      type: reference
-      referenceKey: tags
-      displayMode: teaser
 widgets:
   date:
     type: date
@@ -213,5 +262,7 @@ fieldgroups:
       default: none
       page: blockquote
 transformers: {}
+components: {}
+plugins: {}
 _slug: sveltecms.config
 _type: admin
