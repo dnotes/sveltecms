@@ -64,11 +64,16 @@ export const adminPages = [
             return content;
         },
         DELETE: async ({ cms, args, event, values }) => {
-            if (event)
-                return deleteContentEndpoint(cms, args[1], event.request);
-            else if (values)
-                return cms.deleteContent(args[1], values);
-            throw new Error('Empty DELETE to content/*/*');
+            let content = await cms.getContent(args[1], args[2]);
+            if (!content)
+                throw error(404, 'Not found');
+            try {
+                await cms.deleteContent(args[1], content);
+            }
+            catch (e) {
+                throw error(400, e.message);
+            }
+            throw redirect(303, `/admin/content/${args[1]}`);
         }
     },
     {
@@ -167,8 +172,9 @@ export const adminPages = [
             }
         },
         POST: async ({ cms, event, values }) => {
-            if (event)
+            if (event) {
                 return saveContentEndpoint(cms, cms.admin, event.request, { filepath: cms.conf.configPath, skipIndex: true });
+            }
         }
     },
 ];

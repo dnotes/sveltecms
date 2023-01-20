@@ -1,7 +1,6 @@
 <script>import CmsWidgetDisplayList from '../widgets/CMSWidgetDisplayList.svelte';
 export let cms;
 export let data;
-console.log(data);
 </script>
 
 <div>

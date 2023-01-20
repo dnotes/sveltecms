@@ -51,7 +51,7 @@ contentTypes.forEach(id => {
 })
 
 if (!fs.existsSync(`${toPath}/src/cms`)) fs.mkdirSync(`${toPath}/src/cms`);
-if (!fs.existsSync(`${toPath}/src/cms/README.txt`)) fs.writeFileSync(`${toPath}/src/cms/README.txt`,
+if (!fs.existsSync(`${toPath}/src/cms/_README.txt`)) fs.writeFileSync(`${toPath}/src/cms/_README.txt`,
 `This is the folder where SvelteCMS looks for custom components.
 
 Any .svelte files in this folder will be available when configuring

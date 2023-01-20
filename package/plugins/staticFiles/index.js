@@ -457,16 +457,13 @@ const plugin = {
             fn: async (change, cms) => {
                 if (change.contentType.id === 'admin' && change.after?.contentTypes) {
                     // Save the index file for new content types
-                    console.log(change);
                     let newContentTypes = difference(Object.keys(change.after.contentTypes), Object.keys(change?.before?.contentTypes ?? {}));
-                    console.log({ newContentTypes });
                     if (newContentTypes.length) {
                         for (let i = 0; i < newContentTypes.length; i++) {
                             let contentTypeID = newContentTypes[i];
                             let contentType = change.after.contentTypes[contentTypeID];
                             let indexerType = contentType?.indexer?.type ?? contentType?.indexer ?? cms.indexer.type;
                             let indexerRoot = cms.getEntityRoot('indexers', indexerType);
-                            console.log({ contentTypeID, indexerType, indexerRoot, contentType: change.after.contentTypes[contentTypeID], indexer: cms.indexer, indexers: cms.indexers });
                             if (indexerRoot?.id === 'staticFiles') {
                                 cms.indexers[indexerType].saveIndex(contentTypeID, []);
                             }

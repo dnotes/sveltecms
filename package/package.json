@@ -1,9 +1,9 @@
 {
   "name": "sveltecms",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
-    "@muonw/powertable": "github:muonw/powertable",
+    "@muonw/powertable": "https://github.com/muonw/powertable#11e2660784b4a950e0ea817a51159e3bb885482e",
     "@sindresorhus/slugify": "^2.1.0",
     "@sveltejs/kit": "1.0.0",
     "@sveltejs/package": "^1.0.1",
@@ -148,6 +148,7 @@
     "./scripts/postinstall": "./scripts/postinstall.js",
     "./sveltecms-forms.css": "./sveltecms-forms.css",
     "./ui/Button.svelte": "./ui/Button.svelte",
+    "./ui/ButtonConfirm.svelte": "./ui/ButtonConfirm.svelte",
     "./ui/DisplayResult.svelte": "./ui/DisplayResult.svelte",
     "./ui/EntityListSectionToggle.svelte": "./ui/EntityListSectionToggle.svelte",
     "./ui/Modal.svelte": "./ui/Modal.svelte",

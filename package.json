@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "scripts": {
     "debug": "echo 'To debug, open Google Chrome to chrome://inspect' && node --inspect node_modules/.bin/vite dev",
     "dev": "vite dev",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
-    "@muonw/powertable": "github:muonw/powertable",
+    "@muonw/powertable": "https://github.com/muonw/powertable#11e2660784b4a950e0ea817a51159e3bb885482e",
     "@sindresorhus/slugify": "^2.1.0",
     "@sveltejs/kit": "1.0.0",
     "@sveltejs/package": "^1.0.1",

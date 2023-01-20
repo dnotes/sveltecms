@@ -12,10 +12,14 @@ export async function load(event:RequestEvent) {
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)
 
-  let data
-  if (adminPage?.GET) data = await adminPage.GET({cms, args, event})
-
-  return { data }
+  try {
+    let data
+    if (adminPage?.GET) data = await adminPage.GET({cms, args, event})
+    return { data }
+  }
+  catch(e) {
+    throw e
+  }
 }
 
 export const actions:Actions = {
@@ -26,11 +30,15 @@ export const actions:Actions = {
     const adminPage = cms.getAdminPage(params.adminPath)
 
     if (!adminPage) throw error(404)
-
     if (!adminPage.POST) throw error(405)
 
-    let data = await adminPage.POST({cms, args, event})
-    return { data }
+    try {
+      let data = await adminPage.POST({cms, args, event})
+      return { data }
+    }
+    catch(e) {
+      throw e
+    }
   },
 
   delete: async (event) => {
@@ -42,8 +50,13 @@ export const actions:Actions = {
     if (!adminPage) throw error(404)
     if (!adminPage.DELETE) throw error(405)
 
-    let data = await adminPage.DELETE({cms, args, event})
-    return { data }
+    try {
+      let data = await adminPage.DELETE({cms, args, event})
+      return { data }
+    }
+    catch(e) {
+      throw e
+    }
 
   }
 

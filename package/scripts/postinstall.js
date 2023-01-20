@@ -44,8 +44,8 @@ contentTypes.forEach(id => {
 });
 if (!fs.existsSync(`${toPath}/src/cms`))
     fs.mkdirSync(`${toPath}/src/cms`);
-if (!fs.existsSync(`${toPath}/src/cms/README.txt`))
-    fs.writeFileSync(`${toPath}/src/cms/README.txt`, `This is the folder where SvelteCMS looks for custom components.
+if (!fs.existsSync(`${toPath}/src/cms/_README.txt`))
+    fs.writeFileSync(`${toPath}/src/cms/_README.txt`, `This is the folder where SvelteCMS looks for custom components.
 
 Any .svelte files in this folder will be available when configuring
 the display of fields, fieldgroups, and content types in the Admin UI.`, { encoding: 'utf8' });

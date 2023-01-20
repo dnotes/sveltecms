@@ -13,8 +13,13 @@ export const POST:ServerLoad = async (event) => {
 
   if (!adminPage.POST) throw error(405)
 
-  let data = await adminPage.POST({cms, args, event})
-  return { data }
+  try {
+    let data = await adminPage.POST({cms, args, event})
+    return new Response(JSON.stringify(data))
+  }
+  catch(e) {
+    throw e
+  }
 
 }
 
@@ -26,7 +31,12 @@ export const DELETE:ServerLoad = async (event) => {
   if (!adminPage) throw error(404)
   if (!adminPage.DELETE) throw error(405)
 
-  let data = await adminPage.DELETE({cms, args, event})
-  return { data }
+  try {
+    let data = await adminPage.DELETE({cms, args, event})
+    return new Response(JSON.stringify(data))
+  }
+  catch(e) {
+    throw e
+  }
 
 }

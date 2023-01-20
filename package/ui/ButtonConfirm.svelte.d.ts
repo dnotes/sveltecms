@@ -9,23 +9,25 @@ declare const __propDef: {
         primary?: boolean;
         danger?: boolean;
         helptext?: string;
-        type?: "" | "cancel" | "configure" | "fn";
         formaction?: string;
         href?: string;
+        title: string;
         text?: string;
     };
     events: {
-        click: MouseEvent;
+        confirm: CustomEvent<any>;
     } & {
         [evt: string]: CustomEvent<any>;
     };
     slots: {
         default: {};
+        confirm: {};
+        text: {};
     };
 };
-export type ButtonProps = typeof __propDef.props;
-export type ButtonEvents = typeof __propDef.events;
-export type ButtonSlots = typeof __propDef.slots;
-export default class Button extends SvelteComponentTyped<ButtonProps, ButtonEvents, ButtonSlots> {
+export type ButtonConfirmProps = typeof __propDef.props;
+export type ButtonConfirmEvents = typeof __propDef.events;
+export type ButtonConfirmSlots = typeof __propDef.slots;
+export default class ButtonConfirm extends SvelteComponentTyped<ButtonConfirmProps, ButtonConfirmEvents, ButtonConfirmSlots> {
 }
 export {};
