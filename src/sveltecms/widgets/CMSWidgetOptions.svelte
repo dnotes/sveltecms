@@ -1,5 +1,7 @@
 <script lang="ts">
+  import type { isArray } from "lodash-es";
 import { getList } from "sveltecms/utils/list";
+// @todo: remove {#if Array.isArray(value)} {:else} after https://github.com/sveltejs/svelte/issues/8214 is fixed
 
 import type { WidgetField } from "..";
 
@@ -35,15 +37,27 @@ import type { WidgetField } from "..";
       {/if}
 
       {#if field.multiple}
-        <input
-          name="{id}"
-          title={o.value}
-          type="checkbox"
-          disabled={field.disabled}
-          required={field.required}
-          value={o.value}
-          bind:group={value}
-        />
+        {#if Array.isArray(value)}
+          <input
+            name="{id}"
+            title={o.value}
+            type="checkbox"
+            disabled={field.disabled}
+            required={field.required}
+            value={o.value}
+            bind:group={value}
+          />
+        {:else}
+          <input
+            name="{id}"
+            title={o.value}
+            type="checkbox"
+            disabled={field.disabled}
+            required={field.required}
+            value={o.value}
+            on:change={()=>{value = [o.value]}}
+          />
+        {/if}
       {:else}
         <input
           name="{id}"
