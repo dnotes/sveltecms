@@ -1,9 +1,12 @@
 <script>import Button from "../../../ui/Button.svelte";
-import { PowerTable } from '@muonw/powertable';
+import PowerTable from '../../../ui/PowerTable.svelte';
 import { goto } from "$app/navigation";
 export let adminPath;
 export let basePath;
 export let data = [];
+export let cms;
+let [contentPath, contentTypeID, slug] = adminPath.split('/');
+let contentType = cms.getEntity('contentType', contentTypeID);
 const ptOptions = {
     footerText: false,
     footerFilters: false,
@@ -14,25 +17,8 @@ const ptOptions = {
 
 {#if Array.isArray(data)}
   <div>
-    <PowerTable {ptOptions} ptData={data} on:rowClicked={(e) => goto(`/admin/content/${e.detail.data._type}/${e.detail.data._slug}`)} />
+    <PowerTable {cms} entity={contentType} {ptOptions} ptData={data} on:rowClicked={(e) => goto(`/admin/content/${e.detail.data._type}/${e.detail.data._slug}`)} />
   </div>
 {/if}
 
-<style>
-  div :global(td) {
-    cursor: pointer;
-  }
-  div :global(button) {
-    border: none;
-  }
-  div :global(th[data-dir="asc"]:after) {
-    content: "🔼";
-    font-weight: normal;
-    opacity: .6;
-  }
-  div :global(th[data-dir="desc"]:after) {
-    content: "🔽";
-    font-weight: normal;
-    opacity: .6;
-  }
-  div :global([data-key^="_"]) { display:none; }</style>
+<style></style>

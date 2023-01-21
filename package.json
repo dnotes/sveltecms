@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "scripts": {
     "debug": "echo 'To debug, open Google Chrome to chrome://inspect' && node --inspect node_modules/.bin/vite dev",
     "dev": "vite dev",
@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
-    "@muonw/powertable": "https://github.com/muonw/powertable#11e2660784b4a950e0ea817a51159e3bb885482e",
     "@sindresorhus/slugify": "^2.1.0",
     "@sveltejs/kit": "1.0.0",
     "@sveltejs/package": "^1.0.1",
@@ -27,8 +26,6 @@
     "firebase-admin": "^10.0.0",
     "firebase-functions": "^3.16.0",
     "fuse.js": "^6.6.2",
-    "gridjs": "^5.0.2",
-    "gridjs-svelte": "^2.1.1",
     "isomorphic-git": "^1.17.0",
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",

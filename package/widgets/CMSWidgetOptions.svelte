@@ -22,15 +22,27 @@ $: options = getList(opts.items);
       {/if}
 
       {#if field.multiple}
-        <input
-          name="{id}"
-          title={o.value}
-          type="checkbox"
-          disabled={field.disabled}
-          required={field.required}
-          value={o.value}
-          bind:group={value}
-        />
+        {#if Array.isArray(value)}
+          <input
+            name="{id}"
+            title={o.value}
+            type="checkbox"
+            disabled={field.disabled}
+            required={field.required}
+            value={o.value}
+            bind:group={value}
+          />
+        {:else}
+          <input
+            name="{id}"
+            title={o.value}
+            type="checkbox"
+            disabled={field.disabled}
+            required={field.required}
+            value={o.value}
+            on:change={()=>{value = [o.value]}}
+          />
+        {/if}
       {:else}
         <input
           name="{id}"

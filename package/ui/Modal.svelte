@@ -3,7 +3,7 @@ const dispatch = createEventDispatcher();
 function cancel() {
     dispatch('cancel');
 }
-export let small;
+export let small = false;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
