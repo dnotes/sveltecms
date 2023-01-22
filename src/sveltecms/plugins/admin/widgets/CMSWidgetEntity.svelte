@@ -174,7 +174,7 @@ import type { FullEntityDisplayConfig } from "sveltecms/core/Display";
       Object.keys(conf).forEach(k => { conf[k] = (k === entityTypeFieldID ? value : (parentEntity?.options?.[k] ?? parentEntity?.[k])) })
     }
     else {
-      Object.keys(conf).forEach(k => conf[k] = value[k])
+      Object.keys(conf).forEach(k => conf[k] = value?.[k])
       if (value) {
         Object.keys(value).forEach(k => conf[k] = value[k])
       }

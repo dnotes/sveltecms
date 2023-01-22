@@ -11,6 +11,7 @@ import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
     configType:string
     configPath:string
   }
+
   $: opts = Object.assign({}, options)
   $: entityType = cms.getEntityType(opts.configType)
   let addEntity
@@ -19,7 +20,7 @@ import CmsWidgetEntityList from '../widgets/CMSWidgetEntityList.svelte';
   $: entities = cms.listEntities(opts.configPath)
 
   // All config items for the type of entities being configured, as an array
-  $: items = Object.entries(data)
+  $: items = Object.entries((data ?? {}))
 
   // A list of items that are not configured at all
   $: defaultItems = entities.filter(id => !items.find(item => item[0] === id))
