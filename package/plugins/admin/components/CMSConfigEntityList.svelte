@@ -10,7 +10,7 @@ let addEntity;
 // All entities of the type being configured
 $: entities = cms.listEntities(opts.configPath);
 // All config items for the type of entities being configured, as an array
-$: items = Object.entries(data);
+$: items = Object.entries((data ?? {}));
 // A list of items that are not configured at all
 $: defaultItems = entities.filter(id => !items.find(item => item[0] === id));
 </script>
