@@ -1,5 +1,6 @@
 <script>
   import "sveltecms/sveltecms-forms.css";
+  import Button from "sveltecms/ui/Button.svelte";
   import "../app.css";
 </script>
 
@@ -7,8 +8,10 @@
   <header>
     <nav>
       <ul>
+        <li><a href="/">Home</a></li>
         <li><a href="/blog">Blog</a></li>
         <li><a href="/docs">Docs</a></li>
+        <Button highlight href="/docs/getting-started" text="Try it!" />
         {#if import.meta.env.MODE === 'development'}
           <li><a href="/admin">Admin</a></li>
         {/if}
