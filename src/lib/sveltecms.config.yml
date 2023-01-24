@@ -3,7 +3,7 @@ displays:
   contentType:
     default: div
     page: div
-    teaser: div.h-36.bg-gray-200.dark:bg-gray-700.p-4.rounded.mb-9
+    teaser: div.h-36.bg-stone-200.dark:bg-stone-700.p-4.rounded.mb-9
     reference: span
   field:
     default: div
@@ -61,6 +61,8 @@ contentTypes:
     slug: slug
     label: ''
     mediaStore: staticFiles
+    displays:
+      page: div.-mt-9
   docs:
     fields:
       title: title
@@ -69,6 +71,14 @@ contentTypes:
     label: ''
     contentStore: staticFiles
     mediaStore: staticFiles
+  tutorials:
+    contentStore: staticFiles
+    mediaStore: staticFiles
+    label: ''
+    slug: title
+    fields:
+      title: title
+      body: body
 lists: {}
 contentStores: {}
 mediaStores:
