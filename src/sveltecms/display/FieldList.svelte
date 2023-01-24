@@ -13,10 +13,10 @@ export let entity:FieldableEntity
 export let item:{[key:string]:Value}
 export let displayMode:string
 
-let fieldlist:[string,Field][]
-let displays:{[id:string]:Display}
-
+let fieldlist:[string,Field][] = []
 $: fieldlist = Object.entries(entity?.fields || {})
+
+let displays:{[id:string]:Display} = {}
 $: displays = Object.fromEntries(fieldlist.map(([id,field]) => ([id, new Display(field?.displays?.[displayMode] ?? field?.displays?.['default'], cms)])))
 
 </script>

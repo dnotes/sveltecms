@@ -10,10 +10,12 @@ import FieldList from "./FieldList.svelte";
   export let entity:EntityType & FieldableEntity & DisplayableEntity = undefined
   export let item:Content
   export let displayMode:string
-  let classes:string = undefined
+  let classes:string = `content-type-${entity.id} display-mode-${displayMode}`
   export { classes as class }
 
+  let display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms)
   $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms)
+
   $: classes = classes || `content-type-${entity.id} display-mode-${displayMode}`
 
 </script>

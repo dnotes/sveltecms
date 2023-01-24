@@ -19,7 +19,7 @@ import { templatePlugin, type CMSPlugin, type CMSPluginBuilder } from './core/Pl
 import { mergeCmsConfig } from './utils'
 export { CMSPlugin, CMSPluginBuilder }
 
-const customComponents = import.meta.glob('/src/cms/*.svelte')
+const customComponents = import.meta.glob('/src/cms/*.svelte', { eager:true })
 
 // import { default as Validator, Rules } from 'validatorjs'
 
@@ -253,7 +253,7 @@ export default class SvelteCMS {
       let id = filepath.replace('/src/cms/', '').replace(/\.svelte$/i, '')
       this.components[id] = {
         id,
-        component: customComponents[filepath]().then(c => c?.['default']),
+        component: customComponents[filepath]['default'],
       }
     })
 
