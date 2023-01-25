@@ -1,10 +1,15 @@
+# EXACT copy from .gitignore
 .DS_Store
 node_modules
 /build
 /.svelte-kit
 .dccache
+/package
 .env
 .env.*
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# specific to NPM
+/newsite

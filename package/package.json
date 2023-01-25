@@ -1,10 +1,10 @@
 {
   "name": "sveltecms",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
-    "@sveltejs/kit": "1.0.0",
+    "@sveltejs/kit": "^1.0.0",
     "@sveltejs/package": "^1.0.1",
     "browser-or-node": "^2.0.0",
     "bytes": "^3.1.2",
@@ -24,10 +24,15 @@
     "validatorjs": "^3.22.1"
   },
   "peerDependencies": {
+    "svelte": "^3.55",
     "vite": "^4.0"
   },
   "devDependencies": {
+    "@fontsource/bellefair": "^4.5.10",
+    "@fontsource/bevan": "^4.5.10",
+    "@fontsource/roboto": "^4.5.8",
     "@rollup/plugin-yaml": "^3.1.0",
+    "@stackblitz/sdk": "^1.8.1",
     "@sveltejs/adapter-static": "^1.0.0",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.4.0",
@@ -42,14 +47,15 @@
     "markdown-it-footnote": "^3.0.3",
     "postcss": "^8.4.12",
     "postcss-load-config": "^3.1.4",
-    "svelte": "^3.42.6",
+    "svelte": "^3.55",
     "svelte-check": "^2.2.6",
     "svelte-preprocess": "^4.10.5",
     "svelte2tsx": "^0.4.8",
     "tailwindcss": "^3.0.23",
     "ts-jest": "^27.1.2",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.4"
+    "typescript": "^4.4.4",
+    "vite": "^4.0"
   },
   "type": "module",
   "description": "A content manager built with sveltekit, for sveltekit projects. Sensible and extensible, with declarative configuration.",

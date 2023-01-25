@@ -91,7 +91,7 @@ Then go to the admin interface in your browser, which is located by default at
 
 ## ...Why?
 
-> What is this? A center for ANTS!? It needs to be at least ... three times bigger!
+> What is this? A center for ANTS!? It needs to be at least ... three times bigger! \
   \- Derek Zoolander
 
 SvelteCMS was made to demonstrate and jump-start my vision for what a Content Management
@@ -103,14 +103,14 @@ SvelteCMS...
 
 * [x] is **software**, not a product or service.
 * [x] runs **as part of the site**, not on a separate system.
-* [x] builds **performant web apps**, with minimal code on content pages, SSR and prerendering.
+* [-] builds **performant web apps**, with minimal code on content pages, SSR and prerendering.
 * [x] builds **sites that work without Javascript**, so no more blank white screens.
-* [x] is **database agnostic**: store content in any server, repository, or database provider.
-* [x] supports **data portability**: mix, match, and migrate content between storage solutions.
-* [ ] supports **community interaction**: manage user accounts from install.
-* [x] supports **serverless architecture**: deploy CMS endpoints to any serverless provider.
+* [x] is **database agnostic**: store content in any server, repository, or database provider (with plugins).
+* [x] supports **data portability**: mix, match, and migrate content between storage solutions (with plugins).
+* [ ] supports **community interaction**: manage user accounts from install (with plugins).
+* [x] supports **serverless architecture**: deploy SvelteKit endpoints to any serverless provider.
 * [x] supports **static site generation**: build locally and deploy to any web host.
-* [ ] works **in the browser**: go truly "serverless" with Web Containers or isomorphic git.
+* [x] works **in the browser**: go truly "serverless" with Web Containers or isomorphic git.
 * [x] supports **complex content models**: conditional, nested, and calculated fields.
 * [x] manages the **full content cycle**: entry, storage, retrieval and display.
 * [x] enables **code-free site building**: go from data architecture to display with no code.

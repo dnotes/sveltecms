@@ -27,7 +27,13 @@ const config = {
   },
 
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        bellefair: 'bellefair',
+        bevan: 'bevan',
+        roboto: 'roboto',
+      }
+    },
   },
 
   corePlugins: {

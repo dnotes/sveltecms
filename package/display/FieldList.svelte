@@ -5,9 +5,9 @@ export let cms;
 export let entity;
 export let item;
 export let displayMode;
-let fieldlist;
-let displays;
+let fieldlist = [];
 $: fieldlist = Object.entries(entity?.fields || {});
+let displays = {};
 $: displays = Object.fromEntries(fieldlist.map(([id, field]) => ([id, new Display(field?.displays?.[displayMode] ?? field?.displays?.['default'], cms)])));
 </script>
 

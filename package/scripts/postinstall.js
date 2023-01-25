@@ -9,6 +9,9 @@ const toPath = path.resolve(process.env.INIT_CWD);
 const files = [
     // The default front page route
     [`${fromPath}/routes/+layout.svelte`, `${toPath}/src/routes/+layout.svelte`],
+    // The main CMS layout, where content is loaded
+    [`${fromPath}/routes/(cms)/+layout.ts`, `${toPath}/src/routes/(cms)/+layout.ts`],
+    [`${fromPath}/routes/(cms)/+layout.svelte`, `${toPath}/src/routes/(cms)/+layout.svelte`],
     // The '/[...path]' routes
     [`${fromPath}/routes/(cms)/[...path]/+page.svelte`, `${toPath}/src/routes/(cms)/[...path]/+page.svelte`],
     [`${fromPath}/routes/(cms)/[...path]/+layout.ts`, `${toPath}/src/routes/(cms)/[...path]/+layout.ts`],
@@ -17,7 +20,7 @@ const files = [
     [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.ts`],
     [`${fromPath}/routes/(cms)/admin/[...adminPath]/+page.server.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+page.server.ts`],
     [`${fromPath}/routes/(cms)/admin/[...adminPath]/+server.ts`, `${toPath}/src/routes/(cms)/admin/[...adminPath]/+server.ts`],
-    [`${fromPath}/routes/(cms)/admin/+layout.svelte`, `${toPath}/src/routes/(cms)/admin/+layout.svelte`],
+    [`${fromPath}/routes/(cms)/admin/+layout@.svelte`, `${toPath}/src/routes/(cms)/admin/+layout@.svelte`],
     // Files for the $lib folder
     [`${fromPath}/cms.ts`, `${toPath}/src/lib/cms.ts`],
     [`${fromPath}/sveltecms.config.json`, `${toPath}/src/lib/sveltecms.config.json`],

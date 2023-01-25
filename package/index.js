@@ -16,7 +16,7 @@ import { Indexer, templateIndexer } from './core/Indexer';
 import { hooks, templateHook } from './core/Hook';
 import { templatePlugin } from './core/Plugin';
 import { mergeCmsConfig } from './utils';
-const customComponents = import.meta.glob('/src/cms/*.svelte');
+const customComponents = import.meta.glob('/src/cms/*.svelte', { eager: true });
 // import { default as Validator, Rules } from 'validatorjs'
 const splitter = /\s*,\s*/g;
 export const FieldPropsAllowFunctions = [
@@ -148,7 +148,7 @@ export default class SvelteCMS {
             let id = filepath.replace('/src/cms/', '').replace(/\.svelte$/i, '');
             this.components[id] = {
                 id,
-                component: customComponents[filepath]().then(c => c?.['default']),
+                component: customComponents[filepath]['default'],
             };
         });
         // Build out config for the lists

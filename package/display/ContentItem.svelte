@@ -4,8 +4,9 @@ export let cms;
 export let entity = undefined;
 export let item;
 export let displayMode;
-let classes = undefined;
+let classes = `content-type-${entity.id} display-mode-${displayMode}`;
 export { classes as class };
+let display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms);
 $: display = new Display(entity?.displays?.[displayMode] ?? entity?.displays?.['default'], cms);
 $: classes = classes || `content-type-${entity.id} display-mode-${displayMode}`;
 </script>
