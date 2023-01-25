@@ -62,6 +62,14 @@ li.checkbox {
   list-style-image: url(/images/icons/checkbox.svg)
 }
 
+sup.footnote-ref a,
+a.footnote-backref {
+  @apply text-blue-500;
+}
+section.footnotes {
+  @apply text-sm leading-tight opacity-60;
+}
+
 .prose pre { @apply -mx-4 sm:-mx-9 md:-mx-24 text-[75%] leading-tight; }
 
 /* Some form items */

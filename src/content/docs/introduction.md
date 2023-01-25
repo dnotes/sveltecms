@@ -28,7 +28,7 @@ SvelteCMS is an attempt at creating a new kind of Content Management System that
 * [x] is **extensible**: extend CMS functionality with components, plugins and hooks.
 * [x] is **free** for any number of sites, users, content types, plugins, etc.
 
-[^1]: there is still a lot that can probably be done to improve performance.
-[^2]: requires plugins.
-[^3]: requires plugins.
-[^4]: theoretically any serverless host that supports SvelteKit should work with SvelteCMS.
+[^1]: Server-side rendering and prerendering work, and it is possible to produce static pages without javascript, but for the pages rendered client-side there is a lot of optimization still to be done.
+[^2]: Requires plugins.
+[^3]: Requires plugins.
+[^4]: Theoretically any serverless host that supports SvelteKit should work with SvelteCMS.
