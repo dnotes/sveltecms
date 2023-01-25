@@ -6,7 +6,7 @@ import { page } from '$app/stores'
 
   export let item:Content & { slides:Content[] }
 
-  let i = parseInt($page.url.searchParams.get('i')) || 0
+  let i = parseInt($page.url.hash) || 0
   let heading
   let text
 
@@ -33,7 +33,7 @@ import { page } from '$app/stores'
     <div class="hero-links">
       {#each item.slides as slide, idx}
         {#if slide?.icon?.['src']}
-          <a href="?i={idx}" on:click|preventDefault={()=>{ clearInterval(interval); i=idx; }}>
+          <a href="#{idx}" on:click|preventDefault={()=>{ clearInterval(interval); i=idx; }}>
             <img
               class:on={idx === i}
               src="{slide.icon['src']}"

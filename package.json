@@ -39,6 +39,9 @@
     "vite": "^4.0"
   },
   "devDependencies": {
+    "@fontsource/bellefair": "^4.5.10",
+    "@fontsource/bevan": "^4.5.10",
+    "@fontsource/roboto": "^4.5.8",
     "@rollup/plugin-yaml": "^3.1.0",
     "@stackblitz/sdk": "^1.8.1",
     "@sveltejs/adapter-static": "^1.0.0",

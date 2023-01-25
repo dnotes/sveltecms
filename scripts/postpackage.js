@@ -12,12 +12,16 @@ const files = [
   // The default front page route
   ['src/install/+layout.svelte', `package/install/routes/+layout.svelte`],
 
+  // The main CMS layout, where content is loaded
+  ['src/routes/(cms)/+layout.ts',     'package/install/routes/(cms)/+layout.ts'],
+  ['src/routes/(cms)/+layout.svelte', 'package/install/routes/(cms)/+layout.svelte'],
+
   // The '/[...path]' routes
   ['src/routes/(cms)/[...path]/+layout.ts',     'package/install/routes/(cms)/[...path]/+layout.ts'],
   ['src/routes/(cms)/[...path]/+page.svelte',   'package/install/routes/(cms)/[...path]/+page.svelte'],
 
   // The '/admin' routes
-  ['src/routes/(cms)/admin/+layout.svelte',                 'package/install/routes/(cms)/admin/+layout.svelte'],
+  ['src/routes/(cms)/admin/+layout@.svelte',                'package/install/routes/(cms)/admin/+layout@.svelte'],
   ['src/routes/(cms)/admin/[...adminPath]/+page.server.ts', 'package/install/routes/(cms)/admin/[...adminPath]/+page.server.ts'],
   ['src/routes/(cms)/admin/[...adminPath]/+page.ts',        'package/install/routes/(cms)/admin/[...adminPath]/+page.ts'],
   ['src/routes/(cms)/admin/[...adminPath]/+page.svelte',    'package/install/routes/(cms)/admin/[...adminPath]/+page.svelte'],

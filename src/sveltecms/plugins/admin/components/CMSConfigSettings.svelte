@@ -28,6 +28,14 @@ import Button from "sveltecms/ui/Button.svelte";
   const fieldgroup = new Field('', {
     type: 'fieldgroup',
     fields: {
+      buildAdmin: {
+        type: 'boolean',
+        default: false,
+        helptext: 'Whether to include the Admin UI when building for production. '
+          +'If you are using this to build static sites, this should probably be unselected, '
+          +'in which case you must also set "config.kit.prerender.handleHttpError to "warn" '
+          +'or "ignore" in svelte.config.js.'
+      },
       adminStore: {
         type: 'entity',
         default: '',

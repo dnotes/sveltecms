@@ -16,6 +16,10 @@ const config = {
 		alias: {
       sveltecms: path.resolve('src/sveltecms'),
 		},
+		prerender: {
+			handleHttpError: 'warn',
+			handleMissingId: 'ignore',
+		}
 	},
 	package: {
 		source: 'src/sveltecms'

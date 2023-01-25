@@ -1,4 +1,6 @@
 export const prerender = false
+export const ssr = false
+export const csr = true
 
 import cms from '$lib/cms'
 import { error, type RequestEvent } from '@sveltejs/kit'
@@ -7,6 +9,8 @@ import admin from 'sveltecms/plugins/admin'
 cms.use(admin)
 
 export async function load(event:RequestEvent) {
+
+  if (import.meta.env.MODE !== 'development' && !cms?.conf?.settings?.buildAdmin) throw error(404, "Not found")
 
   const { params } = event
   const args = params.adminPath.split('/')
@@ -25,6 +29,9 @@ export async function load(event:RequestEvent) {
 export const actions:Actions = {
 
   post: async (event) => {
+
+    if (import.meta.env.MODE !== 'development' && !cms?.conf?.settings?.buildAdmin) throw error(404, "Not found")
+
     const { params } = event
     const args = params.adminPath.split('/')
     const adminPage = cms.getAdminPage(params.adminPath)
@@ -42,6 +49,8 @@ export const actions:Actions = {
   },
 
   delete: async (event) => {
+
+    if (import.meta.env.MODE !== 'development' && !cms?.conf?.settings?.buildAdmin) throw error(404, "Not found")
 
     const { params } = event
     const args = params.adminPath.split('/')
