@@ -1,6 +1,5 @@
 <script lang="ts">
 import sdk from '@stackblitz/sdk'
-import md from '$lib/md'
 import type { PageData } from '../../[...path]/$types';
 
 export let data:PageData
