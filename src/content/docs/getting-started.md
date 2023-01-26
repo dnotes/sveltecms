@@ -41,7 +41,7 @@ In this scenario, SvelteCMS is only available during local development. However,
 While this exact workflow is probably a ways out, services like StackBlitz show that it's possible to run SvelteCMS inside a WebContainer. You can try it out here:
 
 <div class="flex flex-col mx-auto">
-  <button type="button" class="stackblitz inline-block text-xl border-2 py-2 px-5 rounded-full border-cyan-600 text-cyan-600">
+  <button type="button" class="stackblitz inline-block text-cyan-600">
     Try SvelteCMS on StackBlitz
   </button>
   <noscript>(requires javascript)</noscript>
