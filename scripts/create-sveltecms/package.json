@@ -1,6 +1,6 @@
 {
   "name": "create-sveltecms",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Create a new SvelteKit project with SvelteCMS installed.",
   "bin": "cli.js",
   "main": "index.js",
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/dnotes/sveltecms#readme",
   "dependencies": {
+    "create-svelte": "^2.3.2",
     "kleur": "^4.1.5",
     "prompts": "^2.4.2",
     "recursive-copy": "^2.0.14",
