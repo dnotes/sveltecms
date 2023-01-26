@@ -4,4 +4,4 @@ export type CreateSvelteCMSOptions = Omit<Options, 'template'|'types'|'name'> & 
   version: string
 }
 
-export function createSvelteCMS(cwd:string, options:CreateSvelteCMSOptions): Promise<void>
+export function create(cwd:string, options:CreateSvelteCMSOptions): Promise<void>

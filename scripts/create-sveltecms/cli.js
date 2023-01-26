@@ -2,9 +2,11 @@
 import sade from 'sade'
 import {bold,cyan,green,gray,yellow,red} from 'kleur/colors'
 import prompts from 'prompts'
-import { create } from '.'
+import { create } from './index.js'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
 
-const { version } = JSON.parse(fs.readFileSync(new URL('package.json', import.meta.url), 'utf8'));
+const { version } = JSON.parse(fs.readFileSync(fileURLToPath(new URL('package.json', import.meta.url).href), 'utf8'));
 
 sade('create-sveltecms [directory]', true)
   .describe('Create a new SvelteKit site with SvelteCMS installed.')
@@ -12,7 +14,7 @@ sade('create-sveltecms [directory]', true)
   .option('--version, -v', 'the specific version of SvelteCMS to install.')
   .option('--yes, -y', 'breeze through all the prompts, accepting default values and overwriting files.', false)
   .action(async (directory, opts) => {
-    console.log(bold(gray(`Create SvelteCMS ${version}`)))
+    console.log(bold(gray(`Create SvelteCMS (installer v${version})`)))
 
     let cwd=""
     let options={}
@@ -25,7 +27,7 @@ sade('create-sveltecms [directory]', true)
       let qs = []
 
       // * directory
-      if (!dir) qs.push({
+      if (!directory) qs.push({
         type: 'text',
         name: 'directory',
         message: 'Where should your project be created?\n (leave blank to use the current directory)',
@@ -99,6 +101,7 @@ sade('create-sveltecms [directory]', true)
 
     // Do the actual stuff
     console.log(green(`Creating new SvelteCMS site in ${cwd === '.' ? 'the current directory' : cwd}.`))
+    console.log(yellow(`This could take up to a minute or so!`))
 
     await create(cwd, options)
 
@@ -123,4 +126,8 @@ sade('create-sveltecms [directory]', true)
       console.log(cyan('  https://vitest.dev'));
     }
 
+    console.log(bold(green('DONE!')))
+    console.log(green('You should now be able to run "npm run dev" to start your SvelteCMS site.'))
+
   })
+  .parse(process.argv)
