@@ -5,8 +5,8 @@
  * or colons.
  */
 const extract = (content) => {
-  return content.match(/(?<=\.)[-\w:]+/g) || [];
-};
+  return content.match(/(?<=\.)[-\w:]+/g) || []
+}
 
 const config = {
   // The content array must be expanded into an object.
@@ -30,15 +30,7 @@ const config = {
     extend: {},
   },
 
-  corePlugins: {
-    aspectRatio: false,
-  },
-
-  plugins: [
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/aspect-ratio"),
-    require("@tailwindcss/line-clamp"),
-  ],
+  plugins: [],
 };
 
 module.exports = config;

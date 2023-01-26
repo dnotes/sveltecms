@@ -1,9 +1,13 @@
+export const prerender = false
+
 import cms from "$lib/cms"
 import { error, type ServerLoad } from "@sveltejs/kit"
 import admin from 'sveltecms/plugins/admin'
 cms.use(admin)
 
 export const POST:ServerLoad = async (event) => {
+
+  if (import.meta.env.MODE !== 'development' && !cms?.conf?.settings?.buildAdmin) throw error(404, "Not found")
 
   const { params } = event
   const args = params.adminPath.split('/')
@@ -24,6 +28,9 @@ export const POST:ServerLoad = async (event) => {
 }
 
 export const DELETE:ServerLoad = async (event) => {
+
+  if (import.meta.env.MODE !== 'development' && !cms?.conf?.settings?.buildAdmin) throw error(404, "Not found")
+
   const { params } = event
   const args = params.adminPath.split('/')
   const adminPage = cms.getAdminPage(params.adminPath)

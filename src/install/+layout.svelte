@@ -1,5 +1,7 @@
 <script>
   // This file was created by SvelteCMS, but feel free to change it.
+  // This is the root layout for all pages of your site.
+  import '../app.css'
 </script>
 
 <div id="page">
@@ -22,20 +24,6 @@
 </div>
 
 <style>
-
-  :root {
-    --bg-color: white;
-    --text-color: #222;
-    background: var(--bg-color);
-    color: var(--text-color);
-  }
-  @media(prefers-color-scheme:dark) {
-    :root {
-      --bg-color: #222;
-      --text-color: white;
-    }
-  }
-
   header {
     display: flex;
     flex-wrap: wrap;
@@ -46,9 +34,6 @@
   div.sitename {
     font-size: 200%;
     flex-grow: 1;
-  }
-  #main {
-    padding: 20px;
   }
   nav {
     display: flex;

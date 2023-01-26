@@ -27,24 +27,10 @@ const config = {
   },
 
   theme: {
-    extend: {
-      fontFamily: {
-        bellefair: 'bellefair',
-        bevan: 'bevan',
-        roboto: 'roboto',
-      }
-    },
+    extend: {},
   },
 
-  corePlugins: {
-    aspectRatio: false,
-  },
-
-  plugins: [
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
-    require('@tailwindcss/line-clamp'),
-  ],
+  plugins: [],
 };
 
 module.exports = config;

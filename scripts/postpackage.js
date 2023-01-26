@@ -1,55 +1,58 @@
 #!/usr/bin/env node
 import cp from 'cp-file'
-import fs from 'fs'
-
-let packageJSON = JSON.parse(
-  await fs.readFileSync(
-    new URL('../package/package.json', import.meta.url)
-  )
-)
+import sade from 'sade'
+import rm from 'rimraf'
+import { create } from 'create-svelte'
+import { unlinkSync, existsSync } from 'fs'
 
 const files = [
   // The default front page route
-  ['src/install/+layout.svelte', `package/install/routes/+layout.svelte`],
+  ['src/install/+layout.svelte', `newsite/src/routes/+layout.svelte`],
 
   // The main CMS layout, where content is loaded
-  ['src/routes/(cms)/+layout.ts',     'package/install/routes/(cms)/+layout.ts'],
-  ['src/routes/(cms)/+layout.svelte', 'package/install/routes/(cms)/+layout.svelte'],
+  ['src/routes/(cms)/+layout.ts',     'newsite/src/routes/(cms)/+layout.ts'],
+  ['src/routes/(cms)/+layout.svelte', 'newsite/src/routes/(cms)/+layout.svelte'],
 
   // The '/[...path]' routes
-  ['src/routes/(cms)/[...path]/+layout.ts',     'package/install/routes/(cms)/[...path]/+layout.ts'],
-  ['src/routes/(cms)/[...path]/+page.svelte',   'package/install/routes/(cms)/[...path]/+page.svelte'],
+  ['src/routes/(cms)/[...path]/+layout.ts',     'newsite/src/routes/(cms)/[...path]/+layout.ts'],
+  ['src/routes/(cms)/[...path]/+page.svelte',   'newsite/src/routes/(cms)/[...path]/+page.svelte'],
 
   // The '/admin' routes
-  ['src/routes/(cms)/admin/+layout@.svelte',                'package/install/routes/(cms)/admin/+layout@.svelte'],
-  ['src/routes/(cms)/admin/[...adminPath]/+page.server.ts', 'package/install/routes/(cms)/admin/[...adminPath]/+page.server.ts'],
-  ['src/routes/(cms)/admin/[...adminPath]/+page.ts',        'package/install/routes/(cms)/admin/[...adminPath]/+page.ts'],
-  ['src/routes/(cms)/admin/[...adminPath]/+page.svelte',    'package/install/routes/(cms)/admin/[...adminPath]/+page.svelte'],
-  ['src/routes/(cms)/admin/[...adminPath]/+server.ts',      'package/install/routes/(cms)/admin/[...adminPath]/+server.ts'],
+  ['src/routes/(cms)/admin/+layout@.svelte',                'newsite/src/routes/(cms)/admin/+layout@.svelte'],
+  ['src/routes/(cms)/admin/[...adminPath]/+page.server.ts', 'newsite/src/routes/(cms)/admin/[...adminPath]/+page.server.ts'],
+  ['src/routes/(cms)/admin/[...adminPath]/+page.ts',        'newsite/src/routes/(cms)/admin/[...adminPath]/+page.ts'],
+  ['src/routes/(cms)/admin/[...adminPath]/+page.svelte',    'newsite/src/routes/(cms)/admin/[...adminPath]/+page.svelte'],
+  ['src/routes/(cms)/admin/[...adminPath]/+server.ts',      'newsite/src/routes/(cms)/admin/[...adminPath]/+server.ts'],
 
   // Files for the $lib folder
-  ['src/install/cms.ts',                'package/install/cms.ts'],
-  ['src/install/sveltecms.config.json', 'package/install/sveltecms.config.json'],
-  ['src/install/sveltecms.config.yml',  'package/install/sveltecms.config.yml'],
+  ['src/install/cms.ts',                'newsite/src/lib/cms.ts'],
+  ['src/install/sveltecms.config.json', 'newsite/src/lib/sveltecms.config.json'],
+  ['src/install/sveltecms.config.yml',  'newsite/src/lib/sveltecms.config.yml'],
 
   // Files for dependencies (SvelteKit, Vite, Tailwind)
-  ['tailwind.config.cjs', 'package/install/tailwind.config.cjs'],
+  ['src/install/tailwind.config.cjs', 'newsite/tailwind.config.cjs'],
+  ['src/install/app.css', 'newsite/src/app.css'],
+
+  // README file
+  ['src/install/README.md', 'newsite/README.md']
 
 ]
-files.forEach(([file,dest]) => {
-  try {
-    cp.sync(file, dest)
-    console.log(`copied ${file} -> ${dest}`)
-  }
-  catch(e) {
-    e.message = `Error copying "${file}" to "${dest}":\n${e.message}`
-    throw e
-  }
-})
 
-packageJSON.scripts = {
-  postinstall: "./scripts/postinstall.js"
-}
-
-fs.writeFileSync('package/package.json', JSON.stringify(packageJSON, null, 2))
-fs.chmodSync('package/scripts/postinstall.js', 0o755)
+sade('postpackage', true)
+  .describe('Create files for a new SvelteCMS project')
+  .action(async() => {
+    rm.sync('newsite')
+    await create('newsite', { template:'skeleton', types:'typescript', name:'sveltecms' })
+    files.forEach(([file,dest]) => {
+      try {
+        cp.sync(file, dest)
+        console.log(`copied ${file} -> ${dest}`)
+      }
+      catch(e) {
+        e.message = `Error copying "${file}" to "${dest}":\n${e.message}`
+        throw e
+      }
+    });
+    if (existsSync('newsite/src/routes/+page.svelte')) unlinkSync('newsite/src/routes/+page.svelte')
+  })
+  .parse(process.argv)
