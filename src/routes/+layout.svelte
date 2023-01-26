@@ -26,12 +26,12 @@
       </ul>
     </nav>
   </header>
-  <div class="flex-grow">
+  <div class="flex flex-col sm:block flex-grow">
     {#if $page.url.pathname.match(/^\/(?:docs|tutorials)(?:\/|$)/)}
-      <div class="px-6 sm:ml-60">
+      <div class="px-6 flex-grow sm:ml-60">
         <slot />
       </div>
-      <div class="not-prose -m-9 p-6 sm:m-auto bg-stone-200 dark:bg-stone-700 sm:fixed sm:w-60 sm:left-0 sm:top-0 sm:border-r-2 border-r-stone-700 h-full z-10">
+      <div class="not-prose p-6 mt-9 sm:mt-0 sm:m-auto bg-stone-200 dark:bg-stone-700 sm:fixed sm:w-60 sm:left-0 sm:top-0 sm:border-r-2 border-r-stone-700 h-full z-10">
         <DocsContents/>
       </div>
     {:else}

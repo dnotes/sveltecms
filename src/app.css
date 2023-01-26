@@ -70,7 +70,7 @@ section.footnotes {
   @apply text-sm leading-tight opacity-60;
 }
 
-.prose pre { @apply -mx-4 sm:-mx-9 md:-mx-24 text-[75%] leading-tight; }
+.prose pre { @apply -mx-4 sm:-mx-9 md:-mx-12 text-[75%] leading-tight; }
 
 /* Some form items */
 .field-icon>fieldset { display:flex; flex-wrap:wrap; align-items:center; }
