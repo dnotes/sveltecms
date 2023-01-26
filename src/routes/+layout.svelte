@@ -1,9 +1,9 @@
 <script>
   import "sveltecms/sveltecms-forms.css";
   import "../app.css";
-  import "@fontsource/roboto/latin-ext-100.css";
-  import "@fontsource/roboto/latin-ext-300.css";
-  import "@fontsource/roboto/latin-ext-700.css";
+  import "@fontsource/roboto/100.css";
+  import "@fontsource/roboto/300.css";
+  import "@fontsource/roboto/700.css";
   import "@fontsource/bellefair/latin-400.css";
   import "@fontsource/bevan/latin-400.css";
   import { page } from '$app/stores'
