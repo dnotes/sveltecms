@@ -1,15 +1,22 @@
 <script lang="ts">
 import sdk from '@stackblitz/sdk'
+import md from '$lib/md'
+import type { PageData } from '../../[...path]/$types';
+
+export let data:PageData
+
 
 const readme=`
 # Welcome to SvelteCMS!
 
 To install SvelteCMS, please run the following commands in the terminal below:
 
-    npm create sveltecms@latest
-    npm run dev
+  * \`npm create sveltecms@latest\`
+  * \`npm run dev\`
 
-StackBlitz integration is experimental--the Admin UI takes a while to load, and you may encounter errors! :)
+## StackBlitz integration is experimental!
+
+The Admin UI takes a long time to load, and half of the time there is a huge error that never gets resolved. It seems to help if you wait for a bit after \`npm run dev\` before clicking on the Admin link. (This doesn't happen in local development.)
 `
 
   function newProject() {
@@ -28,26 +35,10 @@ StackBlitz integration is experimental--the Admin UI takes a while to load, and 
 
   <h1>Getting Started</h1>
 
-  <p>Installing SvelteCMS is easy if you use NPM:</p>
-
-  <pre><code>
-    > npm create sveltecms@latest
-    > npm run dev
-  </code></pre>
-
-  <p>
-    After it is installed, you should be able to begin creating content through the Admin UI.
-    You can also build out Fields and Content Types much as you might with any other Content Management System.
-  </p>
-
-  <p>
-    We are working on using the WebContainer API to provide a first-class site building experience
-    that runs entirely in your browser. As a test, you can try running SvelteCMS in StackBlitz:
-  </p>
+  {@html data?.content?.body}
 
   <div class="flex flex-col text-center">
     <button type="button" class="inline-block text-xl border-2 px-5 py-2 rounded-full border-cyan-600 text-cyan-600" on:click={newProject}>Try it on StackBlitz</button>
     <noscript class="mx-auto block">(requires javascript)</noscript>
   </div>
-
 </div>

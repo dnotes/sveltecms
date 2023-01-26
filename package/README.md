@@ -1,11 +1,32 @@
 ## Installation
 
-Create a SvelteCMS project using the package manager of your choice:
+You can create a new SvelteCMS project, including the SvelteKit setup, using npm:
 
-`npm create sveltecms`
+```
+
+> npm create sveltecms@latest
+> npm run dev
+
+```
+
+### Optional: Use TailwindCSS
+
+**SvelteCMS works very well with TailwindCSS** (and likely with similar utility css
+frameworks like WindyCSS) for display of elements and ad-hoc styles in content.
+TailwindCSS can parse classes in the SvelteCMS config file and in locally stored content,
+but it needs to be told where to look for the files and how to recognize the classes.
+Luckily SvelteCMS comes with the proper functions already in the tailwind.config.cjs file.
+However, you still need to install and configure Tailwind and PostCSS:
+
+* Install Tailwind (and any plugins):
+
+    You can either do this manually or with a svelte-add command, e.g.
+    `npx svelte-add@latest tailwindcss --tailwindcss-typography`
+
+* Afterward, don't forget to run `npm install`!
 
 
-### Recommended: Setup YAML for configuration
+### Optional: Setup YAML for configuration
 
 **If you want to use YAML** instead of JSON for storing SvelteCMS configuration,
 you will want to install and configure `@rollup/plugin-yaml`.
@@ -30,18 +51,6 @@ you will want to install and configure `@rollup/plugin-yaml`.
     ~~`import conf from './sveltecms.config.json'`~~ \
     **`import conf from './sveltecms.config.yml'`**
 
-
-### Recommended: Use TailwindCSS
-
-**SvelteCMS works very well with TailwindCSS** (and likely with similar utility css
-frameworks like WindyCSS) for display of elements and ad-hoc styles in content.
-TailwindCSS can parse classes in the SvelteCMS config file and in locally stored content,
-but it needs to be told where to look for the files and how to recognize the classes.
-
-* Install Tailwind (and any plugins):
-
-    You can either do this manually or with a svelte-add command, e.g.
-    `npx svelte-add tailwindcss --tailwindcss-typography`
 
 
 ## Usage
