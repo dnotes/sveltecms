@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
@@ -83,7 +83,7 @@
     "container"
   ],
   "author": "David Hunt",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "bugs": {
     "url": "https://github.com/dnotes/sveltecms/issues"
   },
@@ -122,6 +122,7 @@
     "./display/field/Image.svelte": "./display/field/Image.svelte",
     "./display/field/Reference.svelte": "./display/field/Reference.svelte",
     ".": "./index.js",
+    "./manifest": "./manifest.js",
     "./plugins/admin/components/CMSComponentList.svelte": "./plugins/admin/components/CMSComponentList.svelte",
     "./plugins/admin/components/CMSComponentListOld.svelte": "./plugins/admin/components/CMSComponentListOld.svelte",
     "./plugins/admin/components/CMSConfigDisplays.svelte": "./plugins/admin/components/CMSConfigDisplays.svelte",

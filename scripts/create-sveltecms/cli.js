@@ -3,14 +3,14 @@ import sade from 'sade'
 import {bold,cyan,green,gray,yellow,red} from 'kleur/colors'
 import prompts from 'prompts'
 import { create } from '.'
-import path from 'path'
 
-const { version } = JSON.parse(fs.readFileSync(new URL('package.json', import.meta.url), 'utf-8'));
+const { version } = JSON.parse(fs.readFileSync(new URL('package.json', import.meta.url), 'utf8'));
 
 sade('create-sveltecms [directory]', true)
   .describe('Create a new SvelteKit site with SvelteCMS installed.')
-  .option('--yes, -y', 'just continue through all the prompts, accepting any default values and overwriting any files, full speed ahead!', false)
   .version(version)
+  .option('--version, -v', 'the specific version of SvelteCMS to install.')
+  .option('--yes, -y', 'breeze through all the prompts, accepting default values and overwriting files.', false)
   .action(async (directory, opts) => {
     console.log(bold(gray(`Create SvelteCMS ${version}`)))
 
@@ -76,7 +76,7 @@ sade('create-sveltecms [directory]', true)
     // Get the directory and all options
     cwd = answers?.directory || directory || '.'
 
-    Object.assign(options, answers)
+    Object.assign(options, opts, answers)
 
     // Check the directory for existing contents
     if (!opts.yes) {

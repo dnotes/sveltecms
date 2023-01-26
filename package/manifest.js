@@ -1,13 +1,7 @@
-export type ManifestFile = {
-  path:string
-  src?:string
-  description:string
-  required?:true
-}
-
-export const manifest:ManifestFile[] = [
+/** @type { {path:string, src?:string, required?:true, description:string}[] } */
+export const manifest = [
   {
-    "path": "src/routes/(cms)/+layout.ts",
+    "path": "src/routes/+layout.svelte",
     "src": "src/install/+layout.svelte",
     "description": "The root layout component for the site."
   },
@@ -40,22 +34,22 @@ export const manifest:ManifestFile[] = [
     "description": "The layout reset component for the SvelteCMS Admin UI. Layout for the content paths should not affect the Admin UI."
   },
   {
-    "path": "src/routes/(cms)/admin/[....adminPath]/+page.server.ts",
+    "path": "src/routes/(cms)/admin/[...adminPath]/+page.server.ts",
     "required": true,
     "description": "Server routes for form sumissions to the Admin UI."
   },
   {
-    "path": "src/routes/(cms)/admin/[....adminPath]/+server.ts",
+    "path": "src/routes/(cms)/admin/[...adminPath]/+server.ts",
     "required": true,
     "description": "REST functions for the Admin UI."
   },
   {
-    "path": "src/routes/(cms)/admin/[....adminPath]/+page.ts",
+    "path": "src/routes/(cms)/admin/[...adminPath]/+page.ts",
     "required": true,
     "description": "Page load functions for the Admin UI."
   },
   {
-    "path": "src/routes/(cms)/admin/[....adminPath]/+page.svelte",
+    "path": "src/routes/(cms)/admin/[...adminPath]/+page.svelte",
     "required": true,
     "description": "The page display component for the Admin UI."
   },

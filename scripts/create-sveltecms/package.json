@@ -1,6 +1,6 @@
 {
-  "name": "create-svelte",
-  "version": "0.0.34",
+  "name": "create-sveltecms",
+  "version": "0.0.1",
   "description": "Create a new SvelteKit project with SvelteCMS installed.",
   "bin": "cli.js",
   "main": "index.js",

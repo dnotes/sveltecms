@@ -1,26 +1,8 @@
-## Pre-install: Setup SvelteKit with version 1.0.x
-
-You can create a SvelteKit app as you usually would.
-
-* `npm create svelte`
-
-SvelteCMS will require some additional tinkering if you are not using TypeScript.
-Therefore, it is easiest to choose TypeScript syntax for your SvelteKit app.
-
-* *select the option* :  `Yes, using TypeScript syntax`
-
 ## Installation
 
-Install SvelteCMS into your SvelteKit app using the package manager of your choice:
+Create a SvelteCMS project using the package manager of your choice:
 
-`npm install sveltecms`
-
-SvelteCMS uses an npm postinstall script to copy a few files into your repository,
-including config files and routes for the admin interface and content display.
-If you are installing SvelteCMS with the `--ignore-scripts` flag, you can run
-the script manually from the command line:
-
-`node ./node_modules/sveltecms/scripts/postinstall.js`
+`npm create sveltecms`
 
 
 ### Recommended: Setup YAML for configuration
@@ -61,33 +43,16 @@ but it needs to be told where to look for the files and how to recognize the cla
     You can either do this manually or with a svelte-add command, e.g.
     `npx svelte-add tailwindcss --tailwindcss-typography`
 
-* Modify the `tailwind.config.cjs` file provided by SvelteCMS
-
-    The configuration provided by SvelteCMS includes several TailwindCSS plugins.
-    If you haven't installed them, remove them from the configuration.
-
-
-### Optional: Use plain JS
-
-**If you are not using TypeScript**, you will at present need to manually modify
-the install files copied by SvelteCMS to conform to plain JS syntax.
-
-* change filename extensions from `.ts` to `.js`
-* in `.svelte` files, remove `lang="ts"` from the script tags
-* remove all TypeScript-specific syntax from `.js` and `.svelte` files
-
 
 ## Usage
 
-SvelteCMS is now a part of your SvelteKit app. You will find SvelteCMS files in the
-`src/routes/(cms)` folder.
+You should have a new SvelteKit project with SvelteCMS included
+You will find SvelteCMS-specific files in the `src/routes/(cms)` folder.
 
-For local development, you can run SvelteKit as you normally would:
+For local development, you can start SvelteKit as you normally would:
 
 `npm run dev`
 
-Then go to the admin interface in your browser, which is located by default at
-[//localhost:5173/admin](//localhost:5173/admin).
 
 ## ...Why?
 
