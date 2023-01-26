@@ -1,5 +1,5 @@
 export const prerender = false
-export const ssr = false
+export const ssr = true
 export const csr = true
 
 import cms from '$lib/cms'

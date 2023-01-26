@@ -1,5 +1,4 @@
 export const prerender = false
-export const ssr = false
 
 import cms from '$lib/cms'
 import type { RequestEvent } from '@sveltejs/kit'
