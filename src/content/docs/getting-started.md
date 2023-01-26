@@ -4,6 +4,9 @@ _slug: getting-started
 _oldSlug: getting-started
 _type: docs
 ---
+
+## Installation
+
 Install SvelteCMS with NPM:
 
 ```
@@ -13,13 +16,14 @@ Install SvelteCMS with NPM:
 
 ```
 
-After it is installed, you should be able to begin creating content through the Admin UI. You can also build out Fields and Content Types much as you might with any other Content Management System.
+## What is a SvelteCMS site?
 
-## How to publish a SvelteCMS site?
+the Big Picture
+{.text-gray-500 .text-2xl .italic .-mt-8}
 
-SvelteCMS is really just a pre-built section of a SvelteKit project, and it should deploy like any other SvelteKit project. It can be used as a static site builder or as a set of serverless functions, or even a mixture of both. Here are three different scenarios for using SvelteCMS:
+SvelteCMS is really just a pre-built section of a SvelteKit project. You can see the routes provided by SvelteCMS in the `src/routes/(cms)` directory. Accordingly, a SvelteCMS site should function and deploy like any other SvelteKit project. It can be used as a static site builder or as a set of serverless functions, or even a mixture of both:
 
-### Build a static site
+### 1. Static site builder
 
 SvelteCMS defaults to working as a static site builder. You can use it with SvelteKit's `@sveltejs/adapter-static` and the site should deploy to any static host, usually automatically when you push to your repository. Your content editing workflow would look something like this:
 
@@ -27,16 +31,32 @@ SvelteCMS defaults to working as a static site builder. You can use it with Svel
 2. Configure the CMS and edit content through the Admin UI
 3. Commit and push changes to your repository
 
-In this scenario, the SvelteCMS Admin UI will not be a part of your site when it is deployed; it will only be available in development mode. However, you'll still get all the benefits of tagging, media management, content modeling, etc.
+In this scenario, SvelteCMS is only available during local development. However, we are exploring ways to use WebContainers or isomorphic git to make SvelteCMS into a truly serverless site builder that would run on your site. In this case, the site's content editors might:
 
-### Deploy to a serverless provider
+1. Login with GitHub credentials to access the Admin UI
+2. Edit content in the Admin UI
+3. Preview the changes live, locally, in the browser, in context of the full site
+4. Push change sets to the public repository, making them live for everyone
 
-SvelteCMS is part of your SvelteKit project, so it should deploy to any serverless provider that supports SvelteKit. In this scenario, the SvelteCMS Admin UI would be available on your site, and other site visitors would be able to add content as well.
+While this exact workflow is probably a ways out, services like StackBlitz show that it's possible to run SvelteCMS inside a WebContainer. You can try it out here:
 
-*SvelteCMS does not yet have user management or form validation*{.text-amber-500}, and setting this up in a secure way without those things would be ... a very interesting challenge!
+<div class="flex flex-col mx-auto">
+  <button type="button" class="stackblitz inline-block text-xl border-2 py-2 px-5 rounded-full border-cyan-600 text-cyan-600">
+    Try SvelteCMS on StackBlitz
+  </button>
+  <noscript>(requires javascript)</noscript>
+</div>
 
-### Build a static site ... using your browser!?
+### 2. Deploy to a serverless provider
 
-It should be possible to run SvelteCMS *in the browser* and push content changes back to a static repository. In this scenario, a user might login using their GitHub account to gain access to the Admin UI, make content changes as desired, preview those changes locally on the live site, and then push them back to the repository, at which point the static site would update for everyone.
+In this scenario, the SvelteCMS Admin UI would be available on your site, users would be able to add content in the familiar ways:
 
-We are exploring using technologies like the WebContainer API, isomorphic-git, and lightning-fs to provide a first-class site building experience that runs entirely in the browser. It will be a while before this is ready, but as a demonstration, you can try running SvelteCMS in a StackBlitz WebContainer:
+1. Login through an Auth provider[^1]
+2. Create and edit content through the Admin UI
+
+### 3. Hybrid static/dynamic site
+
+You may wish to have some content be served from static files while another is dynamic and user-submitted. Examples might be blog posts with comments or products with user reviews. In this case you could prerender the main content types (posts or products) from the git repository, but use SvelteCMS's components and endpoints to user submissions for the secondary content type (comments or reviews).
+
+
+[^1]: While the last two scenarios are definitely within the scope of what SvelteCMS will provide, *SvelteCMS does not yet have user management, permissions or form validation*{.text-amber-500}, and setting everything up securely at this time would be ... a very interesting challenge!

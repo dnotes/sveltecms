@@ -1,5 +1,6 @@
 <script lang="ts">
 import sdk from '@stackblitz/sdk'
+  import { onMount } from 'svelte';
 import type { PageData } from '../../[...path]/$types';
 
 export let data:PageData
@@ -15,7 +16,7 @@ To install SvelteCMS, please run the following commands in the terminal below:
 
 ## StackBlitz integration is experimental!
 
-The Admin UI takes a long time to load, and half of the time there is a huge error that never gets resolved. It seems to help if you wait for a bit after \`npm run dev\` before clicking on the Admin link. (This doesn't happen in local development.)
+The Admin UI takes a long time to load, and half of the time there is a huge error that never gets resolved. It seems to help if you wait for a minute or two after \`npm run dev\` before clicking on the Admin link. (This doesn't happen in local development.)
 `
 
   function newProject() {
@@ -28,16 +29,26 @@ The Admin UI takes a long time to load, and half of the time there is a huge err
       openFile: '_README.md',
     })
   }
+
+  let el:HTMLElement
+
+  onMount(() => {
+    el.querySelectorAll('.stackblitz').forEach(item => {
+      item.addEventListener('click', newProject)
+    })
+    return () => {
+      el.querySelectorAll('.stackblitz').forEach(item => {
+        item.removeEventListener('click', newProject)
+      })
+    }
+  })
+
 </script>
 
-<div class="prose prose-stone dark:prose-invert prose-lg mx-auto">
+<div class="prose prose-stone dark:prose-invert prose-lg mx-auto" bind:this={el}>
 
   <h1>Getting Started</h1>
 
   {@html data?.content?.body}
 
-  <div class="flex flex-col text-center">
-    <button type="button" class="inline-block text-xl border-2 px-5 py-2 rounded-full border-cyan-600 text-cyan-600" on:click={newProject}>Try it on StackBlitz</button>
-    <noscript class="mx-auto block">(requires javascript)</noscript>
-  </div>
 </div>

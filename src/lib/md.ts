@@ -3,7 +3,7 @@ import MarkdownAttrs from 'markdown-it-attrs'
 import MarkdownFootnotes from 'markdown-it-footnote'
 
 const md = new MarkdownIT({
-  html:false,
+  html:true,
   linkify:true,
   typographer:true,
 })
