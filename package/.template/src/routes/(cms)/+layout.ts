@@ -46,7 +46,7 @@ export async function load(event) {
     }
     else if (cms?.conf?.settings?.rootContentType && cms?.conf?.settings?.frontPageSlug) {
       contentTypeID = cms.conf.settings.rootContentType.toString()
-      content = await cms.getContent(contentTypeID, cms.conf.settings.frontPageSlug.toString())
+      content = await cms.getContent(contentTypeID, cms.conf.settings.frontPageSlug.toString()) || {}
     }
   // console.log(`\n56 type:${contentTypeID} slug:${slug} returning\n`)
   return {
