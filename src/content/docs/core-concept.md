@@ -43,14 +43,7 @@ In this scenario, SvelteCMS is only available during local development. However,
 3. Preview the changes live, locally, in the browser, in context of the full site
 4. Push change sets to the public repository, making them live for everyone
 
-While this exact workflow is probably a ways out, services like StackBlitz show that it's possible to run SvelteCMS inside a WebContainer. You can try it out here:
-
-<div class="flex flex-col mx-auto">
-  <button type="button" class="stackblitz inline-block text-cyan-600">
-    Try SvelteCMS on StackBlitz
-  </button>
-  <noscript>(requires javascript)</noscript>
-</div>
+While this exact workflow is probably a ways out, services like StackBlitz show that it's possible to run SvelteCMS inside a WebContainer. [Try SvelteCMS on StackBlitz](#){.stackblitz} (*experimental*<noscript>, requires javascript</noscript>).
 
 ### 2. Deploy to a serverless provider
 
