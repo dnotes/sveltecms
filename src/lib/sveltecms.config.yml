@@ -71,6 +71,8 @@ contentTypes:
     label: ''
     contentStore: staticFiles
     mediaStore: staticFiles
+    displays:
+      page: WrapperStackblitz
   tutorials:
     contentStore: staticFiles
     mediaStore: staticFiles
@@ -79,6 +81,8 @@ contentTypes:
     fields:
       title: title
       body: body
+    displays:
+      page: WrapperStackblitz
 lists: {}
 contentStores: {}
 mediaStores:
@@ -265,12 +269,29 @@ fieldgroups:
       quote:
         type: markdown
         required: true
-      cite: text
+        helptext: Text of the quote
+      cite:
+        type: text
+        helptext: A link to where the quote can be found online
     tags:
       - block
     displays:
       default: none
       page: blockquote
+  markdown:
+    tags:
+      - fullwidth
+      - block
+      - inline
+    fields:
+      body: markdown
+  image:
+    tags:
+      - fullwidth
+      - block
+      - inline
+    fields:
+      image: image
 transformers: {}
 components: {}
 plugins: {}
