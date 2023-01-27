@@ -57,4 +57,4 @@ In this scenario, the SvelteCMS Admin UI would be available on your site, users 
 You may wish to have some content be served from static files while another is dynamic and user-submitted. Examples might be blog posts with comments or products with user reviews. In this case you could prerender the main content types (posts or products) from the git repository, but use SvelteCMS's components and endpoints to user submissions for the secondary content type (comments or reviews).
 
 
-[^1]: While the last two scenarios are definitely within the scope of what SvelteCMS will provide, *SvelteCMS does not yet have user management, permissions or form validation*{.text-amber-500}, and setting everything up securely at this time would be ... a very interesting challenge!
+[^1]: While the last two scenarios are definitely within the scope of what SvelteCMS will provide, *SvelteCMS does not yet have user management, permissions or form validation*{.text-amber-500}, and setting everything up securely at this time is a very interesting challenge!
