@@ -1,8 +1,12 @@
 ---
 title: Adding a Custom Widget Type
+tags:
+  - title: Developers
+    _slug: developers
+    _type: tags
 _slug: adding-a-custom-widget-type
-_oldSlug: adding-a-widget-type
-_type: docs
+_oldSlug: adding-a-custom-widget-type
+_type: tutorials
 ---
 Registering a custom Widget with SvelteCMS requires creating a plugin and an associated Svelte component. The `sveltecms/plugins/checkboxes` plugin has been created as an example.
 
