@@ -215,6 +215,7 @@ export const templateField:EntityTemplate = {
       type: 'defaultValue',
       default: undefined,
       scriptable: true,
+      hidden: '$widgetHandles(fields)', // @todo: figure out why viewing details on fieldgroup fields breaks without this
       helptext: 'The default value for this field when new content is created.'
     }
   }
@@ -376,7 +377,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
   },
   fieldgroup: {
     id: 'fieldgroup',
-    default: {},
+    default: undefined,
     widget: 'fieldgroup',
     displays: {
       default: 'div',

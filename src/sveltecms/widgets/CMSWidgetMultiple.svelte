@@ -12,8 +12,8 @@ import { cloneDeep } from "lodash-es";
   export let cms:SvelteCMS
 
   // For multiple fieldgroups, it is necessary to set the value to {}, otherwise SSR causes infinite loop
-  export let value:any|any[] = [field.type === 'fieldgroup' ? {} : field.default]
-  if (!Array.isArray(value) && !field?.multipleOrSingle) value = [value]
+  export let value:any|any[] = field.default
+  if (!Array.isArray(value) && !field?.multipleOrSingle) value = [value].filter(v => typeof v !== 'undefined')
 
   let fieldgroupsCollapsed = []
   // We defer this so that child widgets can measure their height, e.g. for autosizing textareas
