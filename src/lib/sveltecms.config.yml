@@ -67,6 +67,7 @@ contentTypes:
     fields:
       title: title
       body: body
+      tags: tags
     slug: title
     label: ''
     contentStore: staticFiles
@@ -81,8 +82,18 @@ contentTypes:
     fields:
       title: title
       body: body
+      tags: tags
     displays:
       page: WrapperStackblitz
+  tags:
+    contentStore: staticFiles
+    mediaStore: staticFiles
+    label: ''
+    slug: title
+    fields:
+      title: title
+      body: body
+      taggedContent: taggedContent
 lists: {}
 contentStores: {}
 mediaStores:
@@ -113,11 +124,7 @@ fields:
       teaser:
         type: h2.m-0.font-bold
         link: true
-  postDate:
-    type: date
-    index: true
-    required: true
-    default: $now
+  postDate: date
   body: markdown
   slug:
     type: text
@@ -211,6 +218,10 @@ fields:
         helptext: >-
           Any help text that should be shown for screen readers or when hovering
           over the element.
+  video:
+    type: text
+    helptext: A url for a YouTube video or playlist (yes, just YouTube ATM)
+    displays: Video
 widgets:
   date:
     type: date
@@ -292,6 +303,13 @@ fieldgroups:
       - inline
     fields:
       image: image
+  video:
+    tags:
+      - fullwidth
+      - block
+      - inline
+    fields:
+      video: video
 transformers: {}
 components: {}
 plugins: {}

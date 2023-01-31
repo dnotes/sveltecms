@@ -33,6 +33,20 @@ const plugin:CMSPlugin = {
           }
         }
       },
+      blocks: {
+        type: 'fieldgroup',
+        multiple: true,
+        widget: {
+          type: 'fieldgroup',
+          options: {
+            useComponents: true,
+            fieldgroupTags: [
+              'fullwidth',
+              'block'
+            ],
+          }
+        }
+      },
       tags: {
         type: 'reference',
         widget: {
@@ -62,7 +76,9 @@ const plugin:CMSPlugin = {
           title: 'title',
           slug: 'slug',
           image: 'mainImage',
+          header: 'blocks',
           body: 'body',
+          footer: 'blocks',
         },
         contentStore: 'staticFiles',
       },
