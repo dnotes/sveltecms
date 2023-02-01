@@ -194,7 +194,7 @@ let result
       bind:this={input}
       {multiple}
       disabled={field.disabled}
-      required={field.required}
+      required={field.required && !value}
       on:click|stopPropagation
       on:change={handleUpload}
       style="display:none"
