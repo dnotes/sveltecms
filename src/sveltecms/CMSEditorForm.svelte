@@ -90,18 +90,24 @@ import ContentItem from './display/ContentItem.svelte';
         </div>
         {/if}
 
-        <Button
-          submit
-          primary
-          formaction='?/post'
-          {disabled}
-        >
-          <slot name="submit">Submit</slot>
-        </Button>
+        <div class="actions">
+          <Button
+            submit
+            primary
+            formaction='?/post'
+            {disabled}
+          >
+            <slot name="submit">Submit</slot>
+          </Button>
 
-        {#if values['_oldSlug']}
-          <Button danger formaction="?/delete" text="delete"/>
-        {/if}
+          {#if values['_oldSlug']}
+            <Button href="/{contentTypeID}/{values['_oldSlug']}">view</Button>
+
+            <div class="spacer"></div>
+
+            <Button danger formaction="?/delete" text="delete"/>
+          {/if}
+        </div>
 
         <DisplayResult bind:result />
 
@@ -117,3 +123,8 @@ import ContentItem from './display/ContentItem.svelte';
     </div>
   </div>
 </div>
+
+<style>
+  div.actions { display:flex; gap:.5em; }
+  div.spacer { flex-grow:1; }
+</style>
