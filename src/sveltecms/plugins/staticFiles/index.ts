@@ -484,7 +484,7 @@ const plugin:CMSPlugin = {
           const buffer = await file.arrayBuffer()
           const uint8 = new Uint8Array(buffer)
           await fs.writeFile(filepath, uint8)
-          return opts.mediaDirectory ? `${opts.mediaDirectory}/${file.name}` : '/' + file.name
+          return opts.mediaDirectory ? `/${opts.mediaDirectory}/${file.name}` : `/${file.name}`
         }
         catch(e) {
           throw e
