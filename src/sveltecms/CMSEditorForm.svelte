@@ -101,7 +101,7 @@ import ContentItem from './display/ContentItem.svelte';
           </Button>
 
           {#if values['_oldSlug']}
-            <Button href="/{contentTypeID}/{values['_oldSlug']}">view</Button>
+            <Button href="{contentTypeID === cms.conf.settings.rootContentType ? '' : '/' + contentTypeID}/{values['_oldSlug']}">view</Button>
 
             <div class="spacer"></div>
 
