@@ -28,10 +28,8 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
                     value = await collapseFormItem(cms, contentType, fieldgroup.fields, item, formPath);
                 }
             }
-            else {
-                // This can happen if a "fieldgroup" type Field is created with no fields, but a widget takes in values anyhow.
-                // Maybe this should just continue to be an error? We could just save the data, but there would be no validation...
-                throw new Error(`The field "${id}" is a fieldgroup with data but no fields.`);
+            else { // This happens with fields of type fieldgroup whose fields are set manually
+                value = await collapseFormItem(cms, contentType, field.fields, item, formPath);
             }
         }
         // multiple fields must either handle multiple values or be an array - otherwise it's definitely an error
