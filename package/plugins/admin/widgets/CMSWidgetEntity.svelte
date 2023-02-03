@@ -128,8 +128,8 @@ $: if (conf)
 // when the value changes, or e.g. the slug won't change on the list of Content Types when
 // you set it in the Content Type detail.
 // @todo: this needs work and tests
-$: if ((value || !value) && !entityID && !Array.isArray(value))
-    setConf();
+// @todo: add this back in a way that doesn't break field detail config for images or fieldgroup fields
+// $: if ((value || !value) && !entityID && !Array.isArray(value)) setConf()
 function setConf() {
     if (Array.isArray(value)) { }
     else if (typeof value === 'string') {

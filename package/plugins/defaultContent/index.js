@@ -5,6 +5,13 @@ const plugin = {
             rootContentType: 'page',
             frontPageSlug: 'front',
         },
+        mediaStores: {
+            images: {
+                type: 'staticFiles',
+                mediaDirectory: 'images',
+                allowedMediaTypes: ['image/jpeg', 'image/png', 'image/gif'],
+            }
+        },
         fields: {
             postDate: {
                 type: 'date',
@@ -24,34 +31,53 @@ const plugin = {
                 type: 'image',
                 index: true,
                 mediaStore: {
-                    type: 'staticFiles',
-                    options: {
-                        mediaDirectory: 'images/main',
-                        allowedMediaTypes: ['image/jpeg', 'image/png', 'image/gif'],
-                    }
+                    type: 'images',
+                    mediaDirectory: 'images/main',
+                }
+            },
+            blocks: {
+                type: 'fieldgroup',
+                multiple: true,
+                displays: {
+                    default: 'none',
+                    page: 'div',
+                },
+                widget: {
+                    type: 'fieldgroup',
+                    useComponents: true,
+                    fieldgroupTags: [
+                        'fullwidth',
+                        'block'
+                    ],
                 }
             },
             tags: {
                 type: 'reference',
                 widget: {
                     type: 'reference',
-                    options: {
-                        referenceKey: 'taggedContent',
-                        contentTypes: 'tags',
-                        freeTagging: true,
-                    }
+                    referenceKey: 'taggedContent',
+                    contentTypes: 'tags',
+                    freeTagging: true,
                 }
             },
             taggedContent: {
                 type: 'reference',
                 widget: {
                     type: 'reference',
-                    options: {
-                        referenceKey: 'tags',
-                        displayMode: 'teaser',
-                    }
+                    referenceKey: 'tags',
+                    displayMode: 'teaser',
                 }
             }
+        },
+        fieldgroups: {
+            image: {
+                id: 'image',
+                tags: ['fullwidth', 'block', 'inline'],
+                displays: 'div',
+                fields: {
+                    image: 'image',
+                },
+            },
         },
         contentTypes: {
             page: {
@@ -59,8 +85,9 @@ const plugin = {
                 fields: {
                     title: 'title',
                     slug: 'slug',
-                    image: 'mainImage',
+                    header: 'blocks',
                     body: 'body',
+                    footer: 'blocks',
                 },
                 contentStore: 'staticFiles',
             },

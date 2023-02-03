@@ -40,6 +40,18 @@ const pluginBuilder = (config) => {
         fieldWidgets: {
             markdown: ['textarea', 'value']
         },
+        conf: {
+            fieldgroups: {
+                markdown: {
+                    id: 'markdown',
+                    tags: ['fullwidth', 'block', 'inline'],
+                    displays: 'div',
+                    fields: {
+                        text: 'markdown',
+                    }
+                },
+            }
+        }
     };
     return plugin;
 };

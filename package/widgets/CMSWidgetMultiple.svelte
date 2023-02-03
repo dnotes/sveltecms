@@ -6,9 +6,9 @@ export let field;
 export let id;
 export let cms;
 // For multiple fieldgroups, it is necessary to set the value to {}, otherwise SSR causes infinite loop
-export let value = [field.type === 'fieldgroup' ? {} : field.default];
+export let value = field.default;
 if (!Array.isArray(value) && !field?.multipleOrSingle)
-    value = [value];
+    value = [value].filter(v => typeof v !== 'undefined');
 let fieldgroupsCollapsed = [];
 // We defer this so that child widgets can measure their height, e.g. for autosizing textareas
 onMount(() => { fieldgroupsCollapsed = Array.isArray(value) ? value?.map(i => true) : [true]; });

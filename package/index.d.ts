@@ -31,9 +31,7 @@ export type TypedEntityConfigSetting = {
 export type ConfigurableEntity = Entity & {
     options?: ConfigSetting;
 };
-export type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & {
-    options?: ConfigSetting;
-};
+export type ConfigurableEntityConfigSetting = TypedEntityConfigSetting & ConfigSetting & {};
 export type ConfigurableEntityConfigSettingValue<T> = string | T | (string | T)[];
 export type LabeledEntity = Entity & {
     label: string | ScriptFunctionConfig;

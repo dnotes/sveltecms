@@ -161,6 +161,7 @@ export const templateField = {
             type: 'defaultValue',
             default: undefined,
             scriptable: true,
+            hidden: '$widgetHandles(fields)',
             helptext: 'The default value for this field when new content is created.'
         }
     }
@@ -280,7 +281,7 @@ export const fieldTypes = {
     },
     fieldgroup: {
         id: 'fieldgroup',
-        default: {},
+        default: undefined,
         widget: 'fieldgroup',
         displays: {
             default: 'div',
