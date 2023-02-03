@@ -6,12 +6,11 @@
 
 <div id="page">
 
-  <header>
-    <div class="sitename">Your Site Name</div>
+  <header data-sveltekit-preload-code>
+    <div class="sitename"><a href="/">Your Site Name</a></div>
     <nav>
-      <a href="/">Home</a>
       <a href="/blog">Blog</a>
-      {#if import.meta.env.MODE === 'development'}
+      {#if import.meta.env.MODE === "development"}
         <a href="/admin">Admin</a>
       {/if}
     </nav>
@@ -42,6 +41,10 @@
   nav a {
     display: block;
     padding: 2px 8px;
+  }
+  header a {
+    color: var(--text-color);
+    text-decoration: none;
   }
 
 </style>
