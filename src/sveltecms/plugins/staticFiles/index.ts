@@ -338,19 +338,13 @@ const plugin:CMSPlugin = {
         const filepath = `${getBasedir()}/src/content/_${id}.index.json`
 
         try {
-          return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
+          await mkdirp(fs, dirname(filepath))
+          let res = fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
+          return res
         }
         catch(e) {
-          if (e.code === 'ENOENT') {
-            try {
-              await mkdirp(fs, dirname(filepath))
-              return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]')
-            }
-            catch(e) {
-              e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message
-              throw e
-            }
-          }
+          e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message
+          throw e
         }
 
       },
@@ -515,7 +509,12 @@ const plugin:CMSPlugin = {
               let indexerType = contentType?.indexer?.type ?? contentType?.indexer ?? cms.indexer.type
               let indexerRoot = cms.getEntityRoot('indexers', indexerType)
               if (indexerRoot?.id === 'staticFiles') {
-                cms.indexers[indexerType].saveIndex(contentTypeID, [])
+                try {
+                  await cms.indexers[indexerType].saveIndex(contentTypeID, [])
+                }
+                catch(e) {
+                  console.log(e)
+                }
               }
             }
           }
