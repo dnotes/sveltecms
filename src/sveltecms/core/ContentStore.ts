@@ -3,7 +3,7 @@ import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting
 import type { ContentType } from 'sveltecms/core/ContentType'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
 
-export type Value = string|number|boolean|null|undefined|Date|Content|Array<Value>
+export type Value = string|number|boolean|null|undefined|Date|Content|Array<Value>|{[key:string]:Value}
 export type Content = {
   _type?:string
   _slug?:string
