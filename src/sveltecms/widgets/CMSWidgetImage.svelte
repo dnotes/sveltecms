@@ -3,8 +3,7 @@ import type { WidgetField } from "..";
 import type { Media } from "sveltecms/core/MediaStore";
 import type SvelteCMS from "..";
 import MediaChooser from "./MediaChooser.svelte";
-  import CmsWidgetImagePreview from "./CMSWidgetImagePreview.svelte";
-  import CmsWidgetFieldgroup from "./CMSWidgetFieldgroup.svelte";
+import CmsWidgetImagePreview from "./CMSWidgetImagePreview.svelte";
 
 /**
  * The Image Widget works with the SvelteCMS Media Chooser to provide Media input.
