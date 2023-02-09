@@ -386,6 +386,7 @@ export const widgetTypes:{[key:string]:WidgetType} = {
     widget: CMSWidgetImage,
     handlesMultiple: true,
     handlesMedia: true,
+    handlesFields: true,
     optionFields: {
       accept: {
         type: 'text',
