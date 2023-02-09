@@ -4,6 +4,7 @@ import { splitTags } from 'sveltecms/utils'
 import type { Content } from './ContentStore'
 import type ContentType from './ContentType'
 import type { EntityTemplate } from './EntityTemplate'
+import type { Changeset } from './Hook'
 import type { Media } from './MediaStore'
 
 export type IndexItem = Content
@@ -23,6 +24,7 @@ export type IndexerType = EntityType & ConfigurableEntityType & {
   searchIndex:(id:string, search?:string, options?:Object) => Promise<(Content|Media) & { _score?:number }[]>
   saveContent:(contentType:string|ContentType, content:IndexItem|IndexItem[])=>Promise<void>
   deleteContent:(contentType:string|ContentType, content:IndexItem|IndexItem[])=>Promise<void>
+  indexMedia:(changeset:Changeset, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
   saveMedia:(media:Media|Media[])=>Promise<void>
   deleteMedia:(media:Media|Media[])=>Promise<void>
   searchContent:(contentType:string|ContentType, search:string|Object, options?:Object)=>Promise<Content & { _score?:number }[]>
@@ -61,6 +63,7 @@ export class Indexer implements ConfigurableEntity, TypedEntity {
   searchIndex:(id:string, search?:string, options?:Object) => Promise<(Content|Media) & { _score?:number }[]> = noop()
   saveContent:(contentType:ContentType, content:Content|Content[])=>Promise<void> = noop()
   deleteContent:(contentType:ContentType, content:Content|Content[])=>Promise<void> = noop()
+  indexMedia:(changeset:Changeset, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void> = noop()
   saveMedia:(media:Media|Media[])=>Promise<void> = noop()
   deleteMedia:(media:Media|Media[])=>Promise<void> = noop()
   searchContent:(contentType:ContentType, search:string|Object, options?:Object)=>Promise<Content[]> = noop([])
@@ -79,6 +82,7 @@ export class Indexer implements ConfigurableEntity, TypedEntity {
     this.searchIndex = indexer.searchIndex.bind(this)
     this.saveContent = indexer.saveContent.bind(this)
     this.deleteContent = indexer.deleteContent.bind(this)
+    this.indexMedia = indexer.indexMedia.bind(this)
     this.saveMedia = indexer.saveMedia.bind(this)
     this.deleteMedia = indexer.deleteMedia.bind(this)
     this.searchContent = indexer.searchContent.bind(this)

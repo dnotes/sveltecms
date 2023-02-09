@@ -3,12 +3,13 @@ import type { ConfigFieldConfigSetting } from 'sveltecms/core/Field';
 import type { MKDirOptions, PromisifiedFS } from '@isomorphic-git/lightning-fs'
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node'
 import bytes from 'bytes'
-import { cloneDeep, difference } from 'lodash-es';
+import { cloneDeep, difference, sortBy } from 'lodash-es';
 import { dirname } from 'sveltecms/utils/path';
 import Fuse from 'fuse.js';
 import { findReferenceIndex } from 'sveltecms/utils';
 import type { IndexItem } from 'sveltecms/core/Indexer';
 import type { ContentPostWriteHook } from 'sveltecms/core/Hook';
+import type { Media, MediaIndex } from 'sveltecms/core/MediaStore';
 const fs = {}
 
 const allIndexes:{[key:string]:{default:IndexItem[]}} = import.meta.glob('/src/content/_*.index.json', { eager:true })
@@ -406,6 +407,58 @@ const plugin:CMSPlugin = {
       searchContent: async function (contentType, search, options = {}) {
         let keys = [...(contentType?.['indexFields'] || []), '_slug']
         return this.searchIndex(contentType?.['id'] ?? contentType, search, { keys, ...options })
+      },
+      indexMedia: async function (changeset, cms, options) {
+
+        let beforeContent = changeset.before
+        let afterContent = changeset.after
+
+        let slugs = [] // we will remove all usage items that match these slugs...
+        let usageItems = []
+
+        let index = await this.getIndex('_media') as Media[]
+        let usage = await this.getIndex('_media_usage') as { src:string, contentType:string, slug:string, path:string }[]
+
+        for (let i=0; i<changeset.after.length; i++) {
+
+          if (afterContent[i]) { // Item has been saved
+
+            let media = afterContent[i]?._media
+
+            // Remove usage for the slug
+            slugs.push(afterContent[i]._slug)
+            // If the slug has been changed, remove usage for the old slug
+            if (afterContent[i]?.oldSlug && afterContent[i]._oldSlug !== afterContent[i]._slug) slugs.push(afterContent[i]._oldSlug)
+
+            if (media && media?.length) {
+              media.forEach(item => {
+
+                // Add the usage record for each Media item
+                usageItems.push({
+                  src: item.value.src,
+                  contentType: changeset.contentType.id,
+                  slug: afterContent[i]._slug,
+                  path: item.usage,
+                })
+
+                // If there is no index item, add it
+                if (!index.find(indexItem => indexItem.src === item.value.src)) index.unshift(item.value)
+
+              })
+            }
+          }
+          else { // Item has been deleted
+            slugs.push(beforeContent[i]._oldSlug ?? beforeContent[i]._slug)
+          }
+
+        }
+
+        usage = usage.filter(item => !(item.contentType === changeset.contentType.id && slugs.includes(item.slug)))
+        usage = sortBy([...usage, ...usageItems], ['src','contentType','slug','path'])
+
+        this.saveIndex('_media', index)
+        this.saveIndex('_media_usage', usage)
+
       },
       saveMedia: async function (allMedia) {
         let index = await this.getIndex('_media')

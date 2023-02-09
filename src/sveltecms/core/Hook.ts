@@ -72,6 +72,14 @@ export type CMSHookFunctions = {
 
 export const hooks:PluginHooks = [
   {
+    type: 'contentPostWriteAll',
+    label: 'Index Media',
+    description: 'Indexes Media when content is saved.',
+    fn: async (changeset, cms, options) => {
+      cms.indexer.indexMedia(changeset, cms, options)
+    }
+  },
+  {
     type: 'contentPostWrite',
     label: 'References',
     description: 'Saves changes to any reference fields that are reverse linked.',

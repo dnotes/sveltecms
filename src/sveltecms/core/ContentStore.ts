@@ -2,12 +2,14 @@ import type SvelteCMS from 'sveltecms'
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
 import type { ContentType } from 'sveltecms/core/ContentType'
 import type { EntityTemplate } from 'sveltecms/core/EntityTemplate'
+import type { MediaIndex } from './MediaStore'
 
 export type Value = string|number|boolean|null|undefined|Date|Content|Array<Value>|{[key:string]:Value}
 export type Content = {
   _type?:string
   _slug?:string
   _oldSlug?:string
+  _media?:MediaIndex
   [id:string]:Value
 }
 
