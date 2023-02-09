@@ -6,7 +6,12 @@ import Fieldgroup from 'sveltecms/core/Fieldgroup'
 
 function handleMedia(cms, field, item) {
   if (!field?.fields?.src) field.fields = Object.assign((field.fields || {}), { src: new Field('src', 'text', cms) })
-  let _meta = Object.fromEntries(Object.keys(item?._meta || {}).map(k => [k, item._meta[k][0]]))
+  let _meta = Object.fromEntries(Object.keys(item?._meta || {}).map(k => {
+    if (k === 'date') return [k, new Date(item._meta[k][0])]
+    if (['size','height','width'].includes(k)) return [k, parseInt(item._meta[k][0])]
+    if (k === 'duration') return [k, parseFloat(item._meta[k][0])]
+    return [k, item._meta[k][0]]
+  }))
   return { ...item, _meta }
 }
 
