@@ -21,6 +21,11 @@ export type Change = {
   after?:Content,
   contentType?:ContentType
 }
+export type Changeset = {
+  before:Array<Content|null>
+  after:Array<Content|null>
+  contentType?:ContentType
+}
 
 type Hook = {
   type: string
@@ -32,19 +37,25 @@ type Hook = {
 
 export type ContentPreWriteHook = Hook & {
   fn: (content:Content, contentType:ContentType, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
-  type: 'contentPreSave'|'contentPreDelete'
+  type: 'adminPreSave'|'contentPreSave'|'contentPreDelete'
 }
 export type ContentPostWriteHook = Hook & {
   fn: (change:Change, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
   type: 'contentPostWrite'
 }
+export type ContentPostWriteAllHook = Hook & {
+  fn: (changeset:Changeset, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
+  type: 'contentPostWriteAll'
+}
 
 export type PluginHooks = Array<ContentPreWriteHook|ContentPostWriteHook>
 
 export type CMSHookFunctions = {
+  adminPreSave: ContentPreWriteHook[]
   contentPreSave: ContentPreWriteHook[]
   contentPreDelete: ContentPreWriteHook[]
   contentPostWrite: ContentPostWriteHook[]
+  contentPostWriteAll: ContentPostWriteAllHook[]
 }
 
 // TODO: Make a special kind of Error for Hooks, including:

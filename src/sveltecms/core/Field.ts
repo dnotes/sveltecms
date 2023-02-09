@@ -52,6 +52,7 @@ export type FieldType = EntityType & DisplayableEntityType & {
   widget: string|WidgetConfigSetting
   preSave?: Array<string|TransformerConfigSetting>
   preMount?: Array<string|TransformerConfigSetting>
+  handlesMedia?: boolean
   multiple?: boolean
   admin?: boolean
 }
@@ -240,6 +241,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
   events?: {on:string,function:ScriptFunctionConfig}[]
   displayComponent?: Component
   scriptable?: boolean
+  handlesMedia?: boolean
 
   // implemented only in Multiple and Fieldgroup widgets
   // implement as needed in custom widgets
@@ -280,6 +282,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       let fieldType = cms.fieldTypes?.[conf.type]
       if (!fieldType) throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`)
       this.type = conf.type
+      this.handlesMedia = fieldType.handlesMedia
       this.label = parseScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
       this.index = parseScript(conf.index) ?? (conf.index ? true : false)
       this.value = parseScript(conf.value) ?? conf.value
@@ -346,6 +349,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
     id: 'image',
     default: [],
     widget: 'image',
+    handlesMedia: true,
     displays: {
       default: 'div',
       reference: 'none',

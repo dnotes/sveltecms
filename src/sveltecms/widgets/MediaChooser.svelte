@@ -1,0 +1,275 @@
+<script lang="ts">
+import { cloneDeep } from 'lodash-es';
+import type SvelteCMS from 'sveltecms';
+import type { WidgetField } from 'sveltecms'
+import type { Media } from 'sveltecms/core/MediaStore';
+import Button from 'sveltecms/ui/Button.svelte';
+import Modal from 'sveltecms/ui/Modal.svelte';
+
+type MediaPreview = Media & { _blob?:File }
+
+/**
+ * This widget is a helper for widgets and Fields that handle media.
+ *
+ * Scenarios:
+ *
+ * 1. A new piece of Content is being created, with a Field that handles Media.
+ *    The Widget will instantiate this component with a value of '' or {} or [].
+ *    The "previews" array will be empty.
+ *    As new Media is uploaded, chosen, or linked, the previews must be updated.
+ *    When the Content is saved, any uploaded Media will be saved along with
+ *    the field value. (formDataHandler)
+ *    After all Content has been saved, the Media Index will be updated with all
+ *    changes to Media fields. (in a contentPostWrite hook)
+ *
+ * 2. A piece of Content is being edited, with a Field that handles Media.
+ *    The Widget will instantiate this component with a value that is a string,
+ *    Media, or an array of the same.
+ *    The "_previews" and "previews" arrays should be created from the initial value.
+ *    Media will be saved an indexed as in 1.
+ *
+ * 3. A piece of Content is being deleted, with a Field that handles Media.
+ *    The Widget is instantiated as in 2.
+ *    Uploaded Media is not saved.
+ *    After the Content is deleted, the Media Index will be updated with all
+ *    changes to Media fields. (in a contnetPostDelete hook)
+ *
+ * B. If the mediaStore is immediateUpload, any uploaded Media is uploaded immediately,
+ *    and the "previews" are created with actual URLs. If any previews are deleted,
+ *    the uploaded Media is also deleted immediately.
+ */
+
+  export let field:WidgetField
+  export let id:string
+
+  export let value:Media|Media[]
+  export let files:FileList = undefined
+
+  // Set up previews, in case the value was provided
+  let _previews:MediaPreview[] = (Array.isArray(value) ?
+    value.map(v => typeof v === 'string' ? { src:v } : v ) :
+    [(typeof value === 'string' ? { src:value } : value )]).filter(Boolean)
+
+  let showModal = false
+
+  let requests:Promise<any>[] = []
+
+  let input:HTMLInputElement
+  let linkInput:HTMLInputElement
+
+  let library:Promise<Media[]> = (async () => { return [] })()
+  let result
+
+  /**
+   * Handle Uploads to the file input
+   */
+  async function handleUpload() {
+
+    // ensure that there is a mediastore
+    if (!field?.['mediaStore']) throw new Error(`There is no media store for field ${field.id}`)
+
+    // For immediate uploads:
+    // 1. Upload file, 2. Ensure derivatives, 3. Update _previews[], 4. Update previews[]
+
+    // Check each of the uploaded files
+    let promises:Promise<MediaPreview>[] = [...files ?? []].map(async file => {
+
+      // If it does not have a previewUrl (i.e. it has not been parsed yet)
+      if (!_previews.find(p => p?._meta?.name === file.name)) {
+
+        // FOR IMMEDIATELY UPLOADED PREVIEWS
+        if (field.mediaStore.immediateUpload) {
+
+          try {
+            let src = await field.mediaStore.saveMedia(file, field.mediaStore.options)
+            return { src, _meta: { name:file.name, type:file.type, size:file.size, date:new Date() } }
+          }
+          catch(e) {
+            result = e
+          }
+
+        }
+
+        else {
+          // Create an objectUrl
+          let src = URL.createObjectURL(file)
+          return { src, _blob:file, _meta: { name:file.name, type:file.type, size:file.size, date:new Date() } } as MediaPreview
+        }
+
+      }
+
+    })
+
+    let newValues = await Promise.all(promises)
+
+    await addFiles(newValues)
+
+  }
+
+  async function handleDelete(items:Media[]) {
+
+    items.forEach(item => {
+
+      let idx = _previews.findIndex(_p => item?.src === _p?.src)
+
+      if (idx > -1) {
+        if (field.mediaStore.immediateUpload) {
+          // @TODO: make sure the file is deleted on the server
+        }
+
+        if (_previews[idx]._blob) {
+          URL.revokeObjectURL(_previews[idx].src)
+        }
+
+        _previews.splice(idx,1)
+
+      }
+
+
+    })
+
+
+  }
+
+  async function handleLink(src) {
+
+    await addFiles({ src, _meta:{ date:new Date() } })
+
+  }
+
+  /**
+   * Function to add a Media item to the _previews and the value.
+   * @param item
+   */
+  async function addFiles(items:MediaPreview|MediaPreview[]) {
+    items = Array.isArray(items) ? items : [items]
+    _previews.push(...items)
+
+    let newValues = items.map(item => ({ ...cloneDeep(item), _blob:undefined }))
+    if (Array.isArray(value)) value = [...value, ...newValues]
+    else if (value) {
+      if (field.multiple) value = [value, ...newValues]
+      else value = newValues[0]
+    }
+    else {
+      if (field.multiple) value = [...newValues]
+      else value = newValues[0]
+    }
+    showModal=false
+  }
+
+
+
+  // In case an upload errors out, we display the result for a moment
+  let displayResult
+  $: if (displayResult) setTimeout(() => { displayResult = undefined }, 4000)
+
+
+
+  /**
+   * Keep local _previews in sync with exported _previews
+   *
+   * Widgets will implement their own UI for previewing files, and
+   * part of that will be a way to delete files. We need to ensure that
+   * our store of "_previews" is synchronized with the Widget's "value"
+   * whenever a file is deleted.
+   * However, we also need to update the "value" when a file is added.
+   * To do this:
+   * 1. Respond only to changes in "value", not "_previews"
+   * 2. Check if the number of values has changed (i.e. deleted or added an item)
+   * 3. If an item is added, change "_previews" first, then "value"
+   */
+  $: itemCount = Array.isArray(value) ? value.length : ( value ? 1 : 0 )
+  $: if (value || !value) {
+    if (itemCount !== _previews.length) { // TODO: check this doesn't get called when _previews is updated
+      let deletedItems = _previews.filter(_p => {
+        if (!value) return true // all items have been deleted
+        if (Array.isArray(value)) return !value.find(v => v?.src === _p?.src) // find the deleted item
+        if (value?.src === _p?.src) return true
+      })
+      requests.push(handleDelete(deletedItems))
+    }
+  }
+
+  $: console.log("Chooser", value)
+  $: console.log("_previews", _previews)
+
+</script>
+
+<input
+  class="sveltecms-file-input"
+  bind:files
+  bind:this={input}
+  name="{id}['files']"
+  type="file"
+  multiple={field.multiple}
+  disabled={field.disabled}
+  required={field.required && !_previews?.length}
+  on:change={handleUpload}
+/>
+
+<Button  on:click={()=>{showModal=true}}>Choose Media</Button>
+
+{#if showModal}
+<Modal on:cancel={()=>{showModal=false}}>
+  <h2 slot="title">Choose Media</h2>
+  <div class="column">
+
+    <div class="chooser-header row">
+
+      <div class="upload row">
+        <Button primary on:click={()=>{input.click()}}>Upload</Button>
+        {#if field.multiple || true}
+          <span class="cms-image-warning">
+            Warning: It is not possible to upload multiple files in series;
+            either select all the files at the same time, or save the form
+            multiple times. (Work in progress.)
+          </span>
+        {/if}
+
+      </div>
+
+      <div class="link row">
+        <div class="label">External Link:</div>
+        <div class="input"><input type="text" placeholder="https://example.com/etc/image.jpg" bind:this={linkInput}></div>
+        <Button primary on:click={()=>{handleLink(linkInput.value)}}>Add</Button>
+      </div>
+
+    </div>
+
+    <div class="library">
+      <h3>Media Library</h3>
+    </div>
+
+    <div class="library">
+      This is where the library goes.
+    </div>
+
+  </div>
+</Modal>
+{/if}
+
+<style>
+  .sveltecms-file-input { display:none; }
+  .row { display:flex; justify-content:left; align-items:center; gap:.6em; }
+  .column { display:flex; flex-direction:column; gap:1em; }
+  .chooser-header { flex-wrap: wrap; width:100%; }
+
+  .link { flex-grow:1; min-width:240px; }
+  .link>div { flex-shrink:1; }
+  .link input { width:100%; }
+  .link .label { line-height:1em; }
+  .link .input { flex-grow:1; max-width:500px; }
+
+  .cms-image-warning {
+    display: inline-block;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 10px;
+    line-height: 1em;
+    max-width: 248px;
+    padding: 0;
+    margin: 0;
+    opacity: .5;
+  }
+
+</style>

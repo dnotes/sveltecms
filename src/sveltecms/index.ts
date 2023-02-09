@@ -229,9 +229,11 @@ export default class SvelteCMS {
   lists:CMSListConfig = {}
   plugins:{[key:string]:CMSPlugin} = {}
   hooks:CMSHookFunctions = {
+    adminPreSave: [],
     contentPreSave: [],
     contentPreDelete: [],
     contentPostWrite: [],
+    contentPostWriteAll: [],
   }
   constructor(conf:CMSConfigSetting, plugins:CMSPlugin[] = []) {
 
@@ -396,7 +398,7 @@ export default class SvelteCMS {
     if (values.hasOwnProperty(id)) {
       try {
         // For references, fieldgroups, or other fieldable field types (e.g. possibly image)
-        if ((field.type === 'reference' || field.type === 'fieldgroup' || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
+        if ((field.type === 'reference' || field.type === 'fieldgroup' || field.handlesMedia || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
           if (Array.isArray(values[id])) {
             res[id] = []
             for (let i=0;i<values[id]['length'];i++) {
@@ -404,6 +406,7 @@ export default class SvelteCMS {
               let container = field.type === 'reference'
                 ? (this.contentTypes[values[id][i]?.['_type']] || this.defaultContentType)
                 : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field)
+              if (field.handlesMedia && !container?.fields?.src) container.fields = Object.assign((container.fields || {}), { src: new Field('src', { type:'text', displays:'none' }, this) })
               res[id][i] = this.preMount(container, values[id][i])
             }
           }
@@ -411,6 +414,7 @@ export default class SvelteCMS {
             let container = field.type === 'reference'
               ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
               : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field
+            if (field.handlesMedia && !container?.fields?.src) container.fields = Object.assign((container.fields || {}), {src: new Field('src', { type:'text', displays:'none' }, this)})
             // @ts-ignore the typecheck above should be sufficient
             res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id]
           }
@@ -678,6 +682,8 @@ export default class SvelteCMS {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     let items = Array.isArray(content) ? content : [content]
+    let allBefore:Content[] = []
+    let allAfter:Content[] = []
 
     for (let i=0; i<items.length; i++) {
 
@@ -710,6 +716,9 @@ export default class SvelteCMS {
 
       items[i] = await db.saveContent(items[i], contentType, {...db.options, ...options})
 
+      allBefore.push(before)
+      allAfter.push(items[i])
+
       // When a slug is changing, delete the old content
       if (items[i]._oldSlug && items[i]._slug !== items[i]._oldSlug) await this.deleteContent(contentType, before, { newSlug:items[i]._slug })
 
@@ -724,6 +733,7 @@ export default class SvelteCMS {
     }
 
     if (!options.skipIndex) await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)))
+    if (!options.skipHooks) await this.runHook('contentPostWriteAll', { before:allBefore, after:allAfter, contentType }, this, {...db.options, ...options})
 
     return Array.isArray(content) ? items : items[0]
 
@@ -739,11 +749,16 @@ export default class SvelteCMS {
     const db = this.getContentStore(contentType)
     let items = Array.isArray(content) ? content : [content]
 
+    let allBefore:(Content|undefined)[] = []
+    let allAfter:(Content|undefined)[] = []
+
     for (let i=0; i<items.length; i++) {
 
       // Get the content to be deleted, for preDelete hooks
       // @ts-ignore slugifyContent returns singular if passed singular
       items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType)
+      allBefore.push(cloneDeep(items[i]))
+      allAfter.push(undefined)
 
       // Run contentPreWrite hooks, and bail if there is an error
       try {
@@ -767,6 +782,7 @@ export default class SvelteCMS {
     }
 
     if (!options.skipIndex) await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)))
+    if (!options.skipHooks) await this.runHook('contentPostDeleteAll', { before:allBefore, after:allAfter, contentType }, this, {...db.options, ...options})
 
     return Array.isArray(content) ? items : items[0]
   }

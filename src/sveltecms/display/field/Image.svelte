@@ -1,17 +1,13 @@
 <script lang="ts">
 import type SvelteCMS from "sveltecms";
-import type { Value } from "sveltecms/core/ContentStore";
 import Display from "sveltecms/core/Display";
 import type Field from "sveltecms/core/Field";
+import type { Media } from "sveltecms/core/MediaStore";
 import FieldList from "../FieldList.svelte";
 
   export let cms:SvelteCMS
   export let entity:Field
-  export let item:string|{
-    src:string,
-    alt?:string,
-    title?:string
-  }
+  export let item:string|Media
   export let displayMode:string
 
   $: src = typeof item === 'string' ? item : item.src

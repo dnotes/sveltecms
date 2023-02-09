@@ -1,8 +1,14 @@
 import type SvelteCMS from 'sveltecms'
 import type ContentType from 'sveltecms/core/ContentType'
-import type Field from 'sveltecms/core/Field'
+import Field from 'sveltecms/core/Field'
 import { get, set } from 'lodash-es'
 import Fieldgroup from 'sveltecms/core/Fieldgroup'
+
+function handleMedia(cms, field, item) {
+  if (!field?.fields?.src) field.fields = Object.assign((field.fields || {}), { src: new Field('src', 'text', cms) })
+  let _meta = Object.fromEntries(Object.keys(item?._meta || {}).map(k => [k, item._meta[k][0]]))
+  return { ...item, _meta }
+}
 
 export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, fields:{[id:string]:Field}, data:any, prefix?:string):Promise<any> {
 
@@ -18,8 +24,31 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
 
     let itemIsArray = Array.isArray(item)
 
+    if (field.handlesMedia) {
+
+      // Collect all data, and format for data storage
+      let fieldValues = []
+      Object.keys(item).filter(k => k.match(/^\d+$/)).sort().forEach(k => {
+        fieldValues.push(handleMedia(cms, field, item[k]))
+      })
+
+      // Prepare all data and save uploaded files
+      if (item.files.length) {
+        const promises = fieldValues.filter(v => v?._meta?.name).map(async v => {
+          let file = item.files.find(f => f.name === v._meta.name)
+          if (file) {
+            v.src = await field.mediaStore.saveMedia(file, field.mediaStore.options)
+          }
+        })
+        const result = await Promise.all(promises)
+      }
+
+      item = fieldValues
+
+    }
+
     // Fieldgroup fields must be collapsed recursively
-    if (field.type === 'fieldgroup') {
+    if (field.type === 'fieldgroup' || field.widget.handlesFields || field.handlesMedia) {
       if (field.multiple && itemIsArray) {
         let promises = Object.entries(item).map(async ([i,item]) => {
           let fields = item?.['_fieldgroup']?.[0] ? new Fieldgroup(item?.['_fieldgroup']?.[0], cms).fields : field.fields
@@ -87,6 +116,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
   if (data?._slug?.[0]) result.push(['_slug', data._slug[0]])
   if (data?._oldSlug?.[0]) result.push(['_oldSlug', data._oldSlug[0]])
   if (data?._fieldgroup?.[0]) result.push(['_fieldgroup', data._fieldgroup[0]])
+  if (data?._meta) result.push(['_meta', data._meta])
 
   return Object.fromEntries(result)
 

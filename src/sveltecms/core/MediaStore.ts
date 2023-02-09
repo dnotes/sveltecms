@@ -1,12 +1,21 @@
 import type SvelteCMS from 'sveltecms'
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from 'sveltecms'
-import type { ContentType } from 'sveltecms/core/ContentType'
+import type { Value } from './ContentStore'
 import type { EntityTemplate } from './EntityTemplate'
 
 export type Media = {
-  src:string,
-  [key:string]:string|number|boolean|null|undefined|Date|Array<string|number|boolean|null|undefined|Date>
+  src:string
+  _meta?:MediaMetadata
+  [fieldname:string]:Value
 }
+export type MediaMetadata = {
+  name?:string
+  type?:string
+  date?:Date
+  size?:number
+  [key:string]:Value
+}
+export type MediaIndex = string[]
 
 export type MediaStoreType = EntityType & ConfigurableEntityType & {
   listMedia?:(path:string|null, opts:ConfigSetting) => Promise<string[]>
