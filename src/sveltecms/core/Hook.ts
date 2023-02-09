@@ -21,10 +21,18 @@ export type Change = {
   after?:Content,
   contentType?:ContentType
 }
-export type Changeset = {
-  before:Array<Content|null>
-  after:Array<Content|null>
+
+export class Changeset {
+  before:Array<Content|undefined> = []
+  after:Array<Content|undefined> = []
   contentType?:ContentType
+  constructor(contentType:ContentType) {
+    this.contentType = contentType
+  }
+  push(before?:Content, after?:Content) {
+    this.before.push(before ? cloneDeep(before) : undefined)
+    this.after.push(after ? cloneDeep(after) : undefined)
+  }
 }
 
 type Hook = {
@@ -41,14 +49,14 @@ export type ContentPreWriteHook = Hook & {
 }
 export type ContentPostWriteHook = Hook & {
   fn: (change:Change, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
-  type: 'contentPostWrite'
+  type: 'adminPostWrite'|'contentPostWrite'
 }
 export type ContentPostWriteAllHook = Hook & {
   fn: (changeset:Changeset, cms:SvelteCMS, options:{[key:string]:any})=>Promise<void>
   type: 'contentPostWriteAll'
 }
 
-export type PluginHooks = Array<ContentPreWriteHook|ContentPostWriteHook>
+export type PluginHooks = Array<ContentPreWriteHook|ContentPostWriteHook|ContentPostWriteAllHook>
 
 export type CMSHookFunctions = {
   adminPreSave: ContentPreWriteHook[]

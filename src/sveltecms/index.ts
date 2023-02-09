@@ -14,7 +14,7 @@ import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual, merge, un
 import type { EntityTemplate } from './core/EntityTemplate'
 import SlugConfig, { templateSlug } from './core/Slug'
 import { Indexer, templateIndexer, type IndexerConfigSetting, type IndexerType, type IndexItem } from './core/Indexer'
-import { hooks, templateHook, type CMSHookFunctions, type PluginHooks } from './core/Hook'
+import { Changeset, hooks, templateHook, type CMSHookFunctions, type PluginHooks } from './core/Hook'
 import { templatePlugin, type CMSPlugin, type CMSPluginBuilder } from './core/Plugin'
 import { mergeCmsConfig } from './utils'
 export { CMSPlugin, CMSPluginBuilder }
@@ -682,8 +682,7 @@ export default class SvelteCMS {
     contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType
     const db = this.getContentStore(contentType)
     let items = Array.isArray(content) ? content : [content]
-    let allBefore:Content[] = []
-    let allAfter:Content[] = []
+    let changeset = new Changeset(contentType)
 
     for (let i=0; i<items.length; i++) {
 
@@ -716,8 +715,7 @@ export default class SvelteCMS {
 
       items[i] = await db.saveContent(items[i], contentType, {...db.options, ...options})
 
-      allBefore.push(before)
-      allAfter.push(items[i])
+      changeset.push(before, items[i])
 
       // When a slug is changing, delete the old content
       if (items[i]._oldSlug && items[i]._slug !== items[i]._oldSlug) await this.deleteContent(contentType, before, { newSlug:items[i]._slug })
@@ -733,7 +731,7 @@ export default class SvelteCMS {
     }
 
     if (!options.skipIndex) await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)))
-    if (!options.skipHooks) await this.runHook('contentPostWriteAll', { before:allBefore, after:allAfter, contentType }, this, {...db.options, ...options})
+    if (!options.skipHooks) await this.runHook('contentPostWriteAll', changeset, this, {...db.options, ...options})
 
     return Array.isArray(content) ? items : items[0]
 
@@ -749,16 +747,15 @@ export default class SvelteCMS {
     const db = this.getContentStore(contentType)
     let items = Array.isArray(content) ? content : [content]
 
-    let allBefore:(Content|undefined)[] = []
-    let allAfter:(Content|undefined)[] = []
+    let changeset = new Changeset(contentType)
 
     for (let i=0; i<items.length; i++) {
 
       // Get the content to be deleted, for preDelete hooks
       // @ts-ignore slugifyContent returns singular if passed singular
       items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType)
-      allBefore.push(cloneDeep(items[i]))
-      allAfter.push(undefined)
+
+      changeset.push(items[i], undefined)
 
       // Run contentPreWrite hooks, and bail if there is an error
       try {
@@ -782,7 +779,7 @@ export default class SvelteCMS {
     }
 
     if (!options.skipIndex) await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)))
-    if (!options.skipHooks) await this.runHook('contentPostDeleteAll', { before:allBefore, after:allAfter, contentType }, this, {...db.options, ...options})
+    if (!options.skipHooks) await this.runHook('contentPostDeleteAll', changeset, this, {...db.options, ...options})
 
     return Array.isArray(content) ? items : items[0]
   }
