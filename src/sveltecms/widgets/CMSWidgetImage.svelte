@@ -35,8 +35,6 @@ import MediaChooser from "./MediaChooser.svelte";
     else value = undefined
   }
 
-  $: console.log("Widget", value)
-
 </script>
 
 <fieldset class="cms-image" class:multiple={field.multiple}>

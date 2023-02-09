@@ -191,9 +191,6 @@ type MediaPreview = Media & { _blob?:File }
     }
   }
 
-  $: console.log("Chooser", value)
-  $: console.log("_previews", _previews)
-
 </script>
 
 <input
