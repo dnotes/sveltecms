@@ -414,7 +414,7 @@ export default class SvelteCMS {
             let container = field.type === 'reference'
               ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
               : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field
-            if (field.handlesMedia && !container?.fields?.src) container.fields = Object.assign((container.fields || {}), {src: new Field('src', { type:'text', displays:'none' }, this)})
+            if (field.handlesMedia && !container?.fields?.src) container.fields = Object.assign((container.fields || {}), { src: new Field('src', { type:'text', displays:'none' }, this) })
             // @ts-ignore the typecheck above should be sufficient
             res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id]
           }
@@ -445,19 +445,21 @@ export default class SvelteCMS {
               // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
               let container = field.type === 'reference'
                 ? (this.contentTypes[values[id][i]?.['_type']] || this.defaultContentType)
-                : values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field
+                : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field)
+              if (field.handlesMedia && !container?.fields?.src) container.fields = Object.assign((container.fields || {}), { src: new Field('src', { type:'text', displays:'none' }, this) })
               res[id][i] = this.preSave(container, values[id][i])
             }
           }
           else {
             let container = field.type === 'reference'
               ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
-              : values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field
+              : (values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field)
             // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
             // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
             // When saving config, the "fieldgroup" fields will not have a "fields" prop, and must still be saved.
             // @TODO: Evaluate this for security, and probably fix it, since at the moment it will try to save
             // almost any value to the configuration, albeit serialized.
+            if (field.handlesMedia && !container?.fields?.src) container.fields = Object.assign((container.fields || {}), { src: new Field('src', { type:'text', displays:'none' }, this) });
             // @ts-ignore the typecheck above should be sufficient
             res[id] = container?.fields ? this.preSave(container, values?.[id]) : values[id]
           }
