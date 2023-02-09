@@ -20,7 +20,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
   let _media = []
 
   // Get all fields, as promises (some formDataHandler functions are async)
-  let promises = Object.entries(fields).map(async ([id,field]) => {
+  let promises = Object.entries(fields || {}).map(async ([id,field]) => {
 
     // This function is recursive, and the prefix is provided for nested levels of a data object
     let formPath = [prefix,id].filter(Boolean).join('.')
