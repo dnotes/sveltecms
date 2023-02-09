@@ -24,10 +24,10 @@ contentTypes:
     fields:
       title: title
       slug: slug
-      image: mainImage
       header: blocks
       body: body
       footer: blocks
+      image: mainImage
     contentStore: staticFiles
     mediaStore: staticFiles
   blog:
@@ -102,6 +102,10 @@ mediaStores:
   images:
     type: staticFiles
     mediaDirectory: images
+    allowedMediaTypes:
+      - image/jpeg
+      - image/png
+      - image/gif
     allowMediaTypes:
       - image/jpeg
       - image/png
@@ -119,12 +123,12 @@ fields:
       default:
         type: span
         link: true
-      reference:
-        type: span
-        link: true
       page: h1
       teaser:
         type: h2.m-0.font-bold
+        link: true
+      reference:
+        type: span
         link: true
   postDate: date
   body: markdown
@@ -134,9 +138,9 @@ fields:
     required: 'true'
   mainImage:
     type: image
-    index: true
     mediaStore:
       type: staticFiles
+      mediaDirectory: images/main
       options:
         mediaDirectory: images/main
         allowedMediaTypes:
@@ -146,8 +150,15 @@ fields:
   blocks:
     type: fieldgroup
     multiple: true
+    displays:
+      default: none
+      page: div
     widget:
       type: fieldgroup
+      useComponents: true
+      fieldgroupTags:
+        - fullwidth
+        - block
       options:
         useComponents: true
         fieldgroupTags:
@@ -157,13 +168,13 @@ fields:
     type: reference
     widget:
       type: reference
+      referenceKey: taggedContent
+      contentTypes: tags
+      freeTagging: true
       options:
         referenceKey: taggedContent
         contentTypes: tags
         freeTagging: true
-      referenceKey: taggedContent
-      contentTypes: tags
-      freeTagging: true
     displays:
       page:
         type: >-
@@ -175,11 +186,11 @@ fields:
     type: reference
     widget:
       type: reference
+      referenceKey: tags
+      displayMode: teaser
       options:
         referenceKey: tags
         displayMode: teaser
-      referenceKey: tags
-      displayMode: teaser
     displays:
       page:
         type: li.list-none
@@ -204,6 +215,17 @@ fields:
     displays:
       teaser: >-
         div.w-36.h-28.float-left.pr-4.m-0.not-prose.overflow-hidden.drop-shadow-xl
+    fields:
+      alt:
+        type: text
+        displays: none
+        widget:
+          type: textarea
+          autosize: true
+          resize: vertical
+          rows: 3
+          placeholder: please provide a literal description of the image
+        required: true
   style:
     type: text
     displays: none
@@ -251,6 +273,25 @@ widgets:
     type: image
     altField: false
 fieldgroups:
+  markdown:
+    id: markdown
+    tags:
+      - fullwidth
+      - block
+      - inline
+    displays: div
+    fields:
+      text: markdown
+      body: markdown
+  image:
+    id: image
+    tags:
+      - fullwidth
+      - block
+      - inline
+    displays: div
+    fields:
+      image: image
   hero:
     fields:
       image:
@@ -301,20 +342,6 @@ fieldgroups:
     displays:
       default: none
       page: blockquote
-  markdown:
-    tags:
-      - fullwidth
-      - block
-      - inline
-    fields:
-      body: markdown
-  image:
-    tags:
-      - fullwidth
-      - block
-      - inline
-    fields:
-      image: image
   video:
     tags:
       - fullwidth
