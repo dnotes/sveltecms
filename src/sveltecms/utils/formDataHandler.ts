@@ -12,6 +12,8 @@ function handleMedia(cms, field, item) {
 
 export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, fields:{[id:string]:Field}, data:any, prefix?:string):Promise<any> {
 
+  let _media = []
+
   // Get all fields, as promises (some formDataHandler functions are async)
   let promises = Object.entries(fields).map(async ([id,field]) => {
 
@@ -43,7 +45,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
         const result = await Promise.all(promises)
       }
 
-      item = fieldValues
+      item = { ...fieldValues }
 
     }
 
@@ -52,7 +54,12 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
       if (field.multiple && itemIsArray) {
         let promises = Object.entries(item).map(async ([i,item]) => {
           let fields = item?.['_fieldgroup']?.[0] ? new Fieldgroup(item?.['_fieldgroup']?.[0], cms).fields : field.fields
-          return collapseFormItem(cms, contentType, fields, item, formPath)
+          let value = await collapseFormItem(cms, contentType, fields, item, formPath)
+          if (value?.['_media']) {
+            _media.push(...value['_media'])
+            value['_media'] = undefined
+          }
+          return value
         })
         value = await Promise.all(promises)
       }
@@ -107,6 +114,10 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
       value = itemIsArray ? item[0] : item
     }
 
+    if (field.handlesMedia) {
+      _media.push({ usage:formPath, value })
+    }
+
     return [id, value]
   })
 
@@ -117,6 +128,7 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
   if (data?._oldSlug?.[0]) result.push(['_oldSlug', data._oldSlug[0]])
   if (data?._fieldgroup?.[0]) result.push(['_fieldgroup', data._fieldgroup[0]])
   if (data?._meta) result.push(['_meta', data._meta])
+  if (_media.length) result.push(['_media', _media])
 
   return Object.fromEntries(result)
 
