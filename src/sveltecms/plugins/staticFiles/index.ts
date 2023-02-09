@@ -423,7 +423,7 @@ const plugin:CMSPlugin = {
 
           if (afterContent[i]) { // Item has been saved
 
-            let media = afterContent[i]?._media
+            let media = afterContent[i]?._media?.filter(item => item && item?.value?.src)
 
             // Remove usage for the slug
             slugs.push(afterContent[i]._slug)
