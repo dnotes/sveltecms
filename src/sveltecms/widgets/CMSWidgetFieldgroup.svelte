@@ -112,6 +112,7 @@ const split = splitTags()
         <svelte:component
           this={field.widget.widget}
           {field}
+          {cms}
           id="{parentID}.{id}"
           bind:value={value[id]}
         />
