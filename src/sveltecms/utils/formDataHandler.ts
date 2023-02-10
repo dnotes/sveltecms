@@ -120,7 +120,10 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
     }
 
     if (field.handlesMedia) {
-      _media.push({ usage:formPath, value })
+      if (Array.isArray(value)) value.forEach(v => {
+        _media.push({ usage:formPath, value:v})
+      })
+      else _media.push({ usage:formPath, value })
     }
 
     return [id, value]
@@ -134,6 +137,8 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
   if (data?._fieldgroup?.[0]) result.push(['_fieldgroup', data._fieldgroup[0]])
   if (data?._meta) result.push(['_meta', data._meta])
   if (_media.length) result.push(['_media', _media])
+
+  console.log(_media)
 
   return Object.fromEntries(result)
 
