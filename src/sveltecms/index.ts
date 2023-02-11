@@ -783,7 +783,7 @@ export default class SvelteCMS {
     }
 
     if (!options.skipIndex) await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)))
-    if (!options.skipHooks) await this.runHook('contentPostDeleteAll', changeset, this, {...db.options, ...options})
+    if (!options.skipHooks) await this.runHook('contentPostWriteAll', changeset, this, {...db.options, ...options})
 
     return Array.isArray(content) ? items : items[0]
   }
