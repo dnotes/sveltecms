@@ -8,6 +8,13 @@ export type Change = {
     after?: Content;
     contentType?: ContentType;
 };
+export declare class Changeset {
+    before: Array<Content | undefined>;
+    after: Array<Content | undefined>;
+    contentType?: ContentType;
+    constructor(contentType: ContentType);
+    push(before?: Content, after?: Content): void;
+}
 type Hook = {
     type: string;
     label: string;
@@ -19,19 +26,27 @@ export type ContentPreWriteHook = Hook & {
     fn: (content: Content, contentType: ContentType, cms: SvelteCMS, options: {
         [key: string]: any;
     }) => Promise<void>;
-    type: 'contentPreSave' | 'contentPreDelete';
+    type: 'adminPreSave' | 'contentPreSave' | 'contentPreDelete';
 };
 export type ContentPostWriteHook = Hook & {
     fn: (change: Change, cms: SvelteCMS, options: {
         [key: string]: any;
     }) => Promise<void>;
-    type: 'contentPostWrite';
+    type: 'adminPostWrite' | 'contentPostWrite';
 };
-export type PluginHooks = Array<ContentPreWriteHook | ContentPostWriteHook>;
+export type ContentPostWriteAllHook = Hook & {
+    fn: (changeset: Changeset, cms: SvelteCMS, options: {
+        [key: string]: any;
+    }) => Promise<void>;
+    type: 'contentPostWriteAll';
+};
+export type PluginHooks = Array<ContentPreWriteHook | ContentPostWriteHook | ContentPostWriteAllHook>;
 export type CMSHookFunctions = {
+    adminPreSave: ContentPreWriteHook[];
     contentPreSave: ContentPreWriteHook[];
     contentPreDelete: ContentPreWriteHook[];
     contentPostWrite: ContentPostWriteHook[];
+    contentPostWriteAll: ContentPostWriteAllHook[];
 };
 export declare const hooks: PluginHooks;
 export {};

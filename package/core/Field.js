@@ -45,12 +45,21 @@ export const templateField = {
             type: 'entity',
             default: '',
             helptext: 'Where any media uploaded to this field will be stored. Only applies if the widget handles media.',
+            hidden: '$not($fieldHandles(media))',
             widget: {
                 type: 'entity',
                 options: {
                     entityType: 'mediaStore',
                 },
             }
+        },
+        mediaTypes: {
+            type: 'text',
+            multiple: true,
+            default: ['image/*'],
+            hidden: '$not($fieldHandles(media))',
+            widget: 'multiselect',
+            helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
         },
         helptext: {
             type: 'text',
@@ -189,6 +198,11 @@ export class Field {
             if (!fieldType)
                 throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`);
             this.type = conf.type;
+            this.handlesMedia = fieldType.handlesMedia;
+            let mediaTypes = conf?.mediaTypes ?? fieldType?.mediaTypes ?? [];
+            if (typeof mediaTypes === 'string')
+                mediaTypes = mediaTypes.split(/\s*,\s*/);
+            this.mediaTypes = mediaTypes;
             this.label = parseScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)); // text is required
             this.index = parseScript(conf.index) ?? (conf.index ? true : false);
             this.value = parseScript(conf.value) ?? conf.value;
@@ -250,6 +264,8 @@ export const fieldTypes = {
         id: 'image',
         default: [],
         widget: 'image',
+        handlesMedia: true,
+        mediaTypes: ['image/*'],
         displays: {
             default: 'div',
             reference: 'none',
@@ -258,11 +274,13 @@ export const fieldTypes = {
     },
     file: {
         id: 'file',
-        default: [],
+        default: undefined,
         widget: 'file',
+        handlesMedia: true,
+        mediaTypes: ['text/plain', 'text/csv', 'application/pdf'],
         displays: {
-            default: 'div',
-            reference: 'none',
+            default: 'none',
+            page: 'div',
         },
         displayComponent: 'sveltecms/display/field/File'
     },

@@ -1,6 +1,6 @@
 import { isBrowser, isWebWorker, isJsDom } from 'browser-or-node';
 import bytes from 'bytes';
-import { cloneDeep, difference } from 'lodash-es';
+import { cloneDeep, difference, sortBy } from 'lodash-es';
 import { dirname } from '../../utils/path';
 import Fuse from 'fuse.js';
 import { findReferenceIndex } from '../../utils';
@@ -74,13 +74,6 @@ export const staticFilesMediaOptionFields = {
         type: 'text',
         default: '',
         helptext: 'The directory for media files relative to the static directory.',
-    },
-    allowMediaTypes: {
-        type: 'text',
-        multiple: true,
-        default: ['image/*'],
-        widget: 'multiselect',
-        helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
     },
     maxUploadSize: {
         type: 'text',
@@ -297,19 +290,13 @@ const plugin = {
                 const fs = await getFs(this?.options?.databaseName);
                 const filepath = `${getBasedir()}/src/content/_${id}.index.json`;
                 try {
-                    return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]');
+                    await mkdirp(fs, dirname(filepath));
+                    let res = fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]');
+                    return res;
                 }
                 catch (e) {
-                    if (e.code === 'ENOENT') {
-                        try {
-                            await mkdirp(fs, dirname(filepath));
-                            return fs.writeFile(filepath, '[\n' + index.map(item => JSON.stringify(item)).join(',\n') + '\n]');
-                        }
-                        catch (e) {
-                            e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message;
-                            throw e;
-                        }
-                    }
+                    e.message = `Indexer staticFiles could not save index: ${filepath}\n` + e.message;
+                    throw e;
                 }
             },
             searchIndex: async function (id, search, options) {
@@ -369,6 +356,45 @@ const plugin = {
                 let keys = [...(contentType?.['indexFields'] || []), '_slug'];
                 return this.searchIndex(contentType?.['id'] ?? contentType, search, { keys, ...options });
             },
+            indexMedia: async function (changeset, cms, options) {
+                let beforeContent = changeset.before;
+                let afterContent = changeset.after;
+                let slugs = []; // we will remove all usage items that match these slugs...
+                let usageItems = [];
+                let index = await this.getIndex('_media');
+                let usage = await this.getIndex('_media_usage');
+                for (let i = 0; i < changeset.after.length; i++) {
+                    if (afterContent[i]) { // Item has been saved
+                        let media = afterContent[i]?._media?.filter(item => item && item?.value?.src);
+                        // Remove usage for the slug
+                        slugs.push(afterContent[i]._slug);
+                        // If the slug has been changed, remove usage for the old slug
+                        if (afterContent[i]?.oldSlug && afterContent[i]._oldSlug !== afterContent[i]._slug)
+                            slugs.push(afterContent[i]._oldSlug);
+                        if (media && media?.length) {
+                            media.forEach(item => {
+                                // Add the usage record for each Media item
+                                usageItems.push({
+                                    src: item.value.src,
+                                    contentType: changeset.contentType.id,
+                                    slug: afterContent[i]._slug,
+                                    path: item.usage,
+                                });
+                                // If there is no index item, add it
+                                if (!index.find(indexItem => indexItem.src === item.value.src))
+                                    index.unshift(item.value);
+                            });
+                        }
+                    }
+                    else { // Item has been deleted
+                        slugs.push(beforeContent[i]._oldSlug ?? beforeContent[i]._slug);
+                    }
+                }
+                usage = usage.filter(item => !(item.contentType === changeset.contentType.id && slugs.includes(item.slug)));
+                usage = sortBy([...usage, ...usageItems], ['src', 'contentType', 'slug', 'path']);
+                this.saveIndex('_media', index);
+                this.saveIndex('_media_usage', usage);
+            },
             saveMedia: async function (allMedia) {
                 let index = await this.getIndex('_media');
                 allMedia = Array.isArray(allMedia) ? allMedia : [allMedia];
@@ -408,13 +434,6 @@ const plugin = {
             id: 'staticFiles',
             optionFields: { databaseName: databaseNameField, ...staticFilesMediaOptionFields },
             saveMedia: async (file, opts) => {
-                // Check media for validity
-                let mediaTypes = Array.isArray(opts.allowMediaTypes) ? opts.allowMediaTypes : opts.allowMediaTypes.split(/\s*,\s*/);
-                if (!mediaTypes.includes(file.type) && // exact type
-                    !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type
-                    !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension
-                )
-                    throw new Error(`${file.name} is not among the allowed media types (${mediaTypes.join(', ')}).`);
                 let maxUploadSize = bytes.parse(opts.maxUploadSize);
                 if (maxUploadSize && file.size > maxUploadSize)
                     throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`);
@@ -465,7 +484,12 @@ const plugin = {
                             let indexerType = contentType?.indexer?.type ?? contentType?.indexer ?? cms.indexer.type;
                             let indexerRoot = cms.getEntityRoot('indexers', indexerType);
                             if (indexerRoot?.id === 'staticFiles') {
-                                cms.indexers[indexerType].saveIndex(contentTypeID, []);
+                                try {
+                                    await cms.indexers[indexerType].saveIndex(contentTypeID, []);
+                                }
+                                catch (e) {
+                                    console.log(e);
+                                }
                             }
                         }
                     }

@@ -35,6 +35,7 @@ export type FieldConfigSetting = DisplayableEntityConfigSetting & {
         function: ScriptFunctionConfigSetting;
     }[];
     mediaStore?: string | MediaStoreConfigSetting;
+    mediaTypes?: string | string[];
     scriptable?: boolean;
     [id: string]: string | number | boolean | ConfigSetting | ScriptFunctionConfigSetting | (string | number | ConfigSetting)[];
 };
@@ -53,6 +54,8 @@ export type FieldType = EntityType & DisplayableEntityType & {
     widget: string | WidgetConfigSetting;
     preSave?: Array<string | TransformerConfigSetting>;
     preMount?: Array<string | TransformerConfigSetting>;
+    handlesMedia?: boolean;
+    mediaTypes?: string[];
     multiple?: boolean;
     admin?: boolean;
 };
@@ -75,6 +78,7 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
     }[];
     displayComponent?: Component;
     scriptable?: boolean;
+    handlesMedia?: boolean;
     multiple?: boolean | ScriptFunctionConfig | ScriptFunctionConfigSetting;
     multipleOrSingle?: boolean;
     multipleLabelFields?: string | string[] | ScriptFunctionConfig;
@@ -88,6 +92,7 @@ export declare class Field implements FieldableEntity, TypedEntity, LabeledEntit
     preSave?: (string | TransformerConfigSetting)[];
     preMount?: (string | TransformerConfigSetting)[];
     mediaStore?: MediaStore;
+    mediaTypes?: string[];
     values: {
         [key: string]: any;
     };

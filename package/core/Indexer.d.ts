@@ -3,6 +3,7 @@ import type SvelteCMS from '..';
 import type { Content } from './ContentStore';
 import type ContentType from './ContentType';
 import type { EntityTemplate } from './EntityTemplate';
+import type { Changeset } from './Hook';
 import type { Media } from './MediaStore';
 export type IndexItem = Content;
 export type IndexChange = {
@@ -19,6 +20,9 @@ export type IndexerType = EntityType & ConfigurableEntityType & {
     }[]>;
     saveContent: (contentType: string | ContentType, content: IndexItem | IndexItem[]) => Promise<void>;
     deleteContent: (contentType: string | ContentType, content: IndexItem | IndexItem[]) => Promise<void>;
+    indexMedia: (changeset: Changeset, cms: SvelteCMS, options: {
+        [key: string]: any;
+    }) => Promise<void>;
     saveMedia: (media: Media | Media[]) => Promise<void>;
     deleteMedia: (media: Media | Media[]) => Promise<void>;
     searchContent: (contentType: string | ContentType, search: string | Object, options?: Object) => Promise<Content & {
@@ -43,6 +47,9 @@ export declare class Indexer implements ConfigurableEntity, TypedEntity {
     }[]>;
     saveContent: (contentType: ContentType, content: Content | Content[]) => Promise<void>;
     deleteContent: (contentType: ContentType, content: Content | Content[]) => Promise<void>;
+    indexMedia: (changeset: Changeset, cms: SvelteCMS, options: {
+        [key: string]: any;
+    }) => Promise<void>;
     saveMedia: (media: Media | Media[]) => Promise<void>;
     deleteMedia: (media: Media | Media[]) => Promise<void>;
     searchContent: (contentType: ContentType, search: string | Object, options?: Object) => Promise<Content[]>;

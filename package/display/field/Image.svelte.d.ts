@@ -1,15 +1,12 @@
 import { SvelteComponentTyped } from "svelte";
 import type SvelteCMS from "../..";
 import type Field from "../../core/Field";
+import type { Media } from "../../core/MediaStore";
 declare const __propDef: {
     props: {
         cms: SvelteCMS;
         entity: Field;
-        item: string | {
-            src: string;
-            alt?: string;
-            title?: string;
-        };
+        item: string | Media;
         displayMode: string;
     };
     events: {

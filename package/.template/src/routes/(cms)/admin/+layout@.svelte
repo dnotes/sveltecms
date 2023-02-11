@@ -1,4 +1,5 @@
 <script>
+  import "sveltecms/sveltecms-forms.css"
   let js=true
 </script>
 {#if js}

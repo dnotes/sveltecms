@@ -9,10 +9,29 @@ export const templateHook = {
     typeField: true,
     typeInherits: false,
 };
+export class Changeset {
+    constructor(contentType) {
+        this.before = [];
+        this.after = [];
+        this.contentType = contentType;
+    }
+    push(before, after) {
+        this.before.push(before ? cloneDeep(before) : undefined);
+        this.after.push(after ? cloneDeep(after) : undefined);
+    }
+}
 // TODO: Make a special kind of Error for Hooks, including:
 // - some way to collect multiple errors into one
 // - some way to indicate a URL to check on each error
 export const hooks = [
+    {
+        type: 'contentPostWriteAll',
+        label: 'Index Media',
+        description: 'Indexes Media when content is saved.',
+        fn: async (changeset, cms, options) => {
+            cms.indexer.indexMedia(changeset, cms, options);
+        }
+    },
     {
         type: 'contentPostWrite',
         label: 'References',

@@ -16,7 +16,7 @@ export let small = false;
 
 <style>
   .modalbg, .modalbg-small {
-    z-index:10;
+    z-index:11;
     background:rgba(0,0,0,.4);
     -webkit-user-select:none;
        -moz-user-select:none;
@@ -31,11 +31,12 @@ export let small = false;
   }
   .modal {
     top: 60px;
-    height: calc(100% - 80px);
+    height: calc(100% - 120px);
     overflow: scroll;
     background:var(--cms-bg);
     flex-grow:1;
     margin-left:40px;
+    margin-top:100px;
   }
   .modal.small {
     position: fixed;

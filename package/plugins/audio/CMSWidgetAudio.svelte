@@ -1,5 +1,5 @@
-<script>import MediaChooser from "./MediaChooser.svelte";
-import CmsWidgetImagePreview from "./CMSWidgetImagePreview.svelte";
+<script>import MediaChooser from "../../widgets/MediaChooser.svelte";
+import CmsWidgetAudioPreview from "./CMSWidgetAudioPreview.svelte";
 /**
  * The Image Widget works with the SvelteCMS Media Chooser to provide Media input.
  * With the Media Chooser, this Widget will handle storing all Content and Value data,
@@ -15,7 +15,7 @@ export let value = undefined;
 value = Array.isArray(value)
     ? value.map(v => typeof v === 'string' ? { src: v } : v)
     : typeof value === 'string' ? { src: value } : value;
-export let deleteImage = (i) => {
+export let deleteFile = (i) => {
     // For deleting an image, we just remove it from the value.
     // It will then be removed from previews automatically
     // (see the line `$: previews =` above)
@@ -28,7 +28,7 @@ export let deleteImage = (i) => {
 };
 </script>
 
-<fieldset class="cms-image" class:multiple={field.multiple}>
+<fieldset class="cms-audio" class:multiple={field.multiple}>
 
   <label>
     <span style="display:inline-block;">
@@ -37,13 +37,13 @@ export let deleteImage = (i) => {
   </label>
 
   {#if value && Object.keys(value).length}
-    <div class="cms-image-widget">
+    <div class="cms-audio-widget">
       {#if Array.isArray(value)}
         {#each value as img, i}
-          <CmsWidgetImagePreview id="{id}[{i}]" bind:value={img} {cms} {field} on:delete={()=>{deleteImage(i)}}/>
+          <CmsWidgetAudioPreview id="{id}[{i}]" bind:value={img} {cms} {field} on:delete={()=>{deleteFile(i)}}/>
         {/each}
       {:else if value}
-        <CmsWidgetImagePreview id="{id}[0]" bind:value {cms} {field} on:delete={()=>{deleteImage()}}/>
+        <CmsWidgetAudioPreview id="{id}[0]" bind:value {cms} {field} on:delete={()=>{deleteFile()}}/>
       {/if}
     </div>
   {/if}
@@ -53,7 +53,7 @@ export let deleteImage = (i) => {
 </fieldset>
 
 <style>
-  .cms-image-widget {
+  .cms-audio-widget {
     display:flex;
     flex-direction:column;
     flex-wrap:wrap;

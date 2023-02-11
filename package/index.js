@@ -13,7 +13,7 @@ import staticFilesPlugin from './plugins/staticFiles';
 import { cloneDeep, mergeWith, get as getProp, union, sortBy, isEqual, merge, uniq } from 'lodash-es';
 import SlugConfig, { templateSlug } from './core/Slug';
 import { Indexer, templateIndexer } from './core/Indexer';
-import { hooks, templateHook } from './core/Hook';
+import { Changeset, hooks, templateHook } from './core/Hook';
 import { templatePlugin } from './core/Plugin';
 import { mergeCmsConfig } from './utils';
 const customComponents = import.meta.glob('/src/cms/*.svelte', { eager: true });
@@ -130,9 +130,11 @@ export default class SvelteCMS {
         this.lists = {};
         this.plugins = {};
         this.hooks = {
+            adminPreSave: [],
             contentPreSave: [],
             contentPreDelete: [],
             contentPostWrite: [],
+            contentPostWriteAll: [],
         };
         this.use(staticFilesPlugin);
         displayComponents.forEach(c => {
@@ -280,7 +282,7 @@ export default class SvelteCMS {
             if (values.hasOwnProperty(id)) {
                 try {
                     // For references, fieldgroups, or other fieldable field types (e.g. possibly image)
-                    if ((field.type === 'reference' || field.type === 'fieldgroup' || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
+                    if ((field.type === 'reference' || field.type === 'fieldgroup' || field.handlesMedia || field?.fields) && values?.[id] && typeof values?.[id] !== 'string') {
                         if (Array.isArray(values[id])) {
                             res[id] = [];
                             for (let i = 0; i < values[id]['length']; i++) {
@@ -288,6 +290,8 @@ export default class SvelteCMS {
                                 let container = field.type === 'reference'
                                     ? (this.contentTypes[values[id][i]?.['_type']] || this.defaultContentType)
                                     : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field);
+                                if (field.handlesMedia)
+                                    container.fields = Object.assign({ src: new Field('src', { type: 'text', displays: 'none' }, this) }, (container.fields || {}));
                                 res[id][i] = this.preMount(container, values[id][i]);
                             }
                         }
@@ -295,6 +299,8 @@ export default class SvelteCMS {
                             let container = field.type === 'reference'
                                 ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
                                 : values[id]?.['_fieldgroup'] ? new Fieldgroup(values[id]?.['_fieldgroup'], this) : field;
+                            if (field.handlesMedia)
+                                container.fields = Object.assign({ src: new Field('src', { type: 'text', displays: 'none' }, this) }, (container.fields || {}));
                             // @ts-ignore the typecheck above should be sufficient
                             res[id] = container?.fields ? this.preMount(container, values?.[id]) : values[id];
                         }
@@ -325,19 +331,23 @@ export default class SvelteCMS {
                                 // find the actual fields, in case it is a fieldgroup that can be selected on the widget during editing
                                 let container = field.type === 'reference'
                                     ? (this.contentTypes[values[id][i]?.['_type']] || this.defaultContentType)
-                                    : values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field;
+                                    : (values[id][i]._fieldgroup ? new Fieldgroup(values[id][i]._fieldgroup, this) : field);
+                                if (field.handlesMedia)
+                                    container.fields = Object.assign({ src: new Field('src', { type: 'text', displays: 'none' }, this) }, (container.fields || {}));
                                 res[id][i] = this.preSave(container, values[id][i]);
                             }
                         }
                         else {
                             let container = field.type === 'reference'
                                 ? (this.contentTypes[values[id]?.['_type']] || this.defaultContentType)
-                                : values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field;
+                                : (values[id]['_fieldgroup'] ? new Fieldgroup(values[id]['_fieldgroup'], this) : field);
                             // Any "fieldgroup" fields in content can be static (with "fields" prop) or dynamic, chosen by content editor
                             // We get the new Fieldgroup for the latter case, and either way the container will have "fields" prop.
                             // When saving config, the "fieldgroup" fields will not have a "fields" prop, and must still be saved.
                             // @TODO: Evaluate this for security, and probably fix it, since at the moment it will try to save
                             // almost any value to the configuration, albeit serialized.
+                            if (field.handlesMedia)
+                                container.fields = Object.assign({ src: new Field('src', { type: 'text', displays: 'none' }, this) }, (container.fields || {}));
                             // @ts-ignore the typecheck above should be sufficient
                             res[id] = container?.fields ? this.preSave(container, values?.[id]) : values[id];
                         }
@@ -549,6 +559,7 @@ export default class SvelteCMS {
         contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         let items = Array.isArray(content) ? content : [content];
+        let changeset = new Changeset(contentType);
         for (let i = 0; i < items.length; i++) {
             // Set up old Content for contentPostWrite hooks
             let before;
@@ -575,7 +586,10 @@ export default class SvelteCMS {
                 e.message = `Error saving content ${items[i]._type}/${items[i]._slug}:\n${e.message}`;
                 throw e;
             }
-            items[i] = await db.saveContent(items[i], contentType, { ...db.options, ...options });
+            let _media = (items[i]['_media']) ? cloneDeep(items[i]._media) : undefined;
+            items[i] = await db.saveContent({ ...items[i], _media: undefined }, contentType, { ...db.options, ...options });
+            items[i]._media = _media;
+            changeset.push(before, items[i]);
             // When a slug is changing, delete the old content
             if (items[i]._oldSlug && items[i]._slug !== items[i]._oldSlug)
                 await this.deleteContent(contentType, before, { newSlug: items[i]._slug });
@@ -590,16 +604,20 @@ export default class SvelteCMS {
         }
         if (!options.skipIndex)
             await this.indexer.saveContent(contentType, items.map(i => this.getIndexItem(i)));
+        if (!options.skipHooks)
+            await this.runHook('contentPostWriteAll', changeset, this, { ...db.options, ...options });
         return Array.isArray(content) ? items : items[0];
     }
     async deleteContent(contentType, content, options = {}) {
         contentType = typeof contentType === 'string' ? this.getContentType(contentType) : contentType;
         const db = this.getContentStore(contentType);
         let items = Array.isArray(content) ? content : [content];
+        let changeset = new Changeset(contentType);
         for (let i = 0; i < items.length; i++) {
             // Get the content to be deleted, for preDelete hooks
             // @ts-ignore slugifyContent returns singular if passed singular
             items[i] = this.slugifyContent(this.preSave(contentType, items[i]), contentType);
+            changeset.push(items[i], undefined);
             // Run contentPreWrite hooks, and bail if there is an error
             try {
                 if (!options.skipHooks)
@@ -621,6 +639,8 @@ export default class SvelteCMS {
         }
         if (!options.skipIndex)
             await this.indexer.deleteContent(contentType, items.map(i => this.getIndexItem(i)));
+        if (!options.skipHooks)
+            await this.runHook('contentPostWriteAll', changeset, this, { ...db.options, ...options });
         return Array.isArray(content) ? items : items[0];
     }
     newContent(contentTypeID, values = {}) {

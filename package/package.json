@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
     "@sindresorhus/slugify": "^2.1.0",
@@ -142,6 +142,9 @@
     "./plugins/admin/widgets/CMSWidgetEntityList.svelte": "./plugins/admin/widgets/CMSWidgetEntityList.svelte",
     "./plugins/admin/widgets/CMSWidgetEntityTypeField.svelte": "./plugins/admin/widgets/CMSWidgetEntityTypeField.svelte",
     "./plugins/admin/widgets/CMSWidgetList.svelte": "./plugins/admin/widgets/CMSWidgetList.svelte",
+    "./plugins/audio/CMSWidgetAudio.svelte": "./plugins/audio/CMSWidgetAudio.svelte",
+    "./plugins/audio/CMSWidgetAudioPreview.svelte": "./plugins/audio/CMSWidgetAudioPreview.svelte",
+    "./plugins/audio": "./plugins/audio/index.js",
     "./plugins/checkboxes/CheckboxText.svelte": "./plugins/checkboxes/CheckboxText.svelte",
     "./plugins/checkboxes": "./plugins/checkboxes/index.js",
     "./plugins/defaultContent": "./plugins/defaultContent/index.js",
@@ -174,7 +177,9 @@
     "./widgets/CMSWidgetDate.svelte": "./widgets/CMSWidgetDate.svelte",
     "./widgets/CMSWidgetFieldgroup.svelte": "./widgets/CMSWidgetFieldgroup.svelte",
     "./widgets/CMSWidgetFile.svelte": "./widgets/CMSWidgetFile.svelte",
+    "./widgets/CMSWidgetFilePreview.svelte": "./widgets/CMSWidgetFilePreview.svelte",
     "./widgets/CMSWidgetImage.svelte": "./widgets/CMSWidgetImage.svelte",
+    "./widgets/CMSWidgetImagePreview.svelte": "./widgets/CMSWidgetImagePreview.svelte",
     "./widgets/CMSWidgetMultiple.svelte": "./widgets/CMSWidgetMultiple.svelte",
     "./widgets/CMSWidgetMultiselect.svelte": "./widgets/CMSWidgetMultiselect.svelte",
     "./widgets/CMSWidgetNumber.svelte": "./widgets/CMSWidgetNumber.svelte",
@@ -186,6 +191,7 @@
     "./widgets/CMSWidgetTextarea.svelte": "./widgets/CMSWidgetTextarea.svelte",
     "./widgets/CMSWidgetUndefined.svelte": "./widgets/CMSWidgetUndefined.svelte",
     "./widgets/CMSWidgetValue.svelte": "./widgets/CMSWidgetValue.svelte",
+    "./widgets/MediaChooser.svelte": "./widgets/MediaChooser.svelte",
     "./widgets/ScriptableButton.svelte": "./widgets/ScriptableButton.svelte"
   },
   "svelte": "./index.js"

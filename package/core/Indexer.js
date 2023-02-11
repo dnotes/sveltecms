@@ -28,6 +28,7 @@ export class Indexer {
         this.searchIndex = noop();
         this.saveContent = noop();
         this.deleteContent = noop();
+        this.indexMedia = noop();
         this.saveMedia = noop();
         this.deleteMedia = noop();
         this.searchContent = noop([]);
@@ -47,6 +48,7 @@ export class Indexer {
         this.searchIndex = indexer.searchIndex.bind(this);
         this.saveContent = indexer.saveContent.bind(this);
         this.deleteContent = indexer.deleteContent.bind(this);
+        this.indexMedia = indexer.indexMedia.bind(this);
         this.saveMedia = indexer.saveMedia.bind(this);
         this.deleteMedia = indexer.deleteMedia.bind(this);
         this.searchContent = indexer.searchContent.bind(this);

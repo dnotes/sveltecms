@@ -1,34 +1,18 @@
 import { SvelteComponentTyped } from "svelte";
-export declare class CMSFile {
-    src: string;
-    filename: string;
-    title?: string;
-    attribution?: string;
-    size?: number;
-    type?: string;
-    date?: Date;
-    isCMSFile: true;
-    stringify: boolean;
-    toString(): string;
-    toJSON(): string | {
-        src: string;
-        title: string;
-        attribution: string;
-        size: number;
-        date: Date;
-    };
-    constructor(src: string | CMSFile, stringify: boolean, file?: string | File);
-    get displayDate(): string;
-    get displaySize(): any;
-}
-import type { WidgetField } from "..";
+import type { WidgetField } from '..';
+import type { Media } from "../core/MediaStore";
+import type SvelteCMS from "..";
 declare const __propDef: {
     props: {
+        /**
+           * The File Widget works with the SvelteCMS Media Chooser to provide Media input.
+           * With the Media Chooser, this Widget will handle storing all Content and Value data,
+           * while SvelteCMS handles storing the actual files.
+           */ cms: SvelteCMS;
         field: WidgetField;
         id: string;
-        value: string | CMSFile | Array<string | CMSFile>;
-        files: any;
-        input?: any;
+        value?: Media | Media[] | undefined;
+        deleteFile?: (i?: number) => void;
     };
     events: {
         [evt: string]: CustomEvent<any>;

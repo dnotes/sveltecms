@@ -1,10 +1,24 @@
 import type SvelteCMS from '..';
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
+import type { Value } from './ContentStore';
 import type { EntityTemplate } from './EntityTemplate';
+import type { AdminFieldgroupConfigSetting } from './Fieldgroup';
 export type Media = {
     src: string;
-    [key: string]: string | number | boolean | null | undefined | Date | Array<string | number | boolean | null | undefined | Date>;
+    _meta?: MediaMetadata;
+    [fieldname: string]: Value;
 };
+export type MediaMetadata = {
+    name?: string;
+    type?: string;
+    date?: Date;
+    size?: number;
+    [key: string]: Value;
+};
+export type MediaIndex = {
+    usage: string;
+    value: Media;
+}[];
 export type MediaStoreType = EntityType & ConfigurableEntityType & {
     listMedia?: (path: string | null, opts: ConfigSetting) => Promise<string[]>;
     getMedia?: (filename: string | number | null, opts: ConfigSetting) => Promise<string | string[]>;
@@ -14,6 +28,7 @@ export type MediaStoreType = EntityType & ConfigurableEntityType & {
 };
 export type MediaStoreConfigSetting = TypedEntityConfigSetting & ConfigurableEntityConfigSetting;
 export declare const templateMediaStore: EntityTemplate;
+export declare const mediaMetaFields: AdminFieldgroupConfigSetting;
 export declare class MediaStore implements ConfigurableEntity, TypedEntity {
     id: string;
     type: string;

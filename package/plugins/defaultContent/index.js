@@ -27,6 +27,23 @@ const plugin = {
                 displays: 'none',
                 required: 'true',
             },
+            image: {
+                type: 'image',
+                fields: {
+                    alt: {
+                        type: 'text',
+                        displays: 'none',
+                        widget: {
+                            type: 'textarea',
+                            autosize: true,
+                            resize: 'vertical',
+                            rows: 3,
+                            placeholder: 'please provide a literal description of the image'
+                        },
+                        required: true
+                    }
+                }
+            },
             mainImage: {
                 type: 'image',
                 index: true,

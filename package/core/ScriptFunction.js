@@ -596,6 +596,32 @@ export const scriptFunctions = {
             },
         }
     },
+    fieldHandles: {
+        id: 'fieldHandles',
+        description: 'Whether the field handles fields, media, or multiple values',
+        admin: true,
+        fn: (vars, opts) => {
+            if (!vars?.values?.type)
+                return false;
+            let rootField = vars.cms.getEntityRoot('fields', vars.values.type);
+            switch (opts.handlesWhat) {
+                case 'fields': return rootField.handlesFields;
+                case 'media': return rootField.handlesMedia;
+                case 'multiple': return rootField.handlesMultiple;
+            }
+        },
+        optionFields: {
+            handlesWhat: {
+                type: 'text',
+                default: 'fields',
+                helptext: 'What to check the field for handling',
+                widget: {
+                    type: 'select',
+                    items: ['fields', 'media', 'multiple']
+                }
+            }
+        }
+    },
     widgetHandles: {
         id: 'widgetHandles',
         description: 'Whether the widget handles fields, media, or multiple values.',

@@ -93,6 +93,7 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
         <svelte:component
           this={field.widget.widget}
           {field}
+          {cms}
           id="{parentID}.{id}"
           bind:value={value[id]}
         />

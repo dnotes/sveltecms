@@ -22,7 +22,3 @@
 {:then data}
   <CmsAdmin {cms} data={adminData} {adminPath} url={$page.url} />
 {/await}
-
-<style global>
-  @import "sveltecms/sveltecms-forms.css";
-</style>

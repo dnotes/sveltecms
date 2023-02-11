@@ -1,7 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
-import type { WidgetField } from "..";
-import type { Media } from "../core/MediaStore";
-import type SvelteCMS from "..";
+import type { WidgetField } from "../..";
+import type { Media } from "../../core/MediaStore";
+import type SvelteCMS from "../..";
 declare const __propDef: {
     props: {
         /**
@@ -12,7 +12,7 @@ declare const __propDef: {
         field: WidgetField;
         id: string;
         value?: Media | Media[] | undefined;
-        deleteImage?: (i?: number) => void;
+        deleteFile?: (i?: number) => void;
     };
     events: {
         [evt: string]: CustomEvent<any>;
@@ -21,9 +21,9 @@ declare const __propDef: {
         default: {};
     };
 };
-export type CmsWidgetImageProps = typeof __propDef.props;
-export type CmsWidgetImageEvents = typeof __propDef.events;
-export type CmsWidgetImageSlots = typeof __propDef.slots;
-export default class CmsWidgetImage extends SvelteComponentTyped<CmsWidgetImageProps, CmsWidgetImageEvents, CmsWidgetImageSlots> {
+export type CmsWidgetAudioProps = typeof __propDef.props;
+export type CmsWidgetAudioEvents = typeof __propDef.events;
+export type CmsWidgetAudioSlots = typeof __propDef.slots;
+export default class CmsWidgetAudio extends SvelteComponentTyped<CmsWidgetAudioProps, CmsWidgetAudioEvents, CmsWidgetAudioSlots> {
 }
 export {};

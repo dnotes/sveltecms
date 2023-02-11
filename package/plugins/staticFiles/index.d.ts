@@ -14,7 +14,6 @@ export declare const staticFilesContentOptionFields: {
 export type staticFilesMediaOptions = {
     staticDirectory: string;
     mediaDirectory: string;
-    allowMediaTypes: string | string[];
     maxUploadSize: string;
 };
 export declare const staticFilesMediaOptionFields: {

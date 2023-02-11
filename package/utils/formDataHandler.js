@@ -1,8 +1,24 @@
+import Field from '../core/Field';
 import { get, set } from 'lodash-es';
 import Fieldgroup from '../core/Fieldgroup';
+function handleMedia(cms, field, item) {
+    if (!field?.fields?.src)
+        field.fields = Object.assign((field.fields || {}), { src: new Field('src', 'text', cms) });
+    let _meta = Object.fromEntries(Object.keys(item?._meta || {}).map(k => {
+        if (k === 'date')
+            return [k, new Date(item._meta[k][0])];
+        if (['size', 'height', 'width'].includes(k))
+            return [k, parseInt(item._meta[k][0])];
+        if (k === 'duration')
+            return [k, parseFloat(item._meta[k][0])];
+        return [k, item._meta[k][0]];
+    }));
+    return { ...item, _meta };
+}
 export async function collapseFormItem(cms, contentType, fields, data, prefix) {
+    let _media = [];
     // Get all fields, as promises (some formDataHandler functions are async)
-    let promises = Object.entries(fields).map(async ([id, field]) => {
+    let promises = Object.entries(fields || {}).map(async ([id, field]) => {
         // This function is recursive, and the prefix is provided for nested levels of a data object
         let formPath = [prefix, id].filter(Boolean).join('.');
         let item = get(data, id);
@@ -10,12 +26,42 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
             return [id, undefined];
         let value;
         let itemIsArray = Array.isArray(item);
+        if (field.handlesMedia) {
+            // Collect all data, and format for data storage
+            let fieldValues = [];
+            Object.keys(item).filter(k => k.match(/^\d+$/)).sort().forEach(k => {
+                fieldValues.push(handleMedia(cms, field, item[k]));
+            });
+            // Prepare all data and save uploaded files
+            if (item.files.length) {
+                const promises = fieldValues.filter(v => v?._meta?.name).map(async (v) => {
+                    let file = item.files.find(f => f.name === v._meta.name);
+                    if (file) {
+                        // Check media for validity
+                        let mediaTypes = field.mediaTypes;
+                        if (!mediaTypes.includes(file.type) && // exact type
+                            !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type
+                            !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension
+                        )
+                            throw new Error(`${file.name} is not among the allowed media types (${mediaTypes.join(', ')}).`);
+                        v.src = await field.mediaStore.saveMedia(file, field.mediaStore.options);
+                    }
+                });
+                const result = await Promise.all(promises);
+            }
+            item = { ...fieldValues };
+        }
         // Fieldgroup fields must be collapsed recursively
-        if (field.type === 'fieldgroup') {
+        if (field.type === 'fieldgroup' || field.widget.handlesFields || field.handlesMedia) {
             if (field.multiple && itemIsArray) {
                 let promises = Object.entries(item).map(async ([i, item]) => {
                     let fields = item?.['_fieldgroup']?.[0] ? new Fieldgroup(item?.['_fieldgroup']?.[0], cms).fields : field.fields;
-                    return collapseFormItem(cms, contentType, fields, item, formPath);
+                    let value = await collapseFormItem(cms, contentType, fields, item, formPath);
+                    if (value?.['_media']) {
+                        _media.push(...value['_media']);
+                        value['_media'] = undefined;
+                    }
+                    return value;
                 });
                 value = await Promise.all(promises);
             }
@@ -64,6 +110,14 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
         else {
             value = itemIsArray ? item[0] : item;
         }
+        if (field.handlesMedia) {
+            if (Array.isArray(value))
+                value.forEach(v => {
+                    _media.push({ usage: formPath, value: v });
+                });
+            else
+                _media.push({ usage: formPath, value });
+        }
         return [id, value];
     });
     const result = await Promise.all(promises);
@@ -74,6 +128,10 @@ export async function collapseFormItem(cms, contentType, fields, data, prefix) {
         result.push(['_oldSlug', data._oldSlug[0]]);
     if (data?._fieldgroup?.[0])
         result.push(['_fieldgroup', data._fieldgroup[0]]);
+    if (data?._meta)
+        result.push(['_meta', data._meta]);
+    if (_media.length)
+        result.push(['_media', _media]);
     return Object.fromEntries(result);
 }
 /**

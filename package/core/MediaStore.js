@@ -9,6 +9,19 @@ export const templateMediaStore = {
     typeRestricted: true,
     isConfigurable: true,
 };
+export const mediaMetaFields = {
+    id: 'mediaMetaFields',
+    admin: true,
+    fields: {
+        name: { type: 'text', default: undefined, helptext: 'the file name' },
+        type: { type: 'text', default: undefined, helptext: 'the mime type' },
+        size: { type: 'number', default: undefined, helptext: 'the file size' },
+        date: { type: 'date', default: undefined, helptext: 'when the file was first uploaded / linked' },
+        height: { type: 'text', default: undefined, helptext: 'the height of an image or video' },
+        width: { type: 'text', default: undefined, helptext: 'the width of an image or video' },
+        duration: { type: 'text', default: undefined, helptext: 'the duration of an audio or video file' },
+    }
+};
 export class MediaStore {
     constructor(conf, cms) {
         let store = typeof conf === 'string' ? cms.mediaStores[conf] : cms.mediaStores[conf?.id];

@@ -2,11 +2,15 @@ import type SvelteCMS from '..';
 import type { ConfigSetting, ConfigurableEntity, ConfigurableEntityConfigSetting, ConfigurableEntityType, EntityType, TypedEntity, TypedEntityConfigSetting } from '..';
 import type { ContentType } from './ContentType';
 import type { EntityTemplate } from './EntityTemplate';
-export type Value = string | number | boolean | null | undefined | Date | Content | Array<Value>;
+import type { MediaIndex } from './MediaStore';
+export type Value = string | number | boolean | null | undefined | Date | Content | Array<Value> | {
+    [key: string]: Value;
+};
 export type Content = {
     _type?: string;
     _slug?: string;
     _oldSlug?: string;
+    _media?: MediaIndex;
     [id: string]: Value;
 };
 export type ContentStoreType = EntityType & ConfigurableEntityType & {
