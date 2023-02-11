@@ -44,6 +44,15 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
         const promises = fieldValues.filter(v => v?._meta?.name).map(async v => {
           let file = item.files.find(f => f.name === v._meta.name)
           if (file) {
+
+            // Check media for validity
+            let mediaTypes = field.mediaTypes
+            if (
+              !mediaTypes.includes(file.type) && // exact type
+              !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type
+              !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension
+            ) throw new Error(`${file.name} is not among the allowed media types (${mediaTypes.join(', ')}).`)
+
             v.src = await field.mediaStore.saveMedia(file, field.mediaStore.options)
           }
         })
@@ -137,8 +146,6 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
   if (data?._fieldgroup?.[0]) result.push(['_fieldgroup', data._fieldgroup[0]])
   if (data?._meta) result.push(['_meta', data._meta])
   if (_media.length) result.push(['_media', _media])
-
-  console.log(_media)
 
   return Object.fromEntries(result)
 

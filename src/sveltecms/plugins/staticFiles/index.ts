@@ -82,7 +82,6 @@ export const staticFilesContentOptionFields:{[key:string]:ConfigFieldConfigSetti
 export type staticFilesMediaOptions = {
   staticDirectory:string,
   mediaDirectory:string,
-  allowMediaTypes:string|string[],
   maxUploadSize:string,
 }
 
@@ -96,13 +95,6 @@ export const staticFilesMediaOptionFields:{[key:string]:ConfigFieldConfigSetting
     type: 'text',
     default: '',
     helptext: 'The directory for media files relative to the static directory.',
-  },
-  allowMediaTypes: {
-    type: 'text',
-    multiple: true,
-    default: ['image/*'],
-    widget: 'multiselect',
-    helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
   },
   maxUploadSize: {
     type: 'text',
@@ -498,14 +490,6 @@ const plugin:CMSPlugin = {
       id: 'staticFiles',
       optionFields: { databaseName:databaseNameField, ...staticFilesMediaOptionFields },
       saveMedia: async (file, opts:staticFilesMediaOptions) => {
-
-        // Check media for validity
-        let mediaTypes = Array.isArray(opts.allowMediaTypes) ? opts.allowMediaTypes : opts.allowMediaTypes.split(/\s*,\s*/)
-        if (
-          !mediaTypes.includes(file.type) && // exact type
-          !mediaTypes.includes(file.type.replace(/\/.+/, '/*')) && // wildcard type
-          !mediaTypes.includes(file.name.replace(/^.+\./, '.')) // file extension
-        ) throw new Error(`${file.name} is not among the allowed media types (${mediaTypes.join(', ')}).`)
 
         let maxUploadSize = bytes.parse(opts.maxUploadSize)
         if (maxUploadSize && file.size > maxUploadSize) throw new Error(`${file.name} exceeds maximum upload size of ${opts.maxUploadSize}`)

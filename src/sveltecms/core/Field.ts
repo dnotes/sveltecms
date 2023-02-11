@@ -34,6 +34,7 @@ export type FieldConfigSetting = DisplayableEntityConfigSetting & {
   class?: string
   events?: {on:string,function:ScriptFunctionConfigSetting}|{on:string,function:ScriptFunctionConfigSetting}[]
   mediaStore?: string|MediaStoreConfigSetting
+  mediaTypes?: string|string[]
   scriptable?: boolean
   [id:string]:string|number|boolean|ConfigSetting|ScriptFunctionConfigSetting|(string|number|ConfigSetting)[]
 }
@@ -53,6 +54,7 @@ export type FieldType = EntityType & DisplayableEntityType & {
   preSave?: Array<string|TransformerConfigSetting>
   preMount?: Array<string|TransformerConfigSetting>
   handlesMedia?: boolean
+  mediaTypes?: string[]
   multiple?: boolean
   admin?: boolean
 }
@@ -100,12 +102,21 @@ export const templateField:EntityTemplate = {
       type:'entity',
       default:'',
       helptext:'Where any media uploaded to this field will be stored. Only applies if the widget handles media.',
+      hidden: '$not($fieldHandles(media))',
       widget: {
         type: 'entity',
         options: {
           entityType: 'mediaStore',
         },
       }
+    },
+    mediaTypes: {
+      type: 'text',
+      multiple: true,
+      default: ['image/*'],
+      hidden: '$not($fieldHandles(media))',
+      widget: 'multiselect',
+      helptext: 'A list of unique file type specifiers, e.g. "image/jpeg" or ".jpg".',
     },
     helptext: {
       type: 'text',
@@ -259,6 +270,7 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
   preSave?: (string|TransformerConfigSetting)[]
   preMount?: (string|TransformerConfigSetting)[]
   mediaStore?: MediaStore
+  mediaTypes?: string[]
 
   // Items that are only used when initialized for an entry form
   values: {[key:string]:any} = {} // all form values
@@ -283,6 +295,9 @@ export class Field implements FieldableEntity, TypedEntity, LabeledEntity, Displ
       if (!fieldType) throw new Error(`SvelteCMS: field type "${conf.type}" does not exist`)
       this.type = conf.type
       this.handlesMedia = fieldType.handlesMedia
+      let mediaTypes = conf?.mediaTypes ?? fieldType?.mediaTypes ?? []
+      if (typeof mediaTypes === 'string') mediaTypes = mediaTypes.split(/\s*,\s*/)
+      this.mediaTypes = mediaTypes
       this.label = parseScript(conf.label) ?? (typeof conf.label === 'string' ? conf.label : getLabelFromID(id)) // text is required
       this.index = parseScript(conf.index) ?? (conf.index ? true : false)
       this.value = parseScript(conf.value) ?? conf.value
@@ -350,6 +365,7 @@ export const fieldTypes:{[key:string]:FieldType} = {
     default: [],
     widget: 'image',
     handlesMedia: true,
+    mediaTypes: ['image/*'],
     displays: {
       default: 'div',
       reference: 'none',
@@ -358,11 +374,13 @@ export const fieldTypes:{[key:string]:FieldType} = {
   },
   file: {
     id: 'file',
-    default: [],
+    default: undefined,
     widget: 'file',
+    handlesMedia: true,
+    mediaTypes: ['text/plain','text/csv','application/pdf'],
     displays: {
-      default: 'div',
-      reference: 'none',
+      default: 'none',
+      page: 'div',
     },
     displayComponent: 'sveltecms/display/field/File'
   },
