@@ -102,18 +102,9 @@ mediaStores:
   images:
     type: staticFiles
     mediaDirectory: images
-    allowedMediaTypes:
-      - image/jpeg
-      - image/png
-      - image/gif
-    allowMediaTypes:
-      - image/jpeg
-      - image/png
-      - image/gif
   icons:
     type: staticFiles
     mediaDirectory: images/icons
-    allowMediaTypes: image/png
 fields:
   title:
     type: text
@@ -123,12 +114,12 @@ fields:
       default:
         type: span
         link: true
+      reference:
+        type: span
+        link: true
       page: h1
       teaser:
         type: h2.m-0.font-bold
-        link: true
-      reference:
-        type: span
         link: true
   postDate: date
   body: markdown
@@ -136,17 +127,34 @@ fields:
     type: text
     displays: none
     required: 'true'
+  image:
+    type: image
+    fields:
+      alt:
+        type: text
+        displays: none
+        widget:
+          type: textarea
+          autosize: true
+          resize: vertical
+          rows: 3
+          placeholder: please provide a literal description of the image
+        required: true
+    mediaTypes:
+      - image/*
+    index: true
+    mediaStore: images
+    displays:
+      teaser: >-
+        div.w-36.h-28.float-left.pr-4.m-0.not-prose.overflow-hidden.drop-shadow-xl
   mainImage:
     type: image
+    index: true
     mediaStore:
       type: staticFiles
       mediaDirectory: images/main
       options:
         mediaDirectory: images/main
-        allowedMediaTypes:
-          - image/jpeg
-          - image/png
-          - image/gif
   blocks:
     type: fieldgroup
     multiple: true
@@ -208,24 +216,6 @@ fields:
   h1:
     type: text
     displays: h1
-  image:
-    type: image
-    index: true
-    mediaStore: images
-    displays:
-      teaser: >-
-        div.w-36.h-28.float-left.pr-4.m-0.not-prose.overflow-hidden.drop-shadow-xl
-    fields:
-      alt:
-        type: text
-        displays: none
-        widget:
-          type: textarea
-          autosize: true
-          resize: vertical
-          rows: 3
-          placeholder: please provide a literal description of the image
-        required: true
   style:
     type: text
     displays: none
@@ -323,6 +313,8 @@ fieldgroups:
           icon:
             type: image
             mediaStore: icons
+            mediaTypes:
+              - image/png
     tags:
       - fullwidth
     displays:
