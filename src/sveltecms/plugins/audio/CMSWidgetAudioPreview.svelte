@@ -33,9 +33,6 @@
   }) : undefined
 
   $: if (!value?._meta) value._meta = {}
-
-  $: console.log(value._meta)
-
 </script>
 
 <div class="preview-container">

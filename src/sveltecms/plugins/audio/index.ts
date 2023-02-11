@@ -1,5 +1,4 @@
 import type { CMSPlugin } from "sveltecms/core/Plugin";
-import Audio from "./Audio.svelte";
 import CmsWidgetAudio from "./CMSWidgetAudio.svelte";
 
 export const AudioPlugin:CMSPlugin = {
@@ -15,36 +14,15 @@ export const AudioPlugin:CMSPlugin = {
       handlesMultiple: true,
     }
   ],
-  fieldTypes: [
-    {
-      id: 'audio',
-      default: undefined,
-      widget: 'audio',
-      handlesMedia: true,
-      displayComponent: 'sveltecms/plugins/audio/Audio',
-      displays: {
-        default: 'none',
-        page: 'div',
-      }
-    }
-  ],
-  components: [
-    {
-      id: 'sveltecms/plugins/audio/Audio',
-      component: Audio,
-    }
-  ],
   conf: {
     fields: {
       audio: {
-        type: 'audio',
+        type: 'file',
         widget: 'audio',
+        mediaTypes: ['audio/*'],
         mediaStore: {
           type: 'staticFiles',
           mediaDirectory: 'audio',
-          allowMediaTypes: [
-            'audio/*'
-          ]
         }
       }
     }
