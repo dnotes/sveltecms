@@ -41,6 +41,7 @@ type MediaPreview = Media & { _blob?:File }
 
   export let field:WidgetField
   export let id:string
+  export let cms:SvelteCMS
 
   export let value:Media|Media[]
   export let files:FileList = undefined
@@ -57,7 +58,16 @@ type MediaPreview = Media & { _blob?:File }
   let input:HTMLInputElement
   let linkInput:HTMLInputElement
 
-  let library:Promise<Media[]> = (async () => { return [] })()
+  let allMedia:Media[] = []
+  // @ts-ignore When you getIndex(_media) then it's Media TODO: fix this type
+  let libraryQuery = cms.indexer.getIndex('_media').then(media => allMedia = media)
+  let libraryItems:Media[]
+  $: libraryItems = allMedia.filter(item => (item?._meta && (
+    field.mediaTypes.includes(item._meta.type) || // exact type
+    field.mediaTypes.includes(item._meta.type.replace(/\/.+/, '/*')) || // wildcard type
+    field.mediaTypes.includes(item._meta.name.replace(/^.+\./, '.')) // file extension
+  )))
+
   let result
 
   /**
@@ -133,6 +143,9 @@ type MediaPreview = Media & { _blob?:File }
 
   async function handleLink(src) {
 
+    // TODO: verify mime type of linked content
+    // TODO: provide option to download linked content
+
     await addFiles({ src, _meta:{ date:new Date() } })
 
   }
@@ -199,6 +212,7 @@ type MediaPreview = Media & { _blob?:File }
   bind:this={input}
   name="{id}['files']"
   type="file"
+  accept="{field.mediaTypes.join(',') || 'text/plain'}"
   multiple={field.multiple}
   disabled={field.disabled}
   required={field.required && !_previews?.length}
@@ -234,12 +248,58 @@ type MediaPreview = Media & { _blob?:File }
 
     </div>
 
-    <div class="library">
-      <h3>Media Library</h3>
-    </div>
+    <h3>Media Library</h3>
 
     <div class="library">
-      This is where the library goes.
+      {#await libraryQuery}
+        <em>getting media library...</em>
+      {:then value}
+        {#each libraryItems as item}
+          <div class="library-item" class:wide={item?._meta?.type?.startsWith('audio')}>
+            <div class="src">
+              {item?.src}
+            </div>
+            <div class="flex">
+              {#if item?._meta?.type?.startsWith('image')}
+                <div class="preview">
+                  <img src="{item?.src}" alt="{item?.alt?.toString() || ''}" />
+                </div>
+              {:else if  item?._meta?.type?.startsWith('audio')}
+                <div class="preview">
+                  <audio controls src="{item?.src}" />
+                </div>
+              {:else}
+                <div class="preview no-preview">{item?.src?.replace(/.+\./, '.').replace(/\?.+/, '')}</div>
+              {/if}
+              <div class="details">
+                {#if item?._meta?.name}
+                  <div><span>Name:</span>{item._meta.name}</div>
+                {/if}
+                {#if item?._meta?.type}
+                  <div><span>Type:</span>{item._meta.type}</div>
+                {/if}
+                {#if item?._meta?.date}
+                  <div><span>Date:</span>{new Date(item._meta.date).toLocaleDateString(undefined)}</div>
+                {/if}
+                {#if item?._meta?.width && item?._meta?.height}
+                  <div><span>Dimensions:</span>{item._meta.height}&times;{item._meta.height}</div>
+                {/if}
+                {#if item?._meta?.duration}
+                  <div><span>Duration:</span>{item._meta.duration}s</div>
+                {/if}
+              </div>
+              <div class="actions">
+                <Button on:click={()=>{addFiles(item)}}>+add</Button>
+              </div>
+            </div>
+          </div>
+        {:else}
+           <!-- empty list -->
+          <p>No library items found.</p>
+        {/each}
+      {:catch error}
+        <p>There was an error getting the media library.</p>
+      {/await}
     </div>
 
   </div>
@@ -267,6 +327,83 @@ type MediaPreview = Media & { _blob?:File }
     padding: 0;
     margin: 0;
     opacity: .5;
+  }
+
+  .library {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.8em;
+  }
+  .library-item {
+    width:320px;
+    height:170px;
+    max-width:100%;
+    border:1px solid var(--cms-main);
+    border-radius:6px;
+    overflow:hidden;
+    position:relative;
+  }
+  div.flex {
+    display:flex;
+  }
+  .library-item.wide div.flex {
+    flex-direction: column;
+  }
+  div.src {
+    width:100%;
+    padding:2px 4px;
+    background-color:var(--cms-main);
+    color:var(--cms-bg);
+    font-weight:bold;
+    white-space:pre;
+    height: 30px;
+    line-height: 30px;
+    text-align: right;
+  }
+  div.preview {
+    padding:0;
+    margin:0;
+    align-self:flex-start;
+    width:140px;
+    height:140px;
+  }
+  .wide div.preview {
+    width: 100%;
+    height: auto;
+  }
+  div.preview>img {
+    object-fit:contain;
+  }
+  div.no-preview {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    background-color: rgba(127,127,127,.2);
+  }
+  div.preview>audio {
+    width:320px;
+    max-width:100%;
+  }
+
+  div.details {
+    padding: .5em;
+    font-size: 80%;
+    opacity: .8;
+  }
+  div.details div {
+    max-width:100%;
+    line-height:1.4em;
+    height:1.4em;
+  }
+  div.details span {
+    width: 60px;
+    display: inline-block;
+  }
+  div.actions {
+    position:absolute;
+    bottom: 5px;
+    right: 5px;
   }
 
 </style>

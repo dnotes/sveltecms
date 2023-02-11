@@ -56,7 +56,7 @@ import CmsWidgetImagePreview from "./CMSWidgetImagePreview.svelte";
     </div>
   {/if}
 
-  <MediaChooser bind:value {field} {id} />
+  <MediaChooser bind:value {field} {id} {cms} />
 
 </fieldset>
 
