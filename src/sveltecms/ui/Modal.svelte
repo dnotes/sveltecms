@@ -19,7 +19,7 @@ export let small = false
 
 <style>
   .modalbg, .modalbg-small {
-    z-index:11;
+    z-index:95;
     background:rgba(0,0,0,.4);
     user-select:none;
     width:100vw;
