@@ -32,6 +32,7 @@ prog.command('(none)', 'Show the full help for the program.', { default:true })
   })
 
 prog.command('check', 'Check important SvelteCMS files for updates.')
+  .option('--all, -a', 'Check all SvelteCMS installation files, not just the critical ones.', false)
   .option('--dir, -d', 'The root directory of the SvelteKit site.', '.')
   .action(async (opts) => {
     let templateDir = fs.existsSync(`${cmsDir}/.template`) ? `${cmsDir}/.template` : `${cmsDir}/package/.template`
@@ -66,7 +67,7 @@ prog.command('check', 'Check important SvelteCMS files for updates.')
         return res
       })
 
-    let outdatedFiles = files.filter(f => !f.canonical || !f.installed || f.canonical !== f.installed)
+    let outdatedFiles = opts.all ? files : files.filter(f => !f.canonical || !f.installed || f.canonical !== f.installed)
 
     let missingFiles = outdatedFiles.filter(f => !f.installed)
 
