@@ -3,6 +3,7 @@ import cp from 'cp-file'
 import sade from 'sade'
 import rm from 'rimraf'
 import { fileURLToPath } from 'url'
+import { chmodSync } from 'fs'
 
 import mainPkg from '../package.json' assert { type:'json' }
 const { version } = mainPkg
@@ -28,5 +29,6 @@ sade('postpackage', true)
         throw e
       }
     });
+    chmodSync(`${toDir.replace(/\/\.template$/, '')}/cli.js`, 0o755)
   })
   .parse(process.argv)

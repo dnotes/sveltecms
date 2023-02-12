@@ -1,6 +1,6 @@
 {
   "name": "sveltecms",
-  "version": "0.0.39",
+  "version": "0.0.44",
   "scripts": {
     "debug": "echo 'To debug, open Google Chrome to chrome://inspect' && node --inspect node_modules/.bin/vite dev",
     "dev": "vite dev",
@@ -27,8 +27,11 @@
     "fuse.js": "^6.6.2",
     "isomorphic-git": "^1.17.0",
     "js-yaml": "^4.1.0",
+    "kleur": "^4.1.5",
     "lodash-es": "^4.17.21",
     "markdown-it": "^12.3.2",
+    "prompts": "^2.4.2",
+    "sade": "^1.8.1",
     "sanitize-html": "^2.5.3",
     "svelte-tags-input": "3.0.0",
     "validatorjs": "^3.22.1"
@@ -58,8 +61,6 @@
     "markdown-it-footnote": "^3.0.3",
     "postcss": "^8.4.12",
     "postcss-load-config": "^3.1.4",
-    "prompts": "^2.4.2",
-    "sade": "^1.8.1",
     "svelte": "^3.55",
     "svelte-check": "^2.2.6",
     "svelte-preprocess": "^4.10.5",
@@ -73,6 +74,9 @@
   "type": "module",
   "description": "A content manager built with sveltekit, for sveltekit projects. Sensible and extensible, with declarative configuration.",
   "main": "./src/lib/index.ts",
+  "bin": {
+    "sveltecms": "./cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dnotes/sveltecms.git"
