@@ -78,14 +78,14 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
       {:else if field.multiple && !field.widget.handlesMultiple}
         <CmsWidgetMultiple
           {field}
-          id="{parentID}.{id}"
+          id="{parentID}[{id}]"
           bind:value={value[id]}
           {cms}
         />
       {:else if field.widget.type === 'fieldgroup'}
         <svelte:self
           {field}
-          id="{parentID}.{id}"
+          id="{parentID}[{id}]"
           bind:value={value[id]}
           {cms}
         />
@@ -94,7 +94,7 @@ $: if (parentFieldProxy.fields || parentField.values || parentField.errors || pa
           this={field.widget.widget}
           {field}
           {cms}
-          id="{parentID}.{id}"
+          id="{parentID}[{id}]"
           bind:value={value[id]}
         />
       {/if}

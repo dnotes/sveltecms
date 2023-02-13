@@ -9,8 +9,6 @@ declare const __propDef: {
         value?: any | any[];
     };
     events: {
-        click: MouseEvent;
-    } & {
         [evt: string]: CustomEvent<any>;
     };
     slots: {};

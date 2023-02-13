@@ -36,7 +36,7 @@ async function removeItem(i) {
 }
 </script>
 
-<fieldset class="multiple" on:click|preventDefault>
+<fieldset class="multiple">
 
   <legend>{field.label}</legend>
 

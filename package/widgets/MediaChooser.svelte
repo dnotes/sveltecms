@@ -166,7 +166,7 @@ $: if (value || !value) {
   class="sveltecms-file-input"
   bind:files
   bind:this={input}
-  name="{id}['files']"
+  name="{id}[files]"
   type="file"
   accept="{field.mediaTypes.join(',') || 'text/plain'}"
   multiple={field.multiple}
