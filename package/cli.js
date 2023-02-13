@@ -21,9 +21,10 @@ prog.command('check', 'Check important SvelteCMS files for updates.')
     .option('--dir, -d', 'The root directory of the SvelteKit site.', '.')
     .action(async (opts) => {
     let templateDir = fs.existsSync(`${cmsDir}/.template`) ? `${cmsDir}/.template` : `${cmsDir}/package/.template`;
-    let files = manifest
-        .filter(f => f.keepUpdated)
-        .map(f => {
+    let files = manifest;
+    if (!opts.all)
+        files = files.filter(f => f.keepUpdated);
+    files = files.map(f => {
         let res = { ...f };
         res.cmsFile = `${templateDir}/${f.path}`;
         res.localFile = `${opts.dir}/${f.path}`;
@@ -47,7 +48,7 @@ prog.command('check', 'Check important SvelteCMS files for updates.')
         }
         return res;
     });
-    let outdatedFiles = opts.all ? files : files.filter(f => !f.canonical || !f.installed || f.canonical !== f.installed);
+    let outdatedFiles = files.filter(f => !f.canonical || !f.installed || f.canonical !== f.installed);
     let missingFiles = outdatedFiles.filter(f => !f.installed);
     if (missingFiles.length > 4) {
         let response = await prompts({

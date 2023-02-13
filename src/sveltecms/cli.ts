@@ -37,8 +37,10 @@ prog.command('check', 'Check important SvelteCMS files for updates.')
   .action(async (opts) => {
     let templateDir = fs.existsSync(`${cmsDir}/.template`) ? `${cmsDir}/.template` : `${cmsDir}/package/.template`
     let files:CMSFile[] = manifest
-      .filter(f => f.keepUpdated)
-      .map(f => {
+
+    if (!opts.all) files = files.filter(f => f.keepUpdated)
+
+    files = files.map(f => {
 
         let res:CMSFile = {...f}
         res.cmsFile = `${templateDir}/${f.path}`
@@ -67,7 +69,7 @@ prog.command('check', 'Check important SvelteCMS files for updates.')
         return res
       })
 
-    let outdatedFiles = opts.all ? files : files.filter(f => !f.canonical || !f.installed || f.canonical !== f.installed)
+    let outdatedFiles = files.filter(f => !f.canonical || !f.installed || f.canonical !== f.installed)
 
     let missingFiles = outdatedFiles.filter(f => !f.installed)
 
