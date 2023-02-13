@@ -40,7 +40,7 @@ import { cloneDeep } from "lodash-es";
 
 </script>
 
-<fieldset class="multiple" on:click|preventDefault>
+<fieldset class="multiple">
 
   <legend>{field.label}</legend>
 

@@ -97,14 +97,14 @@ const split = splitTags()
       {:else if field.multiple && !field.widget.handlesMultiple}
         <CmsWidgetMultiple
           {field}
-          id="{parentID}.{id}"
+          id="{parentID}[{id}]"
           bind:value={value[id]}
           {cms}
         />
       {:else if field.widget.type === 'fieldgroup'}
         <svelte:self
           {field}
-          id="{parentID}.{id}"
+          id="{parentID}[{id}]"
           bind:value={value[id]}
           {cms}
         />
@@ -113,7 +113,7 @@ const split = splitTags()
           this={field.widget.widget}
           {field}
           {cms}
-          id="{parentID}.{id}"
+          id="{parentID}[{id}]"
           bind:value={value[id]}
         />
       {/if}
