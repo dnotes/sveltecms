@@ -50,7 +50,7 @@
 
     <div class="delete">
       <Button type=cancel small danger
-        helptext="Delete audio file {value['_meta']['name']}"
+        helptext="Delete file {value['_meta']['name']}"
         on:click="{() => {dispatch('delete')}}"
       />
     </div>
