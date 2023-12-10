@@ -79,6 +79,17 @@ you will want to install and configure `@rollup/plugin-yaml`.
     ~~`import conf from './sveltecms.config.json'`~~ \
     **`import conf from './sveltecms.config.yml'`**
 
+* Add type for .yml files in `src/app.d.ts` \
+
+    ``` js
+    declare global {
+        // other stuff...
+        module "*.yml" {
+            const value: any;
+            export default value;
+        }
+    }
+    ```
 
 
 ## Usage
