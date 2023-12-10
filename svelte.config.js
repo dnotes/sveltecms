@@ -21,9 +21,6 @@ const config = {
 			handleMissingId: 'ignore',
 		}
 	},
-	package: {
-		source: 'src/sveltecms'
-	},
-};
+	};
 
 export default config;
