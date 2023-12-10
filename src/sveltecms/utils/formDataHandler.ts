@@ -111,7 +111,8 @@ export async function collapseFormItem(cms:SvelteCMS, contentType:ContentType, f
           value = await Promise.all(promises)
         }
       }
-      else value = item.map(i => i[0])
+      // need to check that the item is an array of arrays, or it may save only the first letter of a string
+      else value = (Array.isArray(item) && Array.isArray(item[0])) ? item.map(i => i[0]) : item;
 
       // For singular fields that use a widget with handlesMultiple, return the first value
       if (!field.multiple && Array.isArray(value)) value = value[0]
