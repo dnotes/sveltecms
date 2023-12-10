@@ -1,5 +1,5 @@
 <script>import MediaChooser from "./MediaChooser.svelte";
-import CmsWidgetAudioPreview from "./CMSWidgetFilePreview.svelte";
+import CmsWidgetFilePreview from "./CMSWidgetFilePreview.svelte";
 /**
  * The File Widget works with the SvelteCMS Media Chooser to provide Media input.
  * With the Media Chooser, this Widget will handle storing all Content and Value data,
@@ -40,10 +40,10 @@ export let deleteFile = (i) => {
       <div class="cms-file-widget">
         {#if Array.isArray(value)}
           {#each value as img, i}
-            <CmsWidgetAudioPreview id="{id}[{i}]" bind:value={img} {cms} {field} on:delete={()=>{deleteFile(i)}}/>
+            <CmsWidgetFilePreview id="{id}[{i}]" bind:value={img} {cms} {field} on:delete={()=>{deleteFile(i)}}/>
           {/each}
         {:else if value}
-          <CmsWidgetAudioPreview id="{id}[0]" bind:value {cms} {field} on:delete={()=>{deleteFile()}}/>
+          <CmsWidgetFilePreview id="{id}[0]" bind:value {cms} {field} on:delete={()=>{deleteFile()}}/>
         {/if}
       </div>
     {/if}
