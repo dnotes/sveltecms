@@ -30,6 +30,6 @@
 			"sveltecms/*": ["src/sveltecms/*"]
 		}
 	},
-	"exclude": ["scripts/**/*.*","src/install","src/install/**/*.*","package/**/*.*","src/sveltecms/manifest.js"],
+	"exclude": ["scripts/**/*.*","src/install","src/install/**/*.*","dist/**/*.*",".template/**/*.*","src/sveltecms/manifest.js"],
 	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "src/**/*.svelte"]
 }

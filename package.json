@@ -6,15 +6,15 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "package": "svelte-package -i src/sveltecms -o package && ./scripts/postpackage.js",
+    "package": "svelte-package -i src/sveltecms && ./scripts/postpackage.js",
     "yalc": "yalc-watch",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "jest"
   },
   "yalcWatch": {
-    "watchFolder": "package",
-    "buildWatchCommand": "svelte-package -i src/sveltecms -o package",
+    "watchFolder": "dist",
+    "buildWatchCommand": "svelte-package -i src/sveltecms",
     "extensions": "js,ts,mjs,cjs,svelte,png,svg,gif,jpeg,jpg,css"
   },
   "dependencies": {
@@ -596,7 +596,8 @@
     }
   },
   "files": [
-    "package"
+    "dist",
+    ".template"
   ],
   "svelte": "./dist/index.js",
   "typesVersions": {

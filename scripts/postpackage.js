@@ -10,7 +10,7 @@ const { version } = mainPkg
 
 import files from '../src/sveltecms/manifest.js'
 
-const toDir = fileURLToPath(new URL('../package/.template', import.meta.url).href)
+const toDir = fileURLToPath(new URL('../.template', import.meta.url).href)
 const fromDir = fileURLToPath(new URL(`..`, import.meta.url).href)
 
 sade('postpackage', true)
@@ -29,6 +29,6 @@ sade('postpackage', true)
         throw e
       }
     });
-    chmodSync(`${toDir.replace(/\/\.template$/, '')}/cli.js`, 0o755)
+    chmodSync(`${toDir.replace(/\/\.template$/, '/dist/cli.js')}`, 0o755)
   })
   .parse(process.argv)
