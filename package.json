@@ -7,9 +7,15 @@
     "build": "vite build",
     "preview": "vite preview",
     "package": "svelte-package -i src/sveltecms -o package && ./scripts/postpackage.js",
+    "yalc": "yalc-watch",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "jest"
+  },
+  "yalcWatch": {
+    "watchFolder": "package",
+    "buildWatchCommand": "svelte-package -i src/sveltecms -o package",
+    "extensions": "js,ts,mjs,cjs,svelte,png,svg,gif,jpeg,jpg,css"
   },
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.4.1",
@@ -105,802 +111,801 @@
   "homepage": "https://github.com/dnotes/sveltecms#readme",
   "exports": {
     "./package.json": "./package.json",
-    "./.DS_Store": "./package/.DS_Store",
     "./CMSAdmin.svelte": {
-      "types": "./package/CMSAdmin.svelte.d.ts",
-      "svelte": "./package/CMSAdmin.svelte",
-      "default": "./package/CMSAdmin.svelte"
+      "types": "./dist/CMSAdmin.svelte.d.ts",
+      "svelte": "./dist/CMSAdmin.svelte",
+      "default": "./dist/CMSAdmin.svelte"
     },
     "./CMSEditorForm.svelte": {
-      "types": "./package/CMSEditorForm.svelte.d.ts",
-      "svelte": "./package/CMSEditorForm.svelte",
-      "default": "./package/CMSEditorForm.svelte"
+      "types": "./dist/CMSEditorForm.svelte.d.ts",
+      "svelte": "./dist/CMSEditorForm.svelte",
+      "default": "./dist/CMSEditorForm.svelte"
     },
     "./CMSField.svelte": {
-      "types": "./package/CMSField.svelte.d.ts",
-      "svelte": "./package/CMSField.svelte",
-      "default": "./package/CMSField.svelte"
+      "types": "./dist/CMSField.svelte.d.ts",
+      "svelte": "./dist/CMSField.svelte",
+      "default": "./dist/CMSField.svelte"
     },
     "./CMSFieldGroup.svelte": {
-      "types": "./package/CMSFieldGroup.svelte.d.ts",
-      "svelte": "./package/CMSFieldGroup.svelte",
-      "default": "./package/CMSFieldGroup.svelte"
+      "types": "./dist/CMSFieldGroup.svelte.d.ts",
+      "svelte": "./dist/CMSFieldGroup.svelte",
+      "default": "./dist/CMSFieldGroup.svelte"
     },
     "./cli": {
-      "types": "./package/cli.d.ts",
-      "default": "./package/cli.js"
+      "types": "./dist/cli.d.ts",
+      "default": "./dist/cli.js"
     },
     "./core/AdminPage": {
-      "types": "./package/core/AdminPage.d.ts",
-      "default": "./package/core/AdminPage.js"
+      "types": "./dist/core/AdminPage.d.ts",
+      "default": "./dist/core/AdminPage.js"
     },
     "./core/Component": {
-      "types": "./package/core/Component.d.ts",
-      "default": "./package/core/Component.js"
+      "types": "./dist/core/Component.d.ts",
+      "default": "./dist/core/Component.js"
     },
     "./core/ContentStore": {
-      "types": "./package/core/ContentStore.d.ts",
-      "default": "./package/core/ContentStore.js"
+      "types": "./dist/core/ContentStore.d.ts",
+      "default": "./dist/core/ContentStore.js"
     },
     "./core/ContentType": {
-      "types": "./package/core/ContentType.d.ts",
-      "default": "./package/core/ContentType.js"
+      "types": "./dist/core/ContentType.d.ts",
+      "default": "./dist/core/ContentType.js"
     },
     "./core/Display": {
-      "types": "./package/core/Display.d.ts",
-      "default": "./package/core/Display.js"
+      "types": "./dist/core/Display.d.ts",
+      "default": "./dist/core/Display.js"
     },
     "./core/EntityTemplate": {
-      "types": "./package/core/EntityTemplate.d.ts",
-      "default": "./package/core/EntityTemplate.js"
+      "types": "./dist/core/EntityTemplate.d.ts",
+      "default": "./dist/core/EntityTemplate.js"
     },
     "./core/Field": {
-      "types": "./package/core/Field.d.ts",
-      "default": "./package/core/Field.js"
+      "types": "./dist/core/Field.d.ts",
+      "default": "./dist/core/Field.js"
     },
     "./core/Fieldgroup": {
-      "types": "./package/core/Fieldgroup.d.ts",
-      "default": "./package/core/Fieldgroup.js"
+      "types": "./dist/core/Fieldgroup.d.ts",
+      "default": "./dist/core/Fieldgroup.js"
     },
     "./core/Hook": {
-      "types": "./package/core/Hook.d.ts",
-      "default": "./package/core/Hook.js"
+      "types": "./dist/core/Hook.d.ts",
+      "default": "./dist/core/Hook.js"
     },
     "./core/Indexer": {
-      "types": "./package/core/Indexer.d.ts",
-      "default": "./package/core/Indexer.js"
+      "types": "./dist/core/Indexer.d.ts",
+      "default": "./dist/core/Indexer.js"
     },
     "./core/MediaStore": {
-      "types": "./package/core/MediaStore.d.ts",
-      "default": "./package/core/MediaStore.js"
+      "types": "./dist/core/MediaStore.d.ts",
+      "default": "./dist/core/MediaStore.js"
     },
     "./core/Plugin": {
-      "types": "./package/core/Plugin.d.ts",
-      "default": "./package/core/Plugin.js"
+      "types": "./dist/core/Plugin.d.ts",
+      "default": "./dist/core/Plugin.js"
     },
     "./core/ScriptFunction": {
-      "types": "./package/core/ScriptFunction.d.ts",
-      "default": "./package/core/ScriptFunction.js"
+      "types": "./dist/core/ScriptFunction.d.ts",
+      "default": "./dist/core/ScriptFunction.js"
     },
     "./core/Slug": {
-      "types": "./package/core/Slug.d.ts",
-      "default": "./package/core/Slug.js"
+      "types": "./dist/core/Slug.d.ts",
+      "default": "./dist/core/Slug.js"
     },
     "./core/Transformer": {
-      "types": "./package/core/Transformer.d.ts",
-      "default": "./package/core/Transformer.js"
+      "types": "./dist/core/Transformer.d.ts",
+      "default": "./dist/core/Transformer.js"
     },
     "./core/Validator": {
-      "types": "./package/core/Validator.d.ts",
-      "default": "./package/core/Validator.js"
+      "types": "./dist/core/Validator.d.ts",
+      "default": "./dist/core/Validator.js"
     },
     "./core/Widget": {
-      "types": "./package/core/Widget.d.ts",
-      "default": "./package/core/Widget.js"
+      "types": "./dist/core/Widget.d.ts",
+      "default": "./dist/core/Widget.js"
     },
     "./display/ContentItem.svelte": {
-      "types": "./package/display/ContentItem.svelte.d.ts",
-      "svelte": "./package/display/ContentItem.svelte",
-      "default": "./package/display/ContentItem.svelte"
+      "types": "./dist/display/ContentItem.svelte.d.ts",
+      "svelte": "./dist/display/ContentItem.svelte",
+      "default": "./dist/display/ContentItem.svelte"
     },
     "./display/FieldList.svelte": {
-      "types": "./package/display/FieldList.svelte.d.ts",
-      "svelte": "./package/display/FieldList.svelte",
-      "default": "./package/display/FieldList.svelte"
+      "types": "./dist/display/FieldList.svelte.d.ts",
+      "svelte": "./dist/display/FieldList.svelte",
+      "default": "./dist/display/FieldList.svelte"
     },
     "./display/FieldValue.svelte": {
-      "types": "./package/display/FieldValue.svelte.d.ts",
-      "svelte": "./package/display/FieldValue.svelte",
-      "default": "./package/display/FieldValue.svelte"
+      "types": "./dist/display/FieldValue.svelte.d.ts",
+      "svelte": "./dist/display/FieldValue.svelte",
+      "default": "./dist/display/FieldValue.svelte"
     },
     "./display/Wrapper.svelte": {
-      "types": "./package/display/Wrapper.svelte.d.ts",
-      "svelte": "./package/display/Wrapper.svelte",
-      "default": "./package/display/Wrapper.svelte"
+      "types": "./dist/display/Wrapper.svelte.d.ts",
+      "svelte": "./dist/display/Wrapper.svelte",
+      "default": "./dist/display/Wrapper.svelte"
     },
     "./display/field/Date.svelte": {
-      "types": "./package/display/field/Date.svelte.d.ts",
-      "svelte": "./package/display/field/Date.svelte",
-      "default": "./package/display/field/Date.svelte"
+      "types": "./dist/display/field/Date.svelte.d.ts",
+      "svelte": "./dist/display/field/Date.svelte",
+      "default": "./dist/display/field/Date.svelte"
     },
     "./display/field/Fieldgroup.svelte": {
-      "types": "./package/display/field/Fieldgroup.svelte.d.ts",
-      "svelte": "./package/display/field/Fieldgroup.svelte",
-      "default": "./package/display/field/Fieldgroup.svelte"
+      "types": "./dist/display/field/Fieldgroup.svelte.d.ts",
+      "svelte": "./dist/display/field/Fieldgroup.svelte",
+      "default": "./dist/display/field/Fieldgroup.svelte"
     },
     "./display/field/File.svelte": {
-      "types": "./package/display/field/File.svelte.d.ts",
-      "svelte": "./package/display/field/File.svelte",
-      "default": "./package/display/field/File.svelte"
+      "types": "./dist/display/field/File.svelte.d.ts",
+      "svelte": "./dist/display/field/File.svelte",
+      "default": "./dist/display/field/File.svelte"
     },
     "./display/field/Image.svelte": {
-      "types": "./package/display/field/Image.svelte.d.ts",
-      "svelte": "./package/display/field/Image.svelte",
-      "default": "./package/display/field/Image.svelte"
+      "types": "./dist/display/field/Image.svelte.d.ts",
+      "svelte": "./dist/display/field/Image.svelte",
+      "default": "./dist/display/field/Image.svelte"
     },
     "./display/field/Reference.svelte": {
-      "types": "./package/display/field/Reference.svelte.d.ts",
-      "svelte": "./package/display/field/Reference.svelte",
-      "default": "./package/display/field/Reference.svelte"
+      "types": "./dist/display/field/Reference.svelte.d.ts",
+      "svelte": "./dist/display/field/Reference.svelte",
+      "default": "./dist/display/field/Reference.svelte"
     },
     ".": {
-      "types": "./package/index.d.ts",
-      "svelte": "./package/index.js",
-      "default": "./package/index.js"
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./manifest": {
-      "types": "./package/manifest.d.ts",
-      "default": "./package/manifest.js"
+      "types": "./dist/manifest.d.ts",
+      "default": "./dist/manifest.js"
     },
     "./plugins/admin/components/CMSComponentList.svelte": {
-      "types": "./package/plugins/admin/components/CMSComponentList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSComponentList.svelte",
-      "default": "./package/plugins/admin/components/CMSComponentList.svelte"
+      "types": "./dist/plugins/admin/components/CMSComponentList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSComponentList.svelte",
+      "default": "./dist/plugins/admin/components/CMSComponentList.svelte"
     },
     "./plugins/admin/components/CMSComponentListOld.svelte": {
-      "types": "./package/plugins/admin/components/CMSComponentListOld.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSComponentListOld.svelte",
-      "default": "./package/plugins/admin/components/CMSComponentListOld.svelte"
+      "types": "./dist/plugins/admin/components/CMSComponentListOld.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSComponentListOld.svelte",
+      "default": "./dist/plugins/admin/components/CMSComponentListOld.svelte"
     },
     "./plugins/admin/components/CMSConfigDisplays.svelte": {
-      "types": "./package/plugins/admin/components/CMSConfigDisplays.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSConfigDisplays.svelte",
-      "default": "./package/plugins/admin/components/CMSConfigDisplays.svelte"
+      "types": "./dist/plugins/admin/components/CMSConfigDisplays.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSConfigDisplays.svelte",
+      "default": "./dist/plugins/admin/components/CMSConfigDisplays.svelte"
     },
     "./plugins/admin/components/CMSConfigEntity.svelte": {
-      "types": "./package/plugins/admin/components/CMSConfigEntity.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSConfigEntity.svelte",
-      "default": "./package/plugins/admin/components/CMSConfigEntity.svelte"
+      "types": "./dist/plugins/admin/components/CMSConfigEntity.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSConfigEntity.svelte",
+      "default": "./dist/plugins/admin/components/CMSConfigEntity.svelte"
     },
     "./plugins/admin/components/CMSConfigEntityList.svelte": {
-      "types": "./package/plugins/admin/components/CMSConfigEntityList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSConfigEntityList.svelte",
-      "default": "./package/plugins/admin/components/CMSConfigEntityList.svelte"
+      "types": "./dist/plugins/admin/components/CMSConfigEntityList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSConfigEntityList.svelte",
+      "default": "./dist/plugins/admin/components/CMSConfigEntityList.svelte"
     },
     "./plugins/admin/components/CMSConfigForm.svelte": {
-      "types": "./package/plugins/admin/components/CMSConfigForm.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSConfigForm.svelte",
-      "default": "./package/plugins/admin/components/CMSConfigForm.svelte"
+      "types": "./dist/plugins/admin/components/CMSConfigForm.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSConfigForm.svelte",
+      "default": "./dist/plugins/admin/components/CMSConfigForm.svelte"
     },
     "./plugins/admin/components/CMSConfigSettings.svelte": {
-      "types": "./package/plugins/admin/components/CMSConfigSettings.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSConfigSettings.svelte",
-      "default": "./package/plugins/admin/components/CMSConfigSettings.svelte"
+      "types": "./dist/plugins/admin/components/CMSConfigSettings.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSConfigSettings.svelte",
+      "default": "./dist/plugins/admin/components/CMSConfigSettings.svelte"
     },
     "./plugins/admin/components/CMSContentEdit.svelte": {
-      "types": "./package/plugins/admin/components/CMSContentEdit.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSContentEdit.svelte",
-      "default": "./package/plugins/admin/components/CMSContentEdit.svelte"
+      "types": "./dist/plugins/admin/components/CMSContentEdit.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSContentEdit.svelte",
+      "default": "./dist/plugins/admin/components/CMSContentEdit.svelte"
     },
     "./plugins/admin/components/CMSContentList.svelte": {
-      "types": "./package/plugins/admin/components/CMSContentList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSContentList.svelte",
-      "default": "./package/plugins/admin/components/CMSContentList.svelte"
+      "types": "./dist/plugins/admin/components/CMSContentList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSContentList.svelte",
+      "default": "./dist/plugins/admin/components/CMSContentList.svelte"
     },
     "./plugins/admin/components/CMSContentTypeList.svelte": {
-      "types": "./package/plugins/admin/components/CMSContentTypeList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/components/CMSContentTypeList.svelte",
-      "default": "./package/plugins/admin/components/CMSContentTypeList.svelte"
+      "types": "./dist/plugins/admin/components/CMSContentTypeList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/components/CMSContentTypeList.svelte",
+      "default": "./dist/plugins/admin/components/CMSContentTypeList.svelte"
     },
     "./plugins/admin/components": {
-      "types": "./package/plugins/admin/components/index.d.ts",
-      "svelte": "./package/plugins/admin/components/index.js",
-      "default": "./package/plugins/admin/components/index.js"
+      "types": "./dist/plugins/admin/components/index.d.ts",
+      "svelte": "./dist/plugins/admin/components/index.js",
+      "default": "./dist/plugins/admin/components/index.js"
     },
     "./plugins/admin": {
-      "types": "./package/plugins/admin/index.d.ts",
-      "svelte": "./package/plugins/admin/index.js",
-      "default": "./package/plugins/admin/index.js"
+      "types": "./dist/plugins/admin/index.d.ts",
+      "svelte": "./dist/plugins/admin/index.js",
+      "default": "./dist/plugins/admin/index.js"
     },
     "./plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte"
     },
     "./plugins/admin/widgets/CMSWidgetDefaultValue.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetDefaultValue.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetDefaultValue.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetDefaultValue.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetDefaultValue.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetDefaultValue.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetDefaultValue.svelte"
     },
     "./plugins/admin/widgets/CMSWidgetDisplayList.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetDisplayList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetDisplayList.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetDisplayList.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetDisplayList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetDisplayList.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetDisplayList.svelte"
     },
     "./plugins/admin/widgets/CMSWidgetEntity.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetEntity.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetEntity.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetEntity.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetEntity.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetEntity.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetEntity.svelte"
     },
     "./plugins/admin/widgets/CMSWidgetEntityList.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetEntityList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetEntityList.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetEntityList.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetEntityList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetEntityList.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetEntityList.svelte"
     },
     "./plugins/admin/widgets/CMSWidgetEntityTypeField.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte"
     },
     "./plugins/admin/widgets/CMSWidgetList.svelte": {
-      "types": "./package/plugins/admin/widgets/CMSWidgetList.svelte.d.ts",
-      "svelte": "./package/plugins/admin/widgets/CMSWidgetList.svelte",
-      "default": "./package/plugins/admin/widgets/CMSWidgetList.svelte"
+      "types": "./dist/plugins/admin/widgets/CMSWidgetList.svelte.d.ts",
+      "svelte": "./dist/plugins/admin/widgets/CMSWidgetList.svelte",
+      "default": "./dist/plugins/admin/widgets/CMSWidgetList.svelte"
     },
     "./plugins/audio/CMSWidgetAudio.svelte": {
-      "types": "./package/plugins/audio/CMSWidgetAudio.svelte.d.ts",
-      "svelte": "./package/plugins/audio/CMSWidgetAudio.svelte",
-      "default": "./package/plugins/audio/CMSWidgetAudio.svelte"
+      "types": "./dist/plugins/audio/CMSWidgetAudio.svelte.d.ts",
+      "svelte": "./dist/plugins/audio/CMSWidgetAudio.svelte",
+      "default": "./dist/plugins/audio/CMSWidgetAudio.svelte"
     },
     "./plugins/audio/CMSWidgetAudioPreview.svelte": {
-      "types": "./package/plugins/audio/CMSWidgetAudioPreview.svelte.d.ts",
-      "svelte": "./package/plugins/audio/CMSWidgetAudioPreview.svelte",
-      "default": "./package/plugins/audio/CMSWidgetAudioPreview.svelte"
+      "types": "./dist/plugins/audio/CMSWidgetAudioPreview.svelte.d.ts",
+      "svelte": "./dist/plugins/audio/CMSWidgetAudioPreview.svelte",
+      "default": "./dist/plugins/audio/CMSWidgetAudioPreview.svelte"
     },
     "./plugins/audio": {
-      "types": "./package/plugins/audio/index.d.ts",
-      "svelte": "./package/plugins/audio/index.js",
-      "default": "./package/plugins/audio/index.js"
+      "types": "./dist/plugins/audio/index.d.ts",
+      "svelte": "./dist/plugins/audio/index.js",
+      "default": "./dist/plugins/audio/index.js"
     },
     "./plugins/checkboxes/CheckboxText.svelte": {
-      "types": "./package/plugins/checkboxes/CheckboxText.svelte.d.ts",
-      "svelte": "./package/plugins/checkboxes/CheckboxText.svelte",
-      "default": "./package/plugins/checkboxes/CheckboxText.svelte"
+      "types": "./dist/plugins/checkboxes/CheckboxText.svelte.d.ts",
+      "svelte": "./dist/plugins/checkboxes/CheckboxText.svelte",
+      "default": "./dist/plugins/checkboxes/CheckboxText.svelte"
     },
     "./plugins/checkboxes": {
-      "types": "./package/plugins/checkboxes/index.d.ts",
-      "svelte": "./package/plugins/checkboxes/index.js",
-      "default": "./package/plugins/checkboxes/index.js"
+      "types": "./dist/plugins/checkboxes/index.d.ts",
+      "svelte": "./dist/plugins/checkboxes/index.js",
+      "default": "./dist/plugins/checkboxes/index.js"
     },
     "./plugins/defaultContent": {
-      "types": "./package/plugins/defaultContent/index.d.ts",
-      "svelte": "./package/plugins/defaultContent/index.js",
-      "default": "./package/plugins/defaultContent/index.js"
+      "types": "./dist/plugins/defaultContent/index.d.ts",
+      "svelte": "./dist/plugins/defaultContent/index.js",
+      "default": "./dist/plugins/defaultContent/index.js"
     },
     "./plugins/firebaseFirestore": {
-      "types": "./package/plugins/firebaseFirestore/index.d.ts",
-      "svelte": "./package/plugins/firebaseFirestore/index.js",
-      "default": "./package/plugins/firebaseFirestore/index.js"
+      "types": "./dist/plugins/firebaseFirestore/index.d.ts",
+      "svelte": "./dist/plugins/firebaseFirestore/index.js",
+      "default": "./dist/plugins/firebaseFirestore/index.js"
     },
     "./plugins/firebaseStorage": {
-      "types": "./package/plugins/firebaseStorage/index.d.ts",
-      "svelte": "./package/plugins/firebaseStorage/index.js",
-      "default": "./package/plugins/firebaseStorage/index.js"
+      "types": "./dist/plugins/firebaseStorage/index.d.ts",
+      "svelte": "./dist/plugins/firebaseStorage/index.js",
+      "default": "./dist/plugins/firebaseStorage/index.js"
     },
     "./plugins/importContent/ImportContent.svelte": {
-      "types": "./package/plugins/importContent/ImportContent.svelte.d.ts",
-      "svelte": "./package/plugins/importContent/ImportContent.svelte",
-      "default": "./package/plugins/importContent/ImportContent.svelte"
+      "types": "./dist/plugins/importContent/ImportContent.svelte.d.ts",
+      "svelte": "./dist/plugins/importContent/ImportContent.svelte",
+      "default": "./dist/plugins/importContent/ImportContent.svelte"
     },
     "./plugins/importContent": {
-      "types": "./package/plugins/importContent/index.d.ts",
-      "svelte": "./package/plugins/importContent/index.js",
-      "default": "./package/plugins/importContent/index.js"
+      "types": "./dist/plugins/importContent/index.d.ts",
+      "svelte": "./dist/plugins/importContent/index.js",
+      "default": "./dist/plugins/importContent/index.js"
     },
     "./plugins/markdown": {
-      "types": "./package/plugins/markdown/index.d.ts",
-      "svelte": "./package/plugins/markdown/index.js",
-      "default": "./package/plugins/markdown/index.js"
+      "types": "./dist/plugins/markdown/index.d.ts",
+      "svelte": "./dist/plugins/markdown/index.js",
+      "default": "./dist/plugins/markdown/index.js"
     },
     "./plugins/math": {
-      "types": "./package/plugins/math/index.d.ts",
-      "svelte": "./package/plugins/math/index.js",
-      "default": "./package/plugins/math/index.js"
+      "types": "./dist/plugins/math/index.d.ts",
+      "svelte": "./dist/plugins/math/index.js",
+      "default": "./dist/plugins/math/index.js"
     },
     "./plugins/staticFiles": {
-      "types": "./package/plugins/staticFiles/index.d.ts",
-      "svelte": "./package/plugins/staticFiles/index.js",
-      "default": "./package/plugins/staticFiles/index.js"
+      "types": "./dist/plugins/staticFiles/index.d.ts",
+      "svelte": "./dist/plugins/staticFiles/index.js",
+      "default": "./dist/plugins/staticFiles/index.js"
     },
-    "./sveltecms-forms.css": "./package/sveltecms-forms.css",
+    "./sveltecms-forms.css": "./dist/sveltecms-forms.css",
     "./ui/Button.svelte": {
-      "types": "./package/ui/Button.svelte.d.ts",
-      "svelte": "./package/ui/Button.svelte",
-      "default": "./package/ui/Button.svelte"
+      "types": "./dist/ui/Button.svelte.d.ts",
+      "svelte": "./dist/ui/Button.svelte",
+      "default": "./dist/ui/Button.svelte"
     },
     "./ui/ButtonConfirm.svelte": {
-      "types": "./package/ui/ButtonConfirm.svelte.d.ts",
-      "svelte": "./package/ui/ButtonConfirm.svelte",
-      "default": "./package/ui/ButtonConfirm.svelte"
+      "types": "./dist/ui/ButtonConfirm.svelte.d.ts",
+      "svelte": "./dist/ui/ButtonConfirm.svelte",
+      "default": "./dist/ui/ButtonConfirm.svelte"
     },
     "./ui/DisplayResult.svelte": {
-      "types": "./package/ui/DisplayResult.svelte.d.ts",
-      "svelte": "./package/ui/DisplayResult.svelte",
-      "default": "./package/ui/DisplayResult.svelte"
+      "types": "./dist/ui/DisplayResult.svelte.d.ts",
+      "svelte": "./dist/ui/DisplayResult.svelte",
+      "default": "./dist/ui/DisplayResult.svelte"
     },
     "./ui/EntityListSectionToggle.svelte": {
-      "types": "./package/ui/EntityListSectionToggle.svelte.d.ts",
-      "svelte": "./package/ui/EntityListSectionToggle.svelte",
-      "default": "./package/ui/EntityListSectionToggle.svelte"
+      "types": "./dist/ui/EntityListSectionToggle.svelte.d.ts",
+      "svelte": "./dist/ui/EntityListSectionToggle.svelte",
+      "default": "./dist/ui/EntityListSectionToggle.svelte"
     },
     "./ui/Modal.svelte": {
-      "types": "./package/ui/Modal.svelte.d.ts",
-      "svelte": "./package/ui/Modal.svelte",
-      "default": "./package/ui/Modal.svelte"
+      "types": "./dist/ui/Modal.svelte.d.ts",
+      "svelte": "./dist/ui/Modal.svelte",
+      "default": "./dist/ui/Modal.svelte"
     },
     "./ui/Nav.svelte": {
-      "types": "./package/ui/Nav.svelte.d.ts",
-      "svelte": "./package/ui/Nav.svelte",
-      "default": "./package/ui/Nav.svelte"
+      "types": "./dist/ui/Nav.svelte.d.ts",
+      "svelte": "./dist/ui/Nav.svelte",
+      "default": "./dist/ui/Nav.svelte"
     },
     "./ui/PowerTable.svelte": {
-      "types": "./package/ui/PowerTable.svelte.d.ts",
-      "svelte": "./package/ui/PowerTable.svelte",
-      "default": "./package/ui/PowerTable.svelte"
+      "types": "./dist/ui/PowerTable.svelte.d.ts",
+      "svelte": "./dist/ui/PowerTable.svelte",
+      "default": "./dist/ui/PowerTable.svelte"
     },
     "./utils/config": {
-      "types": "./package/utils/config.d.ts",
-      "default": "./package/utils/config.js"
+      "types": "./dist/utils/config.d.ts",
+      "default": "./dist/utils/config.js"
     },
     "./utils/date": {
-      "types": "./package/utils/date.d.ts",
-      "default": "./package/utils/date.js"
+      "types": "./dist/utils/date.d.ts",
+      "default": "./dist/utils/date.js"
     },
     "./utils/endpoints": {
-      "types": "./package/utils/endpoints.d.ts",
-      "default": "./package/utils/endpoints.js"
+      "types": "./dist/utils/endpoints.d.ts",
+      "default": "./dist/utils/endpoints.js"
     },
     "./utils/formDataHandler": {
-      "types": "./package/utils/formDataHandler.d.ts",
-      "default": "./package/utils/formDataHandler.js"
+      "types": "./dist/utils/formDataHandler.d.ts",
+      "default": "./dist/utils/formDataHandler.js"
     },
     "./utils/getLabelFromID": {
-      "types": "./package/utils/getLabelFromID.d.ts",
-      "default": "./package/utils/getLabelFromID.js"
+      "types": "./dist/utils/getLabelFromID.d.ts",
+      "default": "./dist/utils/getLabelFromID.js"
     },
     "./utils": {
-      "types": "./package/utils/index.d.ts",
-      "svelte": "./package/utils/index.js",
-      "default": "./package/utils/index.js"
+      "types": "./dist/utils/index.d.ts",
+      "svelte": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./utils/list": {
-      "types": "./package/utils/list.d.ts",
-      "default": "./package/utils/list.js"
+      "types": "./dist/utils/list.d.ts",
+      "default": "./dist/utils/list.js"
     },
     "./utils/path": {
-      "types": "./package/utils/path.d.ts",
-      "default": "./package/utils/path.js"
+      "types": "./dist/utils/path.d.ts",
+      "default": "./dist/utils/path.js"
     },
     "./utils/reference": {
-      "types": "./package/utils/reference.d.ts",
-      "default": "./package/utils/reference.js"
+      "types": "./dist/utils/reference.d.ts",
+      "default": "./dist/utils/reference.js"
     },
     "./utils/splitTags": {
-      "types": "./package/utils/splitTags.d.ts",
-      "default": "./package/utils/splitTags.js"
+      "types": "./dist/utils/splitTags.d.ts",
+      "default": "./dist/utils/splitTags.js"
     },
     "./widgets/CMSWidgetCheckbox.svelte": {
-      "types": "./package/widgets/CMSWidgetCheckbox.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetCheckbox.svelte",
-      "default": "./package/widgets/CMSWidgetCheckbox.svelte"
+      "types": "./dist/widgets/CMSWidgetCheckbox.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetCheckbox.svelte",
+      "default": "./dist/widgets/CMSWidgetCheckbox.svelte"
     },
     "./widgets/CMSWidgetDate.svelte": {
-      "types": "./package/widgets/CMSWidgetDate.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetDate.svelte",
-      "default": "./package/widgets/CMSWidgetDate.svelte"
+      "types": "./dist/widgets/CMSWidgetDate.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetDate.svelte",
+      "default": "./dist/widgets/CMSWidgetDate.svelte"
     },
     "./widgets/CMSWidgetFieldgroup.svelte": {
-      "types": "./package/widgets/CMSWidgetFieldgroup.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetFieldgroup.svelte",
-      "default": "./package/widgets/CMSWidgetFieldgroup.svelte"
+      "types": "./dist/widgets/CMSWidgetFieldgroup.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetFieldgroup.svelte",
+      "default": "./dist/widgets/CMSWidgetFieldgroup.svelte"
     },
     "./widgets/CMSWidgetFile.svelte": {
-      "types": "./package/widgets/CMSWidgetFile.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetFile.svelte",
-      "default": "./package/widgets/CMSWidgetFile.svelte"
+      "types": "./dist/widgets/CMSWidgetFile.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetFile.svelte",
+      "default": "./dist/widgets/CMSWidgetFile.svelte"
     },
     "./widgets/CMSWidgetFilePreview.svelte": {
-      "types": "./package/widgets/CMSWidgetFilePreview.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetFilePreview.svelte",
-      "default": "./package/widgets/CMSWidgetFilePreview.svelte"
+      "types": "./dist/widgets/CMSWidgetFilePreview.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetFilePreview.svelte",
+      "default": "./dist/widgets/CMSWidgetFilePreview.svelte"
     },
     "./widgets/CMSWidgetImage.svelte": {
-      "types": "./package/widgets/CMSWidgetImage.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetImage.svelte",
-      "default": "./package/widgets/CMSWidgetImage.svelte"
+      "types": "./dist/widgets/CMSWidgetImage.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetImage.svelte",
+      "default": "./dist/widgets/CMSWidgetImage.svelte"
     },
     "./widgets/CMSWidgetImagePreview.svelte": {
-      "types": "./package/widgets/CMSWidgetImagePreview.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetImagePreview.svelte",
-      "default": "./package/widgets/CMSWidgetImagePreview.svelte"
+      "types": "./dist/widgets/CMSWidgetImagePreview.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetImagePreview.svelte",
+      "default": "./dist/widgets/CMSWidgetImagePreview.svelte"
     },
     "./widgets/CMSWidgetMultiple.svelte": {
-      "types": "./package/widgets/CMSWidgetMultiple.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetMultiple.svelte",
-      "default": "./package/widgets/CMSWidgetMultiple.svelte"
+      "types": "./dist/widgets/CMSWidgetMultiple.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetMultiple.svelte",
+      "default": "./dist/widgets/CMSWidgetMultiple.svelte"
     },
     "./widgets/CMSWidgetMultiselect.svelte": {
-      "types": "./package/widgets/CMSWidgetMultiselect.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetMultiselect.svelte",
-      "default": "./package/widgets/CMSWidgetMultiselect.svelte"
+      "types": "./dist/widgets/CMSWidgetMultiselect.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetMultiselect.svelte",
+      "default": "./dist/widgets/CMSWidgetMultiselect.svelte"
     },
     "./widgets/CMSWidgetNumber.svelte": {
-      "types": "./package/widgets/CMSWidgetNumber.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetNumber.svelte",
-      "default": "./package/widgets/CMSWidgetNumber.svelte"
+      "types": "./dist/widgets/CMSWidgetNumber.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetNumber.svelte",
+      "default": "./dist/widgets/CMSWidgetNumber.svelte"
     },
     "./widgets/CMSWidgetOptions.svelte": {
-      "types": "./package/widgets/CMSWidgetOptions.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetOptions.svelte",
-      "default": "./package/widgets/CMSWidgetOptions.svelte"
+      "types": "./dist/widgets/CMSWidgetOptions.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetOptions.svelte",
+      "default": "./dist/widgets/CMSWidgetOptions.svelte"
     },
     "./widgets/CMSWidgetRange.svelte": {
-      "types": "./package/widgets/CMSWidgetRange.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetRange.svelte",
-      "default": "./package/widgets/CMSWidgetRange.svelte"
+      "types": "./dist/widgets/CMSWidgetRange.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetRange.svelte",
+      "default": "./dist/widgets/CMSWidgetRange.svelte"
     },
     "./widgets/CMSWidgetReference.svelte": {
-      "types": "./package/widgets/CMSWidgetReference.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetReference.svelte",
-      "default": "./package/widgets/CMSWidgetReference.svelte"
+      "types": "./dist/widgets/CMSWidgetReference.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetReference.svelte",
+      "default": "./dist/widgets/CMSWidgetReference.svelte"
     },
     "./widgets/CMSWidgetSelect.svelte": {
-      "types": "./package/widgets/CMSWidgetSelect.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetSelect.svelte",
-      "default": "./package/widgets/CMSWidgetSelect.svelte"
+      "types": "./dist/widgets/CMSWidgetSelect.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetSelect.svelte",
+      "default": "./dist/widgets/CMSWidgetSelect.svelte"
     },
     "./widgets/CMSWidgetText.svelte": {
-      "types": "./package/widgets/CMSWidgetText.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetText.svelte",
-      "default": "./package/widgets/CMSWidgetText.svelte"
+      "types": "./dist/widgets/CMSWidgetText.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetText.svelte",
+      "default": "./dist/widgets/CMSWidgetText.svelte"
     },
     "./widgets/CMSWidgetTextarea.svelte": {
-      "types": "./package/widgets/CMSWidgetTextarea.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetTextarea.svelte",
-      "default": "./package/widgets/CMSWidgetTextarea.svelte"
+      "types": "./dist/widgets/CMSWidgetTextarea.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetTextarea.svelte",
+      "default": "./dist/widgets/CMSWidgetTextarea.svelte"
     },
     "./widgets/CMSWidgetUndefined.svelte": {
-      "types": "./package/widgets/CMSWidgetUndefined.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetUndefined.svelte",
-      "default": "./package/widgets/CMSWidgetUndefined.svelte"
+      "types": "./dist/widgets/CMSWidgetUndefined.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetUndefined.svelte",
+      "default": "./dist/widgets/CMSWidgetUndefined.svelte"
     },
     "./widgets/CMSWidgetValue.svelte": {
-      "types": "./package/widgets/CMSWidgetValue.svelte.d.ts",
-      "svelte": "./package/widgets/CMSWidgetValue.svelte",
-      "default": "./package/widgets/CMSWidgetValue.svelte"
+      "types": "./dist/widgets/CMSWidgetValue.svelte.d.ts",
+      "svelte": "./dist/widgets/CMSWidgetValue.svelte",
+      "default": "./dist/widgets/CMSWidgetValue.svelte"
     },
     "./widgets/MediaChooser.svelte": {
-      "types": "./package/widgets/MediaChooser.svelte.d.ts",
-      "svelte": "./package/widgets/MediaChooser.svelte",
-      "default": "./package/widgets/MediaChooser.svelte"
+      "types": "./dist/widgets/MediaChooser.svelte.d.ts",
+      "svelte": "./dist/widgets/MediaChooser.svelte",
+      "default": "./dist/widgets/MediaChooser.svelte"
     },
     "./widgets/ScriptableButton.svelte": {
-      "types": "./package/widgets/ScriptableButton.svelte.d.ts",
-      "svelte": "./package/widgets/ScriptableButton.svelte",
-      "default": "./package/widgets/ScriptableButton.svelte"
+      "types": "./dist/widgets/ScriptableButton.svelte.d.ts",
+      "svelte": "./dist/widgets/ScriptableButton.svelte",
+      "default": "./dist/widgets/ScriptableButton.svelte"
     }
   },
   "files": [
     "package"
   ],
-  "svelte": "./package/index.js",
+  "svelte": "./dist/index.js",
   "typesVersions": {
     ">4.0": {
       "CMSAdmin.svelte": [
-        "./package/CMSAdmin.svelte.d.ts"
+        "./dist/CMSAdmin.svelte.d.ts"
       ],
       "CMSEditorForm.svelte": [
-        "./package/CMSEditorForm.svelte.d.ts"
+        "./dist/CMSEditorForm.svelte.d.ts"
       ],
       "CMSField.svelte": [
-        "./package/CMSField.svelte.d.ts"
+        "./dist/CMSField.svelte.d.ts"
       ],
       "CMSFieldGroup.svelte": [
-        "./package/CMSFieldGroup.svelte.d.ts"
+        "./dist/CMSFieldGroup.svelte.d.ts"
       ],
       "cli": [
-        "./package/cli.d.ts"
+        "./dist/cli.d.ts"
       ],
       "core/AdminPage": [
-        "./package/core/AdminPage.d.ts"
+        "./dist/core/AdminPage.d.ts"
       ],
       "core/Component": [
-        "./package/core/Component.d.ts"
+        "./dist/core/Component.d.ts"
       ],
       "core/ContentStore": [
-        "./package/core/ContentStore.d.ts"
+        "./dist/core/ContentStore.d.ts"
       ],
       "core/ContentType": [
-        "./package/core/ContentType.d.ts"
+        "./dist/core/ContentType.d.ts"
       ],
       "core/Display": [
-        "./package/core/Display.d.ts"
+        "./dist/core/Display.d.ts"
       ],
       "core/EntityTemplate": [
-        "./package/core/EntityTemplate.d.ts"
+        "./dist/core/EntityTemplate.d.ts"
       ],
       "core/Field": [
-        "./package/core/Field.d.ts"
+        "./dist/core/Field.d.ts"
       ],
       "core/Fieldgroup": [
-        "./package/core/Fieldgroup.d.ts"
+        "./dist/core/Fieldgroup.d.ts"
       ],
       "core/Hook": [
-        "./package/core/Hook.d.ts"
+        "./dist/core/Hook.d.ts"
       ],
       "core/Indexer": [
-        "./package/core/Indexer.d.ts"
+        "./dist/core/Indexer.d.ts"
       ],
       "core/MediaStore": [
-        "./package/core/MediaStore.d.ts"
+        "./dist/core/MediaStore.d.ts"
       ],
       "core/Plugin": [
-        "./package/core/Plugin.d.ts"
+        "./dist/core/Plugin.d.ts"
       ],
       "core/ScriptFunction": [
-        "./package/core/ScriptFunction.d.ts"
+        "./dist/core/ScriptFunction.d.ts"
       ],
       "core/Slug": [
-        "./package/core/Slug.d.ts"
+        "./dist/core/Slug.d.ts"
       ],
       "core/Transformer": [
-        "./package/core/Transformer.d.ts"
+        "./dist/core/Transformer.d.ts"
       ],
       "core/Validator": [
-        "./package/core/Validator.d.ts"
+        "./dist/core/Validator.d.ts"
       ],
       "core/Widget": [
-        "./package/core/Widget.d.ts"
+        "./dist/core/Widget.d.ts"
       ],
       "display/ContentItem.svelte": [
-        "./package/display/ContentItem.svelte.d.ts"
+        "./dist/display/ContentItem.svelte.d.ts"
       ],
       "display/FieldList.svelte": [
-        "./package/display/FieldList.svelte.d.ts"
+        "./dist/display/FieldList.svelte.d.ts"
       ],
       "display/FieldValue.svelte": [
-        "./package/display/FieldValue.svelte.d.ts"
+        "./dist/display/FieldValue.svelte.d.ts"
       ],
       "display/Wrapper.svelte": [
-        "./package/display/Wrapper.svelte.d.ts"
+        "./dist/display/Wrapper.svelte.d.ts"
       ],
       "display/field/Date.svelte": [
-        "./package/display/field/Date.svelte.d.ts"
+        "./dist/display/field/Date.svelte.d.ts"
       ],
       "display/field/Fieldgroup.svelte": [
-        "./package/display/field/Fieldgroup.svelte.d.ts"
+        "./dist/display/field/Fieldgroup.svelte.d.ts"
       ],
       "display/field/File.svelte": [
-        "./package/display/field/File.svelte.d.ts"
+        "./dist/display/field/File.svelte.d.ts"
       ],
       "display/field/Image.svelte": [
-        "./package/display/field/Image.svelte.d.ts"
+        "./dist/display/field/Image.svelte.d.ts"
       ],
       "display/field/Reference.svelte": [
-        "./package/display/field/Reference.svelte.d.ts"
+        "./dist/display/field/Reference.svelte.d.ts"
       ],
       "index.d.ts": [
-        "./package/index.d.ts"
+        "./dist/index.d.ts"
       ],
       "manifest": [
-        "./package/manifest.d.ts"
+        "./dist/manifest.d.ts"
       ],
       "plugins/admin/components/CMSComponentList.svelte": [
-        "./package/plugins/admin/components/CMSComponentList.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSComponentList.svelte.d.ts"
       ],
       "plugins/admin/components/CMSComponentListOld.svelte": [
-        "./package/plugins/admin/components/CMSComponentListOld.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSComponentListOld.svelte.d.ts"
       ],
       "plugins/admin/components/CMSConfigDisplays.svelte": [
-        "./package/plugins/admin/components/CMSConfigDisplays.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSConfigDisplays.svelte.d.ts"
       ],
       "plugins/admin/components/CMSConfigEntity.svelte": [
-        "./package/plugins/admin/components/CMSConfigEntity.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSConfigEntity.svelte.d.ts"
       ],
       "plugins/admin/components/CMSConfigEntityList.svelte": [
-        "./package/plugins/admin/components/CMSConfigEntityList.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSConfigEntityList.svelte.d.ts"
       ],
       "plugins/admin/components/CMSConfigForm.svelte": [
-        "./package/plugins/admin/components/CMSConfigForm.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSConfigForm.svelte.d.ts"
       ],
       "plugins/admin/components/CMSConfigSettings.svelte": [
-        "./package/plugins/admin/components/CMSConfigSettings.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSConfigSettings.svelte.d.ts"
       ],
       "plugins/admin/components/CMSContentEdit.svelte": [
-        "./package/plugins/admin/components/CMSContentEdit.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSContentEdit.svelte.d.ts"
       ],
       "plugins/admin/components/CMSContentList.svelte": [
-        "./package/plugins/admin/components/CMSContentList.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSContentList.svelte.d.ts"
       ],
       "plugins/admin/components/CMSContentTypeList.svelte": [
-        "./package/plugins/admin/components/CMSContentTypeList.svelte.d.ts"
+        "./dist/plugins/admin/components/CMSContentTypeList.svelte.d.ts"
       ],
       "plugins/admin/components": [
-        "./package/plugins/admin/components/index.d.ts"
+        "./dist/plugins/admin/components/index.d.ts"
       ],
       "plugins/admin": [
-        "./package/plugins/admin/index.d.ts"
+        "./dist/plugins/admin/index.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetConfigurableEntity.svelte.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetDefaultValue.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetDefaultValue.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetDefaultValue.svelte.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetDisplayList.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetDisplayList.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetDisplayList.svelte.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetEntity.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetEntity.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetEntity.svelte.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetEntityList.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetEntityList.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetEntityList.svelte.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetEntityTypeField.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetEntityTypeField.svelte.d.ts"
       ],
       "plugins/admin/widgets/CMSWidgetList.svelte": [
-        "./package/plugins/admin/widgets/CMSWidgetList.svelte.d.ts"
+        "./dist/plugins/admin/widgets/CMSWidgetList.svelte.d.ts"
       ],
       "plugins/audio/CMSWidgetAudio.svelte": [
-        "./package/plugins/audio/CMSWidgetAudio.svelte.d.ts"
+        "./dist/plugins/audio/CMSWidgetAudio.svelte.d.ts"
       ],
       "plugins/audio/CMSWidgetAudioPreview.svelte": [
-        "./package/plugins/audio/CMSWidgetAudioPreview.svelte.d.ts"
+        "./dist/plugins/audio/CMSWidgetAudioPreview.svelte.d.ts"
       ],
       "plugins/audio": [
-        "./package/plugins/audio/index.d.ts"
+        "./dist/plugins/audio/index.d.ts"
       ],
       "plugins/checkboxes/CheckboxText.svelte": [
-        "./package/plugins/checkboxes/CheckboxText.svelte.d.ts"
+        "./dist/plugins/checkboxes/CheckboxText.svelte.d.ts"
       ],
       "plugins/checkboxes": [
-        "./package/plugins/checkboxes/index.d.ts"
+        "./dist/plugins/checkboxes/index.d.ts"
       ],
       "plugins/defaultContent": [
-        "./package/plugins/defaultContent/index.d.ts"
+        "./dist/plugins/defaultContent/index.d.ts"
       ],
       "plugins/firebaseFirestore": [
-        "./package/plugins/firebaseFirestore/index.d.ts"
+        "./dist/plugins/firebaseFirestore/index.d.ts"
       ],
       "plugins/firebaseStorage": [
-        "./package/plugins/firebaseStorage/index.d.ts"
+        "./dist/plugins/firebaseStorage/index.d.ts"
       ],
       "plugins/importContent/ImportContent.svelte": [
-        "./package/plugins/importContent/ImportContent.svelte.d.ts"
+        "./dist/plugins/importContent/ImportContent.svelte.d.ts"
       ],
       "plugins/importContent": [
-        "./package/plugins/importContent/index.d.ts"
+        "./dist/plugins/importContent/index.d.ts"
       ],
       "plugins/markdown": [
-        "./package/plugins/markdown/index.d.ts"
+        "./dist/plugins/markdown/index.d.ts"
       ],
       "plugins/math": [
-        "./package/plugins/math/index.d.ts"
+        "./dist/plugins/math/index.d.ts"
       ],
       "plugins/staticFiles": [
-        "./package/plugins/staticFiles/index.d.ts"
+        "./dist/plugins/staticFiles/index.d.ts"
       ],
       "ui/Button.svelte": [
-        "./package/ui/Button.svelte.d.ts"
+        "./dist/ui/Button.svelte.d.ts"
       ],
       "ui/ButtonConfirm.svelte": [
-        "./package/ui/ButtonConfirm.svelte.d.ts"
+        "./dist/ui/ButtonConfirm.svelte.d.ts"
       ],
       "ui/DisplayResult.svelte": [
-        "./package/ui/DisplayResult.svelte.d.ts"
+        "./dist/ui/DisplayResult.svelte.d.ts"
       ],
       "ui/EntityListSectionToggle.svelte": [
-        "./package/ui/EntityListSectionToggle.svelte.d.ts"
+        "./dist/ui/EntityListSectionToggle.svelte.d.ts"
       ],
       "ui/Modal.svelte": [
-        "./package/ui/Modal.svelte.d.ts"
+        "./dist/ui/Modal.svelte.d.ts"
       ],
       "ui/Nav.svelte": [
-        "./package/ui/Nav.svelte.d.ts"
+        "./dist/ui/Nav.svelte.d.ts"
       ],
       "ui/PowerTable.svelte": [
-        "./package/ui/PowerTable.svelte.d.ts"
+        "./dist/ui/PowerTable.svelte.d.ts"
       ],
       "utils/config": [
-        "./package/utils/config.d.ts"
+        "./dist/utils/config.d.ts"
       ],
       "utils/date": [
-        "./package/utils/date.d.ts"
+        "./dist/utils/date.d.ts"
       ],
       "utils/endpoints": [
-        "./package/utils/endpoints.d.ts"
+        "./dist/utils/endpoints.d.ts"
       ],
       "utils/formDataHandler": [
-        "./package/utils/formDataHandler.d.ts"
+        "./dist/utils/formDataHandler.d.ts"
       ],
       "utils/getLabelFromID": [
-        "./package/utils/getLabelFromID.d.ts"
+        "./dist/utils/getLabelFromID.d.ts"
       ],
       "utils": [
-        "./package/utils/index.d.ts"
+        "./dist/utils/index.d.ts"
       ],
       "utils/list": [
-        "./package/utils/list.d.ts"
+        "./dist/utils/list.d.ts"
       ],
       "utils/path": [
-        "./package/utils/path.d.ts"
+        "./dist/utils/path.d.ts"
       ],
       "utils/reference": [
-        "./package/utils/reference.d.ts"
+        "./dist/utils/reference.d.ts"
       ],
       "utils/splitTags": [
-        "./package/utils/splitTags.d.ts"
+        "./dist/utils/splitTags.d.ts"
       ],
       "widgets/CMSWidgetCheckbox.svelte": [
-        "./package/widgets/CMSWidgetCheckbox.svelte.d.ts"
+        "./dist/widgets/CMSWidgetCheckbox.svelte.d.ts"
       ],
       "widgets/CMSWidgetDate.svelte": [
-        "./package/widgets/CMSWidgetDate.svelte.d.ts"
+        "./dist/widgets/CMSWidgetDate.svelte.d.ts"
       ],
       "widgets/CMSWidgetFieldgroup.svelte": [
-        "./package/widgets/CMSWidgetFieldgroup.svelte.d.ts"
+        "./dist/widgets/CMSWidgetFieldgroup.svelte.d.ts"
       ],
       "widgets/CMSWidgetFile.svelte": [
-        "./package/widgets/CMSWidgetFile.svelte.d.ts"
+        "./dist/widgets/CMSWidgetFile.svelte.d.ts"
       ],
       "widgets/CMSWidgetFilePreview.svelte": [
-        "./package/widgets/CMSWidgetFilePreview.svelte.d.ts"
+        "./dist/widgets/CMSWidgetFilePreview.svelte.d.ts"
       ],
       "widgets/CMSWidgetImage.svelte": [
-        "./package/widgets/CMSWidgetImage.svelte.d.ts"
+        "./dist/widgets/CMSWidgetImage.svelte.d.ts"
       ],
       "widgets/CMSWidgetImagePreview.svelte": [
-        "./package/widgets/CMSWidgetImagePreview.svelte.d.ts"
+        "./dist/widgets/CMSWidgetImagePreview.svelte.d.ts"
       ],
       "widgets/CMSWidgetMultiple.svelte": [
-        "./package/widgets/CMSWidgetMultiple.svelte.d.ts"
+        "./dist/widgets/CMSWidgetMultiple.svelte.d.ts"
       ],
       "widgets/CMSWidgetMultiselect.svelte": [
-        "./package/widgets/CMSWidgetMultiselect.svelte.d.ts"
+        "./dist/widgets/CMSWidgetMultiselect.svelte.d.ts"
       ],
       "widgets/CMSWidgetNumber.svelte": [
-        "./package/widgets/CMSWidgetNumber.svelte.d.ts"
+        "./dist/widgets/CMSWidgetNumber.svelte.d.ts"
       ],
       "widgets/CMSWidgetOptions.svelte": [
-        "./package/widgets/CMSWidgetOptions.svelte.d.ts"
+        "./dist/widgets/CMSWidgetOptions.svelte.d.ts"
       ],
       "widgets/CMSWidgetRange.svelte": [
-        "./package/widgets/CMSWidgetRange.svelte.d.ts"
+        "./dist/widgets/CMSWidgetRange.svelte.d.ts"
       ],
       "widgets/CMSWidgetReference.svelte": [
-        "./package/widgets/CMSWidgetReference.svelte.d.ts"
+        "./dist/widgets/CMSWidgetReference.svelte.d.ts"
       ],
       "widgets/CMSWidgetSelect.svelte": [
-        "./package/widgets/CMSWidgetSelect.svelte.d.ts"
+        "./dist/widgets/CMSWidgetSelect.svelte.d.ts"
       ],
       "widgets/CMSWidgetText.svelte": [
-        "./package/widgets/CMSWidgetText.svelte.d.ts"
+        "./dist/widgets/CMSWidgetText.svelte.d.ts"
       ],
       "widgets/CMSWidgetTextarea.svelte": [
-        "./package/widgets/CMSWidgetTextarea.svelte.d.ts"
+        "./dist/widgets/CMSWidgetTextarea.svelte.d.ts"
       ],
       "widgets/CMSWidgetUndefined.svelte": [
-        "./package/widgets/CMSWidgetUndefined.svelte.d.ts"
+        "./dist/widgets/CMSWidgetUndefined.svelte.d.ts"
       ],
       "widgets/CMSWidgetValue.svelte": [
-        "./package/widgets/CMSWidgetValue.svelte.d.ts"
+        "./dist/widgets/CMSWidgetValue.svelte.d.ts"
       ],
       "widgets/MediaChooser.svelte": [
-        "./package/widgets/MediaChooser.svelte.d.ts"
+        "./dist/widgets/MediaChooser.svelte.d.ts"
       ],
       "widgets/ScriptableButton.svelte": [
-        "./package/widgets/ScriptableButton.svelte.d.ts"
+        "./dist/widgets/ScriptableButton.svelte.d.ts"
       ]
     }
   }
