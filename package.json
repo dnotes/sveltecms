@@ -80,9 +80,9 @@
   },
   "type": "module",
   "description": "A content manager built with sveltekit, for sveltekit projects. Sensible and extensible, with declarative configuration.",
-  "main": "./src/lib/index.ts",
+  "main": "./dist/index.js",
   "bin": {
-    "sveltecms": "./cli.js"
+    "sveltecms": "./dist/cli.js"
   },
   "repository": {
     "type": "git",
