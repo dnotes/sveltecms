@@ -7,7 +7,7 @@ import prompts from 'prompts';
 import { fileURLToPath } from 'url';
 import sade from 'sade';
 import manifest from './manifest.js';
-const cmsDir = path.dirname(fileURLToPath(new URL('package.json', import.meta.url).href)).replace(/\/src\/sveltecms$/, '');
+const cmsDir = path.dirname(fileURLToPath(new URL('package.json', import.meta.url).href)).replace(/(?:\/src\/sveltecms|\/dist)$/, '');
 const { version } = JSON.parse(fs.readFileSync(`${cmsDir}/package.json`, 'utf8'));
 const prog = sade('sveltecms')
     .describe(`Command line interface for SvelteCMS (${version})`)
