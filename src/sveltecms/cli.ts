@@ -19,7 +19,7 @@ type CMSFile = {
   installed?:string
 }
 
-const cmsDir = path.dirname(fileURLToPath(new URL('package.json', import.meta.url).href)).replace(/\/src\/sveltecms$/, '');
+const cmsDir = path.dirname(fileURLToPath(new URL('package.json', import.meta.url).href)).replace(/(?:\/src\/sveltecms|\/dist)$/, '');
 const { version } = JSON.parse(fs.readFileSync(`${cmsDir}/package.json`, 'utf8'));
 
 const prog = sade('sveltecms')
