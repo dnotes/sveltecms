@@ -16,7 +16,7 @@ const allIndexes:{[key:string]:{default:IndexItem[]}} = import.meta.glob('/src/c
 const allContent = import.meta.glob('/src/content/*/**/*.{md,yml,yaml,json}', { as:'raw' })
 
 function extname(path:string) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./,'').replace(/^\..+/, '') }
-function getBasedir() { return (isBrowser || isWebWorker) ? '/' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/')}
+function getBasedir() { return (isBrowser || isWebWorker) ? '/' : import.meta.url.replace(/\/(?:node_modules|src|\.yalc)\/.+/, '').replace(/^file:\/\/\//, '/')}
 export async function getFs(databaseName):Promise<PromisifiedFS> {
   if (fs[databaseName]) return fs[databaseName]
   if (isBrowser || isWebWorker) {

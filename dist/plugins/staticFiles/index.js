@@ -8,7 +8,7 @@ const fs = {};
 const allIndexes = import.meta.glob('/src/content/_*.index.json', { eager: true });
 const allContent = import.meta.glob('/src/content/*/**/*.{md,yml,yaml,json}', { as: 'raw' });
 function extname(path) { return path.replace(/^.+\//, '').replace(/^[^\.].*\./, '').replace(/^\..+/, ''); }
-function getBasedir() { return (isBrowser || isWebWorker) ? '/' : import.meta.url.replace(/\/(?:node_modules|src)\/.+/, '').replace(/^file:\/\/\//, '/'); }
+function getBasedir() { return (isBrowser || isWebWorker) ? '/' : import.meta.url.replace(/\/(?:node_modules|src|\.yalc)\/.+/, '').replace(/^file:\/\/\//, '/'); }
 export async function getFs(databaseName) {
     if (fs[databaseName])
         return fs[databaseName];
