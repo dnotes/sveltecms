@@ -109,6 +109,11 @@
     "url": "https://github.com/dnotes/sveltecms/issues"
   },
   "homepage": "https://github.com/dnotes/sveltecms#readme",
+  "files": [
+    "dist",
+    ".template"
+  ],
+  "svelte": "./dist/index.js",
   "exports": {
     "./package.json": "./package.json",
     "./CMSAdmin.svelte": {
@@ -595,11 +600,6 @@
       "default": "./dist/widgets/ScriptableButton.svelte"
     }
   },
-  "files": [
-    "dist",
-    ".template"
-  ],
-  "svelte": "./dist/index.js",
   "typesVersions": {
     ">4.0": {
       "CMSAdmin.svelte": [
